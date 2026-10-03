@@ -1,0 +1,21 @@
+{
+  "name": "Dossiers de vente",
+  "short_name": "Dossiers",
+  "description": "Saisie unique des dossiers de vente — Mon Agence Manaranche",
+  "lang": "fr",
+  "dir": "ltr",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#4a1f50",
+  "theme_color": "#14305c",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icone-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
