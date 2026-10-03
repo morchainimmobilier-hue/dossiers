@@ -18,7 +18,7 @@
    l'on n'a pas répondu.
    ======================================================================== */
 
-const VERSION = "20261003-1354";
+const VERSION = "20261003-1532";
 const CACHE   = "dossiers-" + VERSION;
 
 /* Ce qu'il faut avoir sous la main pour démarrer sans réseau. */
