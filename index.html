@@ -894,6 +894,20 @@ table.tdb.statuts tr.tot td em{font-style:normal;font-weight:500;font-size:11px;
 .potnote{margin:9px 0 0;font-size:12px;line-height:1.4}
 table.tdb.statuts .plibtn{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
   padding:3px 8px;font-size:11.5px}
+/* Voir / Masquer : un fond bleuté pour que le bouton se retrouve d'un coup
+   d'œil au-dessus d'une liste dépliée, et un fond plein quand elle l'est —
+   sans quoi on cherche par où refermer. */
+table.tdb.statuts .plibtn,.voirbtn{background:var(--accent-soft);
+  border:1px solid #bcd0ea;color:var(--navy);font-weight:600}
+table.tdb.statuts .plibtn:hover,.voirbtn:hover{background:#d4e3f8;border-color:#8fb2dd;
+  color:var(--navy)}
+table.tdb.statuts .plibtn.ouvert,.voirbtn.ouvert{background:var(--navy);border-color:var(--navy);
+  color:#fff}
+table.tdb.statuts .plibtn.ouvert:hover,.voirbtn.ouvert:hover{background:#1d3f72;color:#fff}
+.voirbtn{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;
+  border-radius:7px;padding:4px 10px;font-size:12px;font-family:inherit}
+.voirbtn .chev{transition:transform .15s}
+.voirbtn .chev.ouvert{transform:rotate(90deg)}
 table.tdb.statuts tr.adet > td{background:#fbfcfe}
 table.tdb.statuts tr.adet.cur > td{background:var(--accent-soft)}
 table.tdb.statuts tr.adet td.cdoss{padding-left:26px}
@@ -1281,6 +1295,26 @@ table.tdb .puce.resilie{background:#64748b}
 .pjacorps p{margin:0}
 .pjvidesel{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;
   color:var(--ink-3);font-size:13px;text-align:center}
+/* le repli quand le navigateur ne sait pas montrer un PDF dans la page */
+.pjhorscadre{display:flex;flex-direction:column;align-items:center;gap:10px;
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:28px 24px;text-align:center;max-width:380px}
+.pjhcico{font-size:34px;line-height:1}
+.pjhorscadre b{font-size:14px;word-break:break-word}
+.pjhorscadre p{margin:0;font-size:12.5px;line-height:1.5}
+
+/* le classeur : les rubriques d'un sujet, en surimpression */
+.classeur{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;
+  margin-top:4px}
+.rubbtn{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);
+  border-radius:var(--radius);padding:13px 14px;cursor:pointer;text-align:left;
+  font:inherit;color:var(--ink);box-shadow:var(--shadow)}
+.rubbtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.rubic{font-size:19px;line-height:1}
+.rublib{flex:1;font-size:13.5px;font-weight:600;color:var(--navy)}
+.rubn{background:var(--navy);color:#fff;border-radius:999px;font-size:11px;padding:1px 8px;
+  font-weight:700}
+.rubn.zero{background:var(--line-2);color:var(--ink-3);font-weight:500}
 
 /* le rappel discret des pièces qui attendent le réseau */
 .pjfile{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:110;
@@ -1352,7 +1386,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 octobre 2026, 9 h 45">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 octobre 2026, 13 h 07">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1547,7 +1581,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 octobre 2026, 9 h 45</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 octobre 2026, 13 h 07</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2833,9 +2867,9 @@ function heroDossier(){
   const net = prixNet();
   const actions = [
     `<button type="button" class="xbtn" data-dbien="1">${IC_LOUPE_BIEN}<span>Fiche détaillée du bien</span></button>`,
-    trombone(sujetBien(D), "Photos et diagnostics"),
-    trombone(sujetDossier(D), "Pièces de l'affaire"),
-    String(b.residence || "").trim() ? trombone(sujetImmeuble(b.residence), "Pièces de l'immeuble") : "",
+    trombone(sujetDossier(D), "Pièces"),
+    trombone(sujetBien(D), "Photos"),
+    String(b.residence || "").trim() ? trombone(sujetImmeuble(b.residence), "Documents immeubles") : "",
     String(b.residence || "").trim() ? boutonImmeuble(b.residence, "Dossiers de l'immeuble") : "",
     venteEnCours() ? `<button type="button" class="xbtn" data-annul="1">Annuler la vente</button>` : ""
   ].filter(Boolean).join("");
@@ -3455,7 +3489,7 @@ function boutonDetailBien(){
 function ouvrirDetail(){
   renderDetail();
   const z = $("#detailPj");
-  if(z) z.innerHTML = trombone(sujetBien(D), "Photos et diagnostics");
+  if(z) z.innerHTML = trombone(sujetBien(D), "Photos");
   $("#detailBox").hidden = false;
 }
 function fermerDetail(){ $("#detailBox").hidden = true; }
@@ -5785,7 +5819,8 @@ function panneauStatuts(cote){
         <td class="nb">${l.length}</td>
         <td>${eur0(c.fai)}</td><td class="${cp}">${eur0(c.ttc)}</td>
         <td class="cpart${cp}">${eur0(c.nego)}</td>
-        <td class="cact"><button class="xbtn plibtn" data-astat="${cote}:${s.cls}"
+        <td class="cact"><button class="xbtn plibtn${plie ? "" : " ouvert"}"
+          data-astat="${cote}:${s.cls}"
           aria-expanded="${plie ? "false" : "true"}"><span
           class="chev${plie ? "" : " ouvert"}">▸</span><span class="lib">${
           plie ? "Voir" : "Masquer"}</span></button></td></tr>` + detail(s, l);
@@ -5827,6 +5862,7 @@ function basculerStatut(ref){
   const btn = document.querySelector(`[data-astat="${cote}:${cls}"]`);
   if(btn){
     btn.setAttribute("aria-expanded", plie ? "false" : "true");
+    btn.classList.toggle("ouvert", !plie);   /* le fond se remplit : on voit d'où refermer */
     btn.querySelector(".chev").classList.toggle("ouvert", !plie);
     btn.querySelector(".lib").textContent = plie ? "Voir" : "Masquer";
   }
@@ -9233,10 +9269,18 @@ document.addEventListener("click", e=>{
       k === "d_resilie" || k === "t_detail" ||
       (k.startsWith("p_") && !/^p_[gd]_vieux$/.test(k) && k !== "p_vieux"));
     savePlis();
-    const corps = t.parentElement.querySelector(".plibody");
+    /* le corps est d'ordinaire voisin du titre ; quand la bascule est un
+       bouton logé dans un en-tête, il faut remonter d'un cran */
+    const corps = t.parentElement.querySelector(".plibody")
+      || (t.closest("section, .card, .listcard") || document)
+           .querySelector(":scope > .plibody");
     if(corps) corps.style.display = PLIS[k] ? "none" : "";
     const c = t.querySelector(".chev");
     if(c) c.classList.toggle("ouvert", !PLIS[k]);
+    const lib = t.querySelector(".lib");
+    if(lib) lib.textContent = PLIS[k] ? "Voir" : "Masquer";
+    t.classList.toggle("ouvert", !PLIS[k]);
+    if(t.hasAttribute("aria-expanded")) t.setAttribute("aria-expanded", PLIS[k] ? "false" : "true");
     if(!PLIS[k]){ autosize(); refreshAllVilles(); }
     return;
   }
@@ -9566,10 +9610,20 @@ document.addEventListener("click", e=>{
       }}]});
     return;
   }
+  const rb = e.target.closest("[data-pjrub]");
+  if(rb){
+    const [suj, rub] = rb.getAttribute("data-pjrub").split("|");
+    fermerPopup(); ouvrirPieces(suj, rub); return;
+  }
   const ad = e.target.closest("[data-pjadd]");
-  if(ad){ pjChoisir(false, ad.getAttribute("data-pjadd")); return; }
+  if(ad){
+    const [suj, rub] = ad.getAttribute("data-pjadd").split("|");
+    pjChoisir(false, suj, rub || ""); return;
+  }
   const rn = e.target.closest("[data-pjren]");
   if(rn){ renommerPiece(rn.getAttribute("data-pjren")); return; }
+  const og = e.target.closest("[data-pjonglet]");
+  if(og){ const p = PIECES[og.getAttribute("data-pjonglet")]; if(p) ouvrirLaPiece(p); return; }
   const tl = e.target.closest("[data-pjtel]");
   if(tl){ const p = PIECES[tl.getAttribute("data-pjtel")]; if(p) telechargerLaPiece(p); return; }
   const vo = e.target.closest("[data-pjvoir]");
@@ -11651,11 +11705,20 @@ const AIDE = [
   "honoraires. Aucune commission n'en découle, ni pour le négociateur ni pour l'agence."],
  ["Pièces jointes — photos, PDF",
   "Un <b>trombone</b> apparaît partout où un sujet est nommé, avec le nombre de pièces "+
-  "déjà rattachées. On en trouve quatre sur la page Général d'un dossier — le <b>bien</b> "+
-  "(ses photos, son DPE), l'<b>affaire</b> (mandat, offre, compromis), l'<b>immeuble</b> "+
-  "(règlement de copropriété, PV d'assemblée) — un sur chaque <b>personne</b> des pages "+
-  "Vendeurs et Acquéreurs, un sur chaque fiche du <b>Répertoire</b> et des carnets, et un "+
-  "au bas de la fiche détaillée du bien. "+
+  "déjà rattachées. Sur la page Général d'un dossier, trois se suivent après « Fiche "+
+  "détaillée du bien » : "+
+  "<b>Pièces</b> — tout ce qui relève de l'affaire, rangé en trois tiroirs : "+
+  "« Mandat & Admin », « Pièces techniques » (les diagnostics y ont leur place) et "+
+  "« Actes & Facturation » ; "+
+  "<b>Photos</b> — les seules photos du lot ; "+
+  "<b>Documents immeubles</b> — cinq tiroirs partagés par tous les lots : « RCP », "+
+  "« PV AG », « Diagnostics », « Divers » et « Photos ». "+
+  "Les deux boutons à tiroirs ouvrent d'abord un <b>classeur</b> par-dessus la fenêtre : "+
+  "on choisit le tiroir, puis on voit ce qu'il contient. Chaque tiroir devient un "+
+  "<b>dossier dans votre Drive</b>, sous le même nom. "+
+  "On trouve aussi un trombone sur chaque <b>personne</b> des pages Vendeurs et "+
+  "Acquéreurs, sur chaque fiche du <b>Répertoire</b> et des carnets, et au bas de la fiche "+
+  "détaillée du bien. "+
   "Une pièce rattachée à une personne la suit : elle réapparaît dans tous ses dossiers, et "+
   "elle y reste si vous <b>corrigez son nom</b> — chaque personne porte un identifiant qui "+
   "ne bouge plus une fois posé. Les fichiers déjà déposés gardent en revanche l'ancien nom "+
@@ -11670,13 +11733,20 @@ const AIDE = [
   "principale et les flèches en règlent l'ordre."],
  ["La page « Pièces jointes » d'un dossier",
   "Le sous-menu <b>Pièces jointes</b>, juste après <b>Imprimés</b>, rassemble tout ce que "+
-  "le dossier porte, <b>dans l'ordre du menu de gauche</b> : le bien d'abord, puis "+
-  "l'affaire, l'immeuble, les vendeurs, les acquéreurs, les notaires et la personne en "+
-  "charge, la banque, le diagnostiqueur. Chaque groupe garde son bouton <b>+ Ajouter</b>, "+
-  "même vide — c'est là qu'on dépose. "+
+  "le dossier porte, <b>dans l'ordre du menu de gauche</b> : les photos du bien d'abord, "+
+  "puis les trois tiroirs de l'affaire, les cinq de l'immeuble, les vendeurs, les "+
+  "acquéreurs, les notaires et la personne en charge, la banque, le diagnostiqueur. "+
+  "Chaque groupe garde son bouton <b>+ Ajouter</b>, même vide — c'est là qu'on dépose. "+
+  "La liste des <b>photos</b> se replie, par son bouton bleu <b>Voir / Masquer</b> : "+
+  "vingt vignettes en tête de page repousseraient tout le reste hors de l'écran. Elle est "+
+  "fermée à l'ouverture, comme tous les volets de l'application. "+
   "<b>Cliquez une ligne</b> : la pièce s'affiche dans le cadre de droite sans quitter la "+
   "page — une photo en grand, un PDF feuilletable. Le <b>crayon</b> renomme (le fichier du "+
-  "Drive suit), la <b>croix</b> retire. Le compteur du menu donne le total du dossier."],
+  "Drive suit), la <b>croix</b> retire. Le compteur du menu donne le total du dossier. "+
+  "<b>Sur tablette</b>, Chrome n'affiche pas les PDF dans la page — c'est une absence du "+
+  "navigateur, pas de l'application : un bouton <b>Ouvrir le document</b> le confie alors "+
+  "à un nouvel onglet, où le lecteur du système le prend en charge. Les photos, elles, "+
+  "s'affichent partout."],
  ["Où sont rangées les pièces jointes",
   "À trois endroits, et il vaut la peine de savoir lequel fait quoi. "+
   "L'<b>original</b> est un vrai fichier dans <b>votre Google Drive</b>, rangé par le "+
@@ -11938,6 +12008,7 @@ const PJ_TYPES   = ".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,image/*,application/p
 let PIECES = lirePieces();
 let PJ_ENVOI = false;                  // un seul envoi à la fois
 let PJ_SUJET = "";                     // le sujet dont la fenêtre est ouverte
+let PJ_RUB = "";                       // sa rubrique, pour les sujets qui en ont
 
 function lirePieces(){
   try{ return JSON.parse(localStorage.getItem(LS_PIECES) || "{}"); }
@@ -11964,6 +12035,21 @@ function sujetPersonne(p){
 }
 function sujetImmeuble(nom){ return "immeuble:" + String(nom || "").trim(); }
 
+/* ------------------------------------------------------- les rubriques
+   Deux sujets méritent d'être rangés à l'intérieur : l'affaire, dont les
+   pièces n'ont rien à voir entre elles — un mandat, un diagnostic et une
+   facture ne se cherchent pas au même moment —, et l'immeuble, dont les
+   documents de copropriété ont leur nomenclature propre. Partout ailleurs
+   une seule liste suffit : une personne n'a pas besoin de classeur.
+
+   La rubrique devient un niveau de dossier dans le Drive, de sorte que ce
+   rangement se retrouve tel quel pour qui ouvre son Drive. */
+const RUBRIQUES = {
+  dossier:  ["Mandat & Admin", "Pièces techniques", "Actes & Facturation"],
+  immeuble: ["RCP", "PV AG", "Diagnostics", "Divers", "Photos"]
+};
+function rubriquesDe(sujet){ return RUBRIQUES[sujetType(sujet)] || null; }
+
 function sujetType(s){ return String(s || "").split(":")[0]; }
 function sujetCle(s){  return String(s || "").slice(String(s || "").indexOf(":") + 1); }
 
@@ -11978,8 +12064,10 @@ function sujetTitre(s){
   if(t === "bien")    return ou || "Le bien";
   return "Dossier " + (((d || {}).mandat || {}).num || "sans numéro");
 }
-function sujetSousTitre(s){
+function sujetSousTitre(s, rub){
   const t = sujetType(s);
+  if(rub) return "Rubrique « " + rub + " ». Les fichiers sont rangés sous ce nom dans "
+    + "votre Drive.";
   if(t === "personne") return "Ces pièces suivent la personne : elles apparaissent dans "
     + "tous les dossiers où son nom figure.";
   if(t === "immeuble") return "Ces pièces sont partagées par tous les lots de l'immeuble.";
@@ -11989,30 +12077,33 @@ function sujetSousTitre(s){
 
 /* Le chemin dans le Drive. Volontairement lisible : des noms, pas des
    identifiants. Un dossier de vente rassemble ses pièces et ses photos. */
-function cheminSujet(s, photo){
+function cheminSujet(s, photo, rub){
   const t = sujetType(s), k = sujetCle(s);
-  if(t === "personne") return ["Personnes", nomDuPid(k) || "Sans nom"];
-  if(t === "immeuble") return ["Immeubles", k || "Sans nom"];
+  const sous = rub ? [rub] : [];
+  if(t === "personne") return ["Personnes", nomDuPid(k) || "Sans nom"].concat(sous);
+  if(t === "immeuble") return ["Immeubles", k || "Sans nom"].concat(sous);
   const d = allDossiers()[k] || (D.id === k ? D : null) || {};
   const b = d.bien || {}, num = (d.mandat || {}).num || "sans numéro";
   const ou = [b.adresse, b.ville].filter(Boolean).join(", ") || "bien non renseigné";
   const affaire = num + " — " + ou;
-  return photo ? [affaire, "photos"] : [affaire];
+  if(t === "bien") return photo ? [affaire, "photos"] : [affaire];
+  return [affaire].concat(sous);
 }
 
 /* ------------------------------------------------------------- la lecture */
-function piecesDe(sujet){
+function piecesDe(sujet, rub){
   return Object.keys(PIECES)
     .map(id=> PIECES[id])
-    .filter(p=> p && p.sujet === sujet && !p.supprime)
+    .filter(p=> p && p.sujet === sujet && !p.supprime
+             && (rub === undefined || rub === null || (p.rub || "") === rub))
     .sort((a,b)=>{
       if(!!a.photo !== !!b.photo) return a.photo ? -1 : 1;       // photos d'abord
       if(a.photo && b.photo) return (a.ordre || 0) - (b.ordre || 0);
       return String(a.date || "").localeCompare(String(b.date || ""));
     });
 }
-function comptePieces(sujet){ return piecesDe(sujet).length; }
-function photosDe(sujet){ return piecesDe(sujet).filter(p=> p.photo); }
+function comptePieces(sujet, rub){ return piecesDe(sujet, rub).length; }
+function photosDe(sujet, rub){ return piecesDe(sujet, rub).filter(p=> p.photo); }
 function photoPrincipale(idDossier){
   const ph = photosDe(sujetBien({id:idDossier}));
   return ph.filter(p=> p.principale)[0] || ph[0] || null;
@@ -12123,7 +12214,7 @@ function poids(o){
 function nomSansExt(n){ const i = String(n).lastIndexOf("."); return i > 0 ? n.slice(0, i) : n; }
 
 /* ------------------------------------------------------------- l'ajout */
-async function ajouterPiece(sujet, fichier){
+async function ajouterPiece(sujet, fichier, rub){
   const image = estImage(fichier.type, fichier.name);
   let blob = fichier, vignette = null, nom = fichier.name || "piece";
 
@@ -12140,8 +12231,9 @@ async function ajouterPiece(sujet, fichier){
   const p = {
     id, sujet, nom, type: blob.type || fichier.type || "application/octet-stream",
     taille: blob.size, date: new Date().toISOString(),
-    photo: !!image, ordre: image ? photosDe(sujet).length + 1 : 0,
-    principale: false, drive: "", driveVig: "", maj: Date.now()
+    photo: !!image, ordre: image ? photosDe(sujet, rub || "").length + 1 : 0,
+    principale: false, rub: rub || "",
+    drive: "", driveVig: "", maj: Date.now()
   };
   await pjPoser(id, blob);
   if(vignette) await pjPoser("v" + id, vignette);
@@ -12160,7 +12252,8 @@ async function envoyerPiece(p){
   if(!blob){ return false; }
   const env = async (b, photoDossier)=>{
     const d = await webAppel({action:"piece_envoi", nom: p.nom, type: p.type,
-      chemin: cheminSujet(p.sujet, p.photo && photoDossier), data: await blobEnB64(b)});
+      chemin: cheminSujet(p.sujet, p.photo && photoDossier, p.rub),
+      data: await blobEnB64(b)});
     return d && d.drive;
   };
   const drive = await env(blob, true);
@@ -12172,7 +12265,7 @@ async function envoyerPiece(p){
       try{
         const dv = await webAppel({action:"piece_envoi",
           nom: "vignette — " + p.nom, type: "image/jpeg",
-          chemin: cheminSujet(p.sujet, true).concat(["vignettes"]),
+          chemin: cheminSujet(p.sujet, true, p.rub).concat(["vignettes"]),
           data: await blobEnB64(v)});
         if(dv && dv.drive) p.driveVig = dv.drive;
       }catch(e){}                      /* une vignette manquante n'est pas grave */
@@ -12223,7 +12316,10 @@ async function ouvrirLaPiece(p){
     const blob = await blobDeLaPiece(p, false);
     if(!blob){ toast("Pièce introuvable — réseau ?"); return; }
     const u = URL.createObjectURL(blob);
-    window.open(u, "_blank");
+    /* sur ordinateur, le chemin d'origine ; sur mobile, un lien cliqué, que
+       le navigateur laisse passer là où il bloque une fenêtre ouverte en
+       script */
+    if(PDF_INTEGRE) window.open(u, "_blank"); else ouvrirDansOnglet(u, p.nom);
     setTimeout(()=> URL.revokeObjectURL(u), 60000);
   }catch(e){ toast("Lecture impossible : " + e.message); }
 }
@@ -12312,22 +12408,42 @@ function trombone(sujet, texte){
 }
 
 /* ------------------------------------------------------------- la fenêtre */
-function ouvrirPieces(sujet){
-  PJ_SUJET = sujet;
-  $("#pjTitre").textContent = sujetTitre(sujet);
-  $("#pjSous").textContent  = sujetSousTitre(sujet);
+/* Un sujet à rubriques n'ouvre pas sa liste : il ouvre d'abord son classeur,
+   en surimpression de la fenêtre active. On choisit le tiroir, puis on voit
+   ce qu'il contient — c'est le geste qu'on fait devant une armoire. */
+function ouvrirPieces(sujet, rub){
+  const rubs = rubriquesDe(sujet);
+  if(rubs && rub === undefined){ ouvrirClasseur(sujet, rubs); return; }
+  PJ_SUJET = sujet; PJ_RUB = rub || "";
+  $("#pjTitre").textContent = sujetTitre(sujet)
+    + (PJ_RUB ? "  ·  " + PJ_RUB : "");
+  $("#pjSous").textContent  = sujetSousTitre(sujet, PJ_RUB);
   $("#pjBox").hidden = false;
   rendrePieces();
 }
+function ouvrirClasseur(sujet, rubs){
+  const total = comptePieces(sujet);
+  popup({titre: sujetTitre(sujet), large:true,
+    corps:`<p class="muted" style="margin-top:0">${esc(sujetSousTitre(sujet))}
+        ${total ? " — " + total + " pièce" + (total > 1 ? "s" : "") + " en tout." : ""}</p>
+      <div class="classeur">${rubs.map(r=>{
+        const n = comptePieces(sujet, r);
+        return `<button type="button" class="rubbtn" data-pjrub="${esc(sujet)}|${esc(r)}">
+          <span class="rubic">🗂</span>
+          <span class="rublib">${esc(r)}</span>
+          <span class="rubn${n ? "" : " zero"}">${n || "vide"}</span></button>`;
+      }).join("")}</div>`,
+    boutons:[{lib:"Fermer"}]});
+}
 function fermerPieces(){
-  PJ_SUJET = "";
+  PJ_SUJET = ""; PJ_RUB = "";
   $("#pjBox").hidden = true;
   renderAll();                         /* les compteurs des trombones suivent */
 }
 
 function rendrePieces(){
   const z = $("#pjCorps"); if(!z || !PJ_SUJET) return;
-  const liste = piecesDe(PJ_SUJET);
+  const liste = piecesDe(PJ_SUJET, PJ_RUB);
   const photos = liste.filter(p=> p.photo), autres = liste.filter(p=> !p.photo);
 
   const carte = p=>{
@@ -12375,8 +12491,8 @@ function rendrePieces(){
       Les photos sont réduites à ${PHOTO_PX} px à l'arrivée ; les PDF sont conservés tels
       quels, jusqu'à ${poids(PJ_MAX)}.</p>` : ""}`;
 
-  $("#pjAjout").onclick = ()=> pjChoisir(false, PJ_SUJET);
-  $("#pjPhoto").onclick = ()=> pjChoisir(true, PJ_SUJET);
+  $("#pjAjout").onclick = ()=> pjChoisir(false, PJ_SUJET, PJ_RUB);
+  $("#pjPhoto").onclick = ()=> pjChoisir(true, PJ_SUJET, PJ_RUB);
   majPjInfo();
   photos.forEach(p=> peindreVignette(p));
 }
@@ -12402,8 +12518,9 @@ async function peindreVignette(p){
   }catch(e){ z.classList.add("vide"); }
 }
 
-function pjChoisir(camera, sujet){
+function pjChoisir(camera, sujet, rub){
   const cible = sujet || PJ_SUJET;
+  const rubr = rub === undefined ? PJ_RUB : rub;
   if(!cible) return;
   const i = document.createElement("input");
   i.type = "file"; i.multiple = true; i.accept = camera ? "image/*" : PJ_TYPES;
@@ -12412,7 +12529,7 @@ function pjChoisir(camera, sujet){
     const fs = Array.from(i.files || []);
     if(!fs.length) return;
     toast(fs.length > 1 ? "Préparation de " + fs.length + " pièces…" : "Préparation…");
-    for(const f of fs){ await ajouterPiece(cible, f); }
+    for(const f of fs){ await ajouterPiece(cible, f, rubr); }
     rafraichirPieces();
   };
   i.click();
@@ -12421,7 +12538,7 @@ function pjChoisir(camera, sujet){
 /* --------------------------------------------------------- l'ordre des photos */
 function deplacerPhoto(id, pas){
   const p = PIECES[id]; if(!p) return;
-  const ph = photosDe(p.sujet);
+  const ph = photosDe(p.sujet, p.rub || "");
   const i = ph.findIndex(x=> x.id === id);
   const j = i + pas;
   if(i < 0 || j < 0 || j >= ph.length) return;
@@ -12433,7 +12550,7 @@ function deplacerPhoto(id, pas){
 }
 function photoPrincipaleChoisie(id){
   const p = PIECES[id]; if(!p) return;
-  photosDe(p.sujet).forEach(x=>{
+  photosDe(p.sujet, p.rub || "").forEach(x=>{
     const avant = !!x.principale;
     x.principale = (x.id === id) ? !avant : false;
     if(avant !== !!x.principale) x.maj = Date.now();
@@ -12500,13 +12617,17 @@ let PJ_VU = "";                               /* la pièce affichée à droite *
    reste affiché : c'est là qu'on en dépose une. */
 function groupesPieces(){
   const b = D.bien || {}, g = [];
-  const ajoute = (sujet, titre, note)=>{
-    if(sujet && sujetCle(sujet)) g.push({sujet, titre, note});
+  const ajoute = (sujet, titre, note, rub, pliable)=>{
+    if(sujet && sujetCle(sujet))
+      g.push({sujet, titre, note, rub: rub || "", pliable: !!pliable});
   };
-  ajoute(sujetBien(D), "Le bien", "photos, diagnostics, plans");
-  ajoute(sujetDossier(D), "L'affaire", "mandat, offre, compromis");
+  ajoute(sujetBien(D), "Photos du bien", "réduites à 2000 px, pour l'écran", "", true);
+  RUBRIQUES.dossier.forEach(r=>
+    ajoute(sujetDossier(D), r, "pièces de l'affaire", r));
   if(String(b.residence || "").trim())
-    ajoute(sujetImmeuble(b.residence), b.residence, "partagé par tous les lots");
+    RUBRIQUES.immeuble.forEach(r=>
+      ajoute(sujetImmeuble(b.residence), b.residence + " · " + r,
+             "partagé par tous les lots", r));
 
   (D.vendeurs || []).forEach(p=>{
     if(nomPersonne(p)) ajoute(sujetPersonne(p), nomPersonne(p), "vendeur");
@@ -12534,7 +12655,7 @@ function renderPagePieces(){
   const z = $("#pjPageListe");
   if(!z) return;
   const groupes = groupesPieces();
-  const total = groupes.reduce((s, x)=> s + comptePieces(x.sujet), 0);
+  const total = groupes.reduce((s, x)=> s + comptePieces(x.sujet, x.rub), 0);
   const cnt = $("#cntPJ");
   if(cnt) cnt.textContent = total ? "(" + total + ")" : "";
 
@@ -12550,18 +12671,32 @@ function renderPagePieces(){
     </div>
     ${!WEB ? `<div class="alerte">Aucune base en ligne n'est connectée : les pièces
       restent dans cet appareil et ne seront pas visibles ailleurs.</div>` : ""}
-    ${groupes.map(g=>{
-      const liste = piecesDe(g.sujet);
+    ${groupes.map((g, i)=>{
+      const liste = piecesDe(g.sujet, g.rub);
+      /* Les photos se replient : vingt vignettes en tête de page repoussent
+         tout le reste hors de l'écran. Fermées à l'ouverture, comme partout. */
+      const cle = "pj_" + i + "_" + g.sujet + "|" + g.rub;
+      const plie = g.pliable ? estPlie(cle, true) : false;
+      const bascule = g.pliable
+        ? `<button type="button" class="voirbtn${plie ? "" : " ouvert"}"
+             data-pli="${esc(cle)}" aria-expanded="${plie ? "false" : "true"}"><span
+             class="chev${plie ? "" : " ouvert"}">▸</span><span class="lib">${
+             plie ? "Voir" : "Masquer"}</span></button>`
+        : "";
       return `<section class="pjgroupe">
         <header>
           <h3>${esc(g.titre)}</h3>
           <em>${esc(g.note)}</em>
           ${liste.length ? `<span class="cnt">${liste.length}</span>` : ""}
           <span class="grow"></span>
-          <button type="button" class="tbtn light" data-pjadd="${esc(g.sujet)}">+ Ajouter</button>
+          ${bascule}
+          <button type="button" class="tbtn light" data-pjadd="${esc(g.sujet)}|${esc(g.rub)}"
+            >+ Ajouter</button>
         </header>
-        ${liste.length ? `<div class="pjrows">${liste.map(p=> ligneePiece(p)).join("")}</div>`
-          : `<p class="muted vide">Aucune pièce.</p>`}
+        <div class="plibody"${plie ? ' style="display:none"' : ""}>
+          ${liste.length ? `<div class="pjrows">${liste.map(p=> ligneePiece(p)).join("")}</div>`
+            : `<p class="muted vide">Aucune pièce.</p>`}
+        </div>
       </section>`;
     }).join("")}`;
   majPjPageInfo();
@@ -12589,7 +12724,31 @@ function majPjPageInfo(){
 
 /* --------------------------------------------------------- l'aperçu
    Une image s'affiche, un PDF se lit dans le cadre du navigateur. Le reste
-   se télécharge — autant le dire plutôt que d'afficher un cadre vide. */
+   se télécharge — autant le dire plutôt que d'afficher un cadre vide.
+
+   SAUF SUR MOBILE. Android n'embarque aucun lecteur de PDF dans Chrome :
+   un <iframe> pointant sur un PDF n'y affiche rien du tout, et ce n'est pas
+   une erreur de l'application mais une absence dans le navigateur. On le
+   détecte proprement — `navigator.pdfViewerEnabled`, que la norme prévoit
+   exactement pour cela — et on offre alors d'ouvrir la pièce dans un
+   nouvel onglet, que le système confie à son propre lecteur. Les images,
+   elles, s'affichent partout : rien ne change pour elles.
+
+   Sur un ordinateur, le chemin reste celui d'avant, au caractère près. */
+const PDF_INTEGRE = (typeof navigator.pdfViewerEnabled === "boolean")
+  ? navigator.pdfViewerEnabled
+  : !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+
+/* Un lien que l'on clique passe là où window.open est bloqué sur mobile. */
+function ouvrirDansOnglet(url, nom){
+  const a = document.createElement("a");
+  a.href = url; a.target = "_blank"; a.rel = "noopener";
+  if(nom) a.setAttribute("data-nom", nom);
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=> a.remove(), 0);
+}
+
 let PJ_URL = "";
 async function rendreApercu(){
   const z = $("#pjApercu"); if(!z) return;
@@ -12617,9 +12776,18 @@ async function rendreApercu(){
     return;
   }
   PJ_URL = URL.createObjectURL(blob);
+  const estPdf = /pdf/i.test(p.type || "") || /\.pdf$/i.test(p.nom);
   if(/^image\//.test(p.type || "")) corps.innerHTML = `<img src="${PJ_URL}" alt="">`;
-  else if(/pdf/i.test(p.type || "") || /\.pdf$/i.test(p.nom))
+  else if(estPdf && PDF_INTEGRE)
     corps.innerHTML = `<iframe src="${PJ_URL}" title="${esc(p.nom)}"></iframe>`;
+  else if(estPdf)
+    corps.innerHTML = `<div class="pjhorscadre">
+      <span class="pjhcico">📄</span>
+      <b>${esc(p.nom)}</b>
+      <p class="muted">Ce navigateur n'affiche pas les PDF dans la page. Le document
+        s'ouvre dans un onglet, où votre lecteur habituel le prend en charge.</p>
+      <button type="button" class="addbtn" data-pjonglet="${esc(p.id)}">Ouvrir le
+        document</button></div>`;
   else corps.innerHTML = `<p class="muted">Ce type de fichier ne s'affiche pas ici.
     Utilisez « Télécharger ».</p>`;
 }
