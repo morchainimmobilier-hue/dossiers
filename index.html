@@ -547,8 +547,13 @@ td.hvar{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600;
 td.hvar small{font-weight:400}
 td.hvar.baisse{color:#b91c1c}
 td.hvar.hausse{color:#15803d}
-.popbox{max-width:520px}
-.popbox.large{max-width:680px}
+.popbox{max-width:520px;max-height:92vh;display:flex;flex-direction:column}
+.popbox.large{max-width:900px;width:min(900px,94vw)}
+/* Une planche de vignettes dépasse vite la hauteur de l'écran : le corps
+   défile, le titre et les boutons restent en place. Sans cela, on ne voyait
+   ni les dernières photos ni le bouton « Suivant ». */
+.popbox > .modalbody{overflow:auto;min-height:0;flex:1 1 auto}
+.popbox > h3,.popbox > .modalfoot{flex:0 0 auto}
 /* le bandeau du titre est foncé : l'alerte se signale en rouge clair */
 .popbox h3.poperr{color:#fecaca}
 .popbox h3.poperr::before{content:"⚠ ";}
@@ -1332,12 +1337,37 @@ table.tdb .puce.resilie{background:#64748b}
   margin-top:12px}
 .pubavance[hidden]{display:none}
 .pubavance > div{height:100%;width:0;background:var(--accent);transition:width .2s}
+/* le choix de la durée, en segments */
+.pubseg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;
+  background:#fff}
+.segbtn{border:0;border-right:1px solid var(--line);background:#fff;color:var(--ink-2);
+  font:inherit;font-size:13px;padding:9px 20px;cursor:pointer}
+.segbtn:last-child{border-right:0}
+.segbtn:hover{background:var(--accent-soft);color:var(--navy)}
+.segbtn.on{background:var(--navy);color:#fff;font-weight:600}
+
+/* le mur d'essais : huit canevas qui tournent en même temps */
+.pubmur{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+  margin-top:14px}
+@media (max-width:760px){ .pubmur{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.pubmur[hidden]{display:none}
+.murcase{margin:0;border:2px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  background:#0f1a2b;cursor:pointer}
+.murcase:hover{border-color:var(--accent)}
+.murcase.on{border-color:var(--navy);box-shadow:0 0 0 3px var(--accent-soft)}
+.murcase canvas{display:block;width:100%;height:auto}
+.murcase figcaption{display:flex;align-items:baseline;gap:6px;padding:6px 8px;
+  background:#fff;font-size:11.5px;font-weight:600;color:var(--navy)}
+.murcase figcaption em{font-style:normal;font-weight:400;color:var(--ink-3)}
+.murcase.on figcaption{background:var(--navy);color:#fff}
+.murcase.on figcaption em{color:#c9dcf5}
+
 .pubclip{margin-top:14px}
 .pubclip video{width:100%;max-width:360px;border-radius:var(--radius);background:#000;
   display:block;box-shadow:var(--shadow-2)}
 
 .pubgrille,.pubordre{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-  gap:11px;margin-top:4px}
+  gap:11px;margin-top:4px;grid-column:1/-1}
 .pubvig{margin:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
   background:#fff;cursor:pointer;position:relative}
 .pubvig .pjimg{height:112px}
@@ -1462,7 +1492,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 octobre 2026, 14 h 55">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 octobre 2026, 15 h 43">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1661,7 +1691,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 octobre 2026, 14 h 55</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 octobre 2026, 15 h 43</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -9833,9 +9863,22 @@ document.addEventListener("click", e=>{
     PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
     renderPublications(); return;
   }
-  const pg = e.target.closest("[data-pubgab]");
-  if(pg){ PUB_GABARIT = pg.getAttribute("data-pubgab"); oublierClip();
-          renderPublications(); return; }
+  const pdu = e.target.closest("[data-pubduree]");
+  if(pdu){
+    PUB_DUREE = +pdu.getAttribute("data-pubduree");
+    arreterMur(); PUB_MUR = null; oublierClip(); renderPublications(); return;
+  }
+  const pm = e.target.closest("[data-pubmodele]");
+  if(pm){
+    const [gab, tr] = pm.getAttribute("data-pubmodele").split("|");
+    PUB_GABARIT = gab; PUB_TRANSITION = tr;
+    $$("#pubMurZone .murcase").forEach(z=>
+      z.classList.toggle("on", z.getAttribute("data-pubmodele") === gab + "|" + tr));
+    const r = $("#pubRetenu");
+    if(r) r.innerHTML = "<b>" + esc(libGabarit(gab)) + " · " + esc(libTransition(tr)) + "</b>";
+    oublierClip();
+    return;
+  }
   const pk = e.target.closest("[data-pubpick]");
   if(pk){
     const id = pk.getAttribute("data-pubpick");
@@ -11354,6 +11397,7 @@ function migrate(d){
   out.publications = (Array.isArray(d.publications) ? d.publications : [])
     .filter(Boolean).map(x=> Object.assign({
       id:"", date:"", style:"pro", graine:1, gabarit:"vitrine",
+      transition:"fondu", duree:30, appel:null,
       texte:"", photos:[], puces:[], legendes:{}, clip:""}, x));
   out.annulations = (Array.isArray(d.annulations) ? d.annulations : [])
     .filter(Boolean).map(x=> Object.assign({
@@ -12071,19 +12115,37 @@ const AIDE = [
   "la légende. "+
   "<b>Récit</b> : la photo prend tout le cadre, un carton d'ouverture annonce le bien, "+
   "puis chaque vue porte sa <b>légende</b> dans une pastille blanche. Cela raconte au "+
-  "lieu d'énumérer ; il faut en revanche écrire les légendes, que l'application propose "+
-  "d'après le nom des photos et que vous corrigez à la dernière étape du choix. "+
+  "lieu d'énumérer. Les légendes ne reprennent plus le nom du fichier — « IMG_4312 » ne "+
+  "dit rien à personne : elles sont <b>puisées dans la fiche détaillée</b>, pièce par "+
+  "pièce avec leur surface, puis les annexes, l'exposition, l'état, le chauffage. Quand "+
+  "le nom d'une photo désigne une pièce du dossier (« Séjour.jpg »), elle reçoit la "+
+  "phrase qui lui correspond ; sinon les phrases sont distribuées dans l'ordre. Tout "+
+  "reste corrigeable à la dernière étape du choix, et la main l'emporte toujours. "+
   "Les deux finissent sur la même <b>carte de contact</b> : logo, portrait, nom, qualité, "+
-  "téléphone, adresse et site. Le portrait et le site se règlent dans Listes → Agence, la "+
-  "qualité sur votre fiche du carnet Négociateurs. Les valeurs du DPE en kWh et en kg de "+
-  "CO₂ se saisissent sur la ligne DPE des Diagnostics. "+
+  "un <b>message d'appel</b> (« Envie de la visiter ? Appelez-moi. », modifiable dans la "+
+  "page), téléphone, adresse et site. Le portrait et le site se règlent dans Listes → "+
+  "Agence, la qualité sur votre fiche du carnet Négociateurs. Les valeurs du DPE en kWh "+
+  "et en kg de CO₂ se saisissent sur la ligne DPE des Diagnostics. "+
   "Les six arguments de la Vitrine sont proposés d'après le dossier et se corrigent dans "+
   "la page, un par ligne. "+
   "Format <b>1080 × 1350</b>, celui qui occupe le plus de place dans un fil. Le "+
   "prix est sur la fiche de la Vitrine mais jamais en travers des photos. "+
   "« <b>Choisir les photos</b> » ouvre un assistant en trois temps : les photos du bien, "+
   "puis celles de l'immeuble (rubrique Photos de sa fiche), puis l'ordre — que l'on règle "+
-  "en <b>glissant les vignettes</b>. Dix photos au maximum : au-delà, personne ne regarde. "+
+  "en <b>glissant les vignettes</b>. Quatorze photos au maximum : au-delà, personne ne "+
+  "regarde. "+
+  "<b>La durée se choisit</b> : 20, 30, 40 ou 50 secondes, et le clip tombe juste. Le "+
+  "temps se partage entre les photos retenues, entre 1,6 s et 5 s chacune ; s'il y a trop "+
+  "de photos pour la durée demandée, l'application le dit et <b>écarte les dernières</b> "+
+  "plutôt que de les faire défiler trop vite ; s'il y en a peu, c'est la carte de contact "+
+  "qui tient le reste du temps. "+
+  "<b>Quatre transitions</b> : Fondu, Glissé, Zoom et Volet. "+
+  "<b>Les huit essais.</b> Plutôt que de tourner huit fichiers pour les comparer, "+
+  "l'application fait tourner les <b>huit modèles côte à côte dans la page</b> — deux "+
+  "gabarits par quatre transitions — sur de petits canevas, sans rien enregistrer : "+
+  "c'est instantané. On valide d'abord le texte, les photos, la durée et le message "+
+  "d'appel, on regarde les huit, on clique celui qui plaît ; <b>lui seul</b> est ensuite "+
+  "tourné en pleine qualité. "+
   "Le clip est enregistré par le navigateur lui-même, en <b>MP4</b> si celui-ci sait le "+
   "faire — Chrome à jour sur ordinateur, oui —, en WebM sinon. Facebook accepte les deux, "+
   "Instagram seulement le MP4 ; le cas échéant l'application vous le dit. "+
@@ -12862,16 +12924,25 @@ function majPjInfo(){
 
 /* La vignette est peinte après coup : elle peut venir du Drive, et une
    galerie ne doit pas attendre d'être complète pour s'afficher. */
+/* Une même photo peut avoir plusieurs vignettes à l'écran — la galerie
+   derrière, la planche de choix devant. On les peint TOUTES : ne traiter que
+   la première laissait la planche vide, ce qui donnait l'impression que les
+   photos manquaient. L'adresse de l'image est gardée le temps de la séance,
+   de sorte qu'un second affichage ne relise pas le fichier. */
+const VIGN_URL = {};
 async function peindreVignette(p){
-  const z = document.querySelector(`[data-pjvig="${p.id}"]`);
-  if(!z || z.dataset.peint) return;
-  z.dataset.peint = "1";
+  const cibles = Array.from(document.querySelectorAll(`[data-pjvig="${p.id}"]`))
+    .filter(z=> !z.dataset.peint);
+  if(!cibles.length) return;
+  cibles.forEach(z=> z.dataset.peint = "1");
+  const poser = u=> cibles.forEach(z=> z.style.backgroundImage = `url("${u}")`);
+  if(VIGN_URL[p.id]) return poser(VIGN_URL[p.id]);
   try{
     const b = (await blobDeLaPiece(p, true)) || (await blobDeLaPiece(p, false));
-    if(!b) { z.classList.add("vide"); return; }
-    const u = URL.createObjectURL(b);
-    z.style.backgroundImage = `url("${u}")`;
-  }catch(e){ z.classList.add("vide"); }
+    if(!b){ cibles.forEach(z=> z.classList.add("vide")); return; }
+    VIGN_URL[p.id] = URL.createObjectURL(b);
+    poser(VIGN_URL[p.id]);
+  }catch(e){ cibles.forEach(z=> z.classList.add("vide")); }
 }
 
 function pjChoisir(camera, sujet, rub){
@@ -13683,57 +13754,6 @@ function activerTriGlisse(conteneur, selecteur, fini){
   });
 }
 
-/* ======================================================= LE CLIP ANIMÉ ===
-   Un diaporama filmé par le navigateur lui-même : on dessine les photos sur
-   un canevas avec un lent mouvement d'approche et des fondus, et on enregistre
-   ce canevas. Aucune bibliothèque, aucun serveur — un encodeur vidéo pèserait
-   vingt méga-octets, et l'application doit tenir dans un fichier.
-
-   Le format de sortie dépend de ce que le navigateur sait encoder : on demande
-   du MP4 d'abord, universellement accepté par Facebook et Instagram, et l'on
-   retombe sur le WebM si l'appareil ne le propose pas. Le cas est signalé à
-   l'écran plutôt que découvert au moment de publier. */
-const CLIP_L = 1080, CLIP_H = 1350;        // 4:5, le format du fil
-const CLIP_SEC = 2.6;                      // par photo, fondu compris
-const CLIP_FONDU = 0.6;
-const CLIP_MAX = 10;                       // au-delà, personne ne regarde
-
-function clipFormats(){
-  const essais = [
-    ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "mp4"],
-    ["video/mp4;codecs=avc1", "mp4"],
-    ["video/mp4", "mp4"],
-    ["video/webm;codecs=vp9", "webm"],
-    ["video/webm;codecs=vp8", "webm"],
-    ["video/webm", "webm"]
-  ];
-  for(const [mime, ext] of essais){
-    try{ if(window.MediaRecorder && MediaRecorder.isTypeSupported(mime))
-      return {mime, ext}; }catch(e){}
-  }
-  return null;
-}
-function clipPossible(){
-  return !!(window.MediaRecorder && clipFormats()
-    && typeof HTMLCanvasElement.prototype.captureStream === "function");
-}
-
-/* On charge les images une fois pour toutes : décoder pendant le tournage
-   ferait sauter des trames. */
-async function imagesDesPieces(ids){
-  const out = [];
-  for(const id of ids){
-    const p = PIECES[id];
-    if(!p) continue;
-    try{
-      const blob = await blobDeLaPiece(p, false);
-      if(!blob) continue;
-      out.push(await createImageBitmap(blob, {imageOrientation:"from-image"}));
-    }catch(e){}
-  }
-  return out;
-}
-
 /* ===================================================== LES DEUX GABARITS ==
    Deux façons de montrer un bien, parce qu'une seule lasse vite un fil :
 
@@ -13753,11 +13773,6 @@ async function imagesDesPieces(ids){
    sont celles du système : embarquer une fonte ajouterait deux cents
    kilo-octets au fichier pour un gain que personne ne verra sur un
    téléphone. */
-
-const GABARITS_CLIP = [
-  {cle:"vitrine", lib:"Vitrine", note:"photo en haut, fiche en bas — tout est dit"},
-  {cle:"recit",   lib:"Récit",   note:"plein cadre, légendes animées — on raconte"}
-];
 
 const CL = {
   creme:"#f8f2eb", bordeaux:"#580d22", encre:"#210f34", prune:"#3b1a3a",
@@ -13861,10 +13876,20 @@ function dessinerCarteFin(g, ctx, u){
     g.fillStyle = CL.bordeaux; g.font = "italic " + fnt(38, 400);
     g.fillText(ctx.qualite, CLIP_L / 2, y); y += 70;
   }
-  g.globalAlpha = douceur((u - .38) / .3);
+  g.globalAlpha = douceur((u - .34) / .3);
+  /* l'appel à l'action : sans lui, la carte dit qui l'on est mais pas ce
+     qu'on attend du lecteur */
+  if(ctx.appel){
+    g.fillStyle = CL.prune; g.font = fnt(36, 600);
+    couper(g, ctx.appel, CLIP_L - 180).slice(0, 2).forEach(l=>{
+      g.fillText(l, CLIP_L / 2, y); y += 46;
+    });
+    y += 16;
+  }
+  g.globalAlpha = douceur((u - .42) / .3);
   if(ctx.tel){
-    g.fillStyle = CL.encre; g.font = fnt(54, 700);
-    g.fillText(ctx.tel, CLIP_L / 2, y); y += 56;
+    g.fillStyle = CL.bordeaux; g.font = fnt(58, 700);
+    g.fillText(ctx.tel, CLIP_L / 2, y); y += 58;
   }
   g.fillStyle = CL.gris; g.font = fnt(32, 400);
   [ctx.email, ctx.adresse, ctx.site].filter(Boolean).forEach(l=>{
@@ -13884,8 +13909,7 @@ const VIT_PHOTO = 810;                   /* la photo occupe les trois cinquième
 function dessinerPanneauVitrine(g, ctx){
   /* Le panneau dispose de 540 pixels et pas un de plus : chaque ligne a sa
      place réservée, sinon les mentions légales passent sous l'adresse du
-     site et l'affiche devient illisible. Les tailles sont choisies pour que
-     tout tienne même avec six arguments et trois lignes de mentions. */
+     site et l'affiche devient illisible. */
   g.fillStyle = CL.creme; g.fillRect(0, VIT_PHOTO, CLIP_L, CLIP_H - VIT_PHOTO);
   g.fillStyle = CL.bordeaux; g.fillRect(0, VIT_PHOTO - 7, CLIP_L, 7);
   const M = 58, larg = CLIP_L - 2 * M;
@@ -13902,7 +13926,6 @@ function dessinerPanneauVitrine(g, ctx){
   }
   g.fillStyle = CL.bordeaux; g.fillRect(M, VIT_PHOTO + 148, larg, 3);
 
-  /* deux colonnes, trois lignes, et le texte rogné plutôt que débordant */
   const col = larg / 2, y0 = VIT_PHOTO + 190;
   g.font = fnt(30, 400);
   (ctx.puces || []).slice(0, 6).forEach((p, i)=>{
@@ -13912,12 +13935,12 @@ function dessinerPanneauVitrine(g, ctx){
     g.fillStyle = CL.encre;
     let s = String(p);
     while(g.measureText(s).width > col - 44 && s.length > 4) s = s.slice(0, -2);
-    if(s !== String(p)) s = s.replace(/[\s,;]+$/, "") + "…";
+    if(s !== String(p)) s = s.replace(/[\s,;]+$/, "") + "\u2026";
     g.fillText(s, cx + 21, cy);
   });
 
-  /* la ligne technique : on mesure d'abord le téléphone, à droite, et on
-     n'écrit à gauche que ce qui tient avant lui */
+  /* on mesure d'abord le téléphone, calé à droite, et l'on n'écrit à gauche
+     que ce qui tient avant lui */
   const yt = VIT_PHOTO + 338;
   g.fillStyle = "#ded5cb"; g.fillRect(M, yt - 30, larg, 2);
   let limite = CLIP_L - M;
@@ -13928,7 +13951,7 @@ function dessinerPanneauVitrine(g, ctx){
     g.fillText(ctx.tel, CLIP_L - M, yt); g.textAlign = "left";
   }
   g.fillStyle = CL.gris; g.font = fnt(25, 400);
-  g.fillText("Réf. " + (ctx.ref || "—"), M, yt);
+  g.fillText("R\u00e9f. " + (ctx.ref || "\u2014"), M, yt);
   let x = M + 168;
   const etiquette = (lab, lettre, bg, fg, val)=>{
     if(!lettre) return;
@@ -13950,11 +13973,9 @@ function dessinerPanneauVitrine(g, ctx){
   etiquette("DPE", ctx.dpeL, ctx.dpeBg, ctx.dpeFg, ctx.dpeVal);
   etiquette("GES", ctx.gesL, ctx.gesBg, ctx.gesFg, ctx.gesVal);
 
-  /* Les mentions sont obligatoires : on ne les rogne pas, on les replie. Le
-     texte est coupé aux mots sur la largeur utile, quatre lignes au plus —
-     c'est ce que la place laissée au-dessus de l'adresse permet. */
+  /* Les mentions sont obligatoires : on ne les rogne pas, on les replie. */
   g.fillStyle = CL.gris; g.font = fnt(20, 400); g.textAlign = "center";
-  const lignesL = couper(g, (ctx.legales || []).join("  ·  "), larg).slice(0, 4);
+  const lignesL = couper(g, (ctx.legales || []).join("  \u00b7  "), larg).slice(0, 4);
   let ym = VIT_PHOTO + 386;
   lignesL.forEach(l=>{ g.fillText(l, CLIP_L / 2, ym); ym += 27; });
   if(ctx.site){
@@ -14024,6 +14045,276 @@ function pastilleRecit(g, texte, u){
   g.restore();
 }
 
+/* ===================================================== LE MOTEUR DE CLIP ==
+   Un seul code de dessin, trois usages
+   ---------------------------------------------------------------------------
+   Enregistrer une vidéo coûte son temps réel : huit essais de trente secondes
+   feraient quatre minutes d'attente avant le premier regard. On sépare donc
+   le DESSIN de l'ENREGISTREMENT.
+
+     · `peindreTrame(g, plan, t)` peint l'image d'un instant, à l'échelle
+       qu'on veut : le canevas s'adapte, les coordonnées restent celles d'un
+       1080 × 1350 ;
+     · le MUR D'ESSAIS fait tourner huit petits canevas en même temps, sans
+       rien enregistrer — c'est gratuit, immédiat, et cela montre exactement
+       ce que donnera le clip ;
+     · `fabriquerClip` n'enregistre que le modèle retenu, en pleine qualité.
+
+   La durée est choisie, pas subie : on répartit le temps disponible entre les
+   photos, et si elles sont trop nombreuses pour tenir, on le dit. */
+
+const GABARITS_CLIP = [
+  {cle:"vitrine", lib:"Vitrine", note:"photo en haut, fiche en bas — tout est dit"},
+  {cle:"recit",   lib:"Récit",   note:"plein cadre, légendes animées — on raconte"}
+];
+const TRANSITIONS = [
+  {cle:"fondu",  lib:"Fondu",  note:"la photo suivante apparaît en transparence"},
+  {cle:"glisse", lib:"Glissé", note:"elle entre par la droite"},
+  {cle:"zoom",   lib:"Zoom",   note:"elle avance vers vous"},
+  {cle:"volet",  lib:"Volet",  note:"elle se découvre de gauche à droite"}
+];
+const DUREES_CLIP = [20, 30, 40, 50];
+const CLIP_L = 1080, CLIP_H = 1350;
+const CLIP_MAX = 14;
+const PHOTO_MIN = 1.6, PHOTO_MAX = 5;
+
+function clipFormats(){
+  const essais = [
+    ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "mp4"],
+    ["video/mp4;codecs=avc1", "mp4"],
+    ["video/mp4", "mp4"],
+    ["video/webm;codecs=vp9", "webm"],
+    ["video/webm;codecs=vp8", "webm"],
+    ["video/webm", "webm"]
+  ];
+  for(const [mime, ext] of essais){
+    try{ if(window.MediaRecorder && MediaRecorder.isTypeSupported(mime))
+      return {mime, ext}; }catch(e){}
+  }
+  return null;
+}
+function clipPossible(){
+  return !!(window.MediaRecorder && clipFormats()
+    && typeof HTMLCanvasElement.prototype.captureStream === "function");
+}
+async function imagesDesPieces(ids){
+  const out = [];
+  for(const id of ids){
+    const p = PIECES[id];
+    if(!p) continue;
+    try{
+      const blob = await blobDeLaPiece(p, false);
+      if(!blob) continue;
+      out.push(await createImageBitmap(blob, {imageOrientation:"from-image"}));
+    }catch(e){}
+  }
+  return out;
+}
+
+/* ----------------------------------------------------------- la minute
+   Le temps fixe — carton d'ouverture et carte de contact — est retiré du
+   total, le reste se partage entre les photos. Trop de photos pour la durée
+   choisie : on en garde ce qui tient et on le signale. Trop peu : la carte
+   de contact reste affichée un peu plus longtemps, ce qui ne gêne personne. */
+function minutageClip(gabarit, nPhotos, duree){
+  const recit = gabarit === "recit";
+  const tOuv = recit ? 3.2 : 0;
+  let tFin = recit ? 4.2 : 3.4;
+  const dispo = Math.max(2, duree - tOuv - tFin);
+  let n = Math.max(1, nPhotos);
+  let tPhoto = dispo / n;
+  let retirees = 0;
+  if(tPhoto < PHOTO_MIN){
+    n = Math.max(1, Math.floor(dispo / PHOTO_MIN));
+    retirees = nPhotos - n;
+    tPhoto = dispo / n;
+  } else if(tPhoto > PHOTO_MAX){
+    tPhoto = PHOTO_MAX;
+    tFin = duree - tOuv - n * tPhoto;      /* la carte tient le reste */
+  }
+  return {tOuv, tPhoto, tFin, n, retirees,
+          fondu: Math.min(0.75, tPhoto * 0.3)};
+}
+
+async function construirePlan(o){
+  const gabarit = o.gabarit || "vitrine";
+  const ids = (o.ids || []).slice(0, CLIP_MAX);
+  const ctx = o.ctx || contexteClip();
+  if(!ctx.puces) ctx.puces = (PUB_PUCES && PUB_PUCES.length) ? PUB_PUCES : pucesProposees();
+  if(ctx.logo === undefined) ctx.logo = await imageDepuis((L.agence || {}).logo);
+  if(ctx.portrait === undefined) ctx.portrait = await imageDepuis((L.agence || {}).portrait);
+  const imgs = o.imgs || await imagesDesPieces(ids);
+  const m = minutageClip(gabarit, imgs.length, o.duree || 30);
+  const legendes = o.legendes || legendesAuto(ids);
+  return {gabarit, transition: o.transition || "fondu", ctx,
+          imgs: imgs.slice(0, m.n), ids: ids.slice(0, m.n),
+          legendes: legendes.slice(0, m.n), m,
+          duree: m.tOuv + m.n * m.tPhoto + m.tFin, retirees: m.retirees};
+}
+
+/* ------------------------------------------------------ les transitions
+   Chacune dessine la photo sortante, puis la suivante par-dessus selon sa
+   manière. `u` va de 0 à 1 sur la durée du fondu. */
+function entree(g, img, haut, u, mode){
+  g.save();
+  if(mode === "glisse"){
+    g.beginPath(); g.rect(0, 0, CLIP_L, haut); g.clip();
+    dessinerCouvrantH(g, img, haut, 1.04, (1 - u) * CLIP_L, 0);
+  } else if(mode === "zoom"){
+    g.globalAlpha = u;
+    dessinerCouvrantH(g, img, haut, 1.04 + (1 - u) * 0.22, 0, 0);
+  } else if(mode === "volet"){
+    g.beginPath(); g.rect(0, 0, CLIP_L * u, haut); g.clip();
+    dessinerCouvrantH(g, img, haut, 1.04, 0, 0);
+    g.restore(); g.save();
+    /* un filet clair sur l'arête du volet, pour que le geste se voie */
+    g.globalAlpha = Math.sin(Math.PI * u);
+    g.fillStyle = "rgba(255,255,255,.85)";
+    g.fillRect(CLIP_L * u - 3, 0, 3, haut);
+  } else {
+    g.globalAlpha = u;
+    dessinerCouvrantH(g, img, haut, 1.04, 0, 0);
+  }
+  g.restore();
+}
+
+/* ---------------------------------------------------------- une trame */
+function peindreTrame(g, plan, t){
+  const {m, ctx, imgs, gabarit, transition, legendes} = plan;
+  const recit = gabarit === "recit";
+  const haut = recit ? CLIP_H : VIT_PHOTO;
+  const duree = plan.duree;
+
+  if(t >= duree - m.tFin){
+    dessinerCarteFin(g, ctx, (t - (duree - m.tFin)) / m.tFin);
+    return;
+  }
+  const ouverture = recit && t < m.tOuv;
+  const i = ouverture ? 0
+    : Math.min(imgs.length - 1, Math.floor((t - m.tOuv) / m.tPhoto));
+  const u = ouverture ? t / m.tOuv : ((t - m.tOuv) - i * m.tPhoto) / m.tPhoto;
+
+  g.fillStyle = "#0f1a2b"; g.fillRect(0, 0, CLIP_L, CLIP_H);
+  g.save();
+  g.beginPath(); g.rect(0, 0, CLIP_L, haut); g.clip();
+  dessinerCouvrantH(g, imgs[i], haut, 1.05 + u * 0.07,
+    (i % 2 ? -1 : 1) * (u - .5) * 22, (u - .5) * 14);
+  g.restore();
+  const reste = ouverture ? 99 : m.tPhoto - ((t - m.tOuv) - i * m.tPhoto);
+  if(reste < m.fondu && i + 1 < imgs.length)
+    entree(g, imgs[i + 1], haut, 1 - reste / m.fondu, transition);
+
+  if(recit){
+    if(ouverture) cartonTitreRecit(g, ctx, u);
+    else {
+      const om = g.createLinearGradient(0, CLIP_H - 420, 0, CLIP_H);
+      om.addColorStop(0, "rgba(10,20,38,0)"); om.addColorStop(1, "rgba(10,20,38,.42)");
+      g.fillStyle = om; g.fillRect(0, CLIP_H - 420, CLIP_L, 420);
+      pastilleRecit(g, legendes[i], Math.min(1, u / .22));
+      if(ctx.logo){
+        const lw = 250, lh = ctx.logo.height * lw / ctx.logo.width;
+        g.globalAlpha = .96;
+        g.drawImage(ctx.logo, CLIP_L - lw - 44, 44, lw, lh);
+        g.globalAlpha = 1;
+      }
+    }
+  } else {
+    dessinerPanneauVitrine(g, ctx);
+    if(ctx.logo){
+      const lw = 300, lh = ctx.logo.height * lw / ctx.logo.width;
+      g.globalAlpha = .96;
+      g.drawImage(ctx.logo, CLIP_L - lw - 40, 30, lw, lh);
+      g.globalAlpha = 1;
+    }
+  }
+}
+function dessinerCouvrantH(g, img, haut, z, dx, dy){
+  const r = Math.max(CLIP_L / img.width, haut / img.height) * z;
+  const w = img.width * r, h = img.height * r;
+  g.drawImage(img, (CLIP_L - w) / 2 + dx, (haut - h) / 2 + dy, w, h);
+}
+
+/* ------------------------------------------------------ l'enregistrement */
+async function fabriquerClip(plan, avance){
+  const fmt = clipFormats();
+  if(!fmt) throw new Error("ce navigateur ne sait pas enregistrer de vidéo");
+  if(!plan.imgs.length) throw new Error("aucune photo lisible");
+
+  const c = document.createElement("canvas");
+  c.width = CLIP_L; c.height = CLIP_H;
+  const g = c.getContext("2d");
+  g.textBaseline = "alphabetic";
+  const flux = c.captureStream(30);
+  const rec = new MediaRecorder(flux, {mimeType: fmt.mime, videoBitsPerSecond: 5200000});
+  const bouts = [];
+  rec.ondataavailable = e=>{ if(e.data && e.data.size) bouts.push(e.data); };
+  const fini = new Promise(res=> rec.onstop = res);
+  rec.start(200);
+
+  const t0 = performance.now();
+  await new Promise(res=>{
+    const trame = ()=>{
+      const t = (performance.now() - t0) / 1000;
+      if(t >= plan.duree){ res(); return; }
+      peindreTrame(g, plan, t);
+      if(avance) avance(Math.min(1, t / plan.duree));
+      requestAnimationFrame(trame);
+    };
+    requestAnimationFrame(trame);
+  });
+  rec.stop();
+  await fini;
+  return {blob: new Blob(bouts, {type: fmt.mime}), ext: fmt.ext,
+          duree: Math.round(plan.duree * 10) / 10, nb: plan.imgs.length,
+          gabarit: plan.gabarit, transition: plan.transition};
+}
+
+/* --------------------------------------------------------- le mur d'essais
+   Huit modèles — deux mises en page par quatre transitions — qui tournent en
+   même temps dans de petits canevas. Rien n'est enregistré : on regarde, on
+   choisit, et seul le modèle retenu sera tourné en pleine qualité. */
+let MUR_ANIM = null, MUR_PLANS = [];
+function arreterMur(){
+  if(MUR_ANIM){ cancelAnimationFrame(MUR_ANIM); MUR_ANIM = null; }
+  MUR_PLANS = [];
+}
+async function construireMur(ids, duree, surAvance){
+  arreterMur();
+  const imgs = await imagesDesPieces(ids.slice(0, CLIP_MAX));
+  if(!imgs.length) throw new Error("aucune photo lisible");
+  const ctx = contexteClip();
+  ctx.puces = (PUB_PUCES && PUB_PUCES.length) ? PUB_PUCES : pucesProposees();
+  ctx.logo = await imageDepuis((L.agence || {}).logo);
+  ctx.portrait = await imageDepuis((L.agence || {}).portrait);
+  const legendes = legendesAuto(ids);
+  const plans = [];
+  for(const gab of GABARITS_CLIP)
+    for(const tr of TRANSITIONS)
+      plans.push(await construirePlan({ids, gabarit: gab.cle, transition: tr.cle,
+        duree, imgs, ctx, legendes}));
+  return plans;
+}
+function animerMur(plans, canevas){
+  arreterMur();
+  MUR_PLANS = plans;
+  const t0 = performance.now();
+  const boucle = ()=>{
+    const t = (performance.now() - t0) / 1000;
+    plans.forEach((pl, i)=>{
+      const c = canevas[i];
+      if(!c) return;
+      const g = c.getContext("2d");
+      const k = c.width / CLIP_L;
+      g.save(); g.setTransform(k, 0, 0, k, 0, 0);
+      g.textBaseline = "alphabetic";
+      peindreTrame(g, pl, t % pl.duree);
+      g.restore();
+    });
+    MUR_ANIM = requestAnimationFrame(boucle);
+  };
+  MUR_ANIM = requestAnimationFrame(boucle);
+}
+
 /* ------------------------------------- ce que les deux gabarits affichent */
 function contexteClip(){
   const o = donneesPubli(), a = L.agence || {};
@@ -14048,6 +14339,7 @@ function contexteClip(){
     qualite: n.qualite || "Agent commercial",
     adresse: a.adresse || "",
     site: a.site || "",
+    appel: (PUB_APPEL !== undefined && PUB_APPEL !== null) ? PUB_APPEL : APPEL_DEFAUT,
     pied: [("Réf. " + ((D.mandat || {}).num || "")).trim(), o.type,
            o.fai === null ? "" : eur(o.fai)].filter(Boolean).join("  ·  "),
     legales: legalesCourtes(),
@@ -14118,125 +14410,88 @@ function pucesProposees(){
   if(o.chauffage) p.push(o.chauffage);
   return p.slice(0, 6);
 }
-/* Une légende par photo, proposée d'après son nom de fichier. */
-function legendeProposee(p){
-  const n = nomSansExt(String(p && p.nom || "")).replace(/[_-]+/g, " ").trim();
-  if(!n || /^(img|dsc|photo|image)\s*\d*$/i.test(n)) return "";
-  return n.charAt(0).toUpperCase() + n.slice(1);
-}
+/* ------------------------------------------------- les légendes du Récit
+   Reprendre le nom du fichier donnait « IMG_4312 » ou « salon2 » : ce n'est
+   pas une légende, c'est un nom de fichier. On puise désormais dans la fiche
+   descriptive, et l'on fait correspondre chaque photo à ce qu'elle montre.
 
-/* ------------------------------------------------------- le tournage */
-async function fabriquerClip(ids, avance, gabarit){
-  const g0 = gabarit || PUB_GABARIT || "vitrine";
-  const fmt = clipFormats();
-  if(!fmt) throw new Error("ce navigateur ne sait pas enregistrer de vidéo");
-  const choisies = ids.slice(0, CLIP_MAX);
-  const imgs = await imagesDesPieces(choisies);
-  if(!imgs.length) throw new Error("aucune photo lisible");
+   La correspondance se fait par le nom de la photo quand il dit quelque
+   chose — « Séjour.jpg » trouve la pièce « Séjour » du détail et hérite de sa
+   surface —, et à défaut par l'ordre : la première photo prend le premier
+   argument disponible, et ainsi de suite. Rien n'est inventé : tout vient du
+   dossier, et tout reste corrigeable à la main. */
 
-  const ctx = contexteClip();
-  ctx.puces = (PUB_PUCES && PUB_PUCES.length) ? PUB_PUCES : pucesProposees();
-  ctx.logo = await imageDepuis((L.agence || {}).logo);
-  ctx.portrait = await imageDepuis((L.agence || {}).portrait);
-  const legendes = choisies.map(id=>
-    (PUB_LEGENDES && PUB_LEGENDES[id] !== undefined)
-      ? PUB_LEGENDES[id] : legendeProposee(PIECES[id]));
+function phrasesDuBien(){
+  const o = donneesPubli(), p = [];
+  const vu = {};
+  const pousse = (cle, txt)=>{ if(txt && !vu[cle]){ vu[cle] = 1; p.push({cle, txt}); } };
 
-  const c = document.createElement("canvas");
-  c.width = CLIP_L; c.height = CLIP_H;
-  const g = c.getContext("2d");
-  g.textBaseline = "alphabetic";
-  g.fillStyle = CL.creme; g.fillRect(0, 0, CLIP_L, CLIP_H);
-
-  /* la minute : un carton d'ouverture pour le Récit, les photos, la carte */
-  const recit = g0 === "recit";
-  const tOuv = recit ? 3.2 : 0;
-  const tPhoto = recit ? 3.2 : CLIP_SEC;
-  const tFin = recit ? 4.2 : 3.4;
-  const duree = tOuv + imgs.length * tPhoto + tFin;
-
-  const flux = c.captureStream(30);
-  const rec = new MediaRecorder(flux, {mimeType: fmt.mime, videoBitsPerSecond: 5200000});
-  const bouts = [];
-  rec.ondataavailable = e=>{ if(e.data && e.data.size) bouts.push(e.data); };
-  const fini = new Promise(res=> rec.onstop = res);
-  rec.start(200);
-
-  const hautPhoto = recit ? CLIP_H : VIT_PHOTO;
-  const t0 = performance.now();
-  await new Promise(res=>{
-    const trame = ()=>{
-      const t = (performance.now() - t0) / 1000;
-      if(t >= duree){ res(); return; }
-
-      if(t >= duree - tFin){
-        dessinerCarteFin(g, ctx, (t - (duree - tFin)) / tFin);
-        if(avance) avance(Math.min(1, t / duree));
-        return requestAnimationFrame(trame);
-      }
-
-      /* le carton d'ouverture reprend la première photo */
-      const ouverture = recit && t < tOuv;
-      const i = ouverture ? 0
-        : Math.min(imgs.length - 1, Math.floor((t - tOuv) / tPhoto));
-      const u = ouverture ? t / tOuv : ((t - tOuv) - i * tPhoto) / tPhoto;
-
-      g.fillStyle = "#0f1a2b"; g.fillRect(0, 0, CLIP_L, CLIP_H);
-      g.save();
-      g.beginPath(); g.rect(0, 0, CLIP_L, hautPhoto); g.clip();
-      dessinerCouvrantH(g, imgs[i], hautPhoto, 1.05 + u * 0.07,
-        (i % 2 ? -1 : 1) * (u - .5) * 22, (u - .5) * 14);
-      /* fondu vers la suivante */
-      const reste = ouverture ? 9 : tPhoto - ((t - tOuv) - i * tPhoto);
-      if(reste < CLIP_FONDU && i + 1 < imgs.length){
-        g.globalAlpha = 1 - reste / CLIP_FONDU;
-        dessinerCouvrantH(g, imgs[i + 1], hautPhoto, 1.05, 0, 0);
-        g.globalAlpha = 1;
-      }
-      g.restore();
-
-      if(recit){
-        if(ouverture) cartonTitreRecit(g, ctx, u);
-        else {
-          /* une ombre basse donne de la tenue à la pastille sur une photo claire */
-          const om = g.createLinearGradient(0, CLIP_H - 420, 0, CLIP_H);
-          om.addColorStop(0, "rgba(10,20,38,0)"); om.addColorStop(1, "rgba(10,20,38,.42)");
-          g.fillStyle = om; g.fillRect(0, CLIP_H - 420, CLIP_L, 420);
-          pastilleRecit(g, legendes[i], Math.min(1, u / .22));
-          if(ctx.logo){
-            const lw = 250, lh = ctx.logo.height * lw / ctx.logo.width;
-            g.globalAlpha = .96;
-            g.drawImage(ctx.logo, CLIP_L - lw - 44, 44, lw, lh);
-            g.globalAlpha = 1;
-          }
-        }
-      } else {
-        dessinerPanneauVitrine(g, ctx);
-        if(ctx.logo){
-          const lw = 300, lh = ctx.logo.height * lw / ctx.logo.width;
-          g.globalAlpha = .96;
-          g.drawImage(ctx.logo, CLIP_L - lw - 40, 30, lw, lh);
-          g.globalAlpha = 1;
-        }
-      }
-      if(avance) avance(Math.min(1, t / duree));
-      requestAnimationFrame(trame);
-    };
-    requestAnimationFrame(trame);
+  /* d'abord les pièces du détail, avec leur surface quand elle est connue */
+  (D.pieces || []).forEach(x=>{
+    const n = String(x.nom || "").trim();
+    if(!n) return;
+    const s = num(x.surface);
+    pousse(fold(n), n + (s ? " de " + s.toLocaleString("fr-FR") + " m²" : ""));
   });
-
-  rec.stop();
-  await fini;
-  imgs.forEach(im=>{ if(im.close) im.close(); });
-  return {blob: new Blob(bouts, {type: fmt.mime}), ext: fmt.ext,
-          duree: Math.round(duree * 10) / 10, nb: imgs.length, gabarit: g0};
+  /* puis les extérieurs et annexes, avec leur mesure */
+  const det = D.detail || {};
+  [["terrasse","terrasseM2","Terrasse privative"],["balcon","balconM2","Balcon"],
+   ["jardin","jardinM2","Jardin"],["cave","caveM2","Cave"],
+   ["garage","garageNb","Garage"],["parking","parkingNb","Parking"]]
+    .forEach(([k, ks, lib])=>{
+      if(det[k] !== "OUI") return;
+      const v = num(det[ks]);
+      pousse(k, /garage|parking/.test(k)
+        ? (v && v > 1 ? v + " " + lib.toLowerCase() + "s" : lib)
+        : lib + (v ? " de " + v.toLocaleString("fr-FR") + " m²" : ""));
+    });
+  /* enfin ce qui qualifie le bien dans son ensemble */
+  if(o.exposition) pousse("expo", "Exposition " + o.exposition.toLowerCase());
+  if(o.etat) pousse("etat", cap(o.type) + " " + enEtat(o.etat, bienFeminin(o.type)));
+  if(o.chauffage) pousse("chauf", cap(o.chauffage));
+  if(o.froid) pousse("froid", cap(o.froid));
+  if(o.piscine) pousse("piscine", "Résidence avec piscine");
+  if(o.ascenseur) pousse("asc", "Résidence avec ascenseur");
+  if(o.parkingColl) pousse("pkc", "Parking collectif");
+  if(o.etage) pousse("etage", cap(etageTxt(o)));
+  if(o.terrain !== null) pousse("terrain", "Terrain de "
+    + o.terrain.toLocaleString("fr-FR") + " m²");
+  if(o.residence) pousse("resid", "Résidence " + o.residence);
+  return p;
 }
 
-/* Remplit une hauteur donnée sans déformer — la Vitrine n'occupe que le haut. */
-function dessinerCouvrantH(g, img, haut, z, dx, dy){
-  const r = Math.max(CLIP_L / img.width, haut / img.height) * z;
-  const w = img.width * r, h = img.height * r;
-  g.drawImage(img, (CLIP_L - w) / 2 + dx, (haut - h) / 2 + dy, w, h);
+/* Le nom d'une photo n'a de valeur que s'il nomme quelque chose du dossier. */
+function phrasePourNom(nom, phrases){
+  const n = fold(nomSansExt(String(nom || "")).replace(/[_-]+/g, " ")).trim()
+    .replace(/\s*\d+\s*$/, "");
+  if(!n || /^(img|dsc|dscn|photo|image|capture)\s*\d*$/.test(n)) return null;
+  /* correspondance exacte, puis par inclusion dans un sens ou dans l'autre */
+  let t = phrases.filter(x=> x.cle === n)[0];
+  if(!t) t = phrases.filter(x=> x.cle.indexOf(n) === 0 || n.indexOf(x.cle) === 0)[0];
+  if(!t) t = phrases.filter(x=> fold(x.txt).indexOf(n) >= 0)[0];
+  return t || null;
+}
+
+function legendesAuto(ids){
+  const phrases = phrasesDuBien();
+  const pris = {};
+  const out = ids.map(()=> "");
+  /* premier passage : les photos qui se reconnaissent dans la fiche */
+  ids.forEach((id, i)=>{
+    const t = phrasePourNom((PIECES[id] || {}).nom, phrases);
+    if(t && !pris[t.cle]){ pris[t.cle] = 1; out[i] = t.txt; }
+  });
+  /* second passage : le reste se sert dans l'ordre */
+  let k = 0;
+  ids.forEach((id, i)=>{
+    if(out[i]) return;
+    while(k < phrases.length && pris[phrases[k].cle]) k++;
+    if(k < phrases.length){ pris[phrases[k].cle] = 1; out[i] = phrases[k].txt; k++; }
+  });
+  /* la légende retouchée à la main l'emporte toujours */
+  return ids.map((id, i)=>
+    (PUB_LEGENDES && PUB_LEGENDES[id] !== undefined && PUB_LEGENDES[id] !== null)
+      ? PUB_LEGENDES[id] : out[i]);
 }
 
 /* ------------------------------------------------- la page Publications */
@@ -14251,6 +14506,11 @@ let PUB_DOSSIER = "";                /* celui pour lequel le brouillon vaut */
 let PUB_GABARIT = "vitrine";         /* Vitrine ou Récit */
 let PUB_PUCES = [];                  /* les six arguments de la Vitrine */
 let PUB_LEGENDES = {};               /* une légende par photo, pour le Récit */
+let PUB_DUREE = 30;                  /* 20, 30, 40 ou 50 secondes */
+let PUB_TRANSITION = "fondu";
+let PUB_APPEL = null;                /* le message de la carte de contact */
+let PUB_MUR = null;                  /* les huit modèles en cours d'essai */
+const APPEL_DEFAUT = "Envie de la visiter ? Appelez-moi.";
 
 function photosDuBien(){ return photosDe(sujetBien(D)); }
 function photosDeLImmeuble(){
@@ -14268,6 +14528,8 @@ function renderPublications(){
     PUB_STYLE = "pro"; PUB_GRAINE = 1; PUB_TEXTE = "";
     PUB_PHOTOS = []; PUB_CHOIX = [];
     PUB_GABARIT = "vitrine"; PUB_PUCES = []; PUB_LEGENDES = {};
+    PUB_DUREE = 30; PUB_TRANSITION = "fondu"; PUB_APPEL = null;
+    arreterMur(); PUB_MUR = null;
     oublierClip();
   }
   const manque = manquePubli();
@@ -14296,39 +14558,59 @@ function renderPublications(){
     <div class="card"><h2>Le clip</h2><div class="body">
       ${!clipPossible() ? `<div class="alerte">Ce navigateur ne sait pas enregistrer de
         vidéo. Le texte reste utilisable ; pour le clip, passez par l'ordinateur.</div>` : `
-      <div class="pubstyles">${GABARITS_CLIP.map(x=>
-        `<button type="button" class="stylebtn${x.cle === PUB_GABARIT ? " on" : ""}"
-           data-pubgab="${x.cle}"><b>${esc(x.lib)}</b>
-           <span>${esc(x.note)}</span></button>`).join("")}</div>
-      <p class="muted">Format 1080 × 1350, celui qui occupe le plus de place dans un fil.
-        ${PUB_GABARIT === "vitrine"
-          ? "La photo occupe le haut, la fiche le bas : prix, surface, arguments, DPE et "
-            + "mentions obligatoires. Elle se suffit à elle-même, sans le texte."
-          : "La photo prend tout le cadre, chaque vue porte sa légende. Un carton "
-            + "d'ouverture, puis votre carte de contact à la fin."}</p>
-      ${PUB_GABARIT === "vitrine" ? `
-        <div class="f"><label>Les six arguments de la fiche</label>
-          <textarea id="pubPuces" rows="6" placeholder="un argument par ligne">${
-            esc((PUB_PUCES.length ? PUB_PUCES : pucesProposees()).join("\n"))}</textarea></div>
-        <p class="muted" style="margin-top:-6px">Proposés d'après le dossier ; corrigez-les,
-          six au maximum.</p>` : `
-        <p class="muted">Les <b>légendes</b> de chaque photo se saisissent à la dernière
-          étape du choix des photos.</p>`}
+      <p class="muted" style="margin-top:0"><b>1 · les photos.</b> Choisissez-les, rangez-les,
+        et pour le gabarit Récit corrigez leurs légendes — proposées d'après la fiche du
+        bien.</p>
       <div class="pubbtns">
         <button type="button" class="tbtn light" id="pubChoisir">
           Choisir les photos${PUB_PHOTOS.length ? " (" + PUB_PHOTOS.length + ")" : ""}</button>
-        <button type="button" class="addbtn" id="pubFaire"
-          ${PUB_PHOTOS.length ? "" : "disabled"}>Créer le clip</button>
         <span class="grow"></span>
         <span class="muted">${dispo} photo${dispo > 1 ? "s" : ""} disponible${
           dispo > 1 ? "s" : ""}</span>
+      </div>
+
+      <div class="fsep"></div>
+      <p class="muted"><b>2 · la durée.</b> Le temps se partage entre les photos retenues.</p>
+      <div class="pubseg">${DUREES_CLIP.map(d=>
+        `<button type="button" class="segbtn${d === PUB_DUREE ? " on" : ""}"
+           data-pubduree="${d}">${d} s</button>`).join("")}</div>
+      ${minuteDit()}
+
+      <div class="fsep"></div>
+      <p class="muted"><b>3 · les arguments de la fiche</b>, repris sur le gabarit Vitrine.</p>
+      <div class="f"><textarea id="pubPuces" rows="6" placeholder="un argument par ligne">${
+        esc((PUB_PUCES.length ? PUB_PUCES : pucesProposees()).join("\n"))}</textarea></div>
+      <div class="f"><label>Message de la carte de contact</label>
+        <input type="text" id="pubAppel" value="${esc(PUB_APPEL === null ? APPEL_DEFAUT
+          : PUB_APPEL)}"></div>
+
+      <div class="fsep"></div>
+      <p class="muted"><b>4 · le modèle.</b> Huit essais tournent côte à côte, sans rien
+        enregistrer : deux mises en page par quatre transitions. Cliquez celui qui vous
+        plaît, lui seul sera tourné en pleine qualité.</p>
+      <div class="pubbtns">
+        <button type="button" class="tbtn light" id="pubMur"
+          ${PUB_PHOTOS.length ? "" : "disabled"}>${PUB_MUR ? "Refaire les essais"
+          : "Voir les huit modèles"}</button>
+        <span class="grow"></span>
+        <span class="muted">retenu : <span id="pubRetenu"><b>${esc(libGabarit(PUB_GABARIT))} ·
+          ${esc(libTransition(PUB_TRANSITION))}</b></span></span>
+      </div>
+      <div class="pubmur" id="pubMurZone" hidden></div>
+
+      <div class="fsep"></div>
+      <div class="pubbtns">
+        <button type="button" class="addbtn" id="pubFaire"
+          ${PUB_PHOTOS.length ? "" : "disabled"}>Créer le clip en pleine qualité</button>
+        <span class="grow"></span>
       </div>
       <div id="pubAvance" class="pubavance" hidden><div></div></div>
       ${PUB_CLIP ? `<div class="pubclip">
         <video src="${PUB_CLIP.url}" controls loop playsinline></video>
         <div class="pubbtns">
           <span class="muted">${PUB_CLIP.nb} photos · ${String(PUB_CLIP.duree)
-            .replace(".", ",")} s · ${PUB_CLIP.ext.toUpperCase()}</span>
+            .replace(".", ",")} s · ${esc(libGabarit(PUB_CLIP.gabarit))} ·
+            ${esc(libTransition(PUB_CLIP.transition))} · ${PUB_CLIP.ext.toUpperCase()}</span>
           <span class="grow"></span>
           <button type="button" class="addbtn" id="pubTel">Télécharger le clip</button>
         </div>
@@ -14365,6 +14647,9 @@ function renderPublications(){
     renderPublications();
   };
   if(b("pubCopier")) b("pubCopier").onclick = copierTextePubli;
+  const pa = b("pubAppel");
+  if(pa) pa.oninput = ()=>{ PUB_APPEL = pa.value; };
+  if(b("pubMur")) b("pubMur").onclick = montrerMur;
   const pp = b("pubPuces");
   if(pp) pp.oninput = ()=>{
     PUB_PUCES = pp.value.split("\n").map(s=> s.trim()).filter(Boolean).slice(0, 6);
@@ -14381,6 +14666,29 @@ const IC_COPIE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="t
   `<rect x="5.5" y="5.5" width="8" height="9" rx="1.6" fill="none" stroke="currentColor" ` +
   `stroke-width="1.5"/><path d="M10.5 3.5h-7a1 1 0 0 0-1 1v7" fill="none" ` +
   `stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+
+function libGabarit(c){
+  const x = GABARITS_CLIP.filter(g=> g.cle === c)[0];
+  return x ? x.lib : c;
+}
+function libTransition(c){
+  const x = TRANSITIONS.filter(g=> g.cle === c)[0];
+  return x ? x.lib : c;
+}
+/* ce que la durée choisie donne concrètement, dit avant de lancer quoi que
+   ce soit — une photo retirée faute de place doit se savoir */
+function minuteDit(){
+  const n = PUB_PHOTOS.length;
+  if(!n) return `<p class="muted">Choisissez d'abord les photos.</p>`;
+  const m = minutageClip(PUB_GABARIT, Math.min(n, CLIP_MAX), PUB_DUREE);
+  const s = v => String(Math.round(v * 10) / 10).replace(".", ",");
+  return `<p class="muted">${m.n} photo${m.n > 1 ? "s" : ""} à <b>${s(m.tPhoto)} s</b>
+    ${m.tOuv ? ", carton d'ouverture de " + s(m.tOuv) + " s" : ""},
+    carte de contact de ${s(m.tFin)} s.${m.retirees
+      ? ` <b>${m.retirees} photo${m.retirees > 1 ? "s" : ""} de trop</b> pour cette durée :
+         ${m.retirees > 1 ? "elles seront écartées" : "elle sera écartée"} — allongez le
+         clip ou retirez-${m.retirees > 1 ? "les" : "la"} du choix.` : ""}</p>`;
+}
 
 function majCompteTexte(){
   const z = $("#pubCompte"); if(!z) return;
@@ -14423,16 +14731,16 @@ function ouvrirChoixPhotos(etape){
     popup({titre:"3 / 3 — L'ordre des photos", large:true,
       corps:`<p class="muted" style="margin-top:0">Glissez les vignettes pour les ranger.
           La première ouvre le clip.</p>
-        <div class="pubordre" id="pubOrdre">${PUB_CHOIX.map((id,i)=>{
+        <div class="pubordre" id="pubOrdre">${(l=> PUB_CHOIX.map((id,i)=>{
           const p = PIECES[id]; if(!p) return "";
-          const leg = PUB_LEGENDES[id] !== undefined ? PUB_LEGENDES[id] : legendeProposee(p);
+          const leg = l[i] || "";
           return `<figure class="pubvig" data-pubid="${esc(id)}">
             <div class="pjimg" data-pjvig="${esc(id)}"></div>
             <figcaption><span class="rang">${i + 1}</span>
               <span>${esc(p.nom)}</span></figcaption>
             <input type="text" class="publeg" data-publeg="${esc(id)}"
               value="${esc(leg)}" placeholder="légende (clip Récit)"></figure>`;
-        }).join("")}</div>
+        }).join(""))(legendesAuto(PUB_CHOIX))}</div>
         ${PUB_CHOIX.length ? "" : `<p class="muted">Aucune photo retenue.</p>`}`,
       boutons:[{lib:"Retour", action:()=> ouvrirChoixPhotos(1)},
                {lib:"Valider", primaire:true, action:()=>{
@@ -14463,7 +14771,7 @@ function ouvrirChoixPhotos(etape){
           + (PUB_CHOIX.length > 1 ? "s" : "") + " pour l'instant."
         : "Aucune photo ici. Déposez-en depuis la page Pièces jointes."}</p>
       <div class="pubgrille" id="pubGrille">${lot.map(p=>
-        `<figure class="pubvig choix${PUB_CHOIX.indexOf(p.id) >= 0 ? " prise" : ""}"
+        `<figure class="pubvig${PUB_CHOIX.indexOf(p.id) >= 0 ? " prise" : ""}"
            data-pubpick="${esc(p.id)}">
           <div class="pjimg" data-pjvig="${esc(p.id)}"></div>
           <figcaption><span class="coche">✓</span><span>${esc(p.nom)}</span></figcaption>
@@ -14474,6 +14782,33 @@ function ouvrirChoixPhotos(etape){
   setTimeout(()=> lot.forEach(p=> peindreVignette(p)), 40);
 }
 
+/* ------------------------------------------------------- le mur d'essais */
+async function montrerMur(){
+  if(!PUB_PHOTOS.length) return;
+  const z = $("#pubMurZone"), bouton = $("#pubMur");
+  if(!z) return;
+  if(bouton){ bouton.disabled = true; bouton.textContent = "Préparation…"; }
+  z.hidden = false;
+  z.innerHTML = `<p class="muted">Préparation des huit essais…</p>`;
+  try{
+    const plans = await construireMur(PUB_PHOTOS, PUB_DUREE);
+    PUB_MUR = plans;
+    z.innerHTML = plans.map(pl=>{
+      const cle = pl.gabarit + "|" + pl.transition;
+      return `<figure class="murcase${cle === PUB_GABARIT + "|" + PUB_TRANSITION
+          ? " on" : ""}" data-pubmodele="${esc(cle)}">
+        <canvas width="216" height="270"></canvas>
+        <figcaption>${esc(libGabarit(pl.gabarit))}<em>${
+          esc(libTransition(pl.transition))}</em></figcaption></figure>`;
+    }).join("");
+    animerMur(plans, $$("#pubMurZone canvas"));
+    if(bouton){ bouton.disabled = false; bouton.textContent = "Refaire les essais"; }
+  }catch(e){
+    z.innerHTML = `<p class="muted">Essais impossibles : ${esc(e.message)}</p>`;
+    if(bouton){ bouton.disabled = false; bouton.textContent = "Voir les huit modèles"; }
+  }
+}
+
 /* ----------------------------------------------------- fabriquer et livrer */
 async function lancerClip(){
   if(!PUB_PHOTOS.length) return;
@@ -14482,12 +14817,18 @@ async function lancerClip(){
   const bouton = $("#pubFaire");
   if(bouton){ bouton.disabled = true; bouton.textContent = "Tournage…"; }
   try{
-    const r = await fabriquerClip(PUB_PHOTOS, u=>{
+    /* le mur d'essais mobilise le processeur : on l'arrête pendant le tournage,
+       qui se fait en temps réel et ne doit pas sauter de trame */
+    arreterMur();
+    const plan = await construirePlan({ids: PUB_PHOTOS, gabarit: PUB_GABARIT,
+      transition: PUB_TRANSITION, duree: PUB_DUREE});
+    const r = await fabriquerClip(plan, u=>{
       if(z) z.firstElementChild.style.width = Math.round(u * 100) + "%";
     });
     oublierClip();
     PUB_CLIP = {url: URL.createObjectURL(r.blob), blob: r.blob,
-                ext: r.ext, duree: r.duree, nb: r.nb};
+                ext: r.ext, duree: r.duree, nb: r.nb,
+                gabarit: r.gabarit, transition: r.transition};
     renderPublications();
     toast("Clip prêt");
   }catch(e){
@@ -14526,6 +14867,7 @@ function garderPublication(){
     id: "pb" + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
     date: new Date().toISOString(),
     style: PUB_STYLE, graine: PUB_GRAINE, gabarit: PUB_GABARIT,
+    transition: PUB_TRANSITION, duree: PUB_DUREE, appel: PUB_APPEL,
     puces: PUB_PUCES.slice(), legendes: Object.assign({}, PUB_LEGENDES),
     texte: PUB_TEXTE || "",
     photos: PUB_PHOTOS.slice(),
@@ -14565,6 +14907,10 @@ function reprendrePublication(id){
   PUB_STYLE = p.style || "pro";
   PUB_GRAINE = p.graine || 1;
   PUB_GABARIT = p.gabarit || "vitrine";
+  PUB_TRANSITION = p.transition || "fondu";
+  PUB_DUREE = p.duree || 30;
+  PUB_APPEL = (p.appel === undefined) ? null : p.appel;
+  arreterMur(); PUB_MUR = null;
   PUB_PUCES = (p.puces || []).slice();
   PUB_LEGENDES = Object.assign({}, p.legendes || {});
   PUB_TEXTE = p.texte || "";
