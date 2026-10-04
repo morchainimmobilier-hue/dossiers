@@ -286,6 +286,19 @@ input.auto{background:var(--accent-soft)!important;color:var(--navy);font-weight
 .xbtn:hover{border-color:#e2b4b4;color:#a33;background:#fff6f6}
 .xbtn[disabled]{opacity:.4;cursor:default}
 .xbtn[disabled]:hover{border-color:var(--line);color:var(--ink-2);background:#fff}
+/* Ce qui efface se voit. Un fond rose pâle suffit : assez pour que l'œil
+   s'arrête avant le clic, pas assez pour crier dans une page de formulaire.
+   La règle vise les boutons qui suppriment pour de bon, reconnaissables à
+   leur attribut — pas « Voir », « Détacher » ou « Annuler la vente », qui
+   portent la même classe sans rien détruire. */
+.xbtn[data-del],.xbtn[data-bookdel],.xbtn[data-dossdel],.xbtn[data-diagdel],
+.xbtn[data-histodel],.xbtn[data-anndel],.xbtn[data-piecedel],.xbtn[data-parcdel],
+.xbtn[data-pjsup],.xbtn.sup{
+  background:#fdecec;border-color:#f0b9b9;color:#9c2a2a}
+.xbtn[data-del]:hover,.xbtn[data-bookdel]:hover,.xbtn[data-dossdel]:hover,
+.xbtn[data-diagdel]:hover,.xbtn[data-histodel]:hover,.xbtn[data-anndel]:hover,
+.xbtn[data-piecedel]:hover,.xbtn[data-parcdel]:hover,.xbtn[data-pjsup]:hover,
+.xbtn.sup:hover{background:#fbd9d9;border-color:#e08c8c;color:#8a1f1f}
 .addbtn{background:var(--navy);color:#fff;border:0;border-radius:8px;padding:9px 16px;
   cursor:pointer;font-weight:600;font-size:13px}
 .addbtn:hover{background:var(--navy-2)}
@@ -1222,6 +1235,53 @@ table.tdb .puce.resilie{background:#64748b}
 .pjmini:hover{background:var(--line-2);color:var(--ink)}
 .pjmini.sup:hover{background:#fee2e2;color:#b91c1c}
 
+/* --------------------------------------- la page « Pièces jointes » -----
+   Deux colonnes : la liste à gauche, l'aperçu à droite. Sur un écran étroit,
+   l'aperçu passe dessous — on ne veut pas de deux colonnes de 300 px. */
+.pjpage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;
+  align-items:start}
+@media(max-width:1100px){.pjpage{grid-template-columns:1fr}}
+.pjentete{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+.pjentete .grow{flex:1}
+.pjentete h2{margin:0 0 3px;font-size:17px;color:var(--navy);font-weight:650}
+.pjentete p{margin:0;font-size:12.5px;max-width:60ch}
+
+.pjgroupe{border:1px solid var(--line);border-radius:var(--radius);background:#fff;
+  box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.pjgroupe > header{display:flex;align-items:center;gap:9px;padding:10px 13px;
+  background:#f7f9fc;border-bottom:1px solid var(--line-2)}
+.pjgroupe > header .grow{flex:1}
+.pjgroupe h3{margin:0;font-size:13.5px;font-weight:650;color:var(--navy)}
+.pjgroupe em{font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.pjgroupe .cnt{background:var(--navy);color:#fff;border-radius:999px;font-size:11px;
+  padding:1px 7px;font-weight:700}
+.pjgroupe .vide{margin:0;padding:11px 13px;font-size:12.5px}
+.pjrows{display:flex;flex-direction:column}
+.pjrow{display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;
+  border-top:1px solid var(--line-2)}
+.pjrow:first-child{border-top:0}
+.pjrow:hover{background:var(--accent-soft)}
+.pjrow.vu{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.pjlibelle{flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.pjmeta{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+
+.pjapercu{position:sticky;top:96px;border:1px solid var(--line);border-radius:var(--radius);
+  background:#fff;box-shadow:var(--shadow);overflow:hidden;min-height:320px;
+  display:flex;flex-direction:column}
+@media(max-width:1100px){.pjapercu{position:static}}
+.pjaen{display:flex;align-items:center;gap:10px;padding:10px 13px;
+  border-bottom:1px solid var(--line-2);background:#f7f9fc}
+.pjaen .grow{flex:1}
+.pjaen b{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pjacorps{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+  padding:12px;background:#eef2f7}
+.pjacorps img{max-width:100%;max-height:74vh;border-radius:6px;box-shadow:var(--shadow-2)}
+.pjacorps iframe{width:100%;height:74vh;border:0;background:#fff;border-radius:6px}
+.pjacorps p{margin:0}
+.pjvidesel{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;
+  color:var(--ink-3);font-size:13px;text-align:center}
+
 /* le rappel discret des pièces qui attendent le réseau */
 .pjfile{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:110;
   display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
@@ -1292,7 +1352,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 3 octobre 2026, 15 h 32">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 octobre 2026, 9 h 45">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1351,7 +1411,8 @@ table.tdb .puce.resilie{background:#64748b}
   <button class="mitem" data-mgo="diagnostics">Diagnostics</button>
   <button class="mitem" data-mgo="questionnaire">Questionnaire notaire</button>
   <button class="mitem" data-mgo="divers">Divers</button>
-  <button class="mitem" data-mgo="documents">Documents</button>
+  <button class="mitem" data-mgo="documents">Imprimés</button>
+  <button class="mitem" data-mgo="pieces">Pièces jointes <b id="cntPJ"></b></button>
   <button class="mitem" data-mgo="avis">Avis</button>
 </nav>
 
@@ -1421,6 +1482,14 @@ table.tdb .puce.resilie{background:#64748b}
     <div class="previewwrap"><div class="sheet" id="sheet"><div id="preview"></div></div></div>
   </div>
 
+  <!-- toutes les pièces jointes du dossier, rangées comme le menu de gauche -->
+  <div class="panel" id="p-pieces">
+    <div class="pjpage">
+      <div class="pjcol" id="pjPageListe"></div>
+      <div class="pjapercu" id="pjApercu"></div>
+    </div>
+  </div>
+
   <div class="panel" id="p-avis"><div id="avisBody"></div></div>
 
   <div class="panel" id="p-listes">
@@ -1478,7 +1547,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>3 octobre 2026, 15 h 32</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 octobre 2026, 9 h 45</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -1790,11 +1859,20 @@ const BOOKS = {
 let L = loadLists();
 
 /* état plié / déplié des listes, mémorisé d'une session à l'autre */
-const LS_PLIS = "mi_plis_v1";
-let PLIS = (()=>{ try{ return JSON.parse(localStorage.getItem(LS_PLIS) || "{}"); }
-                  catch(e){ return {}; } })();
-function savePlis(){ try{ localStorage.setItem(LS_PLIS, JSON.stringify(PLIS)); }catch(e){} }
-function estPlie(k, defaut){ return PLIS[k] === undefined ? defaut : PLIS[k]; }
+/* Les volets dépliables.
+   ---------------------------------------------------------------------------
+   Ils ne se souviennent plus de rien d'une séance à l'autre : à l'ouverture,
+   TOUT est replié. On retrouvait sinon l'écran tel qu'on l'avait laissé trois
+   jours plus tôt, avec six carnets grands ouverts dont on ne savait plus
+   pourquoi — et il fallait replier avant de pouvoir lire.
+
+   Pendant la séance, en revanche, ce que l'on déplie reste déplié : PLIS ne
+   garde que les volets qu'on a touchés, et eux seuls échappent à la règle.
+   Le second argument de `estPlie` n'a donc plus d'effet ; il reste en place
+   pour que les appels disent toujours ce qu'ils voulaient par défaut. */
+let PLIS = {};
+function savePlis(){}
+function estPlie(k, defaut){ return PLIS[k] === undefined ? true : PLIS[k]; }
 function loadLists(){
   let v = {};
   try { v = JSON.parse(localStorage.getItem(LS_LISTS) || "{}"); } catch(e){ v = {}; }
@@ -4032,7 +4110,7 @@ const ONGLETS_SANS_MANDAT = ["aujourdhui","tdb","dossiers","immeubles","repertoi
 /* Les pages du dossier ouvert ne sont plus dans la barre du haut : elles
    tiennent dans une colonne à gauche, toutes visibles d'un coup. */
 const ONGLETS_DOSSIER = ["general","vendeurs","acquereurs","notaires","financement",
-  "diagnostics","questionnaire","divers","documents","avis"];
+  "diagnostics","questionnaire","divers","documents","pieces","avis"];
 let PAGE = "aujourdhui";
 function pageActive(){ return PAGE; }
 function libelleOnglet(p){
@@ -4103,6 +4181,7 @@ function activerOnglet(p){
   $$(".panel").forEach(x=>x.classList.remove("on"));
   panneau.classList.add("on");
   if(p==="documents")  renderPreview();
+  if(p==="pieces")     renderPagePieces();
   if(p==="avis")       renderAvis();
   if(p==="dossiers")   renderDossiers();
   if(p==="tdb")        renderTdb();
@@ -4792,7 +4871,7 @@ function renderListes(){
                     deux documents.</span>`}
        <label class="tbtn light" style="cursor:pointer">Choisir une image
          <input type="file" id="logoFile" accept="image/*" hidden></label>
-       ${a.logo ? `<button class="xbtn" id="logoDel">Retirer</button>` : ""}
+       ${a.logo ? `<button class="xbtn sup" id="logoDel">Retirer</button>` : ""}
      </div></div>
      <div class="f"><label>Bandeau des factures</label><div class="logobox large">
        <img src="${enteteFacture()}" alt="">
@@ -6053,14 +6132,8 @@ function carteAvis(cote){
   const paquets = AVIS_AGES.map(b=>
     ({...b, items: aFaire.filter(o=> o.palier.cle === b.cle)})).filter(b=> b.items.length);
   const ouvert = paquets.length ? paquets[0].cle : "";
-  /* le premier paquet qui a de la matière s'ouvre, les autres se replient ; on
-     inscrit ce choix de départ pour que le clic suivant sache d'où il part */
-  let neuf = false;
-  paquets.forEach(b=>{
-    const k = "av_" + cote + "_" + b.cle;
-    if(PLIS[k] === undefined){ PLIS[k] = b.cle !== ouvert; neuf = true; }
-  });
-  if(neuf) savePlis();
+  /* Tous les paliers partent repliés, comme le reste de l'application ; c'est
+     `estPlie` qui le décide désormais, il n'y a plus d'état à pré-inscrire. */
   const paquet = b=>{
     const k = "av_" + cote + "_" + b.cle;
     const plie = estPlie(k, b.cle !== ouvert);
@@ -9487,10 +9560,20 @@ document.addEventListener("click", e=>{
         envoyé à la <b>corbeille</b> de votre Drive — d'où vous pourrez encore le
         récupérer trente jours.</p>`,
       boutons:[{lib:"Annuler"},{lib:"Retirer", primaire:true, action:async ()=>{
-        await supprimerLaPiece(p); rendrePieces(); toast("Pièce retirée");
+        await supprimerLaPiece(p);
+        if(PJ_VU === p.id) PJ_VU = "";
+        rafraichirPieces(); toast("Pièce retirée");
       }}]});
     return;
   }
+  const ad = e.target.closest("[data-pjadd]");
+  if(ad){ pjChoisir(false, ad.getAttribute("data-pjadd")); return; }
+  const rn = e.target.closest("[data-pjren]");
+  if(rn){ renommerPiece(rn.getAttribute("data-pjren")); return; }
+  const tl = e.target.closest("[data-pjtel]");
+  if(tl){ const p = PIECES[tl.getAttribute("data-pjtel")]; if(p) telechargerLaPiece(p); return; }
+  const vo = e.target.closest("[data-pjvoir]");
+  if(vo){ voirPiece(vo.getAttribute("data-pjvoir")); return; }
   const pr = e.target.closest("[data-pjprinc]");
   if(pr){ photoPrincipaleChoisie(pr.getAttribute("data-pjprinc")); return; }
   const mo = e.target.closest("[data-pjmonte]");
@@ -10118,13 +10201,13 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 2
+ * Base en ligne pour « Dossiers de vente »  —  version 3
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * Cette version 2 ajoute les PIÈCES JOINTES. Les dossiers eux-mêmes restent
+ * Cette version 3 ajoute les PIÈCES JOINTES, et le renommage d'une pièce. Les dossiers eux-mêmes restent
  * dans un fichier JSON ; les pièces — photos, PDF — deviennent de vrais
  * fichiers rangés dans une arborescence lisible :
  *
@@ -10156,7 +10239,7 @@ const SCRIPT_GOOGLE = `/**
  *     base en ligne » : collez cette adresse et la clé. Faites de même sur
  *     votre tablette, avec la même adresse et la même clé.
  *
- * MISE À JOUR DEPUIS LA VERSION 1
+ * MISE À JOUR DEPUIS UNE VERSION PRÉCÉDENTE
  *  Remplacez tout le contenu de Code.gs par ce fichier, REMETTEZ VOTRE CLÉ à
  *  la ligne CLE, enregistrez, puis « Déployer » → « Gérer les déploiements »
  *  → crayon → Version « Nouvelle version » → « Déployer ». L'adresse ne change
@@ -10194,6 +10277,7 @@ function doPost(e) {
   try {
     if (q.action === 'piece_envoi')     return sortie(pieceEnvoi(q));
     if (q.action === 'piece_lire')      return sortie(pieceLire(q));
+    if (q.action === 'piece_renommer')  return sortie(pieceRenommer(q));
     if (q.action === 'piece_supprimer') return sortie(pieceSupprimer(q));
   } catch (err) {
     return sortie({ erreur: String(err && err.message || err) });
@@ -10311,6 +10395,16 @@ function pieceLire(q) {
     type: b.getContentType(),
     nom: f.getName()
   };
+}
+
+/** { drive, nom } -> { ok, renomme, nom }  — le fichier du Drive suit le nom
+ *  donné dans l'application, sinon la même pièce en porterait deux. */
+function pieceRenommer(q) {
+  const f = DriveApp.getFileById(q.drive);
+  const dossier = f.getParents().hasNext() ? f.getParents().next() : null;
+  const nom = dossier ? nomLibre(dossier, q.nom) : nettoieNom(q.nom);
+  f.setName(nom);
+  return { ok: true, renomme: true, nom: nom };
 }
 
 /** { drive } -> { ok }  — le fichier part à la corbeille, pas au néant. */
@@ -11076,6 +11170,11 @@ const AIDE = [
   "syndic, choisi dans un carnet à part. En la sélectionnant dans la fiche du bien, l'adresse, "+
   "l'année et le syndic se remplissent tout seuls — pratique quand vous vendez plusieurs lots "+
   "dans le même immeuble."],
+ ["Tout part replié",
+  "À chaque ouverture de l'application, <b>tous les volets sont repliés</b> — carnets, "+
+  "listes, groupes de dossiers, paliers d'avis. On ne retrouve plus l'écran tel qu'on "+
+  "l'avait laissé trois jours plus tôt, avec six carnets grands ouverts dont on ne sait "+
+  "plus pourquoi. Pendant la séance, en revanche, ce que vous dépliez reste déplié."],
  ["Replier les listes",
   "Dans l'onglet Listes, cliquez le titre d'une liste pour l'ouvrir ou la refermer ; le chiffre "+
   "à droite indique le nombre de valeurs. Deux boutons « Tout déplier » et « Tout replier » en "+
@@ -11182,7 +11281,7 @@ const AIDE = [
   "comme un tiret, qui ferme la case, mais comme un <b>blanc souligné</b> de la longueur qu'il "+
   "faut pour l'écrire."],
  ["Générer les documents",
-  "Onglet « Documents » : l'aperçu se met à jour en direct. « Télécharger en Word » produit un "+
+  "Onglet « Imprimés » : l'aperçu se met à jour en direct. « Télécharger en Word » produit un "+
   "fichier que Word ouvre et que vous retouchez librement. « Imprimer / PDF » passe par "+
   "l'impression du navigateur."],
  ["Annuler une offre ou un compromis",
@@ -11349,7 +11448,7 @@ const AIDE = [
   "La croix de droite <b>annule la ligne</b> : un bouton pressé par erreur ou pour essayer "+
   "ne doit pas fausser le suivi."],
  ["La facture d'honoraires",
-  "Troisième pièce de l'onglet Documents, en-tête d'agence compris, et toujours tenue sur "+
+  "Troisième pièce de l'onglet Imprimés, en-tête d'agence compris, et toujours tenue sur "+
   "<b>une seule feuille</b> : si le destinataire ou le RIB l'allongent, la mise en page se "+
   "resserre d'elle-même. Le bloc de mentions du bas est un véritable pied de page : à "+
   "l'écran il est calé en bas de la feuille, et dans le fichier Word il est remis à Word, "+
@@ -11569,6 +11668,15 @@ const AIDE = [
   "plus, pour qu'une galerie s'ouvre vite même sur la tablette en 4G. Les <b>PDF</b> sont "+
   "conservés tels quels, jusqu'à 20 Mo. Dans la galerie, l'<b>étoile</b> désigne la photo "+
   "principale et les flèches en règlent l'ordre."],
+ ["La page « Pièces jointes » d'un dossier",
+  "Le sous-menu <b>Pièces jointes</b>, juste après <b>Imprimés</b>, rassemble tout ce que "+
+  "le dossier porte, <b>dans l'ordre du menu de gauche</b> : le bien d'abord, puis "+
+  "l'affaire, l'immeuble, les vendeurs, les acquéreurs, les notaires et la personne en "+
+  "charge, la banque, le diagnostiqueur. Chaque groupe garde son bouton <b>+ Ajouter</b>, "+
+  "même vide — c'est là qu'on dépose. "+
+  "<b>Cliquez une ligne</b> : la pièce s'affiche dans le cadre de droite sans quitter la "+
+  "page — une photo en grand, un PDF feuilletable. Le <b>crayon</b> renomme (le fichier du "+
+  "Drive suit), la <b>croix</b> retire. Le compteur du menu donne le total du dossier."],
  ["Où sont rangées les pièces jointes",
   "À trois endroits, et il vaut la peine de savoir lequel fait quoi. "+
   "L'<b>original</b> est un vrai fichier dans <b>votre Google Drive</b>, rangé par le "+
@@ -11684,6 +11792,7 @@ function renderAll(){
   renderDiags(); renderQuest(); renderCarnets(); renderDossiers(); renderAide();
   renderFacture(); renderPreview(); autosize(); refreshAllVilles();
   majStade(); majOnglets(); majObligatoires(); majMenuDossier();
+  if(typeof renderPagePieces === "function") renderPagePieces();
 }
 
 /* reprise des données de la première version de l'application (une seule fois) */
@@ -12088,9 +12197,10 @@ async function filePieces(silencieux){
     }catch(e){ rate = true; break; }
     majPjBandeau();
     if(PJ_SUJET === p.sujet) rendrePieces();
+    if(pageActive() === "pieces") majPjPageInfo();
   }
   PJ_ENVOI = false; majPjBandeau();
-  if(faits){ syncDiffere(); if(PJ_SUJET) rendrePieces(); }
+  if(faits){ syncDiffere(); rafraichirPieces(); }
   if(faits && !silencieux) toast(faits + (faits > 1 ? " pièces envoyées" : " pièce envoyée"));
   if(rate && !silencieux) toast("Envoi interrompu — il reprendra au retour du réseau");
 }
@@ -12265,8 +12375,8 @@ function rendrePieces(){
       Les photos sont réduites à ${PHOTO_PX} px à l'arrivée ; les PDF sont conservés tels
       quels, jusqu'à ${poids(PJ_MAX)}.</p>` : ""}`;
 
-  $("#pjAjout").onclick = ()=> pjChoisir(false);
-  $("#pjPhoto").onclick = ()=> pjChoisir(true);
+  $("#pjAjout").onclick = ()=> pjChoisir(false, PJ_SUJET);
+  $("#pjPhoto").onclick = ()=> pjChoisir(true, PJ_SUJET);
   majPjInfo();
   photos.forEach(p=> peindreVignette(p));
 }
@@ -12292,7 +12402,9 @@ async function peindreVignette(p){
   }catch(e){ z.classList.add("vide"); }
 }
 
-function pjChoisir(camera){
+function pjChoisir(camera, sujet){
+  const cible = sujet || PJ_SUJET;
+  if(!cible) return;
   const i = document.createElement("input");
   i.type = "file"; i.multiple = true; i.accept = camera ? "image/*" : PJ_TYPES;
   if(camera) i.capture = "environment";
@@ -12300,8 +12412,8 @@ function pjChoisir(camera){
     const fs = Array.from(i.files || []);
     if(!fs.length) return;
     toast(fs.length > 1 ? "Préparation de " + fs.length + " pièces…" : "Préparation…");
-    for(const f of fs){ await ajouterPiece(PJ_SUJET, f); }
-    rendrePieces();
+    for(const f of fs){ await ajouterPiece(cible, f); }
+    rafraichirPieces();
   };
   i.click();
 }
@@ -12317,7 +12429,7 @@ function deplacerPhoto(id, pas){
   const a = ph[i], b = ph[j];
   const t = a.ordre; a.ordre = b.ordre; b.ordre = t;
   a.maj = b.maj = Date.now();
-  ecrirePieces(); syncDiffere(); rendrePieces();
+  ecrirePieces(); syncDiffere(); rafraichirPieces();
 }
 function photoPrincipaleChoisie(id){
   const p = PIECES[id]; if(!p) return;
@@ -12326,7 +12438,7 @@ function photoPrincipaleChoisie(id){
     x.principale = (x.id === id) ? !avant : false;
     if(avant !== !!x.principale) x.maj = Date.now();
   });
-  ecrirePieces(); syncDiffere(); rendrePieces();
+  ecrirePieces(); syncDiffere(); rafraichirPieces();
 }
 
 /* ------------------------------------------- le bandeau « envoi en cours » */
@@ -12340,7 +12452,7 @@ function majPjBandeau(){
        <button type="button" class="lienbtn" id="pjRelance">envoyer maintenant</button>`;
   const r = $("#pjRelance");
   if(r) r.onclick = ()=> filePieces(false);
-  majPjInfo();
+  majPjInfo(); majPjPageInfo();
 }
 
 /* ------------------------------------------------------ la place occupée */
@@ -12375,6 +12487,187 @@ async function rendrePlace(){
     if(PJ_SUJET) rendrePieces();
   };
 }
+
+/* ============================================ LA PAGE « PIÈCES JOINTES »
+   Tout ce qui est rattaché au dossier, au même endroit et dans le même ordre
+   que le menu de gauche : le bien d'abord, puis l'affaire et l'immeuble, puis
+   les vendeurs, les acquéreurs, les notaires, la banque, le diagnostiqueur.
+   On y ajoute, on y renomme, on y retire, et un clic sur une ligne montre la
+   pièce à droite — sans quitter la page, sans ouvrir d'onglet. */
+let PJ_VU = "";                               /* la pièce affichée à droite */
+
+/* Les groupes du dossier courant, dans l'ordre du menu. Un groupe sans pièce
+   reste affiché : c'est là qu'on en dépose une. */
+function groupesPieces(){
+  const b = D.bien || {}, g = [];
+  const ajoute = (sujet, titre, note)=>{
+    if(sujet && sujetCle(sujet)) g.push({sujet, titre, note});
+  };
+  ajoute(sujetBien(D), "Le bien", "photos, diagnostics, plans");
+  ajoute(sujetDossier(D), "L'affaire", "mandat, offre, compromis");
+  if(String(b.residence || "").trim())
+    ajoute(sujetImmeuble(b.residence), b.residence, "partagé par tous les lots");
+
+  (D.vendeurs || []).forEach(p=>{
+    if(nomPersonne(p)) ajoute(sujetPersonne(p), nomPersonne(p), "vendeur");
+  });
+  (D.acquereurs || []).forEach(p=>{
+    if(nomPersonne(p)) ajoute(sujetPersonne(p), nomPersonne(p), "acquéreur");
+  });
+
+  const n = D.notaire || {};
+  const gens = [[n.vendeur, "notaire du vendeur"], [n.acquereur, "notaire de l'acquéreur"],
+                [n.vendeurContact, "en charge, côté vendeur"],
+                [n.acquereurContact, "en charge, côté acquéreur"],
+                [(D.pret || {}).banque, "banque"], [D.diagPar, "diagnostiqueur"]];
+  const vus = {};
+  gens.forEach(([nom, note])=>{
+    const t = String(nom || "").trim();
+    if(!t || vus[t]) return;
+    vus[t] = 1;
+    ajoute(sujetPersonne(t), t, note);
+  });
+  return g;
+}
+
+function renderPagePieces(){
+  const z = $("#pjPageListe");
+  if(!z) return;
+  const groupes = groupesPieces();
+  const total = groupes.reduce((s, x)=> s + comptePieces(x.sujet), 0);
+  const cnt = $("#cntPJ");
+  if(cnt) cnt.textContent = total ? "(" + total + ")" : "";
+
+  z.innerHTML = `
+    <div class="pjentete">
+      <div>
+        <h2>Pièces jointes du dossier</h2>
+        <p class="muted">Rangées comme le menu de gauche. Cliquez une ligne pour la voir
+          à côté ; le crayon renomme, la croix retire.</p>
+      </div>
+      <span class="grow"></span>
+      <span class="muted" id="pjPageInfo"></span>
+    </div>
+    ${!WEB ? `<div class="alerte">Aucune base en ligne n'est connectée : les pièces
+      restent dans cet appareil et ne seront pas visibles ailleurs.</div>` : ""}
+    ${groupes.map(g=>{
+      const liste = piecesDe(g.sujet);
+      return `<section class="pjgroupe">
+        <header>
+          <h3>${esc(g.titre)}</h3>
+          <em>${esc(g.note)}</em>
+          ${liste.length ? `<span class="cnt">${liste.length}</span>` : ""}
+          <span class="grow"></span>
+          <button type="button" class="tbtn light" data-pjadd="${esc(g.sujet)}">+ Ajouter</button>
+        </header>
+        ${liste.length ? `<div class="pjrows">${liste.map(p=> ligneePiece(p)).join("")}</div>`
+          : `<p class="muted vide">Aucune pièce.</p>`}
+      </section>`;
+    }).join("")}`;
+  majPjPageInfo();
+  if(PJ_VU && !PIECES[PJ_VU]) PJ_VU = "";
+  rendreApercu();
+}
+
+function ligneePiece(p){
+  const etat = p.drive ? "" : `<span class="pjetat att">à envoyer</span>`;
+  return `<div class="pjrow${PJ_VU === p.id ? " vu" : ""}" data-pjvoir="${esc(p.id)}">
+    <span class="pjico">${p.photo ? "🖼" : "📄"}</span>
+    <span class="pjlibelle">${esc(p.nom)}</span>
+    <span class="pjmeta">${poids(p.taille)} · ${esc(fdate(String(p.date || "").slice(0,10)))}</span>
+    ${etat}
+    <button type="button" class="pjmini" data-pjren="${esc(p.id)}" title="Renommer">✎</button>
+    <button type="button" class="pjmini sup" data-pjsup="${esc(p.id)}" title="Retirer">×</button>
+  </div>`;
+}
+function majPjPageInfo(){
+  const z = $("#pjPageInfo"); if(!z) return;
+  const att = pjEnAttente();
+  z.textContent = PJ_ENVOI ? "envoi en cours…"
+    : att ? att + (att > 1 ? " pièces en attente" : " pièce en attente") : "";
+}
+
+/* --------------------------------------------------------- l'aperçu
+   Une image s'affiche, un PDF se lit dans le cadre du navigateur. Le reste
+   se télécharge — autant le dire plutôt que d'afficher un cadre vide. */
+let PJ_URL = "";
+async function rendreApercu(){
+  const z = $("#pjApercu"); if(!z) return;
+  if(PJ_URL){ URL.revokeObjectURL(PJ_URL); PJ_URL = ""; }
+  const p = PIECES[PJ_VU];
+  if(!p || p.supprime){
+    z.innerHTML = `<div class="pjvidesel"><span>Cliquez une pièce pour la voir ici.</span></div>`;
+    return;
+  }
+  z.innerHTML = `<div class="pjaen">
+      <b>${esc(p.nom)}</b>
+      <span class="muted">${poids(p.taille)}</span>
+      <span class="grow"></span>
+      <button type="button" class="tbtn light" data-pjtel="${esc(p.id)}">Télécharger</button>
+      <button type="button" class="tbtn light" data-pjouvre="${esc(p.id)}">Nouvel onglet</button>
+    </div>
+    <div class="pjacorps"><p class="muted">Chargement…</p></div>`;
+  const corps = z.querySelector(".pjacorps");
+  let blob = null;
+  try{ blob = await blobDeLaPiece(p, false); }catch(e){}
+  if(PJ_VU !== p.id) return;                 /* on a cliqué ailleurs entre-temps */
+  if(!blob){
+    corps.innerHTML = `<p class="muted">Pièce indisponible — elle est dans le Drive et le
+      réseau manque.</p>`;
+    return;
+  }
+  PJ_URL = URL.createObjectURL(blob);
+  if(/^image\//.test(p.type || "")) corps.innerHTML = `<img src="${PJ_URL}" alt="">`;
+  else if(/pdf/i.test(p.type || "") || /\.pdf$/i.test(p.nom))
+    corps.innerHTML = `<iframe src="${PJ_URL}" title="${esc(p.nom)}"></iframe>`;
+  else corps.innerHTML = `<p class="muted">Ce type de fichier ne s'affiche pas ici.
+    Utilisez « Télécharger ».</p>`;
+}
+function voirPiece(id){
+  PJ_VU = (PJ_VU === id) ? "" : id;
+  $$("#pjPageListe .pjrow").forEach(r=>
+    r.classList.toggle("vu", r.getAttribute("data-pjvoir") === PJ_VU));
+  rendreApercu();
+}
+
+/* ------------------------------------------------------------- renommer
+   Le fichier du Drive suit, sinon on se retrouverait avec deux noms pour la
+   même pièce. Si le script déposé est encore l'ancien, il ne sait pas
+   renommer : on le dit au lieu de laisser croire que c'est fait. */
+function renommerPiece(id){
+  const p = PIECES[id]; if(!p) return;
+  popup({titre:"Renommer la pièce",
+    corps:`<div class="f"><label>Nom du fichier</label>
+      <input type="text" id="pjNom" value="${esc(p.nom)}"></div>`,
+    boutons:[{lib:"Annuler"},{lib:"Renommer", primaire:true, action:async ()=>{
+      const el = document.getElementById("pjNom");
+      const neuf = el ? String(el.value || "").trim() : "";
+      if(!neuf || neuf === p.nom) return;
+      const avant = p.nom;
+      p.nom = neuf; p.maj = Date.now();
+      ecrirePieces(); syncDiffere();
+      rafraichirPieces();
+      if(p.drive && WEB){
+        try{
+          const d = await webAppel({action:"piece_renommer", drive:p.drive, nom:neuf});
+          if(!d || !d.renomme)
+            toast("Renommée ici ; dans le Drive elle s'appelle encore « " + avant + " »");
+          else if(d.nom && d.nom !== neuf){
+            p.nom = d.nom; ecrirePieces(); rafraichirPieces();
+          }
+        }catch(e){ toast("Renommée ici, mais le Drive n'a pas répondu"); }
+      }
+    }}]});
+  setTimeout(()=>{ const el = document.getElementById("pjNom"); if(el){ el.focus(); el.select(); } }, 60);
+}
+
+/* Les deux vues des pièces — la page et la fenêtre — se redessinent ensemble :
+   on peut très bien avoir ouvert la fenêtre depuis la page. */
+function rafraichirPieces(){
+  if(PJ_SUJET) rendrePieces();
+  if(pageActive() === "pieces") renderPagePieces();
+}
+
 
 /* ===================================================================== PWA
    L'application installée sur une tablette
