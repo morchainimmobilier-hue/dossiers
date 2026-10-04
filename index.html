@@ -1353,6 +1353,7 @@ table.tdb .puce.resilie{background:#64748b}
   padding:1px 7px;font-weight:700;flex:0 0 auto}
 /* le tri au glisser : on voit ce qu'on tient et où ça va tomber */
 .pubordre .pubvig{cursor:grab}
+.publeg{width:calc(100% - 16px);margin:0 8px 8px;font-size:12px;padding:5px 8px}
 .pubvig.enmain{opacity:.4}
 .pubvig.avant{box-shadow:inset 3px 0 0 var(--accent)}
 .pubvig.apres{box-shadow:inset -3px 0 0 var(--accent)}
@@ -1461,7 +1462,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 octobre 2026, 14 h 16">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 octobre 2026, 14 h 55">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1660,7 +1661,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 octobre 2026, 14 h 16</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 octobre 2026, 14 h 55</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -1902,6 +1903,7 @@ const LISTS_DEFAULT = {
            ribTitulaire:"", ribBanque:"", iban:"", bic:"",
            /* les pages d'avis du négociateur — ses comptes à lui, pas ceux de
               l'agence : le message ne fait que rappeler la maison */
+           site:"", portrait:"",
            avisGoogle:"https://g.page/r/CfYw2zzqWFZKEAE/review",
            avisFacebook:"https://www.facebook.com/profile.php?id=61573066437230&sk=reviews",
            /* bandeau imprimé en tête des factures ; vide = celui d'origine */
@@ -1966,6 +1968,9 @@ const BOOKS = {
     /* le pourcentage de commission ne se saisit que pour un négociateur maison */
     dep:{commission:"manaranche"}, cols:[
     ["nom","Nom","text","wide"],["tel","Téléphone","text"],["email","Email","text","wide"],
+    /* repris sur la carte de fin des clips : la qualité telle qu'elle doit
+       être annoncée, et le portrait rond */
+    ["qualite","Qualité annoncée","text","wide"],
     ["manaranche","Appartient à l'agence Manaranche","check"],
     ["commission","Pourcentage de commission","pct"]]},
   diagnostiqueurs:{title:"Diagnostiqueurs", mode:"card", label:"Cabinet", cols:[
@@ -4709,6 +4714,10 @@ function renderDiags(){
           `${dpeSelect(i,"dpeGes",DPE_GES,"GES")}` +
           /* la loi impose aussi, dans toute annonce, le coût annuel estimé et
              l'année des prix de référence : ils se lisent sur le DPE */
+          `<span class="dpeone"><span class="dpelab">kWh/m²/an</span>` +
+          `${controlRaw(`diags.${i}.dpeKwh`,"nb",d.dpeKwh||"","","data-b")}</span>` +
+          `<span class="dpeone"><span class="dpelab">kg CO₂/m²/an</span>` +
+          `${controlRaw(`diags.${i}.dpeCo2`,"nb",d.dpeCo2||"","","data-b")}</span>` +
           `<span class="dpeone"><span class="dpelab">Coût min</span>` +
           `${controlRaw(`diags.${i}.dpeCoutMin`,"money",d.dpeCoutMin||"","","data-b")}</span>` +
           `<span class="dpeone"><span class="dpelab">Coût max</span>` +
@@ -4814,6 +4823,29 @@ function renderQuest(){
 /* ---------------------------------------------------------------- listes */
 /* le logo est redimensionné avant stockage : le navigateur ne garde que
    quelques dizaines de kilo-octets, pas le fichier d'origine */
+/* Le portrait de la carte de fin : carré, 420 px, c'est assez pour un rond de
+   360 px dans un clip de 1080 de large. */
+function chargerPortrait(file){
+  const r = new FileReader();
+  r.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const cote = Math.min(img.width, img.height);
+      const c = document.createElement("canvas");
+      c.width = c.height = 420;
+      c.getContext("2d").drawImage(img, (img.width - cote) / 2, (img.height - cote) / 2,
+        cote, cote, 0, 0, 420, 420);
+      try{
+        L.agence.portrait = c.toDataURL("image/jpeg", 0.88);
+        saveLists(); renderListes();
+        toast("Portrait enregistré");
+      }catch(e){ toast("Image trop lourde pour le navigateur"); }
+    };
+    img.onerror = ()=> toast("Image illisible");
+    img.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
 function chargerLogo(file){
   const r = new FileReader();
   r.onload = ()=>{
@@ -5067,6 +5099,14 @@ function renderListes(){
          <input type="file" id="logoFile" accept="image/*" hidden></label>
        ${a.logo ? `<button class="xbtn sup" id="logoDel">Retirer</button>` : ""}
      </div></div>
+     <div class="f"><label>Portrait du négociateur</label><div class="logobox">
+       ${a.portrait ? `<img src="${a.portrait}" alt="" style="max-height:72px;border-radius:50%">`
+                    : `<span class="muted">Aucun portrait. Il s'affiche en rond sur la carte
+                        de fin des clips.</span>`}
+       <label class="tbtn light" style="cursor:pointer">Choisir une photo
+         <input type="file" id="portraitFile" accept="image/*" hidden></label>
+       ${a.portrait ? `<button class="xbtn sup" id="portraitDel">Retirer</button>` : ""}
+     </div></div>
      <div class="f"><label>Bandeau des factures</label><div class="logobox large">
        <img src="${enteteFacture()}" alt="">
        <label class="tbtn light" style="cursor:pointer">Choisir une image
@@ -5076,7 +5116,7 @@ function renderListes(){
     [["nom","Nom de l'agence"],["adresse","Adresse"],["ville","Ville d'émission des factures"],
      ["siret","Siret"],["tva","N° TVA intracommunautaire"],
      ["forme","Forme et capital"],["rcs","RCS"],["carte","Carte professionnelle"],
-     ["garantie","Garantie financière"]]
+     ["garantie","Garantie financière"],["site","Site internet (repris sur les clips)"]]
     .map(([k,lab])=>`<div class="f"><label>${esc(lab)}</label>
       <input type="text" data-agence="${k}" value="${esc(a[k]||"")}"></div>`).join("") +
     `<div class="fsep"></div>
@@ -5103,6 +5143,10 @@ function renderListes(){
   if(lf) lf.onchange = e=>{ if(e.target.files[0]) chargerLogo(e.target.files[0]); };
   const ld = $("#logoDel");
   if(ld) ld.onclick = ()=>{ L.agence.logo = ""; saveLists(); renderListes(); renderPreview(); };
+  const pf = $("#portraitFile");
+  if(pf) pf.onchange = e=>{ if(e.target.files[0]) chargerPortrait(e.target.files[0]); };
+  const pd = $("#portraitDel");
+  if(pd) pd.onclick = ()=>{ L.agence.portrait = ""; saveLists(); renderListes(); };
   const ef = $("#enteteFile");
   if(ef) ef.onchange = e=>{ if(e.target.files[0]) chargerEntete(e.target.files[0]); };
   const ed = $("#enteteDel");
@@ -9789,6 +9833,9 @@ document.addEventListener("click", e=>{
     PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
     renderPublications(); return;
   }
+  const pg = e.target.closest("[data-pubgab]");
+  if(pg){ PUB_GABARIT = pg.getAttribute("data-pubgab"); oublierClip();
+          renderPublications(); return; }
   const pk = e.target.closest("[data-pubpick]");
   if(pk){
     const id = pk.getAttribute("data-pubpick");
@@ -11306,7 +11353,8 @@ function migrate(d){
   delete out.avis.envoye;
   out.publications = (Array.isArray(d.publications) ? d.publications : [])
     .filter(Boolean).map(x=> Object.assign({
-      id:"", date:"", style:"pro", graine:1, texte:"", photos:[], clip:""}, x));
+      id:"", date:"", style:"pro", graine:1, gabarit:"vitrine",
+      texte:"", photos:[], puces:[], legendes:{}, clip:""}, x));
   out.annulations = (Array.isArray(d.annulations) ? d.annulations : [])
     .filter(Boolean).map(x=> Object.assign({
       id:"", date:"", stade:"", client:"", negoAcq:"", notaireAcq:"", note:"",
@@ -11335,7 +11383,7 @@ function migrate(d){
             dpeEnergie:a.dpeEnergie||"", dpeGes:a.dpeGes||"",
             /* dépenses annuelles estimées et année des prix, exigées en annonce */
             dpeCoutMin:a.dpeCoutMin||"", dpeCoutMax:a.dpeCoutMax||"",
-            dpeAnnee:a.dpeAnnee||"",
+            dpeAnnee:a.dpeAnnee||"", dpeKwh:a.dpeKwh||"", dpeCo2:a.dpeCo2||"",
             manuel:!!a.manuel, masque:!!a.masque};
   };
   out.diags = DIAGS.map(n=>repriseDiag(n, anciens[n]));
@@ -11991,6 +12039,11 @@ const AIDE = [
   "rejoue le même style avec d'autres formules. Le texte reste <b>modifiable</b> avant "+
   "d'être copié, et le compteur prévient au-delà de 2 200 caractères, longueur où "+
   "Instagram coupe. "+
+  "Le français est soigné : élisions (« au cœur d'Arles », « cet appartement »), "+
+  "pluriels des noms composés (« 2 salles d'eau » et non « 2 salle d'eaux »), accords de "+
+  "genre (« une maison neuve », « un appartement neuf »), et « et » devant le dernier "+
+  "terme d'une énumération. Les styles <b>Chaleureux</b> et <b>Coup de cœur</b> portent "+
+  "quelques <b>émoticônes</b> ; le Professionnel et l'Investisseur n'en ont aucune. "+
   "Soyons clairs sur ce que c'est : l'application travaille hors ligne, il n'y a pas "+
   "d'intelligence artificielle derrière ce bouton. Le texte est <b>composé</b> à partir de "+
   "vos données selon des patrons de style. C'est un brouillon juste, à relire — pas une "+
@@ -12010,10 +12063,24 @@ const AIDE = [
   "Diagnostics, sur la ligne DPE, à côté des deux lettres. "+
   "Ce qui manque est listé <b>en rouge au-dessus du texte</b>, et remplacé par « … » dans "+
   "l'annonce : mieux vaut un trou visible qu'une mention inventée."],
- ["Le clip pour les réseaux",
-  "Les photos défilent au format <b>1080 × 1350</b> — celui qui occupe le plus de place "+
-  "dans un fil — avec un lent mouvement d'approche, des fondus et votre logo en bas. Le "+
-  "prix et les mentions n'y figurent pas : ils vivent dans le texte. "+
+ ["Le clip pour les réseaux : deux gabarits",
+  "Deux façons de montrer un bien, parce qu'une seule lasse vite un fil. "+
+  "<b>Vitrine</b> : la photo occupe le haut, une fiche crème occupe le bas — prix en "+
+  "grand, surface, six arguments, DPE et GES avec leurs valeurs, téléphone, mentions "+
+  "obligatoires et adresse du site. Elle se suffit à elle-même, sans le son et sans lire "+
+  "la légende. "+
+  "<b>Récit</b> : la photo prend tout le cadre, un carton d'ouverture annonce le bien, "+
+  "puis chaque vue porte sa <b>légende</b> dans une pastille blanche. Cela raconte au "+
+  "lieu d'énumérer ; il faut en revanche écrire les légendes, que l'application propose "+
+  "d'après le nom des photos et que vous corrigez à la dernière étape du choix. "+
+  "Les deux finissent sur la même <b>carte de contact</b> : logo, portrait, nom, qualité, "+
+  "téléphone, adresse et site. Le portrait et le site se règlent dans Listes → Agence, la "+
+  "qualité sur votre fiche du carnet Négociateurs. Les valeurs du DPE en kWh et en kg de "+
+  "CO₂ se saisissent sur la ligne DPE des Diagnostics. "+
+  "Les six arguments de la Vitrine sont proposés d'après le dossier et se corrigent dans "+
+  "la page, un par ligne. "+
+  "Format <b>1080 × 1350</b>, celui qui occupe le plus de place dans un fil. Le "+
+  "prix est sur la fiche de la Vitrine mais jamais en travers des photos. "+
   "« <b>Choisir les photos</b> » ouvre un assistant en trois temps : les photos du bien, "+
   "puis celles de l'immeuble (rubrique Photos de sa fiche), puis l'ordre — que l'on règle "+
   "en <b>glissant les vignettes</b>. Dix photos au maximum : au-delà, personne ne regarde. "+
@@ -12033,8 +12100,8 @@ const AIDE = [
   "vous gardez la main sur la programmation et le ciblage."],
  ["L'historique des publications",
   "« <b>Garder dans l'historique</b> » conserve le texte tel que vous l'avez laissé, le "+
-  "style, et la liste des photos retenues. <b>Reprendre</b> restitue le tout : le même "+
-  "texte, les mêmes photos, prêt à refaire le même clip. La vidéo elle-même n'est pas "+
+  "style, le gabarit du clip, les arguments, les légendes et la liste des photos "+
+  "retenues. <b>Reprendre</b> restitue le tout : prêt à refaire exactement le même clip. La vidéo elle-même n'est pas "+
   "conservée — plusieurs méga-octets par essai, et elle se refabrique en quelques "+
   "secondes. L'historique appartient au dossier et suit la base partagée."],
  ["L'application sur tablette",
@@ -13181,6 +13248,70 @@ function rafraichirPieces(){
 }
 
 
+/* ------------------------------------------------- un peu de français ---
+   Composer une phrase par collage donne vite « Imaginez appartement de 72,5
+   m², avec ses 1 chambres, au cœur de Arles ». Les quelques règles qui
+   suivent coûtent peu et suppriment l'essentiel de ces fautes : l'élision,
+   l'article, le genre du bien, l'accord en nombre, et la virgule remplacée
+   par « et » devant le dernier terme d'une énumération. */
+
+const VOYELLE = /^[aàâäeéèêëiîïoôöuùûüyh]/i;
+function voyelleDebut(m){ return VOYELLE.test(String(m || "").trim()); }
+
+/* « de » devant un mot : d'Arles, de Mouriès */
+function deDevant(m){ return (voyelleDebut(m) ? "d'" : "de ") + m; }
+/* « le / la » devant un mot : l'appartement, la maison, le mas */
+function leDevant(m, feminin){
+  if(voyelleDebut(m)) return "l'" + m;
+  return (feminin ? "la " : "le ") + m;
+}
+/* « ce / cette » : cet appartement, cette maison, ce mas */
+function ceDevant(m, feminin){
+  if(feminin) return (voyelleDebut(m) ? "cette " : "cette ") + m;
+  return (voyelleDebut(m) ? "cet " : "ce ") + m;
+}
+
+/* Le genre du bien commande tous les accords qui suivent. */
+const BIENS_FEMININS = /maison|villa|bastide|ferme|longère|grange|boutique|propriété|cave|remise|échoppe/i;
+function bienFeminin(type){ return BIENS_FEMININS.test(String(type || "")); }
+
+/* Pluriel d'un nom commun français, dans les cas qui nous occupent. */
+function pluriel(mot, n){
+  const m = String(mot || "");
+  if(n < 2) return m;
+  if(/[sxz]$/i.test(m)) return m;
+  /* « salle d'eau » → « salles d'eau » : c'est le premier nom qui s'accorde, et
+     il faut le voir AVANT la règle en -eau, sinon on obtient « salle d'eaux » */
+  const compose = m.match(/^([A-Za-zÀ-ÿ-]+)(\s+(?:d'|de |du |des |à |en |au )[\s\S]+)$/i);
+  if(compose) return pluriel(compose[1], n) + compose[2];
+  if(/(eau|eu)$/i.test(m)) return m + "x";
+  if(/al$/i.test(m)) return m.replace(/al$/i, "aux");
+  return m + "s";
+}
+/* « 3 chambres », « 1 chambre », et rien du tout si le compte manque */
+function unPluriel(n, mot){
+  if(n === null || n === undefined || !isFinite(n) || n <= 0) return "";
+  return n + " " + pluriel(mot, n);
+}
+/* « a, b et c » — la virgule jusqu'au dernier, puis « et » */
+function joindreEt(l, mot){
+  const x = (l || []).filter(Boolean);
+  if(!x.length) return "";
+  if(x.length === 1) return x[0];
+  return x.slice(0, -1).join(", ") + " " + (mot || "et") + " " + x[x.length - 1];
+}
+/* première lettre en capitale, sans toucher au reste */
+function cap(s){ const t = String(s || ""); return t.charAt(0).toUpperCase() + t.slice(1); }
+/* « Bon état » → « en bon état » ; « Neuf » s'accorde */
+function enEtat(etat, feminin){
+  const e = String(etat || "").trim();
+  if(!e) return "";
+  if(/^neuf$/i.test(e)) return feminin ? "neuve" : "neuf";
+  if(/^refait à neuf$/i.test(e)) return feminin ? "refaite à neuf" : "refait à neuf";
+  if(/^à /i.test(e)) return e.toLowerCase();
+  return "en " + e.toLowerCase();
+}
+
 /* ======================================================== PUBLICATIONS ===
    Composer une annonce pour les réseaux sociaux à partir du dossier
    ---------------------------------------------------------------------------
@@ -13357,41 +13488,57 @@ function mentionsPubli(){
 /* ------------------------------------------------------------ le corps */
 function corpsPubli(style, graine){
   const o = donneesPubli(), pioche = dePubli(graine);
-  /* « ARLES » se lit « Arles » au fil d'une phrase ; « à Arles » mais « aux
-     Saintes-Maries » et « au cœur d'Arles » : l'élision n'est pas un détail,
-     c'est la différence entre un texte écrit et un texte rempli. */
+  const fem = bienFeminin(o.type);
+  const type = (o.type || "bien").toLowerCase();
   const ou = villeLisible(o.ville);
   const aOu = aLaVille(o.ville);
-  const coeurOu = ou ? "au cœur " + (/^[AEIOUYÀÂÉÈÊÎÔÛaeiouyàâéèêîôû]/.test(ou)
-    ? "d'" + ou : "de " + ou) : "";
-  /* « imaginez appartement » ne se dit pas : il faut son article */
-  const leType = o.type ? (/^[AEIOUYÀÂÉÈÊÎÔÛaeiouyàâéèêîôû]/.test(o.type)
-    ? "cet " : "ce ") + o.type.toLowerCase() : "ce bien";
-  const piecesTxt = o.pieces ? o.pieces + " pièce" + (o.pieces > 1 ? "s" : "") : "";
-  const chTxt = o.chambres ? o.chambres + " chambre" + (o.chambres > 1 ? "s" : "") : "";
+  const coeurOu = ou ? "au cœur " + deDevant(ou) : "";
+  const ceBien = ceDevant(type, fem);
+  const leBien = leDevant(type, fem);
   const sTxt = m2txt(o.surface);
-  const lignes = [];
+  const piecesTxt = unPluriel(o.pieces, "pièce");
+  const chTxt = unPluriel(o.chambres, "chambre");
+  const dEau = (o.sdb || 0) + (o.sdEau || 0);
+  const eauTxt = o.sdb && o.sdEau
+    ? joindreEt([unPluriel(o.sdb, "salle de bain"), unPluriel(o.sdEau, "salle d'eau")])
+    : o.sdb ? unPluriel(o.sdb, "salle de bain")
+    : o.sdEau ? unPluriel(o.sdEau, "salle d'eau") : "";
 
+  /* les atouts, rangés du plus parlant au plus accessoire */
+  const dehors = o.annexes.filter(a=> /terrasse|jardin|balcon|loggia/i.test(a));
+  const rangement = o.annexes.filter(a=> /cave|garage|parking|grenier/i.test(a));
   const atouts = [];
   if(o.exposition) atouts.push("exposition " + o.exposition.toLowerCase());
-  if(o.etat) atouts.push(o.etat.toLowerCase());
-  o.annexes.forEach(a=> atouts.push(a));
+  dehors.forEach(a=> atouts.push(a));
   if(o.ascenseur) atouts.push("ascenseur");
   if(o.piscine) atouts.push("piscine collective");
   if(o.parkingColl) atouts.push("parking collectif");
-  if(o.chauffage) atouts.push("chauffage : " + o.chauffage.toLowerCase());
-  if(o.terrain) atouts.push("terrain de " + m2txt(o.terrain));
+  rangement.forEach(a=> atouts.push(a));
+  if(o.chauffage) atouts.push(o.chauffage.toLowerCase());
+  if(o.terrain !== null) atouts.push("terrain " + deDevant(m2txt(o.terrain)));
 
+  const lignes = [];
+
+  /* --------------------------------------------------- Professionnel */
   if(style === "pro"){
-    lignes.push([o.type, aOu, sTxt, piecesTxt].filter(Boolean).join(" · "));
-    const desc = [piecesTxt, chTxt].filter(Boolean).join(" dont ");
-    lignes.push([
-      o.type + (sTxt ? " de " + sTxt : ""),
-      desc ? "comprenant " + desc : "",
-      etageTxt(o),
-      o.residence ? "dans la résidence " + o.residence : ""
-    ].filter(Boolean).join(", ") + ".");
-    if(atouts.length) lignes.push("Prestations : " + atouts.join(", ") + ".");
+    lignes.push([cap(type), piecesTxt, sTxt ? deDevant(sTxt) : "", aOu]
+      .filter(Boolean).join(" "));
+
+    const desc = [];
+    if(chTxt) desc.push(chTxt);
+    if(eauTxt) desc.push(eauTxt);
+    /* sujet puis verbe, sans virgule entre les deux : « Cet appartement se
+       compose de… » et non « Cet appartement, se compose de… » */
+    const situe = [etageTxt(o), o.residence ? "dans la résidence " + o.residence : ""]
+      .filter(Boolean).join(", ");
+    lignes.push(cap(ceBien + (sTxt ? " " + deDevant(sTxt) : ""))
+      + (desc.length ? " se compose de " + joindreEt(desc) : "")
+      + (situe ? (desc.length ? ", " : " se situe ") + situe : "") + ".");
+
+    if(atouts.length)
+      lignes.push(pioche(["Les prestations : ", "Côté prestations : ",
+        "À noter également : "]) + joindreEt(atouts.slice(0, 5)) + ".");
+    if(o.etat) lignes.push(cap(leBien) + " est " + enEtat(o.etat, fem) + ".");
     lignes.push(pioche([
       "Visite sur rendez-vous.",
       "Dossier complet et visite sur demande.",
@@ -13399,61 +13546,82 @@ function corpsPubli(style, graine){
     ]));
   }
 
+  /* ------------------------------------------------------ Chaleureux */
   if(style === "chal"){
     lignes.push(pioche([
-      "Et si c'était là ?",
-      "Un lieu où poser ses valises" + (aOu ? ", " + aOu : "") + ".",
-      "On a un faible pour celui-ci."
+      "Et si c'était là ? 🏡",
+      "Un endroit où poser ses valises" + (aOu ? ", " + aOu : "") + " ✨",
+      "On a un faible pour celui-ci 💛"
     ]));
-    lignes.push([
-      pioche(["Imaginez", "Représentez-vous", "Projetez-vous dans"]) + " "
-        + leType + (sTxt ? " de " + sTxt : ""),
-      chTxt ? "avec ses " + chTxt : "",
-      etageTxt(o),
-      coeurOu
-    ].filter(Boolean).join(", ") + ".");
+    const ouverture = pioche([
+      "Imaginez-vous dans " + ceBien,
+      "Représentez-vous " + ceBien,
+      "Poussez la porte " + deDevant(ceBien)
+    ]);
+    const avec = [];
+    if(chTxt) avec.push("ses " + chTxt);
+    dehors.forEach(x=> avec.push("sa " + x.replace(/^(le |la |un |une )/i, "")));
+    lignes.push(cap(ouverture) + (sTxt ? " " + deDevant(sTxt) : "")
+      + (avec.length ? ", avec " + joindreEt(avec) : "")
+      + (coeurOu ? ", " + coeurOu : "") + ".");
+
+    const place = [];
+    if(etageTxt(o)) place.push("Il se trouve ".replace("Il", fem ? "Elle" : "Il")
+      + etageTxt(o));
+    if(o.exposition) place.push((place.length ? "et bénéficie d'une exposition "
+      : (fem ? "Elle bénéficie" : "Il bénéficie") + " d'une exposition ")
+      + o.exposition.toLowerCase());
+    if(place.length) lignes.push(place.join(", ") + ".");
     if(atouts.length) lignes.push(pioche([
       "Ce qu'on aime : ", "Les petits plus : ", "Ce qui fait la différence : "
-    ]) + atouts.slice(0, 5).join(", ") + ".");
+    ]) + joindreEt(atouts.slice(0, 5)) + " ☀️");
     lignes.push(pioche([
-      "Envie de le voir ? Écrivez-nous, on organise la visite.",
-      "Un message et on vous ouvre la porte.",
-      "Dites-nous quand, on vous y emmène."
+      "Envie de le voir ? Écrivez-nous, on organise la visite 📩",
+      "Un message, et on vous ouvre la porte 🔑",
+      "Dites-nous quand, on vous y emmène 😊"
     ]));
   }
 
+  /* ----------------------------------------------------- Coup de cœur */
   if(style === "coup"){
     lignes.push(pioche([
-      "COUP DE CŒUR " + (ou ? "— " + ou.toUpperCase() : ""),
-      "NOUVEAUTÉ " + (ou ? "— " + ou.toUpperCase() : ""),
-      "À NE PAS LAISSER PASSER " + (ou ? "— " + ou.toUpperCase() : "")
-    ]).trim());
-    lignes.push([o.type, sTxt, piecesTxt, chTxt].filter(Boolean).join(" · ") + ".");
-    if(atouts.length) lignes.push(atouts.slice(0, 4).join(" · ") + ".");
+      "💥 COUP DE CŒUR" + (ou ? " — " + ou.toUpperCase() : ""),
+      "✨ NOUVEAUTÉ" + (ou ? " — " + ou.toUpperCase() : ""),
+      "🔥 À NE PAS LAISSER PASSER" + (ou ? " — " + ou.toUpperCase() : "")
+    ]));
+    lignes.push([cap(type), piecesTxt, sTxt ? deDevant(sTxt) : ""]
+      .filter(Boolean).join(" ") + (chTxt ? ", " + chTxt : "") + ".");
+    if(atouts.length) lignes.push("👉 " + cap(joindreEt(atouts.slice(0, 4))) + ".");
+    if(o.etat) lignes.push(cap(leBien) + " est " + enEtat(o.etat, fem)
+      + " : il n'y a rien à faire avant d'y entrer.");
     lignes.push(pioche([
-      "Les biens comme celui-ci ne restent pas longtemps.",
-      "Une visite suffit souvent à se décider.",
-      "Premier arrivé, premier servi — contactez-nous."
+      "Les biens comme celui-ci ne restent pas longtemps 📞",
+      "Une visite suffit souvent à se décider — appelez-nous 📞",
+      "Premier arrivé, premier servi : contactez-nous 📞"
     ]));
   }
 
+  /* ----------------------------------------------------- Investisseur */
   if(style === "inves"){
     const prixM2 = (o.fai !== null && o.surface) ? Math.round(o.fai / o.surface) : null;
-    lignes.push([o.type, aOu, sTxt].filter(Boolean).join(" — "));
-    lignes.push([
-      sTxt ? "Surface " + sTxt : "",
-      piecesTxt, chTxt,
-      prixM2 ? "soit " + eur(prixM2) + " le m²" : ""
-    ].filter(Boolean).join(", ") + ".");
+    lignes.push([cap(type), sTxt, aOu].filter(Boolean).join(" — "));
+    const l2 = [];
+    if(sTxt) l2.push("surface " + sTxt);
+    if(piecesTxt) l2.push(piecesTxt);
+    if(chTxt) l2.push(chTxt);
+    if(prixM2) l2.push("soit " + eur(prixM2) + " le mètre carré");
+    if(l2.length) lignes.push(cap(joindreEt(l2)) + ".");
+
     const ch = [];
     if(o.charges !== null) ch.push("charges de copropriété " + eur(o.charges) + " par an");
     if(o.taxe !== null) ch.push("taxe foncière " + eur(o.taxe));
-    if(o.lots !== null) ch.push("copropriété de " + o.lots + " lots");
-    if(ch.length) lignes.push("Charges annuelles : " + ch.join(", ") + ".");
-    if(atouts.length) lignes.push("Atouts locatifs : " + atouts.slice(0, 5).join(", ") + ".");
+    if(o.lots !== null) ch.push("copropriété " + deDevant(unPluriel(o.lots, "lot")));
+    if(ch.length) lignes.push(cap(joindreEt(ch)) + ".");
+
+    if(atouts.length) lignes.push("Atouts locatifs : " + joindreEt(atouts.slice(0, 5)) + ".");
     lignes.push(pioche([
       "Étude de rentabilité sur demande.",
-      "Nous vous communiquons les derniers procès-verbaux d'assemblée sur demande.",
+      "Les derniers procès-verbaux d'assemblée vous sont communiqués sur demande.",
       "Chiffres détaillés et visite sur rendez-vous."
     ]));
   }
@@ -13566,74 +13734,490 @@ async function imagesDesPieces(ids){
   return out;
 }
 
-/* Remplit le cadre sans déformer, avec un léger débord selon le zoom. */
-function dessinerCouvrant(g, img, z, dx, dy){
-  const r = Math.max(CLIP_L / img.width, CLIP_H / img.height) * z;
-  const w = img.width * r, h = img.height * r;
-  g.drawImage(img, (CLIP_L - w) / 2 + dx, (CLIP_H - h) / 2 + dy, w, h);
+/* ===================================================== LES DEUX GABARITS ==
+   Deux façons de montrer un bien, parce qu'une seule lasse vite un fil :
+
+   · VITRINE — la photo occupe le haut, une fiche crème occupe le bas : prix
+     en grand, surface, six arguments, DPE et GES, téléphone, et les mentions
+     en petits caractères. C'est l'affiche de vitrine, qui se suffit à
+     elle-même : on peut la regarder sans son et sans lire la légende.
+
+   · RÉCIT — la photo prend tout le cadre, un carton d'ouverture annonce le
+     bien, puis chaque vue porte sa légende dans une pastille blanche. Cela
+     raconte plutôt que cela n'énumère ; il faut en revanche écrire les
+     légendes, et l'application les propose avant qu'on les corrige.
+
+   Les deux finissent sur la même carte de contact.
+
+   Tout est peint sur un canevas et enregistré par le navigateur. Les polices
+   sont celles du système : embarquer une fonte ajouterait deux cents
+   kilo-octets au fichier pour un gain que personne ne verra sur un
+   téléphone. */
+
+const GABARITS_CLIP = [
+  {cle:"vitrine", lib:"Vitrine", note:"photo en haut, fiche en bas — tout est dit"},
+  {cle:"recit",   lib:"Récit",   note:"plein cadre, légendes animées — on raconte"}
+];
+
+const CL = {
+  creme:"#f8f2eb", bordeaux:"#580d22", encre:"#210f34", prune:"#3b1a3a",
+  rouge:"#c8102e", ambre:"#fab431", gris:"#7b7280", blanc:"#ffffff"
+};
+const POLICE = '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const fnt = (px, g)=> (g || 400) + " " + px + "px " + POLICE;
+
+/* ------------------------------------------------------------- outils */
+function txtEspace(g, t, x, y, esp){
+  let cx = x;
+  for(const c of String(t)){ g.fillText(c, cx, y); cx += g.measureText(c).width + esp; }
+  return cx - x - esp;
+}
+function largeurEspacee(g, t, esp){
+  let w = 0;
+  for(const c of String(t)) w += g.measureText(c).width + esp;
+  return w - esp;
+}
+function couper(g, t, maxW){
+  const mots = String(t || "").split(/\s+/).filter(Boolean), out = [];
+  let l = "";
+  mots.forEach(m=>{
+    const essai = l ? l + " " + m : m;
+    if(g.measureText(essai).width > maxW && l){ out.push(l); l = m; }
+    else l = essai;
+  });
+  if(l) out.push(l);
+  return out;
+}
+/* rectangle arrondi, indispensable aux pastilles du Récit */
+function rectArrondi(g, x, y, w, h, r){
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r);
+  g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r);
+  g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+function imageDepuis(src){
+  return new Promise(res=>{
+    if(!src) return res(null);
+    const im = new Image();
+    im.onload = ()=> res(im); im.onerror = ()=> res(null);
+    im.src = src;
+  });
+}
+/* adoucit l'entrée d'un élément : rien ne doit apparaître d'un coup */
+function douceur(u){ return u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.pow(1 - u, 3); }
+
+/* --------------------------------------------------- la carte de contact */
+function dessinerCarteFin(g, ctx, u){
+  const grad = g.createLinearGradient(0, 0, 0, CLIP_H);
+  grad.addColorStop(0, "#e0f2f1"); grad.addColorStop(.45, CL.creme);
+  grad.addColorStop(1, CL.creme);
+  g.fillStyle = grad; g.fillRect(0, 0, CLIP_L, CLIP_H);
+  g.textAlign = "center";
+
+  let y = 120;
+  if(ctx.logo){
+    const lw = 560, lh = ctx.logo.height * lw / ctx.logo.width;
+    g.globalAlpha = douceur(u / .25);
+    g.drawImage(ctx.logo, (CLIP_L - lw) / 2, y, lw, lh);
+    g.globalAlpha = 1;
+    y += lh + 70;
+  } else y += 60;
+
+  if(ctx.portrait){
+    const r = 190, cx = CLIP_L / 2, cy = y + r;
+    const a = douceur((u - .12) / .25);
+    g.save();
+    g.globalAlpha = a;
+    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.closePath();
+    g.save(); g.clip();
+    g.drawImage(ctx.portrait, cx - r, cy - r, r * 2, r * 2);
+    g.restore();
+    g.lineWidth = 7; g.strokeStyle = CL.bordeaux; g.stroke();
+    g.restore();
+    y = cy + r + 76;
+  }
+
+  const a2 = douceur((u - .25) / .3);
+  g.globalAlpha = a2;
+  const nom = (ctx.nego || "").trim();
+  const bouts = nom.split(/\s+/);
+  const prenom = bouts.shift() || "";
+  const famille = bouts.join(" ").toUpperCase();
+  g.fillStyle = CL.encre;
+  g.font = fnt(62, 700);
+  const wp = g.measureText(prenom + " ").width;
+  g.font = fnt(62, 400);
+  const wf = g.measureText(famille).width;
+  let x = (CLIP_L - (wp + wf)) / 2;
+  g.textAlign = "left";
+  g.font = fnt(62, 700); g.fillText(prenom + " ", x, y);
+  g.font = fnt(62, 400); g.fillText(famille, x + wp, y);
+  g.textAlign = "center";
+  y += 58;
+  if(ctx.qualite){
+    g.fillStyle = CL.bordeaux; g.font = "italic " + fnt(38, 400);
+    g.fillText(ctx.qualite, CLIP_L / 2, y); y += 70;
+  }
+  g.globalAlpha = douceur((u - .38) / .3);
+  if(ctx.tel){
+    g.fillStyle = CL.encre; g.font = fnt(54, 700);
+    g.fillText(ctx.tel, CLIP_L / 2, y); y += 56;
+  }
+  g.fillStyle = CL.gris; g.font = fnt(32, 400);
+  [ctx.email, ctx.adresse, ctx.site].filter(Boolean).forEach(l=>{
+    g.fillText(l, CLIP_L / 2, y); y += 44;
+  });
+  g.globalAlpha = 1;
+  if(ctx.pied){
+    g.fillStyle = CL.gris; g.font = fnt(26, 400);
+    g.fillText(ctx.pied, CLIP_L / 2, CLIP_H - 72);
+  }
+  g.textAlign = "left";
 }
 
-async function fabriquerClip(ids, avance){
+/* ======================================================= GABARIT VITRINE */
+const VIT_PHOTO = 810;                   /* la photo occupe les trois cinquièmes */
+
+function dessinerPanneauVitrine(g, ctx){
+  /* Le panneau dispose de 540 pixels et pas un de plus : chaque ligne a sa
+     place réservée, sinon les mentions légales passent sous l'adresse du
+     site et l'affiche devient illisible. Les tailles sont choisies pour que
+     tout tienne même avec six arguments et trois lignes de mentions. */
+  g.fillStyle = CL.creme; g.fillRect(0, VIT_PHOTO, CLIP_L, CLIP_H - VIT_PHOTO);
+  g.fillStyle = CL.bordeaux; g.fillRect(0, VIT_PHOTO - 7, CLIP_L, 7);
+  const M = 58, larg = CLIP_L - 2 * M;
+
+  g.fillStyle = CL.rouge; g.font = fnt(28, 600);
+  txtEspace(g, (ctx.titre || "").toUpperCase(), M, VIT_PHOTO + 48, 4.5);
+
+  g.fillStyle = CL.bordeaux; g.font = fnt(78, 700);
+  g.fillText(ctx.prix || "", M, VIT_PHOTO + 124);
+  if(ctx.surface){
+    g.font = fnt(36, 500); g.textAlign = "right";
+    g.fillText(ctx.surface, CLIP_L - M, VIT_PHOTO + 118);
+    g.textAlign = "left";
+  }
+  g.fillStyle = CL.bordeaux; g.fillRect(M, VIT_PHOTO + 148, larg, 3);
+
+  /* deux colonnes, trois lignes, et le texte rogné plutôt que débordant */
+  const col = larg / 2, y0 = VIT_PHOTO + 190;
+  g.font = fnt(30, 400);
+  (ctx.puces || []).slice(0, 6).forEach((p, i)=>{
+    const cx = M + (i % 2) * col + 3, cy = y0 + Math.floor(i / 2) * 44;
+    g.fillStyle = CL.rouge;
+    g.beginPath(); g.arc(cx, cy - 9, 6, 0, Math.PI * 2); g.fill();
+    g.fillStyle = CL.encre;
+    let s = String(p);
+    while(g.measureText(s).width > col - 44 && s.length > 4) s = s.slice(0, -2);
+    if(s !== String(p)) s = s.replace(/[\s,;]+$/, "") + "…";
+    g.fillText(s, cx + 21, cy);
+  });
+
+  /* la ligne technique : on mesure d'abord le téléphone, à droite, et on
+     n'écrit à gauche que ce qui tient avant lui */
+  const yt = VIT_PHOTO + 338;
+  g.fillStyle = "#ded5cb"; g.fillRect(M, yt - 30, larg, 2);
+  let limite = CLIP_L - M;
+  if(ctx.tel){
+    g.font = fnt(31, 700);
+    limite -= g.measureText(ctx.tel).width + 20;
+    g.fillStyle = CL.bordeaux; g.textAlign = "right";
+    g.fillText(ctx.tel, CLIP_L - M, yt); g.textAlign = "left";
+  }
+  g.fillStyle = CL.gris; g.font = fnt(25, 400);
+  g.fillText("Réf. " + (ctx.ref || "—"), M, yt);
+  let x = M + 168;
+  const etiquette = (lab, lettre, bg, fg, val)=>{
+    if(!lettre) return;
+    g.fillStyle = CL.encre; g.font = fnt(26, 700);
+    if(x + 96 > limite) return;
+    g.fillText(lab, x, yt); x += g.measureText(lab).width + 10;
+    g.fillStyle = bg; rectArrondi(g, x, yt - 26, 38, 34, 8); g.fill();
+    g.fillStyle = fg; g.font = fnt(24, 700); g.textAlign = "center";
+    g.fillText(lettre, x + 19, yt - 3); g.textAlign = "left";
+    x += 48;
+    if(val){
+      g.font = fnt(21, 400);
+      if(x + g.measureText(val).width <= limite){
+        g.fillStyle = CL.gris; g.fillText(val, x, yt);
+        x += g.measureText(val).width + 20;
+      } else x += 10;
+    }
+  };
+  etiquette("DPE", ctx.dpeL, ctx.dpeBg, ctx.dpeFg, ctx.dpeVal);
+  etiquette("GES", ctx.gesL, ctx.gesBg, ctx.gesFg, ctx.gesVal);
+
+  /* Les mentions sont obligatoires : on ne les rogne pas, on les replie. Le
+     texte est coupé aux mots sur la largeur utile, quatre lignes au plus —
+     c'est ce que la place laissée au-dessus de l'adresse permet. */
+  g.fillStyle = CL.gris; g.font = fnt(20, 400); g.textAlign = "center";
+  const lignesL = couper(g, (ctx.legales || []).join("  ·  "), larg).slice(0, 4);
+  let ym = VIT_PHOTO + 386;
+  lignesL.forEach(l=>{ g.fillText(l, CLIP_L / 2, ym); ym += 27; });
+  if(ctx.site){
+    g.fillStyle = CL.bordeaux; g.font = fnt(28, 700);
+    g.fillText(ctx.site, CLIP_L / 2, CLIP_H - 36);
+  }
+  g.textAlign = "left";
+}
+
+/* ========================================================= GABARIT RÉCIT */
+function voilePrune(g, haut){
+  const v = g.createLinearGradient(0, haut, 0, CLIP_H);
+  v.addColorStop(0, "rgba(59,26,58,0)"); v.addColorStop(.28, "rgba(59,26,58,.86)");
+  v.addColorStop(1, "rgba(44,18,44,.94)");
+  g.fillStyle = v; g.fillRect(0, haut, CLIP_L, CLIP_H - haut);
+}
+function cartonTitreRecit(g, ctx, u){
+  voilePrune(g, CLIP_H - 620);
+  const M = 70;
+  let y = CLIP_H - 430;
+  g.globalAlpha = douceur(u / .22);
+  g.fillStyle = CL.ambre; g.font = fnt(36, 700);
+  txtEspace(g, ("À VENDRE  ·  " + (ctx.ville || "")).toUpperCase(), M, y, 6);
+  y += 96;
+  g.globalAlpha = douceur((u - .14) / .22);
+  g.fillStyle = CL.blanc; g.font = fnt(86, 700);
+  (ctx.titreRecit || []).slice(0, 2).forEach(l=>{ g.fillText(l, M, y); y += 92; });
+  g.globalAlpha = douceur((u - .34) / .22);
+  if(ctx.sousTitre){
+    g.fillStyle = CL.ambre; g.fillRect(M, y - 24, 150, 6);
+    y += 46;
+    g.fillStyle = "#e7dfe6"; g.font = fnt(44, 400);
+    g.fillText(ctx.sousTitre, M, y);
+  }
+  g.globalAlpha = 1;
+}
+function pastilleRecit(g, texte, u){
+  if(!texte) return;
+  const M = 56, maxW = CLIP_L - 2 * M - 120;
+  g.font = fnt(42, 600);
+  const lignes = couper(g, texte, maxW).slice(0, 2);
+  const h = 44 + lignes.length * 52, w = Math.min(CLIP_L - 2 * M,
+    Math.max.apply(null, lignes.map(l=> g.measureText(l).width)) + 136);
+  const a = douceur(u);
+  const y = CLIP_H - 190 - h + (1 - a) * 26;
+  g.save();
+  g.globalAlpha = a;
+  g.shadowColor = "rgba(10,20,38,.3)"; g.shadowBlur = 26; g.shadowOffsetY = 8;
+  g.fillStyle = "rgba(255,255,255,.96)";
+  rectArrondi(g, M, y, w, h, h / 2 > 48 ? 30 : h / 2); g.fill();
+  g.shadowColor = "transparent";
+  /* le petit soleil ambre du modèle : une rondelle et des rayons */
+  const sx = M + 48, sy = y + h / 2;
+  g.fillStyle = CL.ambre;
+  g.beginPath(); g.arc(sx, sy, 13, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = CL.ambre; g.lineWidth = 3.5; g.lineCap = "round";
+  for(let i = 0; i < 8; i++){
+    const an = i * Math.PI / 4;
+    g.beginPath();
+    g.moveTo(sx + Math.cos(an) * 19, sy + Math.sin(an) * 19);
+    g.lineTo(sx + Math.cos(an) * 25, sy + Math.sin(an) * 25);
+    g.stroke();
+  }
+  g.fillStyle = CL.encre; g.font = fnt(42, 600);
+  let ty = y + 56;
+  lignes.forEach(l=>{ g.fillText(l, M + 86, ty); ty += 52; });
+  g.restore();
+}
+
+/* ------------------------------------- ce que les deux gabarits affichent */
+function contexteClip(){
+  const o = donneesPubli(), a = L.agence || {};
+  const n = book("negociateurs", (D.nego || {}).vendeur || "");
+  const dpe = (D.diags || []).filter(d=> d.nom === "DPE")[0] || {};
+  const e = DPE_ENERGIE.filter(x=> x.l === o.dpeE)[0];
+  const ges = DPE_GES.filter(x=> x.l === o.dpeG)[0];
+  const ville = villeLisible(o.ville);
+  return {
+    titre: [o.type, ville].filter(Boolean).join(" · "),
+    ville,
+    prix: o.fai === null ? "Prix sur demande" : eur(o.fai),
+    surface: o.surface === null ? "" : m2txt(o.surface),
+    ref: (D.mandat || {}).num || "",
+    dpeL: o.dpeE, dpeBg: e ? e.bg : "#e5e7eb", dpeFg: e ? e.fg : "#6b7280",
+    dpeVal: dpe.dpeKwh ? num(dpe.dpeKwh) + " kWh/m²/an" : "",
+    gesL: o.dpeG, gesBg: ges ? ges.bg : "#e5e7eb", gesFg: ges ? ges.fg : "#6b7280",
+    gesVal: dpe.dpeCo2 ? num(dpe.dpeCo2) + " kg CO₂/m²/an" : "",
+    tel: n.tel || "",
+    email: n.email || "",
+    nego: (D.nego || {}).vendeur || "",
+    qualite: n.qualite || "Agent commercial",
+    adresse: a.adresse || "",
+    site: a.site || "",
+    pied: [("Réf. " + ((D.mandat || {}).num || "")).trim(), o.type,
+           o.fai === null ? "" : eur(o.fai)].filter(Boolean).join("  ·  "),
+    legales: legalesCourtes(),
+    titreRecit: titreRecit(),
+    sousTitre: sousTitreRecit()
+  };
+}
+
+/* Les trois lignes de bas d'affiche : la loi veut ces mentions, le format
+   veut qu'elles tiennent. On les resserre sans rien retirer d'obligatoire. */
+function legalesCourtes(){
+  const o = donneesPubli(), l = [];
+  const p1 = [];
+  p1.push(o.charge === "Acquéreur"
+    ? "Honoraires à la charge de l'acquéreur"
+    : "Honoraires à la charge du vendeur");
+  p1.push(o.copro
+    ? "Bien en copropriété" + (o.lots === null ? "" : " de " + o.lots + " lots")
+      + (o.charges === null ? "" : " · charges " + eur(o.charges) + "/an")
+    : "Bien non soumis au statut de la copropriété");
+  if(o.copro) p1.push(o.procedure ? "Procédure en cours" : "Aucune procédure en cours");
+  l.push(p1.join("  ·  "));
+  l.push("Dépenses annuelles d'énergie estimées entre "
+    + (o.coutMin === null ? "…" : eur(o.coutMin)) + " et "
+    + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an"
+    + (o.anneeRef ? " (prix " + o.anneeRef + ", abonnement compris)" : ""));
+  if(/^[FG]$/.test(o.dpeE))
+    l.push("Logement à consommation énergétique excessive : classe " + o.dpeE);
+  else
+    l.push("Informations sur les risques auxquels ce bien est exposé : www.georisques.gouv.fr");
+  return l;
+}
+
+/* Le titre du Récit, sur deux lignes : ce qu'on dirait au téléphone. */
+function titreRecit(){
+  const o = donneesPubli();
+  const t = o.type || "Bien";
+  const l1 = o.pieces && /appartement/i.test(t) ? t + " T" + o.pieces : t;
+  const bouts = [];
+  if(o.surface !== null) bouts.push(m2txt(o.surface));
+  const dehors = o.annexes.filter(a=> /terrasse|jardin|balcon/i.test(a))[0];
+  if(dehors) bouts.push("avec " + dehors.replace(/ de .*/, ""));
+  else if(o.chambres) bouts.push(unPluriel(o.chambres, "chambre"));
+  return [l1, bouts.join(" ")].filter(Boolean);
+}
+function sousTitreRecit(){
+  const o = donneesPubli();
+  if(o.piscine) return "Résidence avec piscine";
+  if(o.ascenseur) return "Résidence avec ascenseur";
+  if(o.residence) return "Résidence " + o.residence;
+  if(o.etat) return o.etat;
+  return o.copro ? "Lot de copropriété" : "";
+}
+
+/* Les six arguments de la Vitrine, déduits du dossier puis corrigeables. */
+function pucesProposees(){
+  const o = donneesPubli(), p = [];
+  if(o.pieces) p.push(unPluriel(o.pieces, "pièce"));
+  if(o.chambres) p.push(unPluriel(o.chambres, "chambre")
+    + (o.sdEau || o.sdb ? ", " + unPluriel((o.sdEau || 0) + (o.sdb || 0),
+      o.sdEau && !o.sdb ? "salle d'eau" : "salle de bain") : ""));
+  if(o.etat) p.push(o.type + " en " + o.etat.toLowerCase());
+  o.annexes.slice(0, 2).forEach(a=> p.push(a.charAt(0).toUpperCase() + a.slice(1)));
+  if(o.etage) p.push(etageTxt(o).replace(/^./, c=> c.toUpperCase()));
+  if(o.ascenseur) p.push("Ascenseur");
+  if(o.piscine) p.push("Piscine collective");
+  if(o.exposition) p.push("Exposition " + o.exposition.toLowerCase());
+  if(o.chauffage) p.push(o.chauffage);
+  return p.slice(0, 6);
+}
+/* Une légende par photo, proposée d'après son nom de fichier. */
+function legendeProposee(p){
+  const n = nomSansExt(String(p && p.nom || "")).replace(/[_-]+/g, " ").trim();
+  if(!n || /^(img|dsc|photo|image)\s*\d*$/i.test(n)) return "";
+  return n.charAt(0).toUpperCase() + n.slice(1);
+}
+
+/* ------------------------------------------------------- le tournage */
+async function fabriquerClip(ids, avance, gabarit){
+  const g0 = gabarit || PUB_GABARIT || "vitrine";
   const fmt = clipFormats();
   if(!fmt) throw new Error("ce navigateur ne sait pas enregistrer de vidéo");
-  const imgs = await imagesDesPieces(ids.slice(0, CLIP_MAX));
+  const choisies = ids.slice(0, CLIP_MAX);
+  const imgs = await imagesDesPieces(choisies);
   if(!imgs.length) throw new Error("aucune photo lisible");
+
+  const ctx = contexteClip();
+  ctx.puces = (PUB_PUCES && PUB_PUCES.length) ? PUB_PUCES : pucesProposees();
+  ctx.logo = await imageDepuis((L.agence || {}).logo);
+  ctx.portrait = await imageDepuis((L.agence || {}).portrait);
+  const legendes = choisies.map(id=>
+    (PUB_LEGENDES && PUB_LEGENDES[id] !== undefined)
+      ? PUB_LEGENDES[id] : legendeProposee(PIECES[id]));
 
   const c = document.createElement("canvas");
   c.width = CLIP_L; c.height = CLIP_H;
   const g = c.getContext("2d");
-  g.fillStyle = "#14305c"; g.fillRect(0, 0, CLIP_L, CLIP_H);
+  g.textBaseline = "alphabetic";
+  g.fillStyle = CL.creme; g.fillRect(0, 0, CLIP_L, CLIP_H);
 
-  /* le logo de l'agence, préparé une fois */
-  let logo = null;
-  try{
-    if(L.agence && L.agence.logo){
-      logo = await new Promise((res)=>{
-        const im = new Image();
-        im.onload = ()=> res(im); im.onerror = ()=> res(null);
-        im.src = L.agence.logo;
-      });
-    }
-  }catch(e){}
+  /* la minute : un carton d'ouverture pour le Récit, les photos, la carte */
+  const recit = g0 === "recit";
+  const tOuv = recit ? 3.2 : 0;
+  const tPhoto = recit ? 3.2 : CLIP_SEC;
+  const tFin = recit ? 4.2 : 3.4;
+  const duree = tOuv + imgs.length * tPhoto + tFin;
 
   const flux = c.captureStream(30);
-  const rec = new MediaRecorder(flux, {mimeType: fmt.mime, videoBitsPerSecond: 4500000});
+  const rec = new MediaRecorder(flux, {mimeType: fmt.mime, videoBitsPerSecond: 5200000});
   const bouts = [];
   rec.ondataavailable = e=>{ if(e.data && e.data.size) bouts.push(e.data); };
   const fini = new Promise(res=> rec.onstop = res);
   rec.start(200);
 
+  const hautPhoto = recit ? CLIP_H : VIT_PHOTO;
   const t0 = performance.now();
-  const duree = imgs.length * CLIP_SEC;
   await new Promise(res=>{
     const trame = ()=>{
       const t = (performance.now() - t0) / 1000;
       if(t >= duree){ res(); return; }
-      const i = Math.min(imgs.length - 1, Math.floor(t / CLIP_SEC));
-      const u = (t - i * CLIP_SEC) / CLIP_SEC;          /* 0 → 1 sur la photo */
-      g.fillStyle = "#0f1a2b"; g.fillRect(0, 0, CLIP_L, CLIP_H);
-      /* lent mouvement d'approche, alterné un coup à gauche un coup à droite */
-      const sens = i % 2 ? -1 : 1;
-      g.save(); g.globalAlpha = 1;
-      dessinerCouvrant(g, imgs[i], 1.06 + u * 0.08, sens * (u - .5) * 26, (u - .5) * 18);
-      g.restore();
-      /* fondu avec la suivante sur la fin de la vignette */
-      const reste = CLIP_SEC - (t - i * CLIP_SEC);
-      if(reste < CLIP_FONDU && i + 1 < imgs.length){
-        g.save();
-        g.globalAlpha = 1 - reste / CLIP_FONDU;
-        dessinerCouvrant(g, imgs[i + 1], 1.06, 0, 0);
-        g.restore();
+
+      if(t >= duree - tFin){
+        dessinerCarteFin(g, ctx, (t - (duree - tFin)) / tFin);
+        if(avance) avance(Math.min(1, t / duree));
+        return requestAnimationFrame(trame);
       }
-      /* une ombre basse pour détacher le logo des photos claires */
-      const om = g.createLinearGradient(0, CLIP_H - 260, 0, CLIP_H);
-      om.addColorStop(0, "rgba(10,20,38,0)"); om.addColorStop(1, "rgba(10,20,38,.55)");
-      g.fillStyle = om; g.fillRect(0, CLIP_H - 260, CLIP_L, 260);
-      if(logo && logo.width){
-        const lw = 300, lh = logo.height * lw / logo.width;
-        g.globalAlpha = .95;
-        g.drawImage(logo, CLIP_L - lw - 46, CLIP_H - lh - 46, lw, lh);
+
+      /* le carton d'ouverture reprend la première photo */
+      const ouverture = recit && t < tOuv;
+      const i = ouverture ? 0
+        : Math.min(imgs.length - 1, Math.floor((t - tOuv) / tPhoto));
+      const u = ouverture ? t / tOuv : ((t - tOuv) - i * tPhoto) / tPhoto;
+
+      g.fillStyle = "#0f1a2b"; g.fillRect(0, 0, CLIP_L, CLIP_H);
+      g.save();
+      g.beginPath(); g.rect(0, 0, CLIP_L, hautPhoto); g.clip();
+      dessinerCouvrantH(g, imgs[i], hautPhoto, 1.05 + u * 0.07,
+        (i % 2 ? -1 : 1) * (u - .5) * 22, (u - .5) * 14);
+      /* fondu vers la suivante */
+      const reste = ouverture ? 9 : tPhoto - ((t - tOuv) - i * tPhoto);
+      if(reste < CLIP_FONDU && i + 1 < imgs.length){
+        g.globalAlpha = 1 - reste / CLIP_FONDU;
+        dessinerCouvrantH(g, imgs[i + 1], hautPhoto, 1.05, 0, 0);
         g.globalAlpha = 1;
+      }
+      g.restore();
+
+      if(recit){
+        if(ouverture) cartonTitreRecit(g, ctx, u);
+        else {
+          /* une ombre basse donne de la tenue à la pastille sur une photo claire */
+          const om = g.createLinearGradient(0, CLIP_H - 420, 0, CLIP_H);
+          om.addColorStop(0, "rgba(10,20,38,0)"); om.addColorStop(1, "rgba(10,20,38,.42)");
+          g.fillStyle = om; g.fillRect(0, CLIP_H - 420, CLIP_L, 420);
+          pastilleRecit(g, legendes[i], Math.min(1, u / .22));
+          if(ctx.logo){
+            const lw = 250, lh = ctx.logo.height * lw / ctx.logo.width;
+            g.globalAlpha = .96;
+            g.drawImage(ctx.logo, CLIP_L - lw - 44, 44, lw, lh);
+            g.globalAlpha = 1;
+          }
+        }
+      } else {
+        dessinerPanneauVitrine(g, ctx);
+        if(ctx.logo){
+          const lw = 300, lh = ctx.logo.height * lw / ctx.logo.width;
+          g.globalAlpha = .96;
+          g.drawImage(ctx.logo, CLIP_L - lw - 40, 30, lw, lh);
+          g.globalAlpha = 1;
+        }
       }
       if(avance) avance(Math.min(1, t / duree));
       requestAnimationFrame(trame);
@@ -13645,7 +14229,14 @@ async function fabriquerClip(ids, avance){
   await fini;
   imgs.forEach(im=>{ if(im.close) im.close(); });
   return {blob: new Blob(bouts, {type: fmt.mime}), ext: fmt.ext,
-          duree: Math.round(duree * 10) / 10, nb: imgs.length};
+          duree: Math.round(duree * 10) / 10, nb: imgs.length, gabarit: g0};
+}
+
+/* Remplit une hauteur donnée sans déformer — la Vitrine n'occupe que le haut. */
+function dessinerCouvrantH(g, img, haut, z, dx, dy){
+  const r = Math.max(CLIP_L / img.width, haut / img.height) * z;
+  const w = img.width * r, h = img.height * r;
+  g.drawImage(img, (CLIP_L - w) / 2 + dx, (haut - h) / 2 + dy, w, h);
 }
 
 /* ------------------------------------------------- la page Publications */
@@ -13657,6 +14248,9 @@ let PUB_CLIP = null;                 /* {url, ext, duree, nb} */
 let PUB_ETAPE = 0;                   /* l'assistant de choix des photos */
 let PUB_CHOIX = [];
 let PUB_DOSSIER = "";                /* celui pour lequel le brouillon vaut */
+let PUB_GABARIT = "vitrine";         /* Vitrine ou Récit */
+let PUB_PUCES = [];                  /* les six arguments de la Vitrine */
+let PUB_LEGENDES = {};               /* une légende par photo, pour le Récit */
 
 function photosDuBien(){ return photosDe(sujetBien(D)); }
 function photosDeLImmeuble(){
@@ -13673,6 +14267,7 @@ function renderPublications(){
     PUB_DOSSIER = D.id;
     PUB_STYLE = "pro"; PUB_GRAINE = 1; PUB_TEXTE = "";
     PUB_PHOTOS = []; PUB_CHOIX = [];
+    PUB_GABARIT = "vitrine"; PUB_PUCES = []; PUB_LEGENDES = {};
     oublierClip();
   }
   const manque = manquePubli();
@@ -13701,9 +14296,24 @@ function renderPublications(){
     <div class="card"><h2>Le clip</h2><div class="body">
       ${!clipPossible() ? `<div class="alerte">Ce navigateur ne sait pas enregistrer de
         vidéo. Le texte reste utilisable ; pour le clip, passez par l'ordinateur.</div>` : `
-      <p class="muted" style="margin-top:0">Format 1080 × 1350, celui qui occupe le plus de
-        place dans un fil. Les photos défilent avec un lent mouvement d'approche et votre
-        logo en bas ; le prix et les mentions restent dans le texte.</p>
+      <div class="pubstyles">${GABARITS_CLIP.map(x=>
+        `<button type="button" class="stylebtn${x.cle === PUB_GABARIT ? " on" : ""}"
+           data-pubgab="${x.cle}"><b>${esc(x.lib)}</b>
+           <span>${esc(x.note)}</span></button>`).join("")}</div>
+      <p class="muted">Format 1080 × 1350, celui qui occupe le plus de place dans un fil.
+        ${PUB_GABARIT === "vitrine"
+          ? "La photo occupe le haut, la fiche le bas : prix, surface, arguments, DPE et "
+            + "mentions obligatoires. Elle se suffit à elle-même, sans le texte."
+          : "La photo prend tout le cadre, chaque vue porte sa légende. Un carton "
+            + "d'ouverture, puis votre carte de contact à la fin."}</p>
+      ${PUB_GABARIT === "vitrine" ? `
+        <div class="f"><label>Les six arguments de la fiche</label>
+          <textarea id="pubPuces" rows="6" placeholder="un argument par ligne">${
+            esc((PUB_PUCES.length ? PUB_PUCES : pucesProposees()).join("\n"))}</textarea></div>
+        <p class="muted" style="margin-top:-6px">Proposés d'après le dossier ; corrigez-les,
+          six au maximum.</p>` : `
+        <p class="muted">Les <b>légendes</b> de chaque photo se saisissent à la dernière
+          étape du choix des photos.</p>`}
       <div class="pubbtns">
         <button type="button" class="tbtn light" id="pubChoisir">
           Choisir les photos${PUB_PHOTOS.length ? " (" + PUB_PHOTOS.length + ")" : ""}</button>
@@ -13755,6 +14365,10 @@ function renderPublications(){
     renderPublications();
   };
   if(b("pubCopier")) b("pubCopier").onclick = copierTextePubli;
+  const pp = b("pubPuces");
+  if(pp) pp.oninput = ()=>{
+    PUB_PUCES = pp.value.split("\n").map(s=> s.trim()).filter(Boolean).slice(0, 6);
+  };
   if(b("pubChoisir")) b("pubChoisir").onclick = ()=> ouvrirChoixPhotos(0);
   if(b("pubFaire")) b("pubFaire").onclick = lancerClip;
   if(b("pubTel")) b("pubTel").onclick = telechargerClip;
@@ -13811,10 +14425,13 @@ function ouvrirChoixPhotos(etape){
           La première ouvre le clip.</p>
         <div class="pubordre" id="pubOrdre">${PUB_CHOIX.map((id,i)=>{
           const p = PIECES[id]; if(!p) return "";
+          const leg = PUB_LEGENDES[id] !== undefined ? PUB_LEGENDES[id] : legendeProposee(p);
           return `<figure class="pubvig" data-pubid="${esc(id)}">
             <div class="pjimg" data-pjvig="${esc(id)}"></div>
             <figcaption><span class="rang">${i + 1}</span>
-              <span>${esc(p.nom)}</span></figcaption></figure>`;
+              <span>${esc(p.nom)}</span></figcaption>
+            <input type="text" class="publeg" data-publeg="${esc(id)}"
+              value="${esc(leg)}" placeholder="légende (clip Récit)"></figure>`;
         }).join("")}</div>
         ${PUB_CHOIX.length ? "" : `<p class="muted">Aucune photo retenue.</p>`}`,
       boutons:[{lib:"Retour", action:()=> ouvrirChoixPhotos(1)},
@@ -13823,6 +14440,13 @@ function ouvrirChoixPhotos(etape){
                }}]});
     setTimeout(()=>{
       PUB_CHOIX.forEach(id=>{ const p = PIECES[id]; if(p) peindreVignette(p); });
+      $$("#pubOrdre .publeg").forEach(el=>{
+        /* on ne doit pas déclencher un glissé en cliquant dans la légende */
+        el.addEventListener("pointerdown", e=> e.stopPropagation());
+        el.addEventListener("input", ()=>{
+          PUB_LEGENDES[el.getAttribute("data-publeg")] = el.value;
+        });
+      });
       activerTriGlisse($("#pubOrdre"), ".pubvig", els=>{
         PUB_CHOIX = els.map(e=> e.getAttribute("data-pubid"));
         els.forEach((e,i)=>{ const r = e.querySelector(".rang"); if(r) r.textContent = i + 1; });
@@ -13901,7 +14525,8 @@ function garderPublication(){
   D.publications.unshift({
     id: "pb" + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
     date: new Date().toISOString(),
-    style: PUB_STYLE, graine: PUB_GRAINE,
+    style: PUB_STYLE, graine: PUB_GRAINE, gabarit: PUB_GABARIT,
+    puces: PUB_PUCES.slice(), legendes: Object.assign({}, PUB_LEGENDES),
     texte: PUB_TEXTE || "",
     photos: PUB_PHOTOS.slice(),
     clip: PUB_CLIP ? PUB_CLIP.ext : ""
@@ -13939,6 +14564,9 @@ function reprendrePublication(id){
   if(!p) return;
   PUB_STYLE = p.style || "pro";
   PUB_GRAINE = p.graine || 1;
+  PUB_GABARIT = p.gabarit || "vitrine";
+  PUB_PUCES = (p.puces || []).slice();
+  PUB_LEGENDES = Object.assign({}, p.legendes || {});
   PUB_TEXTE = p.texte || "";
   /* une photo retirée du dossier depuis ne doit pas faire échouer le clip */
   PUB_PHOTOS = (p.photos || []).filter(x=> PIECES[x] && !PIECES[x].supprime);
