@@ -339,6 +339,7 @@ input.auto{background:var(--accent-soft)!important;color:var(--navy);font-weight
 .dpeone{display:flex;flex-direction:column;gap:2px}
 .dpelab{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);
   white-space:nowrap;padding-left:2px}
+.dpe .dpeone input{width:86px;font-size:12.5px;padding:5px 7px}
 .dpesel{width:62px;text-align:center;text-align-last:center;font-size:13px;padding:5px 4px;
   cursor:pointer}
 .diagnote{background:var(--accent-soft);border:1px solid #cddcf0;border-radius:8px;
@@ -1248,6 +1249,12 @@ table.tdb .puce.resilie{background:#64748b}
   line-height:1;padding:3px 5px;border-radius:5px}
 .pjmini:hover{background:var(--line-2);color:var(--ink)}
 .pjmini.sup:hover{background:#fee2e2;color:#b91c1c}
+/* à la souris, on range les photos en les glissant : les flèches ne servent
+   plus. Elles restent pour le doigt, qui ne sait pas glisser nativement. */
+.pjgrille .pjvig{cursor:grab}
+@media (pointer:fine){
+  .pjvig [data-pjmonte],.pjvig [data-pjdesc]{display:none}
+}
 
 /* --------------------------------------- la page « Pièces jointes » -----
    Deux colonnes : la liste à gauche, l'aperçu à droite. Sur un écran étroit,
@@ -1302,6 +1309,67 @@ table.tdb .puce.resilie{background:#64748b}
 .pjhcico{font-size:34px;line-height:1}
 .pjhorscadre b{font-size:14px;word-break:break-word}
 .pjhorscadre p{margin:0;font-size:12.5px;line-height:1.5}
+
+/* ------------------------------------------------------- publications --- */
+.pubstyles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.stylebtn{display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:11px 13px;
+  cursor:pointer;font:inherit;color:var(--ink)}
+.stylebtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.stylebtn b{font-size:13.5px;color:var(--navy)}
+.stylebtn span{font-size:11.5px;color:var(--ink-3);line-height:1.35}
+.stylebtn.on{background:var(--navy);border-color:var(--navy)}
+.stylebtn.on b{color:#fff}
+.stylebtn.on span{color:#c9dcf5}
+
+.pubtexte{width:100%;min-height:330px;margin-top:14px;font-size:13.5px;line-height:1.55;
+  white-space:pre-wrap}
+.pubbtns{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.pubbtns .grow{flex:1}
+.pubbtns .addbtn{display:inline-flex;align-items:center;gap:7px}
+
+.pubavance{height:6px;border-radius:999px;background:var(--line-2);overflow:hidden;
+  margin-top:12px}
+.pubavance[hidden]{display:none}
+.pubavance > div{height:100%;width:0;background:var(--accent);transition:width .2s}
+.pubclip{margin-top:14px}
+.pubclip video{width:100%;max-width:360px;border-radius:var(--radius);background:#000;
+  display:block;box-shadow:var(--shadow-2)}
+
+.pubgrille,.pubordre{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:11px;margin-top:4px}
+.pubvig{margin:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  background:#fff;cursor:pointer;position:relative}
+.pubvig .pjimg{height:112px}
+.pubvig figcaption{display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11.5px;
+  border-top:1px solid var(--line-2);color:var(--ink-2)}
+.pubvig figcaption span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pubvig .coche{width:17px;height:17px;border-radius:50%;border:1px solid var(--line);
+  display:inline-flex;align-items:center;justify-content:center;font-size:11px;
+  color:transparent;flex:0 0 auto}
+.pubvig.prise{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.pubvig.prise .coche{background:var(--accent);border-color:var(--accent);color:#fff}
+.pubvig .rang{background:var(--navy);color:#fff;border-radius:999px;font-size:11px;
+  padding:1px 7px;font-weight:700;flex:0 0 auto}
+/* le tri au glisser : on voit ce qu'on tient et où ça va tomber */
+.pubordre .pubvig{cursor:grab}
+.pubvig.enmain{opacity:.4}
+.pubvig.avant{box-shadow:inset 3px 0 0 var(--accent)}
+.pubvig.apres{box-shadow:inset -3px 0 0 var(--accent)}
+
+.pubhrow{display:grid;grid-template-columns:auto auto 1fr auto auto auto;align-items:center;
+  gap:11px;padding:9px 0;border-top:1px solid var(--line-2)}
+.pubhrow:first-child{border-top:0}
+.pubhd{font-size:12.5px;font-weight:600;color:var(--navy);white-space:nowrap}
+.pubhd em{font-style:normal;color:var(--ink-3);font-weight:400;margin-left:5px}
+.pubhs{font-size:11px;background:var(--accent-soft);color:var(--navy);border-radius:999px;
+  padding:2px 9px;white-space:nowrap}
+.pubht{font-size:12.5px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;min-width:0}
+@media(max-width:860px){
+  .pubhrow{grid-template-columns:1fr auto auto}
+  .pubht{grid-column:1/-1}
+}
 
 /* la zone de dépôt, quand un fichier survole */
 .pjsurvol{outline:2px dashed var(--accent);outline-offset:-3px;
@@ -1393,7 +1461,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 octobre 2026, 13 h 37">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 octobre 2026, 14 h 16">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1454,6 +1522,7 @@ table.tdb .puce.resilie{background:#64748b}
   <button class="mitem" data-mgo="divers">Divers</button>
   <button class="mitem" data-mgo="documents">Imprimés</button>
   <button class="mitem" data-mgo="pieces">Pièces jointes <b id="cntPJ"></b></button>
+  <button class="mitem" data-mgo="publications">Publications</button>
   <button class="mitem" data-mgo="avis">Avis</button>
 </nav>
 
@@ -1531,6 +1600,9 @@ table.tdb .puce.resilie{background:#64748b}
     </div>
   </div>
 
+  <!-- composer une publication pour les réseaux à partir du dossier -->
+  <div class="panel" id="p-publications"><div id="publiBody"></div></div>
+
   <div class="panel" id="p-avis"><div id="avisBody"></div></div>
 
   <div class="panel" id="p-listes">
@@ -1588,7 +1660,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 octobre 2026, 13 h 37</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 octobre 2026, 14 h 16</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2136,6 +2208,8 @@ function blankDossier(){
     /* demande d'avis : le côté sollicité, les textes si on les réécrit, et le
        journal des demandes déjà faites — une ligne par envoi */
     avis:{cote:"",quand:"",wa:"",objet:"",mail:"",telDest:"",mailDest:"",envois:[]},
+    /* ce qui a été composé pour les réseaux : texte, style, photos retenues */
+    publications:[],
     divers:"",
     diagPar:"",
     diags: DIAGS.map(n=>({nom:n,fait:"",renouv:"",positif:"",dpeEnergie:"",dpeGes:""})),
@@ -4221,7 +4295,7 @@ const ONGLETS_SANS_MANDAT = ["aujourdhui","tdb","dossiers","immeubles","repertoi
 /* Les pages du dossier ouvert ne sont plus dans la barre du haut : elles
    tiennent dans une colonne à gauche, toutes visibles d'un coup. */
 const ONGLETS_DOSSIER = ["general","vendeurs","acquereurs","notaires","financement",
-  "diagnostics","questionnaire","divers","documents","pieces","avis"];
+  "diagnostics","questionnaire","divers","documents","pieces","publications","avis"];
 let PAGE = "aujourdhui";
 function pageActive(){ return PAGE; }
 function libelleOnglet(p){
@@ -4293,6 +4367,7 @@ function activerOnglet(p){
   panneau.classList.add("on");
   if(p==="documents")  renderPreview();
   if(p==="pieces")     renderPagePieces();
+  if(p==="publications") renderPublications();
   if(p==="avis")       renderAvis();
   if(p==="dossiers")   renderDossiers();
   if(p==="tdb")        renderTdb();
@@ -4631,7 +4706,15 @@ function renderDiags(){
       ? ynControl(`diags.${i}.positif`, DIAG_CHOIX[d.nom])
       : d.nom === "DPE"
         ? `<div class="dpe">${dpeSelect(i,"dpeEnergie",DPE_ENERGIE,"Énergie")}` +
-          `${dpeSelect(i,"dpeGes",DPE_GES,"GES")}</div>`
+          `${dpeSelect(i,"dpeGes",DPE_GES,"GES")}` +
+          /* la loi impose aussi, dans toute annonce, le coût annuel estimé et
+             l'année des prix de référence : ils se lisent sur le DPE */
+          `<span class="dpeone"><span class="dpelab">Coût min</span>` +
+          `${controlRaw(`diags.${i}.dpeCoutMin`,"money",d.dpeCoutMin||"","","data-b")}</span>` +
+          `<span class="dpeone"><span class="dpelab">Coût max</span>` +
+          `${controlRaw(`diags.${i}.dpeCoutMax`,"money",d.dpeCoutMax||"","","data-b")}</span>` +
+          `<span class="dpeone"><span class="dpelab">Année prix</span>` +
+          `${controlRaw(`diags.${i}.dpeAnnee`,"annee",d.dpeAnnee||"","","data-b")}</span></div>`
         : `<span class="muted">—</span>`;
     const inutile = d.nom === "Gaz" && d.positif === "Non nécessaire";
     const expire = !inutile && perimeLe(i,"fait").etat === "perime";
@@ -9700,6 +9783,28 @@ document.addEventListener("click", e=>{
       }}]});
     return;
   }
+  const ps = e.target.closest("[data-pubstyle]");
+  if(ps){
+    PUB_STYLE = ps.getAttribute("data-pubstyle");
+    PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
+    renderPublications(); return;
+  }
+  const pk = e.target.closest("[data-pubpick]");
+  if(pk){
+    const id = pk.getAttribute("data-pubpick");
+    const n = PUB_CHOIX.indexOf(id);
+    if(n >= 0) PUB_CHOIX.splice(n, 1); else PUB_CHOIX.push(id);
+    pk.classList.toggle("prise", n < 0);
+    return;
+  }
+  const pr2 = e.target.closest("[data-pubrep]");
+  if(pr2){ reprendrePublication(pr2.getAttribute("data-pubrep")); return; }
+  const pd = e.target.closest("[data-pubdel]");
+  if(pd){
+    const id = pd.getAttribute("data-pubdel");
+    D.publications = (D.publications || []).filter(x=> x.id !== id);
+    autosave(); renderPublications(); return;
+  }
   const rb = e.target.closest("[data-pjrub]");
   if(rb){
     const [suj, rub] = rb.getAttribute("data-pjrub").split("|");
@@ -11199,6 +11304,9 @@ function migrate(d){
     /* « en attente » et « sans réponse » disaient la même chose : un seul état */
     .map(x=> (x.reponse === "non" ? Object.assign(x, {reponse:""}) : x));
   delete out.avis.envoye;
+  out.publications = (Array.isArray(d.publications) ? d.publications : [])
+    .filter(Boolean).map(x=> Object.assign({
+      id:"", date:"", style:"pro", graine:1, texte:"", photos:[], clip:""}, x));
   out.annulations = (Array.isArray(d.annulations) ? d.annulations : [])
     .filter(Boolean).map(x=> Object.assign({
       id:"", date:"", stade:"", client:"", negoAcq:"", notaireAcq:"", note:"",
@@ -11225,6 +11333,9 @@ function migrate(d){
             /* renouvellement demandé, en attente du nouveau diagnostic */
             demande:!!a.demande,
             dpeEnergie:a.dpeEnergie||"", dpeGes:a.dpeGes||"",
+            /* dépenses annuelles estimées et année des prix, exigées en annonce */
+            dpeCoutMin:a.dpeCoutMin||"", dpeCoutMax:a.dpeCoutMax||"",
+            dpeAnnee:a.dpeAnnee||"",
             manuel:!!a.manuel, masque:!!a.masque};
   };
   out.diags = DIAGS.map(n=>repriseDiag(n, anciens[n]));
@@ -11872,6 +11983,60 @@ const AIDE = [
   "<b>Retirer</b> une pièce l'envoie à la corbeille de votre Drive — récupérable trente "+
   "jours — et la retire de tous vos appareils, sans qu'elle revienne à la synchronisation "+
   "suivante."],
+ ["Publier sur les réseaux sociaux",
+  "Le sous-menu <b>Publications</b> compose une annonce à partir du dossier. Quatre "+
+  "boutons donnent quatre registres — <b>Professionnel</b> (factuel), <b>Chaleureux</b> "+
+  "(on s'adresse au lecteur), <b>Coup de cœur</b> (court et enthousiaste), "+
+  "<b>Investisseur</b> (surface, prix au m², charges). « <b>Une autre tournure</b> » "+
+  "rejoue le même style avec d'autres formules. Le texte reste <b>modifiable</b> avant "+
+  "d'être copié, et le compteur prévient au-delà de 2 200 caractères, longueur où "+
+  "Instagram coupe. "+
+  "Soyons clairs sur ce que c'est : l'application travaille hors ligne, il n'y a pas "+
+  "d'intelligence artificielle derrière ce bouton. Le texte est <b>composé</b> à partir de "+
+  "vos données selon des patrons de style. C'est un brouillon juste, à relire — pas une "+
+  "plume."],
+ ["Les mentions obligatoires d'une annonce",
+  "Elles sont ajoutées automatiquement et ne dépendent pas du style choisi : le "+
+  "<b>prix honoraires inclus</b> et la charge des honoraires ; quand ils sont à "+
+  "l'acquéreur, leur <b>taux TTC</b> et le <b>prix hors honoraires</b> (arrêté du 10 "+
+  "janvier 2017) ; la <b>classe énergie</b> et la <b>classe climat</b>, le montant estimé "+
+  "des <b>dépenses annuelles d'énergie</b> avec l'année des prix de référence, et la "+
+  "phrase « <b>Logement à consommation énergétique excessive</b> » pour les classes F et "+
+  "G (loi Climat et Résilience) ; pour un lot de copropriété, le dire, donner le "+
+  "<b>nombre de lots</b>, les <b>charges courantes annuelles</b> et signaler une "+
+  "procédure en cours (loi ALUR) ; enfin la surface loi Carrez et votre qualité d'agent "+
+  "commercial avec la carte professionnelle. "+
+  "Les <b>dépenses annuelles</b> et l'<b>année des prix</b> se saisissent dans l'onglet "+
+  "Diagnostics, sur la ligne DPE, à côté des deux lettres. "+
+  "Ce qui manque est listé <b>en rouge au-dessus du texte</b>, et remplacé par « … » dans "+
+  "l'annonce : mieux vaut un trou visible qu'une mention inventée."],
+ ["Le clip pour les réseaux",
+  "Les photos défilent au format <b>1080 × 1350</b> — celui qui occupe le plus de place "+
+  "dans un fil — avec un lent mouvement d'approche, des fondus et votre logo en bas. Le "+
+  "prix et les mentions n'y figurent pas : ils vivent dans le texte. "+
+  "« <b>Choisir les photos</b> » ouvre un assistant en trois temps : les photos du bien, "+
+  "puis celles de l'immeuble (rubrique Photos de sa fiche), puis l'ordre — que l'on règle "+
+  "en <b>glissant les vignettes</b>. Dix photos au maximum : au-delà, personne ne regarde. "+
+  "Le clip est enregistré par le navigateur lui-même, en <b>MP4</b> si celui-ci sait le "+
+  "faire — Chrome à jour sur ordinateur, oui —, en WebM sinon. Facebook accepte les deux, "+
+  "Instagram seulement le MP4 ; le cas échéant l'application vous le dit. "+
+  "La même façon de glisser range désormais les photos dans la <b>galerie du bien</b> ; "+
+  "les flèches n'y restent que sur écran tactile, où le glissé n'existe pas."],
+ ["Pourquoi on ne publie pas depuis l'application",
+  "Publier sur une page Facebook par programme exige une application déclarée chez Meta, "+
+  "une revue de leur part, et un <b>jeton secret</b> : il serait lisible par quiconque "+
+  "ouvre la page, et n'importe qui publierait à votre place. Instagram va plus loin — son "+
+  "interface ne reçoit pas un fichier, elle va le <b>chercher</b> à une adresse publique "+
+  "sur Internet, ce qu'un fichier posé sur votre tablette n'est pas. "+
+  "Le chemin est donc : <b>Copier le texte</b>, <b>Télécharger le clip</b>, puis "+
+  "« Ouvrir Meta Business Suite » — vous y collez le texte, vous y déposez le clip, et "+
+  "vous gardez la main sur la programmation et le ciblage."],
+ ["L'historique des publications",
+  "« <b>Garder dans l'historique</b> » conserve le texte tel que vous l'avez laissé, le "+
+  "style, et la liste des photos retenues. <b>Reprendre</b> restitue le tout : le même "+
+  "texte, les mêmes photos, prêt à refaire le même clip. La vidéo elle-même n'est pas "+
+  "conservée — plusieurs méga-octets par essai, et elle se refabrique en quelques "+
+  "secondes. L'historique appartient au dossier et suit la base partagée."],
  ["L'application sur tablette",
   "Le même outil tourne sur un ordinateur et sur une tablette Android, à une condition : "+
   "qu'il soit <b>déposé en ligne</b> plutôt qu'ouvert comme un fichier du disque. Une "+
@@ -12610,6 +12775,15 @@ function rendrePieces(){
   $("#pjPhoto").onclick = ()=> pjChoisir(true, PJ_SUJET, PJ_RUB);
   majPjInfo();
   photos.forEach(p=> peindreVignette(p));
+  /* on range les photos en les glissant ; les flèches restent, mais cachées
+     au-dessus de la souris — sur écran tactile le glissé natif n'existe pas */
+  activerTriGlisse(z.querySelector(".pjgrille"), ".pjvig", els=>{
+    els.forEach((el, n)=>{
+      const q = PIECES[el.getAttribute("data-pjid")];
+      if(q && q.ordre !== n + 1){ q.ordre = n + 1; q.maj = Date.now(); }
+    });
+    ecrirePieces(); syncDiffere(); rafraichirPieces();
+  });
 }
 
 function majPjInfo(){
@@ -13006,6 +13180,772 @@ function rafraichirPieces(){
   if(pageActive() === "pieces") renderPagePieces();
 }
 
+
+/* ======================================================== PUBLICATIONS ===
+   Composer une annonce pour les réseaux sociaux à partir du dossier
+   ---------------------------------------------------------------------------
+   L'application travaille hors ligne : il n'y a pas d'intelligence artificielle
+   derrière ce bouton, et il ne faut pas laisser croire le contraire. Ce qu'il y
+   a, c'est une composition réglée — des patrons de style, des tournures tirées
+   au sort dans des familles d'équivalents, et les données du dossier qui
+   remplissent les trous. Le résultat se relit et se corrige avant publication ;
+   c'est un brouillon juste, pas une plume.
+
+   Ce qui compte vraiment ici, c'est le bloc des MENTIONS OBLIGATOIRES, qui lui
+   n'a rien d'une variation de style :
+
+     · arrêté du 10 janvier 2017 — prix honoraires inclus, à qui ils incombent,
+       et, quand ils sont à la charge de l'acquéreur, leur taux TTC ainsi que le
+       prix hors honoraires ;
+     · loi Climat et Résilience — classe énergie et classe climat en lettres
+       capitales, montant estimé des dépenses annuelles d'énergie avec l'année
+       des prix de référence, et la phrase « Logement à consommation
+       énergétique excessive » pour les classes F et G ;
+     · loi ALUR — pour un lot de copropriété : le dire, donner le nombre de
+       lots, les charges courantes annuelles, et signaler une procédure en
+       cours s'il y en a une.
+
+   Ce qui manque est listé en clair au-dessus du texte : mieux vaut un rappel
+   avant publication qu'une annonce non conforme. */
+
+const STYLES_PUBLI = [
+  {cle:"pro",   lib:"Professionnel", note:"factuel, les caractéristiques d'abord"},
+  {cle:"chal",  lib:"Chaleureux",    note:"on s'adresse au lecteur, on raconte le lieu"},
+  {cle:"coup",  lib:"Coup de cœur",  note:"court, enthousiaste, une accroche forte"},
+  {cle:"inves", lib:"Investisseur",  note:"surface, prix au m², charges, location"}
+];
+
+/* Un tirage reproductible : la même graine redonne le même texte, de sorte
+   qu'un texte retrouvé dans l'historique se régénère à l'identique. */
+function dePubli(graine){
+  let x = (graine || 1) >>> 0;
+  return (liste)=>{
+    x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0;
+    return liste[x % liste.length];
+  };
+}
+
+/* ------------------------------------------------- ce que le dossier dit */
+function donneesPubli(){
+  const b = D.bien || {}, det = D.detail || {}, r = residenceDuBien();
+  const dpe = (D.diags || []).filter(d=> d.nom === "DPE")[0] || {};
+  const m2 = v => num(v);
+  const o = {
+    type: typeBienLisible() || "Bien",
+    ville: b.ville || "",
+    cp: b.cp || "",
+    residence: b.residence || "",
+    copro: estCoproBien(),
+    surface: m2(det.surface),
+    carrez: m2(det.carrez),
+    terrain: m2(det.terrain),
+    pieces: num(det.pieces),
+    chambres: num(det.chambres),
+    sdb: num(det.sdb), sdEau: num(det.sdEau), wc: num(det.wc),
+    etage: String(det.etage || "").trim(),
+    etages: String(det.etages || "").trim(),
+    exposition: det.exposition || "",
+    etat: det.etat || "",
+    chauffage: det.chauffage || "",
+    froid: det.froid || "",
+    charges: num(det.charges),
+    taxe: num(det.taxe),
+    annexes: [],
+    fai: num((D.prix || {}).fai),
+    honoraires: num((D.prix || {}).honoraires),
+    charge: (D.prix || {}).charge || "",
+    net: prixNet(),
+    taux: tauxHono(),
+    dpeE: dpe.dpeEnergie || "", dpeG: dpe.dpeGes || "",
+    coutMin: num(dpe.dpeCoutMin), coutMax: num(dpe.dpeCoutMax),
+    anneeRef: String(dpe.dpeAnnee || "").trim(),
+    lots: num(r.nbLots), lotsHab: num(r.nbLotsPrinc),
+    ascenseur: r.ascenseur === "OUI",
+    piscine: r.piscine === "OUI",
+    parkingColl: r.parkingColl === "OUI",
+    procedure: String(r.restrictions || "").trim(),
+    negociateur: D.nego && D.nego.vendeur ? D.nego.vendeur : "",
+    mandat: (D.mandat || {}).num || ""
+  };
+  [["terrasse","terrasseM2","terrasse"],["balcon","balconM2","balcon"],
+   ["jardin","jardinM2","jardin"],["cave","caveM2","cave"],
+   ["garage","garageNb","garage"],["parking","parkingNb","parking"]]
+    .forEach(([k, ks, lib])=>{
+      if(det[k] !== "OUI") return;
+      const v = num(det[ks]);
+      o.annexes.push(/garage|parking/.test(k)
+        ? (v && v > 1 ? v + " " + lib + "s" : lib)
+        : (v ? lib + " de " + v.toLocaleString("fr-FR") + " m²" : lib));
+    });
+  return o;
+}
+
+function m2txt(v){ return v === null ? "" : v.toLocaleString("fr-FR") + " m²"; }
+function etageTxt(o){
+  if(!o.etage) return "";
+  const e = o.etage.toLowerCase();
+  if(/rdc|rez/.test(e)) return "en rez-de-chaussée";
+  const n = parseInt(o.etage, 10);
+  if(!isFinite(n)) return "à l'étage " + o.etage;
+  if(n === 0) return "en rez-de-chaussée";
+  return "au " + (n === 1 ? "1er" : n + "e") + " étage"
+    + (o.etages ? " sur " + o.etages : "");
+}
+
+/* ------------------------------------------- ce qui manque pour publier */
+function manquePubli(){
+  const o = donneesPubli(), m = [];
+  if(o.fai === null) m.push("le prix de vente");
+  if(!o.charge) m.push("la charge des honoraires");
+  if(o.charge === "Acquéreur" && o.honoraires === null)
+    m.push("le montant des honoraires (obligatoire quand ils sont à l'acquéreur)");
+  if(!o.dpeE) m.push("la classe énergie du DPE");
+  if(!o.dpeG) m.push("la classe climat du DPE");
+  if(o.coutMin === null || o.coutMax === null)
+    m.push("les dépenses annuelles d'énergie estimées (onglet Diagnostics, ligne DPE)");
+  if(!o.anneeRef) m.push("l'année des prix de référence du DPE");
+  if(o.copro){
+    if(o.lots === null) m.push("le nombre de lots de la copropriété (fiche de l'immeuble)");
+    if(o.charges === null) m.push("les charges de copropriété annuelles");
+    if(o.carrez === null) m.push("la surface loi Carrez");
+  }
+  if(o.surface === null) m.push("la surface habitable");
+  if(!o.ville) m.push("la ville du bien");
+  return m;
+}
+
+/* ------------------------------------------------- les mentions légales */
+function mentionsPubli(){
+  const o = donneesPubli(), L2 = [];
+  const q = v => v === null ? "…" : eur(v);
+
+  if(o.charge === "Acquéreur"){
+    L2.push("Prix : " + q(o.fai) + " honoraires d'agence inclus.");
+    L2.push("Prix hors honoraires : " + q(o.net) + ".");
+    L2.push("Honoraires : " + (o.taux === null ? "…"
+      : o.taux.toLocaleString("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2})
+        + " %") + " TTC à la charge de l'acquéreur.");
+  } else {
+    L2.push("Prix : " + q(o.fai) + " honoraires d'agence inclus, "
+      + "charge vendeur.");
+  }
+  if(o.copro && o.carrez !== null) L2.push("Surface loi Carrez : " + m2txt(o.carrez) + ".");
+
+  const exces = /^[FG]$/.test(o.dpeE);
+  if(exces) L2.push("Logement à consommation énergétique excessive : classe " + o.dpeE + ".");
+  L2.push("Classe énergie " + (o.dpeE || "…") + " — Classe climat " + (o.dpeG || "…") + ".");
+  L2.push("Montant estimé des dépenses annuelles d'énergie pour un usage standard : "
+    + (o.coutMin === null ? "…" : eur(o.coutMin)) + " à "
+    + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an"
+    + (o.anneeRef ? " (prix moyens indexés au 1er janvier " + o.anneeRef + ")" : "") + ".");
+
+  if(o.copro){
+    L2.push("Bien en copropriété"
+      + (o.lots === null ? "" : " de " + o.lots + " lot" + (o.lots > 1 ? "s" : ""))
+      + (o.charges === null ? "" : ". Charges courantes annuelles : " + eur(o.charges))
+      + ".");
+    L2.push(o.procedure
+      ? "Copropriété — à signaler : " + o.procedure
+      : "Aucune procédure en cours sur la copropriété.");
+  }
+  const a = L.agence || {};
+  L2.push([o.negociateur || "", "agent commercial", a.nom || ""]
+    .filter(Boolean).join(" — ") + (a.carte ? " — " + a.carte : "") + ".");
+  return L2.join("\n");
+}
+
+/* ------------------------------------------------------------ le corps */
+function corpsPubli(style, graine){
+  const o = donneesPubli(), pioche = dePubli(graine);
+  /* « ARLES » se lit « Arles » au fil d'une phrase ; « à Arles » mais « aux
+     Saintes-Maries » et « au cœur d'Arles » : l'élision n'est pas un détail,
+     c'est la différence entre un texte écrit et un texte rempli. */
+  const ou = villeLisible(o.ville);
+  const aOu = aLaVille(o.ville);
+  const coeurOu = ou ? "au cœur " + (/^[AEIOUYÀÂÉÈÊÎÔÛaeiouyàâéèêîôû]/.test(ou)
+    ? "d'" + ou : "de " + ou) : "";
+  /* « imaginez appartement » ne se dit pas : il faut son article */
+  const leType = o.type ? (/^[AEIOUYÀÂÉÈÊÎÔÛaeiouyàâéèêîôû]/.test(o.type)
+    ? "cet " : "ce ") + o.type.toLowerCase() : "ce bien";
+  const piecesTxt = o.pieces ? o.pieces + " pièce" + (o.pieces > 1 ? "s" : "") : "";
+  const chTxt = o.chambres ? o.chambres + " chambre" + (o.chambres > 1 ? "s" : "") : "";
+  const sTxt = m2txt(o.surface);
+  const lignes = [];
+
+  const atouts = [];
+  if(o.exposition) atouts.push("exposition " + o.exposition.toLowerCase());
+  if(o.etat) atouts.push(o.etat.toLowerCase());
+  o.annexes.forEach(a=> atouts.push(a));
+  if(o.ascenseur) atouts.push("ascenseur");
+  if(o.piscine) atouts.push("piscine collective");
+  if(o.parkingColl) atouts.push("parking collectif");
+  if(o.chauffage) atouts.push("chauffage : " + o.chauffage.toLowerCase());
+  if(o.terrain) atouts.push("terrain de " + m2txt(o.terrain));
+
+  if(style === "pro"){
+    lignes.push([o.type, aOu, sTxt, piecesTxt].filter(Boolean).join(" · "));
+    const desc = [piecesTxt, chTxt].filter(Boolean).join(" dont ");
+    lignes.push([
+      o.type + (sTxt ? " de " + sTxt : ""),
+      desc ? "comprenant " + desc : "",
+      etageTxt(o),
+      o.residence ? "dans la résidence " + o.residence : ""
+    ].filter(Boolean).join(", ") + ".");
+    if(atouts.length) lignes.push("Prestations : " + atouts.join(", ") + ".");
+    lignes.push(pioche([
+      "Visite sur rendez-vous.",
+      "Dossier complet et visite sur demande.",
+      "Nous vous recevons pour une visite sur rendez-vous."
+    ]));
+  }
+
+  if(style === "chal"){
+    lignes.push(pioche([
+      "Et si c'était là ?",
+      "Un lieu où poser ses valises" + (aOu ? ", " + aOu : "") + ".",
+      "On a un faible pour celui-ci."
+    ]));
+    lignes.push([
+      pioche(["Imaginez", "Représentez-vous", "Projetez-vous dans"]) + " "
+        + leType + (sTxt ? " de " + sTxt : ""),
+      chTxt ? "avec ses " + chTxt : "",
+      etageTxt(o),
+      coeurOu
+    ].filter(Boolean).join(", ") + ".");
+    if(atouts.length) lignes.push(pioche([
+      "Ce qu'on aime : ", "Les petits plus : ", "Ce qui fait la différence : "
+    ]) + atouts.slice(0, 5).join(", ") + ".");
+    lignes.push(pioche([
+      "Envie de le voir ? Écrivez-nous, on organise la visite.",
+      "Un message et on vous ouvre la porte.",
+      "Dites-nous quand, on vous y emmène."
+    ]));
+  }
+
+  if(style === "coup"){
+    lignes.push(pioche([
+      "COUP DE CŒUR " + (ou ? "— " + ou.toUpperCase() : ""),
+      "NOUVEAUTÉ " + (ou ? "— " + ou.toUpperCase() : ""),
+      "À NE PAS LAISSER PASSER " + (ou ? "— " + ou.toUpperCase() : "")
+    ]).trim());
+    lignes.push([o.type, sTxt, piecesTxt, chTxt].filter(Boolean).join(" · ") + ".");
+    if(atouts.length) lignes.push(atouts.slice(0, 4).join(" · ") + ".");
+    lignes.push(pioche([
+      "Les biens comme celui-ci ne restent pas longtemps.",
+      "Une visite suffit souvent à se décider.",
+      "Premier arrivé, premier servi — contactez-nous."
+    ]));
+  }
+
+  if(style === "inves"){
+    const prixM2 = (o.fai !== null && o.surface) ? Math.round(o.fai / o.surface) : null;
+    lignes.push([o.type, aOu, sTxt].filter(Boolean).join(" — "));
+    lignes.push([
+      sTxt ? "Surface " + sTxt : "",
+      piecesTxt, chTxt,
+      prixM2 ? "soit " + eur(prixM2) + " le m²" : ""
+    ].filter(Boolean).join(", ") + ".");
+    const ch = [];
+    if(o.charges !== null) ch.push("charges de copropriété " + eur(o.charges) + " par an");
+    if(o.taxe !== null) ch.push("taxe foncière " + eur(o.taxe));
+    if(o.lots !== null) ch.push("copropriété de " + o.lots + " lots");
+    if(ch.length) lignes.push("Charges annuelles : " + ch.join(", ") + ".");
+    if(atouts.length) lignes.push("Atouts locatifs : " + atouts.slice(0, 5).join(", ") + ".");
+    lignes.push(pioche([
+      "Étude de rentabilité sur demande.",
+      "Nous vous communiquons les derniers procès-verbaux d'assemblée sur demande.",
+      "Chiffres détaillés et visite sur rendez-vous."
+    ]));
+  }
+  return lignes.filter(Boolean).join("\n\n");
+}
+
+/* Les mots-dièse : on reste sobre, trois ou quatre suffisent et les lecteurs
+   les lisent encore. */
+function dieses(){
+  const o = donneesPubli(), t = [];
+  if(o.ville) t.push("#" + villeLisible(o.ville).replace(/[^A-Za-zÀ-ÿ]/g, ""));
+  t.push("#immobilier");
+  const ty = fold(o.type);
+  if(/appartement/.test(ty)) t.push("#appartement");
+  else if(/maison|villa|mas/.test(ty)) t.push("#maison");
+  else if(/terrain/.test(ty)) t.push("#terrain");
+  t.push("#aVendre");
+  return t.join(" ");
+}
+
+function textePubli(style, graine){
+  return corpsPubli(style, graine) + "\n\n" + mentionsPubli() + "\n\n" + dieses();
+}
+
+/* ------------------------------------------------ trier au glisser-déposer
+   Un petit outil réutilisable : on rend des éléments déplaçables dans leur
+   conteneur, et on prévient quand l'ordre a changé. HTML5 suffit, aucune
+   bibliothèque ; sur écran tactile le glissé natif n'existe pas, c'est
+   pourquoi les flèches restent affichées là-bas (voir la feuille de style). */
+function activerTriGlisse(conteneur, selecteur, fini){
+  if(!conteneur) return;
+  let pris = null;
+  conteneur.querySelectorAll(selecteur).forEach(el=>{
+    el.setAttribute("draggable", "true");
+    el.addEventListener("dragstart", e=>{
+      pris = el; el.classList.add("enmain");
+      if(e.dataTransfer){ e.dataTransfer.effectAllowed = "move";
+        try{ e.dataTransfer.setData("text/plain", ""); }catch(err){} }
+    });
+    el.addEventListener("dragend", ()=>{
+      el.classList.remove("enmain");
+      conteneur.querySelectorAll(selecteur).forEach(x=> x.classList.remove("avant","apres"));
+      pris = null;
+      if(fini) fini(Array.from(conteneur.querySelectorAll(selecteur)));
+    });
+    el.addEventListener("dragover", e=>{
+      if(!pris || pris === el) return;
+      e.preventDefault();
+      /* on se place avant ou après selon la moitié survolée : c'est ce qui
+         rend le geste prévisible */
+      const r = el.getBoundingClientRect();
+      const avant = (e.clientX - r.left) < r.width / 2;
+      el.classList.toggle("avant", avant);
+      el.classList.toggle("apres", !avant);
+      conteneur.insertBefore(pris, avant ? el : el.nextSibling);
+    });
+    el.addEventListener("dragleave", ()=> el.classList.remove("avant","apres"));
+    el.addEventListener("drop", e=> e.preventDefault());
+  });
+}
+
+/* ======================================================= LE CLIP ANIMÉ ===
+   Un diaporama filmé par le navigateur lui-même : on dessine les photos sur
+   un canevas avec un lent mouvement d'approche et des fondus, et on enregistre
+   ce canevas. Aucune bibliothèque, aucun serveur — un encodeur vidéo pèserait
+   vingt méga-octets, et l'application doit tenir dans un fichier.
+
+   Le format de sortie dépend de ce que le navigateur sait encoder : on demande
+   du MP4 d'abord, universellement accepté par Facebook et Instagram, et l'on
+   retombe sur le WebM si l'appareil ne le propose pas. Le cas est signalé à
+   l'écran plutôt que découvert au moment de publier. */
+const CLIP_L = 1080, CLIP_H = 1350;        // 4:5, le format du fil
+const CLIP_SEC = 2.6;                      // par photo, fondu compris
+const CLIP_FONDU = 0.6;
+const CLIP_MAX = 10;                       // au-delà, personne ne regarde
+
+function clipFormats(){
+  const essais = [
+    ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "mp4"],
+    ["video/mp4;codecs=avc1", "mp4"],
+    ["video/mp4", "mp4"],
+    ["video/webm;codecs=vp9", "webm"],
+    ["video/webm;codecs=vp8", "webm"],
+    ["video/webm", "webm"]
+  ];
+  for(const [mime, ext] of essais){
+    try{ if(window.MediaRecorder && MediaRecorder.isTypeSupported(mime))
+      return {mime, ext}; }catch(e){}
+  }
+  return null;
+}
+function clipPossible(){
+  return !!(window.MediaRecorder && clipFormats()
+    && typeof HTMLCanvasElement.prototype.captureStream === "function");
+}
+
+/* On charge les images une fois pour toutes : décoder pendant le tournage
+   ferait sauter des trames. */
+async function imagesDesPieces(ids){
+  const out = [];
+  for(const id of ids){
+    const p = PIECES[id];
+    if(!p) continue;
+    try{
+      const blob = await blobDeLaPiece(p, false);
+      if(!blob) continue;
+      out.push(await createImageBitmap(blob, {imageOrientation:"from-image"}));
+    }catch(e){}
+  }
+  return out;
+}
+
+/* Remplit le cadre sans déformer, avec un léger débord selon le zoom. */
+function dessinerCouvrant(g, img, z, dx, dy){
+  const r = Math.max(CLIP_L / img.width, CLIP_H / img.height) * z;
+  const w = img.width * r, h = img.height * r;
+  g.drawImage(img, (CLIP_L - w) / 2 + dx, (CLIP_H - h) / 2 + dy, w, h);
+}
+
+async function fabriquerClip(ids, avance){
+  const fmt = clipFormats();
+  if(!fmt) throw new Error("ce navigateur ne sait pas enregistrer de vidéo");
+  const imgs = await imagesDesPieces(ids.slice(0, CLIP_MAX));
+  if(!imgs.length) throw new Error("aucune photo lisible");
+
+  const c = document.createElement("canvas");
+  c.width = CLIP_L; c.height = CLIP_H;
+  const g = c.getContext("2d");
+  g.fillStyle = "#14305c"; g.fillRect(0, 0, CLIP_L, CLIP_H);
+
+  /* le logo de l'agence, préparé une fois */
+  let logo = null;
+  try{
+    if(L.agence && L.agence.logo){
+      logo = await new Promise((res)=>{
+        const im = new Image();
+        im.onload = ()=> res(im); im.onerror = ()=> res(null);
+        im.src = L.agence.logo;
+      });
+    }
+  }catch(e){}
+
+  const flux = c.captureStream(30);
+  const rec = new MediaRecorder(flux, {mimeType: fmt.mime, videoBitsPerSecond: 4500000});
+  const bouts = [];
+  rec.ondataavailable = e=>{ if(e.data && e.data.size) bouts.push(e.data); };
+  const fini = new Promise(res=> rec.onstop = res);
+  rec.start(200);
+
+  const t0 = performance.now();
+  const duree = imgs.length * CLIP_SEC;
+  await new Promise(res=>{
+    const trame = ()=>{
+      const t = (performance.now() - t0) / 1000;
+      if(t >= duree){ res(); return; }
+      const i = Math.min(imgs.length - 1, Math.floor(t / CLIP_SEC));
+      const u = (t - i * CLIP_SEC) / CLIP_SEC;          /* 0 → 1 sur la photo */
+      g.fillStyle = "#0f1a2b"; g.fillRect(0, 0, CLIP_L, CLIP_H);
+      /* lent mouvement d'approche, alterné un coup à gauche un coup à droite */
+      const sens = i % 2 ? -1 : 1;
+      g.save(); g.globalAlpha = 1;
+      dessinerCouvrant(g, imgs[i], 1.06 + u * 0.08, sens * (u - .5) * 26, (u - .5) * 18);
+      g.restore();
+      /* fondu avec la suivante sur la fin de la vignette */
+      const reste = CLIP_SEC - (t - i * CLIP_SEC);
+      if(reste < CLIP_FONDU && i + 1 < imgs.length){
+        g.save();
+        g.globalAlpha = 1 - reste / CLIP_FONDU;
+        dessinerCouvrant(g, imgs[i + 1], 1.06, 0, 0);
+        g.restore();
+      }
+      /* une ombre basse pour détacher le logo des photos claires */
+      const om = g.createLinearGradient(0, CLIP_H - 260, 0, CLIP_H);
+      om.addColorStop(0, "rgba(10,20,38,0)"); om.addColorStop(1, "rgba(10,20,38,.55)");
+      g.fillStyle = om; g.fillRect(0, CLIP_H - 260, CLIP_L, 260);
+      if(logo && logo.width){
+        const lw = 300, lh = logo.height * lw / logo.width;
+        g.globalAlpha = .95;
+        g.drawImage(logo, CLIP_L - lw - 46, CLIP_H - lh - 46, lw, lh);
+        g.globalAlpha = 1;
+      }
+      if(avance) avance(Math.min(1, t / duree));
+      requestAnimationFrame(trame);
+    };
+    requestAnimationFrame(trame);
+  });
+
+  rec.stop();
+  await fini;
+  imgs.forEach(im=>{ if(im.close) im.close(); });
+  return {blob: new Blob(bouts, {type: fmt.mime}), ext: fmt.ext,
+          duree: Math.round(duree * 10) / 10, nb: imgs.length};
+}
+
+/* ------------------------------------------------- la page Publications */
+let PUB_STYLE = "pro";
+let PUB_GRAINE = 1;
+let PUB_TEXTE = "";
+let PUB_PHOTOS = [];                 /* identifiants de pièces, dans l'ordre */
+let PUB_CLIP = null;                 /* {url, ext, duree, nb} */
+let PUB_ETAPE = 0;                   /* l'assistant de choix des photos */
+let PUB_CHOIX = [];
+let PUB_DOSSIER = "";                /* celui pour lequel le brouillon vaut */
+
+function photosDuBien(){ return photosDe(sujetBien(D)); }
+function photosDeLImmeuble(){
+  const nom = String((D.bien || {}).residence || "").trim();
+  if(!nom) return [];
+  return piecesDe(sujetImmeuble(nom), "Photos").filter(p=> p.photo);
+}
+
+function renderPublications(){
+  const z = $("#publiBody"); if(!z) return;
+  /* changer de dossier remet le brouillon à zéro : rien de pire qu'une
+     annonce qui garde le texte du bien précédent */
+  if(PUB_DOSSIER !== D.id){
+    PUB_DOSSIER = D.id;
+    PUB_STYLE = "pro"; PUB_GRAINE = 1; PUB_TEXTE = "";
+    PUB_PHOTOS = []; PUB_CHOIX = [];
+    oublierClip();
+  }
+  const manque = manquePubli();
+  if(!PUB_TEXTE) PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
+  const dispo = photosDuBien().length + photosDeLImmeuble().length;
+
+  z.innerHTML = `
+    <div class="card"><h2>Le texte</h2><div class="body">
+      <div class="pubstyles">${STYLES_PUBLI.map(s=>
+        `<button type="button" class="stylebtn${s.cle === PUB_STYLE ? " on" : ""}"
+           data-pubstyle="${s.cle}"><b>${esc(s.lib)}</b>
+           <span>${esc(s.note)}</span></button>`).join("")}</div>
+      ${manque.length ? `<div class="alerte" style="margin:14px 0">
+        <b>Il manque ${manque.length === 1 ? "une donnée" : manque.length + " données"}
+        pour que l'annonce soit conforme :</b> ${esc(manque.join(" ; "))}. Les mentions
+        correspondantes sont remplacées par « … » dans le texte.</div>` : ""}
+      <textarea id="pubTexte" class="pubtexte" spellcheck="true">${esc(PUB_TEXTE)}</textarea>
+      <div class="pubbtns">
+        <button type="button" class="tbtn light" id="pubAutre">Une autre tournure</button>
+        <span class="grow"></span>
+        <span class="muted" id="pubCompte"></span>
+        <button type="button" class="addbtn" id="pubCopier">${IC_COPIE} Copier le texte</button>
+      </div>
+    </div></div>
+
+    <div class="card"><h2>Le clip</h2><div class="body">
+      ${!clipPossible() ? `<div class="alerte">Ce navigateur ne sait pas enregistrer de
+        vidéo. Le texte reste utilisable ; pour le clip, passez par l'ordinateur.</div>` : `
+      <p class="muted" style="margin-top:0">Format 1080 × 1350, celui qui occupe le plus de
+        place dans un fil. Les photos défilent avec un lent mouvement d'approche et votre
+        logo en bas ; le prix et les mentions restent dans le texte.</p>
+      <div class="pubbtns">
+        <button type="button" class="tbtn light" id="pubChoisir">
+          Choisir les photos${PUB_PHOTOS.length ? " (" + PUB_PHOTOS.length + ")" : ""}</button>
+        <button type="button" class="addbtn" id="pubFaire"
+          ${PUB_PHOTOS.length ? "" : "disabled"}>Créer le clip</button>
+        <span class="grow"></span>
+        <span class="muted">${dispo} photo${dispo > 1 ? "s" : ""} disponible${
+          dispo > 1 ? "s" : ""}</span>
+      </div>
+      <div id="pubAvance" class="pubavance" hidden><div></div></div>
+      ${PUB_CLIP ? `<div class="pubclip">
+        <video src="${PUB_CLIP.url}" controls loop playsinline></video>
+        <div class="pubbtns">
+          <span class="muted">${PUB_CLIP.nb} photos · ${String(PUB_CLIP.duree)
+            .replace(".", ",")} s · ${PUB_CLIP.ext.toUpperCase()}</span>
+          <span class="grow"></span>
+          <button type="button" class="addbtn" id="pubTel">Télécharger le clip</button>
+        </div>
+        ${PUB_CLIP.ext !== "mp4" ? `<p class="muted">Ce navigateur n'a su produire qu'un
+          fichier <b>WebM</b>. Facebook l'accepte ; Instagram, non. Depuis un ordinateur
+          sous Chrome à jour, le clip sort en MP4.</p>` : ""}
+      </div>` : ""}`}
+    </div></div>
+
+    <div class="card"><h2>Publier</h2><div class="body">
+      <p class="muted" style="margin-top:0">L'application ne peut pas publier à votre place :
+        Meta exige une application déclarée et un jeton secret, qui n'ont pas leur place dans
+        une page web. Le texte se copie, le clip se télécharge, et le bouton ci-dessous ouvre
+        le composeur de Business Suite où vous les déposez.</p>
+      <div class="pubbtns">
+        <button type="button" class="tbtn light" id="pubMeta">Ouvrir Meta Business Suite</button>
+        <span class="grow"></span>
+        <button type="button" class="addbtn" id="pubGarder">Garder dans l'historique</button>
+      </div>
+    </div></div>
+
+    <div class="card"><h2>Historique des publications
+      <span class="cnt">${(D.publications || []).length}</span></h2>
+      <div class="body" id="pubHisto"></div></div>`;
+
+  majCompteTexte();
+  rendreHistoPubli();
+  const b = id=> $("#" + id);
+  const t = b("pubTexte");
+  if(t) t.oninput = ()=>{ PUB_TEXTE = t.value; majCompteTexte(); };
+  if(b("pubAutre")) b("pubAutre").onclick = ()=>{
+    PUB_GRAINE = (PUB_GRAINE * 7 + 11) % 100000 || 3;
+    PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
+    renderPublications();
+  };
+  if(b("pubCopier")) b("pubCopier").onclick = copierTextePubli;
+  if(b("pubChoisir")) b("pubChoisir").onclick = ()=> ouvrirChoixPhotos(0);
+  if(b("pubFaire")) b("pubFaire").onclick = lancerClip;
+  if(b("pubTel")) b("pubTel").onclick = telechargerClip;
+  if(b("pubMeta")) b("pubMeta").onclick = ()=>
+    ouvrirDansOnglet("https://business.facebook.com/latest/composer", "");
+  if(b("pubGarder")) b("pubGarder").onclick = garderPublication;
+}
+
+const IC_COPIE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">` +
+  `<rect x="5.5" y="5.5" width="8" height="9" rx="1.6" fill="none" stroke="currentColor" ` +
+  `stroke-width="1.5"/><path d="M10.5 3.5h-7a1 1 0 0 0-1 1v7" fill="none" ` +
+  `stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+
+function majCompteTexte(){
+  const z = $("#pubCompte"); if(!z) return;
+  const n = (PUB_TEXTE || "").length;
+  z.textContent = n + " caractères"
+    + (n > 2200 ? " — au-delà de 2 200, Instagram coupe" : "");
+}
+function copierTextePubli(){
+  const t = PUB_TEXTE || "";
+  const fait = ()=> toast("Texte copié");
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText)
+      return navigator.clipboard.writeText(t).then(fait, ()=> copieDeSecours(t, fait));
+  }catch(e){}
+  copieDeSecours(t, fait);
+}
+/* le presse-papiers moderne demande un contexte sûr : en fichier local, il
+   faut en repasser par la vieille méthode */
+function copieDeSecours(t, fait){
+  const z = document.createElement("textarea");
+  z.value = t; z.style.position = "fixed"; z.style.opacity = "0";
+  document.body.appendChild(z); z.select();
+  try{ document.execCommand("copy"); fait(); }
+  catch(e){ toast("Copie impossible — sélectionnez le texte à la main"); }
+  z.remove();
+}
+
+/* ------------------------------------------- l'assistant de choix en trois temps */
+function ouvrirChoixPhotos(etape){
+  PUB_ETAPE = etape;
+  if(etape === 0) PUB_CHOIX = PUB_PHOTOS.slice();
+  /* un clip déjà tourné ne correspond plus au choix qu'on est en train de
+     refaire : on le laisse tomber plutôt que de laisser croire le contraire */
+  const imm = photosDeLImmeuble();
+  /* sans photo d'immeuble, l'étape 2 n'a pas lieu d'être */
+  if(etape === 1 && !imm.length) return ouvrirChoixPhotos(2);
+  const lot = etape === 0 ? photosDuBien() : etape === 1 ? imm : [];
+
+  if(etape === 2){
+    popup({titre:"3 / 3 — L'ordre des photos", large:true,
+      corps:`<p class="muted" style="margin-top:0">Glissez les vignettes pour les ranger.
+          La première ouvre le clip.</p>
+        <div class="pubordre" id="pubOrdre">${PUB_CHOIX.map((id,i)=>{
+          const p = PIECES[id]; if(!p) return "";
+          return `<figure class="pubvig" data-pubid="${esc(id)}">
+            <div class="pjimg" data-pjvig="${esc(id)}"></div>
+            <figcaption><span class="rang">${i + 1}</span>
+              <span>${esc(p.nom)}</span></figcaption></figure>`;
+        }).join("")}</div>
+        ${PUB_CHOIX.length ? "" : `<p class="muted">Aucune photo retenue.</p>`}`,
+      boutons:[{lib:"Retour", action:()=> ouvrirChoixPhotos(1)},
+               {lib:"Valider", primaire:true, action:()=>{
+                 PUB_PHOTOS = PUB_CHOIX.slice(); oublierClip(); renderPublications();
+               }}]});
+    setTimeout(()=>{
+      PUB_CHOIX.forEach(id=>{ const p = PIECES[id]; if(p) peindreVignette(p); });
+      activerTriGlisse($("#pubOrdre"), ".pubvig", els=>{
+        PUB_CHOIX = els.map(e=> e.getAttribute("data-pubid"));
+        els.forEach((e,i)=>{ const r = e.querySelector(".rang"); if(r) r.textContent = i + 1; });
+      });
+    }, 40);
+    return;
+  }
+
+  const titre = etape === 0 ? "1 / 3 — Les photos du bien"
+                            : "2 / 3 — Les photos de l'immeuble";
+  popup({titre, large:true,
+    corps:`<p class="muted" style="margin-top:0">${lot.length
+        ? "Cliquez les photos à retenir. " + PUB_CHOIX.length + " retenue"
+          + (PUB_CHOIX.length > 1 ? "s" : "") + " pour l'instant."
+        : "Aucune photo ici. Déposez-en depuis la page Pièces jointes."}</p>
+      <div class="pubgrille" id="pubGrille">${lot.map(p=>
+        `<figure class="pubvig choix${PUB_CHOIX.indexOf(p.id) >= 0 ? " prise" : ""}"
+           data-pubpick="${esc(p.id)}">
+          <div class="pjimg" data-pjvig="${esc(p.id)}"></div>
+          <figcaption><span class="coche">✓</span><span>${esc(p.nom)}</span></figcaption>
+        </figure>`).join("")}</div>`,
+    boutons:[{lib:"Annuler"},
+             ...(etape === 1 ? [{lib:"Retour", action:()=> ouvrirChoixPhotos(0)}] : []),
+             {lib:"Suivant", primaire:true, action:()=> ouvrirChoixPhotos(etape + 1)}]});
+  setTimeout(()=> lot.forEach(p=> peindreVignette(p)), 40);
+}
+
+/* ----------------------------------------------------- fabriquer et livrer */
+async function lancerClip(){
+  if(!PUB_PHOTOS.length) return;
+  const z = $("#pubAvance");
+  if(z){ z.hidden = false; z.firstElementChild.style.width = "0%"; }
+  const bouton = $("#pubFaire");
+  if(bouton){ bouton.disabled = true; bouton.textContent = "Tournage…"; }
+  try{
+    const r = await fabriquerClip(PUB_PHOTOS, u=>{
+      if(z) z.firstElementChild.style.width = Math.round(u * 100) + "%";
+    });
+    oublierClip();
+    PUB_CLIP = {url: URL.createObjectURL(r.blob), blob: r.blob,
+                ext: r.ext, duree: r.duree, nb: r.nb};
+    renderPublications();
+    toast("Clip prêt");
+  }catch(e){
+    toast("Clip impossible : " + e.message);
+    if(bouton){ bouton.disabled = false; bouton.textContent = "Créer le clip"; }
+    if(z) z.hidden = true;
+  }
+}
+/* Révoquer l'adresse d'un clip pendant que la balise vidéo la tient encore
+   fait japper le navigateur — « ressource introuvable » sur une adresse qui
+   vient de disparaître. On détache d'abord, on révoque ensuite. */
+function oublierClip(){
+  const v = document.querySelector(".pubclip video");
+  if(v){ v.pause(); v.removeAttribute("src"); v.load(); }
+  if(PUB_CLIP && PUB_CLIP.url) URL.revokeObjectURL(PUB_CLIP.url);
+  PUB_CLIP = null;
+}
+function nomDuClip(ext){
+  const b = D.bien || {};
+  const base = [(D.mandat || {}).num, b.adresse, b.ville].filter(Boolean).join(" - ");
+  return (base || "publication") + "." + ext;
+}
+function telechargerClip(){
+  if(!PUB_CLIP) return;
+  download(PUB_CLIP.blob, nomDuClip(PUB_CLIP.ext));
+}
+
+/* ------------------------------------------------------------ l'historique
+   On garde le texte tel qu'il a été publié, le style et la graine, et la
+   liste des photos : de quoi refaire exactement le même clip plus tard. La
+   vidéo elle-même n'est pas conservée — plusieurs méga-octets par essai, et
+   elle se refabrique en dix secondes. */
+function garderPublication(){
+  if(!Array.isArray(D.publications)) D.publications = [];
+  D.publications.unshift({
+    id: "pb" + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+    date: new Date().toISOString(),
+    style: PUB_STYLE, graine: PUB_GRAINE,
+    texte: PUB_TEXTE || "",
+    photos: PUB_PHOTOS.slice(),
+    clip: PUB_CLIP ? PUB_CLIP.ext : ""
+  });
+  autosave();
+  renderPublications();
+  toast("Publication gardée dans l'historique");
+}
+function rendreHistoPubli(){
+  const z = $("#pubHisto"); if(!z) return;
+  const l = D.publications || [];
+  if(!l.length){
+    z.innerHTML = `<p class="muted" style="margin:0">Rien encore. « Garder dans
+      l'historique » conserve le texte, le style et les photos choisies : de quoi
+      refaire le même clip ou reprendre le même texte plus tard.</p>`;
+    return;
+  }
+  z.innerHTML = l.map(p=>{
+    const s = (STYLES_PUBLI.filter(x=> x.cle === p.style)[0] || {}).lib || p.style;
+    const d = new Date(p.date);
+    return `<div class="pubhrow">
+      <span class="pubhd">${esc(fdate(p.date.slice(0,10)))}
+        <em>${d.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"})}</em></span>
+      <span class="pubhs">${esc(s)}</span>
+      <span class="pubht">${esc((p.texte || "").split("\n")[0].slice(0, 70))}…</span>
+      <span class="muted">${(p.photos || []).length} photo${
+        (p.photos || []).length > 1 ? "s" : ""}</span>
+      <button type="button" class="tbtn light" data-pubrep="${esc(p.id)}">Reprendre</button>
+      <button type="button" class="xbtn sup" data-pubdel="${esc(p.id)}">Supprimer</button>
+    </div>`;
+  }).join("");
+}
+function reprendrePublication(id){
+  const p = (D.publications || []).filter(x=> x.id === id)[0];
+  if(!p) return;
+  PUB_STYLE = p.style || "pro";
+  PUB_GRAINE = p.graine || 1;
+  PUB_TEXTE = p.texte || "";
+  /* une photo retirée du dossier depuis ne doit pas faire échouer le clip */
+  PUB_PHOTOS = (p.photos || []).filter(x=> PIECES[x] && !PIECES[x].supprime);
+  oublierClip();
+  renderPublications();
+  toast("Publication reprise");
+}
 
 /* ===================================================================== PWA
    L'application installée sur une tablette
