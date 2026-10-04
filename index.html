@@ -1303,6 +1303,13 @@ table.tdb .puce.resilie{background:#64748b}
 .pjhorscadre b{font-size:14px;word-break:break-word}
 .pjhorscadre p{margin:0;font-size:12.5px;line-height:1.5}
 
+/* la zone de dépôt, quand un fichier survole */
+.pjsurvol{outline:2px dashed var(--accent);outline-offset:-3px;
+  background:var(--accent-soft) !important}
+.pjgroupe.pjsurvol > header{background:var(--accent-soft)}
+.pjglisse{font-size:12px;white-space:nowrap}
+@media(max-width:760px){.pjglisse{display:none}}   /* on ne glisse pas au doigt */
+
 /* le classeur : les rubriques d'un sujet, en surimpression */
 .classeur{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;
   margin-top:4px}
@@ -1386,7 +1393,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 octobre 2026, 13 h 07">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 octobre 2026, 13 h 37">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1581,7 +1588,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 octobre 2026, 13 h 07</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 octobre 2026, 13 h 37</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -1766,6 +1773,15 @@ const LISTS_DEFAULT = {
                "Traversant","Plusieurs expositions"],
   etatBien:   ["Neuf","Refait à neuf","Bon état","À rafraîchir","À rénover",
                "Gros travaux à prévoir"],
+  /* les noms de pièces : une liste pour saisir vite et nommer pareil d'un
+     dossier à l'autre, modifiable comme toutes les autres. C'est sur ces
+     noms que la fiche compte les chambres, les salles d'eau, les annexes —
+     une orthographe stable vaut mieux qu'un comptage approximatif. */
+  piecesNoms: ["Séjour","Salon","Salle à manger","Cuisine","Cuisine ouverte",
+               "Chambre","Bureau","Salle de bain","Salle d'eau","WC","Dégagement",
+               "Entrée","Couloir","Buanderie","Cellier","Dressing","Mezzanine",
+               "Véranda","Terrasse","Balcon","Loggia","Cave","Garage","Grenier",
+               "Combles","Atelier","Local technique","Jardin"],
   froid:      ["Climatisation réversible","Climatisation individuelle",
                "Pompe à chaleur réversible","Climatisation collective",
                "Ventilation rafraîchissante","Aucun"],
@@ -1828,7 +1844,7 @@ const LIST_LABELS = {
   chargeHono:"Charge des honoraires",
   modeEquip:"Chauffage / refroidissement — nature", modeEcs:"Eau chaude — nature",
   energie:"Énergies", fonctionNot:"Fonctions dans une étude",
-  exposition:"Expositions", etatBien:"États du bien",
+  exposition:"Expositions", etatBien:"États du bien", piecesNoms:"Noms de pièces",
   condSusp:"Financement", motifResil:"Motifs de résiliation d'un mandat"
 };
 
@@ -3364,8 +3380,7 @@ function renderDetail(){
 
   /* le détail pièce par pièce */
   const lignes = (D.pieces || []).map((p,i)=>
-    `<tr><td><input type="text" data-piece="${i}:nom" value="${esc(p.nom||"")}"
-        placeholder="séjour, chambre 1, cuisine…"></td>
+    `<tr><td>${controlRaw(`${i}:nom`, "list:piecesNoms", p.nom || "", "", "data-piece")}</td>
       <td><input type="text" inputmode="decimal" data-piece="${i}:surface"
         value="${esc(p.surface||"")}" placeholder="0"></td>
       <td><input type="text" data-piece="${i}:note" value="${esc(p.note||"")}"
@@ -3415,9 +3430,11 @@ function renderDetail(){
         </table></div>
         <div class="dact"><button type="button" class="addbtn"
           id="pieceAjout">+ Ajouter une pièce</button></div>
-        <p class="dnote">Nommez les pièces — « séjour », « chambre 1 », « salle de bain »,
-          « WC », « cave » : la colonne de gauche s'en déduit. Les annexes (cave, garage,
-          terrasse…) ne comptent pas dans la surface habitable.</p>
+        <p class="dnote">Choisissez le nom dans la liste — le <b>+</b> en ajoute un
+          qui manquerait, pour tous vos dossiers. La colonne de gauche s'en déduit, et
+          deux pièces du même nom se numérotent toutes seules : une deuxième chambre
+          fait « Chambre 1 » et « Chambre 2 ». Les annexes (cave, garage, terrasse…) ne
+          comptent pas dans la surface habitable.</p>
       </div>
       ${DETAIL_D.map(bloc).join("")}
       <div class="dsec"><h4>Observations</h4>
@@ -3443,12 +3460,72 @@ function renderDetail(){
 /* On ne redessine pas la fiche à chaque frappe — le curseur y resterait à
    peine. On remet seulement à jour ce qui en dépend ; le passage de la saisie
    libre au calcul, lui, demande un vrai redessin. */
+/* ------------------------------------------- numéroter les pièces jumelles
+   « Chambre » reste « Chambre » tant qu'elle est seule. Dès qu'une deuxième
+   arrive, la première devient « Chambre 1 » et la nouvelle « Chambre 2 ».
+   Retirez-en une et il n'en reste qu'une : elle reprend son nom nu.
+
+   On travaille sur le nom DÉPOUILLÉ de son numéro, de sorte que l'opération
+   se rejoue sans dériver : renuméroter deux fois de suite donne le même
+   résultat qu'une. L'ordre du tableau fait l'ordre des numéros — c'est celui
+   dans lequel on a visité les pièces. */
+function nomNu(s){
+  return String(s || "").replace(/\s+\d+\s*$/, "").trim();
+}
+function numeroterPieces(){
+  const liste = D.pieces || [];
+  const parNom = {};
+  liste.forEach(p=>{
+    const base = nomNu(p.nom);
+    if(!base) return;
+    const k = fold(base);
+    (parNom[k] = parNom[k] || []).push(p);
+  });
+  let change = false;
+  Object.keys(parNom).forEach(k=>{
+    const groupe = parNom[k];
+    if(groupe.length === 1){
+      const nu = nomNu(groupe[0].nom);
+      if(groupe[0].nom !== nu){ groupe[0].nom = nu; change = true; }
+      return;
+    }
+    groupe.forEach((p, n)=>{
+      const voulu = nomNu(p.nom) + " " + (n + 1);
+      if(p.nom !== voulu){ p.nom = voulu; change = true; }
+    });
+  });
+  return change;
+}
+
 function rafraichirDepuisPieces(){
   const box = $("#detailCorps");
   if(!box) return;
   const avant = !!box.querySelector(".dcalc");
   const auto = majDepuisPieces();
-  if(auto !== avant){ renderDetail(); return; }
+  if(auto !== avant){
+    /* La première lettre tapée dans une pièce fait basculer la colonne de
+       gauche en calculé, ce qui redessine la fiche — et emportait le champ
+       où l'on était en train d'écrire : il fallait recliquer pour taper la
+       deuxième lettre. On note où était le curseur, et on l'y remet. */
+    const ou = document.activeElement;
+    const marque = ou && ou.dataset
+      ? (ou.dataset.piece !== undefined ? ["data-piece", ou.dataset.piece]
+        : ou.dataset.parc !== undefined ? ["data-parc", ou.dataset.parc] : null)
+      : null;
+    const pos = marque && ou.selectionStart !== undefined
+      ? [ou.selectionStart, ou.selectionEnd] : null;
+    renderDetail();
+    if(marque){
+      const neuf = box.querySelector(`[${marque[0]}="${marque[1]}"]`);
+      if(neuf){
+        neuf.focus();
+        if(pos && neuf.setSelectionRange){
+          try{ neuf.setSelectionRange(pos[0], pos[1]); }catch(e){}
+        }
+      }
+    }
+    return;
+  }
   box.querySelectorAll("[data-dcalc]").forEach(el=>
     el.textContent = D.detail[el.dataset.dcalc] || "—");
   const t = (D.pieces || []).reduce((n,p)=> n + (num(p.surface) || 0), 0);
@@ -9015,7 +9092,14 @@ document.addEventListener("input", e=>{
   if(t.dataset.piece !== undefined){
     const [i,champ] = t.dataset.piece.split(":");
     const p = (D.pieces || [])[+i];
-    if(p){ p[champ] = t.value; autosave(); rafraichirDepuisPieces(); majDetail(); }
+    if(p){
+      p[champ] = t.value;
+      /* Un nom choisi dans la liste est arrêté : on numérote tout de suite.
+         Un nom tapé lettre à lettre ne l'est pas — on attend la sortie du
+         champ, sinon « Chambre » deviendrait « Chambre 2 » dès le « C ». */
+      if(champ === "nom" && t.tagName === "SELECT") numeroterPieces(+i);
+      autosave(); rafraichirDepuisPieces(); majDetail();
+    }
   }
   if(t.dataset.parc !== undefined){
     const [i,champ] = t.dataset.parc.split(":");
@@ -9051,6 +9135,11 @@ document.addEventListener("focusout", e=>{
     return;
   }
   if(t.id === "refInput"){ majMenuDossier(); verifierMandatUnique(); return; }
+  /* un nom de pièce tapé à la main : on numérote une fois le champ quitté */
+  if(t.dataset.piece !== undefined && /:nom$/.test(t.dataset.piece)){
+    if(numeroterPieces()){ autosave(); renderDetail(); majDetail(); }
+    return;
+  }
   if(t.dataset.b === "prix.fai" || t.dataset.b === "prix.honoraires"){
     apresSaisiePrix(); return;
   }
@@ -9249,6 +9338,7 @@ document.addEventListener("click", e=>{
   }
   if(t.dataset.piecedel !== undefined){
     D.pieces.splice(+t.dataset.piecedel, 1);
+    numeroterPieces();            /* la dernière chambre reprend son nom nu */
     autosave(); renderDetail(); majDetail(); return;
   }
   if(t.dataset.anndel !== undefined){ supprimerAnnulation(t.dataset.anndel); return; }
@@ -11407,7 +11497,9 @@ const AIDE = [
   "<b>À droite</b> : le détail <b>pièce par pièce</b>, puis les charges et impôts, puis les "+
   "équipements. "+
   "Le détail des pièces <b>remplit la colonne de gauche</b> : nommez-les — « séjour », "+
-  "« chambre 1 », « salle de bain », « WC », « cave » — et la surface habitable, les "+
+  "« chambre », « salle de bain », « WC », « cave », choisis dans une <b>liste "+
+  "déroulante</b> que le bouton <b>+</b> complète pour tous vos dossiers — et la surface "+
+  "habitable, les "+
   "chambres, les salles de bain, les salles d'eau et les WC se comptent "+
   "seuls. Les annexes (cave, garage, terrasse, balcon…) ne comptent pas dans la surface "+
   "habitable. Tant qu'aucune pièce n'est saisie, ces champs se remplissent à la main ; dès "+
@@ -11419,6 +11511,9 @@ const AIDE = [
   "<b>un seul menu</b> — « Individuel au gaz », « Pompe à chaleur réversible », "+
   "« Chauffe-eau thermodynamique » — au lieu du couple nature + énergie d'autrefois ; les "+
   "anciennes saisies ont été réunies automatiquement. "+
+  "<b>Deux pièces du même nom se numérotent seules</b> : une chambre reste « Chambre » "+
+  "tant qu'elle est seule ; dès qu'une deuxième arrive, la première devient « Chambre 1 » "+
+  "et la nouvelle « Chambre 2 ». Retirez-en une et celle qui reste reprend son nom nu. "+
   "Le <b>nombre de pièces</b> n'a plus de case à lui : il se déduit du détail des pièces. "+
   "Une fois la fenêtre refermée, l'essentiel se lit en une ligne à côté du bouton : "+
   "« 95 m² · 4 pièces · étage 2 · terrasse ». Ces informations appartiennent au dossier, pas "+
@@ -11762,6 +11857,12 @@ const AIDE = [
   "<b>Sans base en ligne connectée</b>, les pièces restent dans cet appareil seulement : "+
   "la fenêtre le signale."],
  ["Une pièce qui attend le réseau",
+  "Rien ne se commande : une pièce déposée <b>part aussitôt</b>, seule ou par paquet de "+
+  "vingt, sans confirmation à donner. "+
+  "Sur un ordinateur, vous pouvez aussi <b>glisser vos fichiers</b> depuis l'explorateur "+
+  "directement sur le groupe qui leur convient, dans la page Pièces jointes ou dans la "+
+  "fenêtre ouverte : la zone visée se souligne en bleu. Un fichier lâché à côté ne fait "+
+  "rien — et surtout ne quitte pas l'application pour s'afficher à sa place. "+
   "Une photo prise en visite part dans le Drive immédiatement si le réseau est là. Sinon "+
   "elle <b>attend dans la tablette</b>, un rappel s'affiche en bas à gauche, et elle part "+
   "d'elle-même au retour du réseau — ou tout de suite si vous appuyez sur « envoyer "+
@@ -12108,10 +12209,7 @@ function photoPrincipale(idDossier){
   const ph = photosDe(sujetBien({id:idDossier}));
   return ph.filter(p=> p.principale)[0] || ph[0] || null;
 }
-function pjEnAttente(){
-  return Object.keys(PIECES).map(id=>PIECES[id])
-    .filter(p=> p && !p.supprime && !p.drive).length;
-}
+function pjEnAttente(){ return pjAttente().length; }
 
 /* ----------------------------------------------- les fichiers de l'appareil
    Une base IndexedDB à part : les pièces n'ont rien à faire avec la poignée du
@@ -12276,15 +12374,30 @@ async function envoyerPiece(p){
   return true;
 }
 
+function pjAttente(){
+  return Object.keys(PIECES).map(id=>PIECES[id])
+    .filter(p=> p && !p.supprime && !p.drive);
+}
+/* L'envoi ne se commande pas : il part dès qu'une pièce est déposée.
+   -------------------------------------------------------------------------
+   La boucle se relit à chaque tour plutôt que de travailler sur une liste
+   figée au départ. Sans cela, déposer cinq fichiers d'un coup n'en envoyait
+   qu'un : les quatre suivants arrivaient pendant que le premier montait, le
+   verrou les repoussait, et la file n'était plus relue — il fallait appuyer
+   sur « envoyer maintenant ». Désormais, tant qu'il reste quelque chose, on
+   continue ; l'envoi ne s'arrête que sur un échec, et reprendra au retour
+   du réseau. */
 async function filePieces(silencieux){
   if(PJ_ENVOI) return;
   if(!WEB){ majPjBandeau(); return; }           /* sans base, tout reste ici */
-  const liste = Object.keys(PIECES).map(id=>PIECES[id])
-    .filter(p=> p && !p.supprime && !p.drive);
-  if(!liste.length){ majPjBandeau(); return; }
+  if(!pjAttente().length){ majPjBandeau(); return; }
   PJ_ENVOI = true; majPjBandeau();
   let faits = 0, rate = false;
-  for(const p of liste){
+  const vus = {};
+  for(;;){
+    const p = pjAttente().filter(x=> !vus[x.id])[0];
+    if(!p) break;
+    vus[p.id] = 1;                 /* une pièce qui échoue ne tourne pas en rond */
     try{
       if(await envoyerPiece(p)) faits++; else { rate = true; break; }
     }catch(e){ rate = true; break; }
@@ -12443,6 +12556,7 @@ function fermerPieces(){
 
 function rendrePieces(){
   const z = $("#pjCorps"); if(!z || !PJ_SUJET) return;
+  z.setAttribute("data-pjzone", PJ_SUJET + "|" + (PJ_RUB || ""));
   const liste = piecesDe(PJ_SUJET, PJ_RUB);
   const photos = liste.filter(p=> p.photo), autres = liste.filter(p=> !p.photo);
 
@@ -12477,6 +12591,7 @@ function rendrePieces(){
     <div class="pjajout">
       <button type="button" class="addbtn" id="pjAjout">+ Ajouter un document</button>
       <button type="button" class="tbtn light" id="pjPhoto">Prendre une photo</button>
+      <span class="muted pjglisse">ou glissez vos fichiers ici</span>
       <span class="grow"></span>
       <span class="muted" id="pjInfo"></span>
     </div>
@@ -12664,7 +12779,8 @@ function renderPagePieces(){
       <div>
         <h2>Pièces jointes du dossier</h2>
         <p class="muted">Rangées comme le menu de gauche. Cliquez une ligne pour la voir
-          à côté ; le crayon renomme, la croix retire.</p>
+          à côté ; le crayon renomme, la croix retire. Vous pouvez <b>glisser vos
+          fichiers</b> directement sur le groupe qui leur convient.</p>
       </div>
       <span class="grow"></span>
       <span class="muted" id="pjPageInfo"></span>
@@ -12683,7 +12799,7 @@ function renderPagePieces(){
              class="chev${plie ? "" : " ouvert"}">▸</span><span class="lib">${
              plie ? "Voir" : "Masquer"}</span></button>`
         : "";
-      return `<section class="pjgroupe">
+      return `<section class="pjgroupe" data-pjzone="${esc(g.sujet)}|${esc(g.rub)}">
         <header>
           <h3>${esc(g.titre)}</h3>
           <em>${esc(g.note)}</em>
@@ -12828,6 +12944,60 @@ function renommerPiece(id){
     }}]});
   setTimeout(()=>{ const el = document.getElementById("pjNom"); if(el){ el.focus(); el.select(); } }, 60);
 }
+
+/* ------------------------------------------------------- glisser-déposer
+   Lâcher un fichier sur un groupe, ou sur la fenêtre ouverte, vaut un clic
+   sur « Ajouter » — en plus direct : on vient de le voir dans l'explorateur,
+   on ne va pas le rechercher dans une boîte de dialogue.
+
+   Le document entier refuse les fichiers lâchés ailleurs : sans cela, un
+   geste manqué fait quitter l'application pour afficher le PDF à sa place,
+   et l'on perd ce qu'on était en train de saisir. */
+let PJ_ZONE = null;
+
+function zoneDuDepot(e){
+  const el = e.target && e.target.closest ? e.target.closest("[data-pjzone]") : null;
+  return el || null;
+}
+function surligneZone(el){
+  if(PJ_ZONE === el) return;
+  if(PJ_ZONE) PJ_ZONE.classList.remove("pjsurvol");
+  PJ_ZONE = el;
+  if(PJ_ZONE) PJ_ZONE.classList.add("pjsurvol");
+}
+/* un glissé qui ne porte pas de fichier — du texte sélectionné, un lien —
+   n'a rien à faire ici */
+function porteDesFichiers(e){
+  const d = e.dataTransfer;
+  if(!d) return false;
+  if(d.types && Array.prototype.indexOf.call(d.types, "Files") >= 0) return true;
+  return !!(d.files && d.files.length);
+}
+
+document.addEventListener("dragover", e=>{
+  if(!porteDesFichiers(e)) return;
+  e.preventDefault();
+  const z = zoneDuDepot(e);
+  if(e.dataTransfer) e.dataTransfer.dropEffect = z ? "copy" : "none";
+  surligneZone(z);
+});
+document.addEventListener("dragleave", e=>{
+  if(e.relatedTarget) return;          /* on circule encore dans la page */
+  surligneZone(null);
+});
+document.addEventListener("drop", async e=>{
+  if(!porteDesFichiers(e)) return;
+  e.preventDefault();
+  const z = zoneDuDepot(e);
+  surligneZone(null);
+  if(!z) return;                        /* lâché à côté : on ne fait rien */
+  const [sujet, rub] = z.getAttribute("data-pjzone").split("|");
+  const fs = Array.from((e.dataTransfer && e.dataTransfer.files) || []);
+  if(!fs.length || !sujet) return;
+  toast(fs.length > 1 ? "Préparation de " + fs.length + " pièces…" : "Préparation…");
+  for(const f of fs) await ajouterPiece(sujet, f, rub || "");
+  rafraichirPieces();
+});
 
 /* Les deux vues des pièces — la page et la fenêtre — se redessinent ensemble :
    on peut très bien avoir ouvert la fenêtre depuis la page. */
