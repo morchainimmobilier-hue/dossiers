@@ -687,6 +687,23 @@ table.tdb.statuts tr.stat td.cpart,table.tdb.statuts tr.tot td.cpart{font-weight
 .detailbox .dcalc{padding:7px 10px;font-weight:600;text-align:left}
 .detailbox .dact{margin-top:10px}
 .dnote{margin:9px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.45}
+/* l'argumentaire : pleine largeur sous les deux colonnes */
+.detailbox .darg{grid-column:1/-1;margin-top:14px}
+.arggs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px}
+.argg h5{margin:0 0 7px;font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--ink-2)}
+.argcases{display:flex;flex-wrap:wrap;gap:6px}
+/* une case cochée se voit d'un coup d'œil : c'est une étiquette, pas un formulaire */
+.argcase{display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 8px;
+  background:#fff;font-size:12px;color:var(--ink-2);line-height:1.2;
+  transition:background .12s ease,border-color .12s ease,color .12s ease}
+.argcase:hover{border-color:#b9c8dd}
+.argcase input{margin:0;width:13px;height:13px;flex:0 0 auto}
+.argcase.on{background:var(--accent-soft);border-color:var(--accent);color:var(--navy);
+  font-weight:600}
+@media(max-width:860px){ .arggs{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media(max-width:620px){ .arggs{grid-template-columns:1fr} }
 @media(max-width:980px){
   .detailbox .modalbody{grid-template-columns:1fr}
   .detailbox .dgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1014,15 +1031,14 @@ table.tdb.statuts tr.adet.vide td{color:var(--ink-3);font-style:italic;text-alig
 .altuile.att{border-color:#e6cba4}
 .altuile.chaud .n{color:#b91c1c}
 .altuile.chaud{border-color:#e7b4b4;background:linear-gradient(180deg,#fff,#fffafa)}
+/* la liste d'une alerte se déploie sous sa tuile, sur toute la largeur :
+   une colonne de 215 px ne sait pas porter un tableau */
+.alliste{grid-column:1/-1;margin:-6px 0 2px}
+/* une tuile dépliée coiffe sa liste : elle en prend toute la largeur */
+.altuile.on{grid-column:1/-1;border-color:var(--accent);box-shadow:var(--shadow-2)}
+.altuile.on .fl{color:var(--accent)}
 .aujpied{display:flex;justify-content:center;margin-top:2px}
 .aujpied .xbtn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px}
-.aujtete{background:var(--card);border:1px solid var(--line);
-  border-left:4px solid var(--accent);border-radius:var(--radius);
-  padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
-.aujtete .ajour{font-size:17px;font-weight:700;letter-spacing:-.2px;color:var(--navy)}
-/* « lundi 28 septembre » : en français, seule la première lettre prend la majuscule */
-.aujtete .ajour::first-letter{text-transform:uppercase}
-.aujtete .aresume{font-size:13px;margin-top:2px;color:var(--ink-2)}
 /* la pastille de stade, ici en simple repère, se fait discrète */
 #aujBody .drow .pill{padding:4px 12px;font-size:10.5px;letter-spacing:.7px;box-shadow:none}
 #aujBody .drow .pill::before{width:7px;height:7px;box-shadow:none}
@@ -1492,7 +1508,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 octobre 2026, 15 h 43">Dossiers de vente</div>
+  <div class="brand" title="Version du 5 octobre 2026, 9 h 25">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1691,7 +1707,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 octobre 2026, 15 h 43</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>5 octobre 2026, 9 h 25</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -1933,7 +1949,7 @@ const LISTS_DEFAULT = {
            ribTitulaire:"", ribBanque:"", iban:"", bic:"",
            /* les pages d'avis du négociateur — ses comptes à lui, pas ceux de
               l'agence : le message ne fait que rappeler la maison */
-           site:"", portrait:"",
+           site:"",
            avisGoogle:"https://g.page/r/CfYw2zzqWFZKEAE/review",
            avisFacebook:"https://www.facebook.com/profile.php?id=61573066437230&sk=reviews",
            /* bandeau imprimé en tête des factures ; vide = celui d'origine */
@@ -1963,6 +1979,9 @@ const BOOKS = {
     ["@copro","La copropriété","sep"],
     ["nbLots","Nombre de lots","nb"],
     ["nbLotsPrinc","dont lots d'habitation","nb"],
+    ["@lieu","Le quartier et l'immeuble","sep"],
+    ["quartier","Le quartier en une phrase","text","wide"],
+    ["caractere","Caractère de la résidence","text","wide"],
     ["@equip","Équipements","sep"],
     ["chauffMode","Chauffage","list:modeEquip"],
     ["chauffEnergie","Énergie du chauffage","list:energie"],
@@ -2001,6 +2020,7 @@ const BOOKS = {
     /* repris sur la carte de fin des clips : la qualité telle qu'elle doit
        être annoncée, et le portrait rond */
     ["qualite","Qualité annoncée","text","wide"],
+    ["portrait","Portrait","portrait","wide"],
     ["manaranche","Appartient à l'agence Manaranche","check"],
     ["commission","Pourcentage de commission","pct"]]},
   diagnostiqueurs:{title:"Diagnostiqueurs", mode:"card", label:"Cabinet", cols:[
@@ -2230,6 +2250,10 @@ function blankDossier(){
             cave:"", caveM2:"", garage:"", garageNb:"", parking:"", parkingNb:"",
             chauffage:"", froid:"", ecs:"",
             charges:"", taxe:"", observations:""},
+    /* ce que la fiche technique ne dit pas : le quartier, l'atmosphère, à qui
+       le bien s'adresse, et ce que le négociateur a vu en visitant. Sans cela,
+       une annonce n'est qu'un inventaire. */
+    argu:{prox:{}, amb:{}, cible:{}, coup:"", travaux:"", plus:""},
     /* le détail pièce par pièce, librement nommé */
     pieces:[],
     /* les parcelles cadastrales du bien : un bien en compte souvent plusieurs */
@@ -2655,6 +2679,18 @@ function controlBase(path,kind,v,grp,attr){
              : `data-chk="${path}"`;
     return `<label class="chkline"><input type="checkbox" ${ca}${v?" checked":""}>` +
       `<span>oui</span></label>`;
+  }
+  /* le portrait de la carte de fin des clips : il appartient au négociateur,
+     pas à l'agence — deux négociateurs n'ont pas le même visage */
+  if(kind==="portrait"){
+    return `<div class="logobox">` +
+      (v ? `<img src="${esc(v)}" alt="" style="max-height:64px;border-radius:50%">`
+         : `<span class="muted">Aucun portrait. Il s'affiche en rond sur la carte de fin
+             des clips.</span>`) +
+      `<label class="tbtn light" style="cursor:pointer">${v ? "Changer" : "Choisir une photo"}
+         <input type="file" accept="image/*" hidden data-bookportrait="${path}"></label>` +
+      (v ? `<button type="button" class="xbtn sup" data-bookportraitdel="${path}"
+              >Retirer</button>` : "") + `</div>`;
   }
   if(kind==="cp")    return `<input type="text" ${a} value="${esc(v)}" inputmode="numeric"
       data-grp="${grp}" data-role="cp" list="dl-${grp}-cp" autocomplete="off">
@@ -3368,6 +3404,63 @@ const DETAIL_G = [
    ],
    f:[["annexes", "Autres annexes", "text", "wide"]]}
 ];
+/* --------------------------------------------- l'argumentaire commercial
+   Les cases disent le fait ; la phrase qu'on en tire est écrite ici, une
+   fois pour toutes, de sorte que le texte d'annonce n'ait jamais à
+   bricoler du français à partir d'une étiquette de case. */
+const ARGU_PROX = [
+  ["centre",   "Centre-ville à pied",   "le centre-ville"],
+  ["commerces","Commerces",             "les commerces"],
+  ["marche",   "Marché",                "le marché"],
+  ["ecoles",   "Écoles",                "les écoles"],
+  ["colleges", "Collège / lycée",       "le collège et le lycée"],
+  ["gare",     "Gare",                  "la gare"],
+  ["bus",      "Bus / transports",      "les transports en commun"],
+  ["axes",     "Accès rapide aux axes", "les grands axes"],
+  ["sante",    "Médecins / pharmacie",  "médecins et pharmacie"],
+  ["nature",   "Parc / nature",         "la nature"],
+  ["mer",      "Bord de mer",           "la mer"]
+];
+/* Deux formes par trait : l'adjectif s'accorde et se met en enfilade
+   (« lumineux, traversant et de plain-pied »), le complément se range avec
+   les autres atouts (« une vue dégagée »). Mélanger les deux donnerait des
+   phrases boiteuses — c'est exactement ce qu'on veut éviter. */
+const ARGU_AMB = [
+  ["lumineux",  "Lumineux",         "adj",   "lumineux",         "lumineuse"],
+  ["traversant","Traversant",       "adj",   "traversant",       "traversante"],
+  ["caractere", "De caractère",     "adj",   "plein de caractère","pleine de caractère"],
+  ["pret",      "Prêt à habiter",   "adj",   "prêt à habiter",   "prête à habiter"],
+  ["plainpied", "De plain-pied",    "adj",   "de plain-pied",    "de plain-pied"],
+  ["atypique",  "Atypique",         "adj",   "atypique",         "atypique"],
+  ["vue",       "Vue dégagée",      "atout", "vue dégagée"],
+  ["sansvis",   "Sans vis-à-vis",   "atout", "sans vis-à-vis"],
+  ["calme",     "Au calme",         "atout", "environnement calme"],
+  ["arbore",    "Extérieur arboré", "atout", "extérieur arboré"]
+];
+const ARGU_CIBLE = [
+  ["premier",    "Premier achat",         "un premier achat"],
+  ["famille",    "Famille",               "une famille"],
+  ["locatif",    "Investissement locatif","un investissement locatif"],
+  ["pied",       "Pied-à-terre",          "un pied-à-terre"],
+  ["secondaire", "Résidence secondaire",  "une résidence secondaire"],
+  ["teletravail","Télétravail",           "le télétravail"],
+  ["senior",     "Plain-pied / séniors",  "un projet de plain-pied"]
+];
+const ARGU_GROUPES = [
+  {cle:"prox",  titre:"Proximités",          liste:ARGU_PROX},
+  {cle:"amb",   titre:"Atmosphère",          liste:ARGU_AMB},
+  {cle:"cible", titre:"À qui il s'adresse",  liste:ARGU_CIBLE}
+];
+function arguCoches(groupe){
+  const a = (D.argu || {})[groupe] || {};
+  const def = ARGU_GROUPES.filter(g=> g.cle === groupe)[0];
+  return def ? def.liste.filter(([k])=> !!a[k]) : [];
+}
+function arguRempli(){
+  return ARGU_GROUPES.some(g=> arguCoches(g.cle).length)
+    || ["coup","travaux","plus"].some(k=> String((D.argu || {})[k] || "").trim());
+}
+
 const DETAIL_D = [
   {t:"Charges et impôts", f:[
     ["charges",   "Charges de copropriété (€/an)", "money", "", estCoproBien],
@@ -3548,7 +3641,8 @@ function renderDetail(){
       ${DETAIL_D.map(bloc).join("")}
       <div class="dsec"><h4>Observations</h4>
         ${control("detail.observations","area")}</div>
-    </div>`;
+    </div>
+    ${blocArgumentaire()}`;
 
   const b = $("#pieceAjout");
   if(b) b.onclick = ()=>{
@@ -3566,6 +3660,38 @@ function renderDetail(){
     if(der) der.focus();
   };
 }
+/* L'argumentaire : trois séries de cases et trois lignes libres. Il tient sur
+   toute la largeur, sous les deux colonnes — c'est la partie qu'on remplit en
+   rentrant de visite, pas celle qu'on relève sur le mandat. */
+function blocArgumentaire(){
+  const a = D.argu || {};
+  const serie = g=>{
+    const coches = (a[g.cle] || {});
+    return `<div class="argg"><h5>${esc(g.titre)}</h5>
+      <div class="argcases">${g.liste.map(([k, lab])=>
+        `<label class="argcase${coches[k] ? " on" : ""}">
+          <input type="checkbox" data-chk="argu.${g.cle}.${k}"${coches[k] ? " checked" : ""}>
+          <span>${esc(lab)}</span></label>`).join("")}</div></div>`;
+  };
+  return `<div class="dsec darg"><h4>Argumentaire commercial</h4>
+    <p class="dnote" style="margin:0 0 12px">Ce que la fiche technique ne dit pas, et
+      qui fait pourtant la différence dans une annonce. Rien n'est obligatoire : tout ce
+      qui est coché ou écrit ici nourrit le texte des publications, et rien d'autre n'y
+      entre.</p>
+    <div class="arggs">${ARGU_GROUPES.map(serie).join("")}</div>
+    <div class="dgrid" style="margin-top:12px">
+      <div class="pf wide"><label>Ce qui vous a frappé en visitant</label>
+        ${control("argu.coup","area")}</div>
+      <div class="pf wide"><label>Travaux récents ou à prévoir</label>
+        ${control("argu.travaux","text")}</div>
+      <div class="pf wide"><label>Autre chose à dire</label>
+        ${control("argu.plus","text")}</div>
+    </div>
+    ${estCoproBien() ? `<p class="dnote">Le <b>quartier</b> et le <b>caractère de la
+      résidence</b> se saisissent une seule fois sur la fiche de l'immeuble, au carnet
+      Résidences : ils servent à tous les lots.</p>` : ""}</div>`;
+}
+
 /* On ne redessine pas la fiche à chaque frappe — le curseur y resterait à
    peine. On remet seulement à jour ce qui en dépend ; le passage de la saisie
    libre au calcul, lui, demande un vrai redessin. */
@@ -4855,7 +4981,7 @@ function renderQuest(){
    quelques dizaines de kilo-octets, pas le fichier d'origine */
 /* Le portrait de la carte de fin : carré, 420 px, c'est assez pour un rond de
    360 px dans un clip de 1080 de large. */
-function chargerPortrait(file){
+function chargerPortrait(file, poser){
   const r = new FileReader();
   r.onload = ()=>{
     const img = new Image();
@@ -4866,8 +4992,8 @@ function chargerPortrait(file){
       c.getContext("2d").drawImage(img, (img.width - cote) / 2, (img.height - cote) / 2,
         cote, cote, 0, 0, 420, 420);
       try{
-        L.agence.portrait = c.toDataURL("image/jpeg", 0.88);
-        saveLists(); renderListes();
+        poser(c.toDataURL("image/jpeg", 0.88));
+        saveLists(); renderCarnets();
         toast("Portrait enregistré");
       }catch(e){ toast("Image trop lourde pour le navigateur"); }
     };
@@ -5129,14 +5255,6 @@ function renderListes(){
          <input type="file" id="logoFile" accept="image/*" hidden></label>
        ${a.logo ? `<button class="xbtn sup" id="logoDel">Retirer</button>` : ""}
      </div></div>
-     <div class="f"><label>Portrait du négociateur</label><div class="logobox">
-       ${a.portrait ? `<img src="${a.portrait}" alt="" style="max-height:72px;border-radius:50%">`
-                    : `<span class="muted">Aucun portrait. Il s'affiche en rond sur la carte
-                        de fin des clips.</span>`}
-       <label class="tbtn light" style="cursor:pointer">Choisir une photo
-         <input type="file" id="portraitFile" accept="image/*" hidden></label>
-       ${a.portrait ? `<button class="xbtn sup" id="portraitDel">Retirer</button>` : ""}
-     </div></div>
      <div class="f"><label>Bandeau des factures</label><div class="logobox large">
        <img src="${enteteFacture()}" alt="">
        <label class="tbtn light" style="cursor:pointer">Choisir une image
@@ -5173,10 +5291,6 @@ function renderListes(){
   if(lf) lf.onchange = e=>{ if(e.target.files[0]) chargerLogo(e.target.files[0]); };
   const ld = $("#logoDel");
   if(ld) ld.onclick = ()=>{ L.agence.logo = ""; saveLists(); renderListes(); renderPreview(); };
-  const pf = $("#portraitFile");
-  if(pf) pf.onchange = e=>{ if(e.target.files[0]) chargerPortrait(e.target.files[0]); };
-  const pd = $("#portraitDel");
-  if(pd) pd.onclick = ()=>{ L.agence.portrait = ""; saveLists(); renderListes(); };
   const ef = $("#enteteFile");
   if(ef) ef.onchange = e=>{ if(e.target.files[0]) chargerEntete(e.target.files[0]); };
   const ed = $("#enteteDel");
@@ -6992,20 +7106,13 @@ function renderAujourdhui(){
 /* =====================================================================
    LA PAGE AUJOURD'HUI, EN VUE SIMPLE
    ---------------------------------------------------------------------
-   Six cartes empilées obligeaient à faire défiler toute la page pour
-   savoir s'il y avait quelque chose à faire. On ne montre plus que le
-   compte de chaque alerte, en tuiles ; le détail s'ouvre dans un tiroir,
-   la page restant visible derrière. Le tableau des dossiers en cours,
-   lui, reste sous les yeux : c'est la raison d'être de la page.
+   Quatre tuiles donnent le compte de chaque alerte, et chacune déplie sa
+   liste juste en dessous — dépliées à l'ouverture, puisque c'est ce qu'on
+   vient voir, repliables d'un clic. Le tableau des dossiers en cours reste
+   sous les yeux : c'est la raison d'être de la page.
    La comparaison de deux périmètres garde l'ancienne mise en page, qui
    est faite pour tout montrer côte à côte.
    ===================================================================== */
-const JOURS_FR = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
-function dateDuJourLongue(){
-  const d = new Date();
-  return JOURS_FR[d.getDay()] + " " + (d.getDate() === 1 ? "1er" : d.getDate()) +
-    " " + MOIS_FR[d.getMonth()] + " " + d.getFullYear();
-}
 function nbEcheancesChaudes(cote){
   return mandatsVenteCote(cote).filter(d=>{
     const p = palierEcheance(d);
@@ -7022,7 +7129,18 @@ function nbButoirsProches(cote){
 function nbDiagsARevoir(cote){
   return alertesCote(cote).filter(d=> diagsAlerte(d).length).length;
 }
-/* les quatre tuiles d'alerte : un compte, un mot, et le tiroir derrière */
+/* Les quatre listes d'alerte s'ouvrent sous leur tuile. Elles sont
+   dépliées à l'ouverture de l'application — c'est ce qu'on vient voir —
+   puis chacune se replie d'un clic et reste comme on l'a laissée : l'état
+   vit dans la page, pas dans la mémoire, et l'on retrouve donc tout ouvert
+   au prochain démarrage. */
+let AUJ_ALERTES = {ech:true, but:true, diag:true, avis:true};
+function basculerAlerte(k){
+  if(AUJ_ALERTES[k] === undefined) return false;
+  AUJ_ALERTES[k] = !AUJ_ALERTES[k];
+  renderAujourdhui();
+  return true;
+}
 function tuilesAlertes(cote){
   const av = listesAvis(cote);
   const t = [
@@ -7038,24 +7156,15 @@ function tuilesAlertes(cote){
   ];
   return `<div class="altuiles">${t.map(x=>{
     const ton = !x.n ? "calme" : x.chaud ? "chaud" : "att";
-    return `<button type="button" class="altuile ${ton}" data-tir="${x.k}">
+    const ouvert = !!AUJ_ALERTES[x.k], tir = TIROIRS_AUJ[x.k];
+    return `<button type="button" class="altuile ${ton}${ouvert ? " on" : ""}"
+        data-tir="${x.k}" aria-expanded="${ouvert}">
       <span class="n">${x.n}</span>
       <span class="txt"><span class="t">${esc(x.titre)}</span>
         <span class="d">${esc(x.det)}</span></span>
-      <span class="fl">›</span></button>`;
+      <span class="fl">${ouvert ? "⌄" : "›"}</span></button>` +
+      (ouvert ? `<div class="alliste">${tir ? tir.corps() : ""}</div>` : "");
   }).join("")}</div>`;
-}
-function banniereAuj(cote){
-  const list = dossiersDuCote(cote);
-  const alertes = nbEcheancesChaudes(cote) + nbButoirsProches(cote) +
-    nbDiagsARevoir(cote);
-  const av = listesAvis(cote);
-  const tot = alertes + av.aFaire.length + av.attente.length;
-  return `<div class="aujtete">
-    <div class="ajour">${esc(dateDuJourLongue())}</div>
-    <div class="aresume">${list.length} dossier${list.length > 1 ? "s" : ""} en cours ·
-      ${tot ? tot + " point" + (tot > 1 ? "s" : "") + " à traiter" : "rien à traiter"}</div>
-  </div>`;
 }
 /* le contenu de chaque tiroir, redessiné à chaque ouverture */
 const TIROIRS_AUJ = {
@@ -7103,7 +7212,7 @@ function construireAujourdhui(){
     ? [panneauStatuts, carteEcheances, carteButoirs, carteDiagnostics, carteAvis,
        c=>carteCamembert(c, "bien"), c=>carteCamembert(c, "mandat")]
         .map(f=> rang(AUJ_COTES.map(c=>f(c.k)).join(""))).join("")
-    : rang(banniereAuj("g") + tuilesAlertes("g"), true) +
+    : rang(tuilesAlertes("g"), true) +
       rang(panneauStatuts("g"), true) +
       rang(`<div class="aujpied"><button type="button" class="xbtn" data-tir="rep">${
         ICONE_ANNEAU} Répartition par type de bien et de mandat</button></div>`, true);
@@ -9385,6 +9494,15 @@ document.addEventListener("focusout", e=>{
 
 document.addEventListener("change", e=>{
   const t = e.target;
+  /* le portrait d'une fiche de carnet : « negociateurs:0:portrait » */
+  if(t.dataset && t.dataset.bookportrait){
+    const [k, i, f] = t.dataset.bookportrait.split(":");
+    const file = t.files && t.files[0];
+    t.value = "";
+    if(file && L[k] && L[k][+i])
+      chargerPortrait(file, url=>{ L[k][+i][f] = url; });
+    return;
+  }
   if(t.dataset && t.dataset.dpesel !== undefined){
     const [i,champ] = t.dataset.dpesel.split(":");
     D.diags[+i][champ] = t.value;
@@ -9409,6 +9527,12 @@ document.addEventListener("change", e=>{
   }
   if(t.dataset && t.dataset.chk !== undefined){
     set(D, t.dataset.chk, t.checked);
+    /* une étiquette d'argumentaire change d'aspect sans redessiner la fiche :
+       on perdrait la position dans une page qui fait deux écrans */
+    if(/^argu\./.test(t.dataset.chk)){
+      const lab = t.closest(".argcase");
+      if(lab) lab.classList.toggle("on", t.checked);
+    }
     if(t.dataset.chk === "fin.depot5") majDepot();
     if(t.dataset.chk === "mandat.resilie"){
       /* à la coche, on propose la date du jour ; au décochage, on efface */
@@ -9462,7 +9586,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   if(t.dataset.mgo){ activerOnglet(t.dataset.mgo); return; }
@@ -9485,7 +9609,9 @@ document.addEventListener("click", e=>{
     return;
   }
   if(t.dataset.sect){ ouvrirSection(t.dataset.sect); return; }
-  if(t.dataset.tir){ ouvrirTiroirAuj(t.dataset.tir); return; }
+  if(t.dataset.tir){
+    if(!basculerAlerte(t.dataset.tir)) ouvrirTiroirAuj(t.dataset.tir);
+    return; }
   if(t.dataset.annul){ ouvrirAnnulation(); return; }
   if(t.dataset.dbien){ ouvrirDetail(); return; }
   if(t.dataset.avis){ actionAvis(t.dataset.avis); return; }
@@ -9570,6 +9696,10 @@ document.addEventListener("click", e=>{
     /* la fiche neuve s'ouvre : on vient de la demander */
     if(k === "residences"){ PLIS["im_" + (L[k].length - 1)] = false; savePlis(); }
     saveLists(); renderCarnets(); refreshAllVilles(); rebuildSelects(); return; }
+  if(t.dataset.bookportraitdel){
+    const [k,i,f] = t.dataset.bookportraitdel.split(":");
+    if(L[k] && L[k][+i]){ L[k][+i][f] = ""; saveLists(); renderCarnets(); }
+    return; }
   if(t.dataset.bookdel){ const [k,i]=t.dataset.bookdel.split(":");
     L[k].splice(+i,1); saveLists(); renderCarnets(); refreshAllVilles();
     rebuildSelects(); renderPreview(); return; }
@@ -9860,6 +9990,7 @@ document.addEventListener("click", e=>{
   const ps = e.target.closest("[data-pubstyle]");
   if(ps){
     PUB_STYLE = ps.getAttribute("data-pubstyle");
+    PUB_IA_MOT = "";
     PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
     renderPublications(); return;
   }
@@ -10540,13 +10671,24 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 3
+ * Base en ligne pour « Dossiers de vente »  —  version 4
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * Cette version 3 ajoute les PIÈCES JOINTES, et le renommage d'une pièce. Les dossiers eux-mêmes restent
+ * Cette version 4 ajoute la RÉÉCRITURE DES ANNONCES par l'intelligence
+ * artificielle de Google (Gemini). Le script sert de relais : votre clé
+ * Gemini reste ici, dans votre script, et ne descend jamais dans la page web
+ * — où n'importe qui pourrait la lire. Si vous laissez CLE_GEMINI vide, tout
+ * le reste fonctionne comme avant et le bouton de réécriture reste gris.
+ *
+ * POUR OBTENIR UNE CLÉ GEMINI (gratuit)
+ *   aistudio.google.com  →  « Get API key »  →  créer une clé  →  la coller
+ *   dans CLE_GEMINI ci-dessous. L'offre gratuite autorise largement de quoi
+ *   rédiger plusieurs annonces par jour.
+ *
+ * La version 3 avait ajouté les PIÈCES JOINTES et le renommage d'une pièce. Les dossiers eux-mêmes restent
  * dans un fichier JSON ; les pièces — photos, PDF — deviennent de vrais
  * fichiers rangés dans une arborescence lisible :
  *
@@ -10595,6 +10737,15 @@ const NOM_FICHIER = 'Dossiers de vente - base.json';
 /** Nom du dossier Drive où sont rangées les pièces jointes. */
 const NOM_PIECES = 'Dossiers de vente — pièces';
 
+/** Clé de l'API Gemini, pour la réécriture des annonces. Laissez vide si
+ *  vous ne voulez pas de cette fonction. Elle ne quitte jamais ce script. */
+const CLE_GEMINI = '';
+
+/** Modèle utilisé. Si Google le renomme un jour, le bouton de réécriture
+ *  renverra une erreur « ia_http 404 » : il suffira de corriger ce nom
+ *  d'après aistudio.google.com. */
+const MODELE_GEMINI = 'gemini-3.8-flash';
+
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (String(p.cle || '') !== CLE) return sortie({ erreur: 'cle' });
@@ -10618,6 +10769,7 @@ function doPost(e) {
     if (q.action === 'piece_lire')      return sortie(pieceLire(q));
     if (q.action === 'piece_renommer')  return sortie(pieceRenommer(q));
     if (q.action === 'piece_supprimer') return sortie(pieceSupprimer(q));
+    if (q.action === 'redige')          return sortie(redige(q));
   } catch (err) {
     return sortie({ erreur: String(err && err.message || err) });
   }
@@ -10756,9 +10908,63 @@ function pieceSupprimer(q) {
   return { ok: true };
 }
 
+/* -------------------------------------------- réécriture d'une annonce ---
+   Le script ne fabrique pas la consigne : elle lui arrive toute faite de
+   l'application, qui sait seule ce qu'il y a dans le dossier. Ici on ne fait
+   que relayer l'appel en y mettant la clé — c'est tout l'intérêt : la clé
+   reste dans votre compte Google. */
+function redige(q) {
+  if (!CLE_GEMINI) return { erreur: 'ia_absente' };
+  const invite = String(q.invite || '');
+  if (!invite) return { erreur: 'ia_vide' };
+
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/'
+    + MODELE_GEMINI + ':generateContent';
+  const corps = {
+    systemInstruction: { parts: [{ text: String(q.systeme || '') }] },
+    contents: [{ role: 'user', parts: [{ text: invite }] }],
+    generationConfig: {
+      temperature: q.temperature === undefined ? 0.9 : Number(q.temperature),
+      maxOutputTokens: 1200
+    }
+  };
+  let rep;
+  try {
+    rep = UrlFetchApp.fetch(url, {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { 'x-goog-api-key': CLE_GEMINI },
+      payload: JSON.stringify(corps),
+      muteHttpExceptions: true
+    });
+  } catch (err) {
+    return { erreur: 'ia_reseau', detail: String(err && err.message || err) };
+  }
+  const code = rep.getResponseCode();
+  const brut = rep.getContentText();
+  if (code !== 200) return { erreur: 'ia_http', code: code, detail: brut.slice(0, 400) };
+  let j;
+  try { j = JSON.parse(brut); } catch (err) { return { erreur: 'ia_json' }; }
+  const c = (j.candidates || [])[0] || {};
+  const parts = ((c.content || {}).parts) || [];
+  const texte = parts.map(function (x) { return x.text || ''; }).join('').trim();
+  if (!texte) return { erreur: 'ia_rien', detail: String(c.finishReason || '') };
+  return { ok: true, texte: texte };
+}
+
 function sortie(o) {
   return ContentService.createTextOutput(JSON.stringify(o))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Lancez cette fonction depuis l'éditeur (menu « Exécuter ») pour vérifier
+ *  que votre clé Gemini fonctionne, AVANT de chercher pourquoi le bouton ne
+ *  marche pas dans l'application. Le résultat s'affiche dans le journal. */
+function verifierIA() {
+  const r = redige({ systeme: 'Tu réponds en français, en trois mots.',
+                     invite: 'Dis bonjour.' });
+  Logger.log(JSON.stringify(r));
+  return r;
 }
 
 /** Facultatif : lancez cette fonction une fois depuis l'éditeur pour vérifier
@@ -11034,6 +11240,9 @@ async function webAppel(charge){
   }
   if(d.erreur === "cle")    throw new Error("clé refusée par le script");
   if(d.erreur === "occupe") throw new Error("base occupée, réessayez");
+  /* les erreurs de l'IA remontent telles quelles : l'appelant sait les dire
+     en français, et une clé absente n'est pas une panne de la base */
+  if(d.erreur && /^ia_/.test(d.erreur)) return d;
   if(d.erreur)              throw new Error(d.erreur);
   return d;
 }
@@ -11374,6 +11583,11 @@ function migrate(d){
   out.dates = Object.assign(base.dates, d.dates||{});
   out.prix = Object.assign(base.prix, d.prix||{});
   out.detail = Object.assign(base.detail, d.detail||{});
+  /* l'argumentaire est venu après : un dossier ancien n'en a pas */
+  out.argu = Object.assign(base.argu, d.argu||{});
+  ["prox","amb","cible"].forEach(k=>{
+    if(!out.argu[k] || typeof out.argu[k] !== "object") out.argu[k] = {};
+  });
   /* Le chauffage, le refroidissement et l'eau chaude tenaient en deux champs —
      la nature, puis l'énergie. Un seul choix, plus parlant, les remplace ; on
      réunit l'ancien couple sans rien perdre. */
@@ -11940,15 +12154,20 @@ const AIDE = [
   "la ligne sans rien envoyer — côté par côté —, et un rappel en bas de la carte permet de "+
   "tout rétablir."],
  ["Aujourd'hui — les tuiles d'alerte",
-  "La page s'ouvre sur la date du jour et le nombre de points à traiter, puis sur <b>quatre "+
-  "tuiles</b> : mandats à échéance, dates butoir, diagnostics, suivi des avis. Chacune ne "+
-  "montre qu'un <b>compte</b> — rouge quand il y a urgence, orangé quand il y a à faire, gris "+
-  "quand il n'y a rien — et s'ouvre d'un clic en <b>tiroir</b> sur le côté droit : la page "+
-  "reste visible derrière, on referme par la croix, par <kbd>Échap</kbd> ou en cliquant à "+
-  "côté. Tout ce qui se faisait dans ces cartes se fait dans le tiroir, croix d'alerte "+
-  "comprises, et les compteurs se remettent à jour en le refermant. "+
-  "Le <b>tableau des dossiers en cours</b>, lui, reste sous les yeux : c'est la raison d'être "+
-  "de la page. Les deux anneaux de répartition se trouvent derrière le bouton du bas. "+
+  "La page s'ouvre sur <b>quatre tuiles</b> : mandats à échéance, dates butoir, "+
+  "diagnostics, suivi des avis. Chacune montre un <b>compte</b> — rouge quand il y a "+
+  "urgence, orangé quand il y a à faire, gris quand il n'y a rien — et porte sa "+
+  "<b>liste juste en dessous</b>. "+
+  "Les quatre listes sont <b>dépliées à l'ouverture de l'application</b> : c'est ce qu'on "+
+  "vient voir. Un clic sur une tuile la replie, un autre la rouvre, et elle reste comme on "+
+  "l'a laissée tant que la page est ouverte ; au démarrage suivant, tout est de nouveau "+
+  "déplié. Repliées, les quatre tuiles tiennent sur une ligne. "+
+  "Tout ce qui se faisait dans les anciennes cartes se fait dans la liste, croix d'alerte "+
+  "comprises, et le compteur de la tuile se met à jour aussitôt. "+
+  "Le <b>tableau des dossiers en cours</b> reste sous les yeux : c'est la raison d'être "+
+  "de la page. Les deux anneaux de répartition se trouvent derrière le bouton du bas, qui "+
+  "garde son tiroir sur le côté droit — on le referme par la croix, par <kbd>Échap</kbd> "+
+  "ou en cliquant à côté. "+
   "La <b>comparaison de deux périmètres</b> garde l'ancienne présentation, toutes cartes "+
   "dépliées côte à côte : elle est faite pour tout montrer d'un coup."],
  ["Aujourd'hui — comparer deux périmètres",
@@ -11979,10 +12198,16 @@ const AIDE = [
   "Les dossiers sont rangés par statut — sous offre, sous compromis, en vente, vendus — et "+
   "chaque groupe s'ouvre ou se referme d'un clic sur son titre. Les vendus sont repliés par "+
   "défaut."],
- ["Négociateurs et commissions",
-  "Onglet Listes, carnet « Négociateurs » : cochez « Appartient à l'agence Manaranche » pour "+
-  "pouvoir saisir le pourcentage de commission. Sans cette case, le pourcentage reste grisé et "+
-  "la part correspondante est comptée hors agence."],
+ ["Négociateurs : fiche, portrait et commission",
+  "Carnet « Négociateurs », au <b>Répertoire</b>. Cochez « Appartient à l'agence "+
+  "Manaranche » pour pouvoir saisir le pourcentage de commission ; sans cette case, le "+
+  "pourcentage reste grisé et la part correspondante est comptée hors agence. "+
+  "La fiche porte aussi la <b>qualité annoncée</b> et le <b>portrait</b> : ce sont eux, "+
+  "avec le téléphone et le courriel, qui s'affichent sur la carte de fin des clips de "+
+  "publication. Chaque négociateur a donc sa propre carte, et le clip d'un dossier prend "+
+  "celle du négociateur qui suit le vendeur. "+
+  "La photo est recadrée en carré à l'import ; une photo de buste, cadrée assez large pour "+
+  "que le rond ne coupe pas le menton, donne le meilleur résultat."],
  ["Tableau de bord",
   "Les honoraires saisis sont TTC ; tout y est ramené au hors taxe (TVA 20 %). Les honoraires HT "+
   "se partagent par moitié entre le négociateur qui suit le vendeur et celui qui suit "+
@@ -12092,6 +12317,54 @@ const AIDE = [
   "d'intelligence artificielle derrière ce bouton. Le texte est <b>composé</b> à partir de "+
   "vos données selon des patrons de style. C'est un brouillon juste, à relire — pas une "+
   "plume."],
+ ["L'argumentaire : ce qui fait la différence",
+  "Une annonce bâtie sur la seule fiche technique ne peut qu'énumérer : 72,5 m², "+
+  "2 chambres, exposition sud. Ce qui donne envie de visiter — la lumière de fin "+
+  "d'après-midi, le calme de la rue, la cuisine refaite l'an dernier — n'est écrit "+
+  "nulle part dans un mandat. "+
+  "Le bas de la <b>fiche détaillée du bien</b> porte donc un bloc <b>Argumentaire "+
+  "commercial</b> : trois séries de cases — <b>Proximités</b>, <b>Atmosphère</b>, "+
+  "<b>À qui il s'adresse</b> — et trois lignes libres : ce qui vous a frappé en "+
+  "visitant, les travaux récents ou à prévoir, et ce que vous voulez ajouter. "+
+  "Rien n'est obligatoire, et rien d'autre que cela n'entre dans le texte : "+
+  "l'application n'invente pas. "+
+  "Ce que vous écrivez à la main passe <b>tel quel</b> dans l'annonce, à la "+
+  "ponctuation près : ce sont vos mots, et ils valent mieux que les nôtres. Une "+
+  "phrase bien tournée sur la terrasse fera plus que dix cases cochées. "+
+  "Le <b>quartier</b> et le <b>caractère de la résidence</b> se saisissent ailleurs : "+
+  "sur la fiche de l'immeuble, au carnet Résidences. Ils valent pour tous les lots de "+
+  "cette résidence, donc on ne les retape pas à chaque dossier. "+
+  "Les quatre styles s'en servent différemment : le Professionnel énumère puis "+
+  "raconte, le Chaleureux met vos mots en avant, le Coup de cœur les resserre, "+
+  "l'Investisseur fait passer l'emplacement avant le charme."],
+ ["Faire réécrire l'annonce par l'IA",
+  "Les quatre styles <b>composent</b> un texte à partir de patrons de phrases. C'est "+
+  "juste, c'est conforme, mais cela reste une mécanique. Pour qu'une vraie plume s'en "+
+  "charge, l'application peut faire réécrire le texte par <b>Gemini</b>, l'IA de "+
+  "Google — bouton « <b>Faire réécrire par l'IA</b> », à côté de « Une autre "+
+  "tournure ». "+
+  "<b>Ce qu'il faut pour que le bouton s'allume.</b> Une base en ligne connectée, et "+
+  "une clé Gemini dans votre script Google. La clé s'obtient gratuitement sur "+
+  "aistudio.google.com (« Get API key »). On la colle dans le script, ligne "+
+  "<code>CLE_GEMINI</code>, puis on redéploie — la version 4 du script, dans "+
+  "Listes → Base partagée, contient tout ce qu'il faut. L'offre gratuite de Google "+
+  "autorise de quoi rédiger plusieurs annonces par jour sans rien payer. "+
+  "<b>Pourquoi passer par le script.</b> Une clé d'API dans une page web est lisible "+
+  "par quiconque ouvre la page : on publierait à votre compte. Dans le script, elle "+
+  "reste chez vous. L'application envoie la consigne, le script y ajoute la clé. "+
+  "<b>Ce que l'IA reçoit.</b> Les faits du dossier, numérotés, et rien d'autre : ni "+
+  "prix, ni honoraires, ni classe énergie, ni votre nom, ni l'adresse exacte. Elle "+
+  "a donc peu de prise pour inventer. "+
+  "<b>Ce qu'elle n'écrit pas.</b> Les <b>mentions obligatoires</b> et les mots-dièse "+
+  "restent calculés par l'application et recollés après son texte. Une mention légale "+
+  "inventée vous engagerait ; celle-ci ne peut pas l'être. "+
+  "<b>On relit sa copie.</b> Après chaque réécriture, l'application compare les "+
+  "chiffres du texte à ceux du dossier. Si l'IA a écrit une surface ou un nombre de "+
+  "pièces qui n'y est pas, un avertissement le nomme sous le texte. Relisez toujours "+
+  "avant de publier : c'est votre annonce, pas la sienne. "+
+  "<b>En cas de panne</b>, le script dit ce qui cloche — clé absente, nom de modèle "+
+  "périmé, réseau. Depuis l'éditeur Apps Script, la fonction <code>verifierIA</code> "+
+  "répond en trois mots si la clé fonctionne."],
  ["Les mentions obligatoires d'une annonce",
   "Elles sont ajoutées automatiquement et ne dépendent pas du style choisi : le "+
   "<b>prix honoraires inclus</b> et la charge des honoraires ; quand ils sont à "+
@@ -12123,9 +12396,14 @@ const AIDE = [
   "reste corrigeable à la dernière étape du choix, et la main l'emporte toujours. "+
   "Les deux finissent sur la même <b>carte de contact</b> : logo, portrait, nom, qualité, "+
   "un <b>message d'appel</b> (« Envie de la visiter ? Appelez-moi. », modifiable dans la "+
-  "page), téléphone, adresse et site. Le portrait et le site se règlent dans Listes → "+
-  "Agence, la qualité sur votre fiche du carnet Négociateurs. Les valeurs du DPE en kWh "+
+  "page), téléphone, adresse et site. "+
+  "<b>Le portrait, le téléphone, le courriel et la qualité sont ceux du négociateur qui "+
+  "suit le vendeur</b> : ils se règlent sur sa fiche du carnet <b>Négociateurs</b>, au "+
+  "Répertoire. Deux négociateurs n'ont pas le même visage, et la carte de fin doit être "+
+  "la leur. L'adresse et le site restent dans Listes → Agence. Les valeurs du DPE en kWh "+
   "et en kg de CO₂ se saisissent sur la ligne DPE des Diagnostics. "+
+  "Tant qu'aucun portrait n'est chargé, la carte de fin s'affiche sans photo — la page "+
+  "des Publications vous le rappelle et ouvre la bonne fiche d'un clic. "+
   "Les six arguments de la Vitrine sont proposés d'après le dossier et se corrigent dans "+
   "la page, un par ligne. "+
   "Format <b>1080 × 1350</b>, celui qui occupe le plus de place dans un fil. Le "+
@@ -12343,6 +12621,26 @@ function renderAll(){
     localStorage.setItem("mi_clercs_sans_etude", "1");
     if(fusions) setTimeout(()=> toast(fusions + " fiche" + (fusions > 1 ? "s" : "") +
       " en double fondue" + (fusions > 1 ? "s" : "")), 1200);
+  }catch(e){}
+})();
+
+/* Le portrait appartenait à l'agence ; il appartient désormais au
+   négociateur, pour que la carte de fin soit la sienne. Celui qui était
+   enregistré est versé sur la fiche du négociateur maison — celle de
+   l'utilisateur — et retiré de la fiche agence. Une seule fois. */
+(function portraitAuNegociateur(){
+  try{
+    if(localStorage.getItem("mi_portrait_nego")) return;
+    const url = (L.agence || {}).portrait || "";
+    if(url){
+      const negos = L.negociateurs || [];
+      let n = negos.filter(x=> x && x.manaranche && !x.portrait)[0]
+           || negos.filter(x=> x && !x.portrait)[0];
+      if(n){ n.portrait = url; }
+    }
+    if(L.agence) delete L.agence.portrait;
+    saveLists();
+    localStorage.setItem("mi_portrait_nego", "1");
   }catch(e){}
 })();
 
@@ -13467,7 +13765,19 @@ function donneesPubli(){
     parkingColl: r.parkingColl === "OUI",
     procedure: String(r.restrictions || "").trim(),
     negociateur: D.nego && D.nego.vendeur ? D.nego.vendeur : "",
-    mandat: (D.mandat || {}).num || ""
+    mandat: (D.mandat || {}).num || "",
+    /* l'argumentaire : ce que le négociateur a vu, et que la fiche technique
+       ne sait pas dire */
+    prox:   arguCoches("prox").map(x=> x[2]),
+    adj:    arguCoches("amb").filter(x=> x[2] === "adj"),
+    ambPlus:arguCoches("amb").filter(x=> x[2] === "atout").map(x=> x[3]),
+    cible:  arguCoches("cible").map(x=> x[2]),
+    coup:    String((D.argu || {}).coup || "").trim(),
+    travaux: String((D.argu || {}).travaux || "").trim(),
+    plusDit: String((D.argu || {}).plus || "").trim(),
+    /* saisis une fois sur la fiche de l'immeuble, repris par tous ses lots */
+    quartier:  String(r.quartier || "").trim(),
+    caractRes: String(r.caractere || "").trim()
   };
   [["terrasse","terrasseM2","terrasse"],["balcon","balconM2","balcon"],
    ["jardin","jardinM2","jardin"],["cave","caveM2","cave"],
@@ -13557,6 +13867,43 @@ function mentionsPubli(){
 }
 
 /* ------------------------------------------------------------ le corps */
+/* ----------------------------------------- les phrases de l'argumentaire
+   Elles sont écrites ici, une par idée, pour que chaque style y puise sans
+   avoir à recoller du français à partir d'étiquettes de cases. Ce que
+   l'agent a écrit à la main passe tel quel : ce sont ses mots, pas les
+   nôtres — on se contente de leur mettre un point s'ils n'en ont pas. */
+function phraseFinie(t){
+  const x = String(t || "").trim();
+  if(!x) return "";
+  return /[.!?…]$/.test(x) ? x : x + ".";
+}
+/* « lumineux, traversant et de plain-pied », accordé au type de bien */
+function adjectifs(o, fem){
+  return o.adj.map(x=> fem ? x[4] : x[3]);
+}
+/* le quartier : la phrase de l'immeuble si elle existe, sinon les proximités */
+function phraseQuartier(o, pioche){
+  if(o.quartier) return phraseFinie(o.quartier);
+  if(!o.prox.length) return "";
+  if(o.prox.length === 1)
+    return cap(pioche(["À deux pas : ", "Tout près : ", "À proximité immédiate : "]))
+      + o.prox[0] + ".";
+  return cap(pioche(["Tout est à portée de main : ", "À deux pas : ",
+    "Le quartier a tout ce qu'il faut : "])) + joindreEt(o.prox.slice(0, 5)) + ".";
+}
+/* à qui il s'adresse : « Idéal pour un premier achat ou un investissement » */
+function phraseCible(o, pioche){
+  if(!o.cible.length) return "";
+  const l = o.cible.slice(0, 3);
+  const liste = l.length > 1 ? l.slice(0, -1).join(", ") + " ou " + l[l.length - 1] : l[0];
+  return pioche(["Idéal pour ", "Parfait pour ", "Tout indiqué pour "]) + liste + ".";
+}
+function phraseTravaux(o, pioche){
+  if(!o.travaux) return "";
+  return pioche(["Côté travaux : ", "À savoir : ", "Travaux : "])
+    + o.travaux.charAt(0).toLowerCase() + o.travaux.slice(1).replace(/\.$/, "") + ".";
+}
+
 function corpsPubli(style, graine){
   const o = donneesPubli(), pioche = dePubli(graine);
   const fem = bienFeminin(o.type);
@@ -13579,6 +13926,9 @@ function corpsPubli(style, graine){
   const dehors = o.annexes.filter(a=> /terrasse|jardin|balcon|loggia/i.test(a));
   const rangement = o.annexes.filter(a=> /cave|garage|parking|grenier/i.test(a));
   const atouts = [];
+  /* ce qui vient de l'argumentaire passe devant : une vue dégagée pèse plus
+     lourd dans une annonce qu'un mode de chauffage */
+  o.ambPlus.forEach(a=> atouts.push(a));
   if(o.exposition) atouts.push("exposition " + o.exposition.toLowerCase());
   dehors.forEach(a=> atouts.push(a));
   if(o.ascenseur) atouts.push("ascenseur");
@@ -13588,6 +13938,10 @@ function corpsPubli(style, graine){
   if(o.chauffage) atouts.push(o.chauffage.toLowerCase());
   if(o.terrain !== null) atouts.push("terrain " + deDevant(m2txt(o.terrain)));
 
+  const adj = adjectifs(o, fem);
+  const quartier = phraseQuartier(o, pioche);
+  const travaux = phraseTravaux(o, pioche);
+  const cible = phraseCible(o, pioche);
   const lignes = [];
 
   /* --------------------------------------------------- Professionnel */
@@ -13608,8 +13962,19 @@ function corpsPubli(style, graine){
 
     if(atouts.length)
       lignes.push(pioche(["Les prestations : ", "Côté prestations : ",
-        "À noter également : "]) + joindreEt(atouts.slice(0, 5)) + ".");
-    if(o.etat) lignes.push(cap(leBien) + " est " + enEtat(o.etat, fem) + ".");
+        "À noter également : "]) + joindreEt(atouts.slice(0, 6)) + ".");
+    /* l'état et les travaux se disent d'un trait : ce sont la même question */
+    const etatPro = [];
+    if(o.etat) etatPro.push(cap(leBien) + " est " + enEtat(o.etat, fem) + ".");
+    if(adj.length) etatPro.push(cap(fem ? "elle est " : "il est ") + joindreEt(adj) + ".");
+    if(etatPro.length) lignes.push(etatPro.join(" "));
+    if(travaux) lignes.push(travaux);
+    if(quartier) lignes.push(quartier
+      + (o.caractRes ? " " + phraseFinie(o.caractRes) : ""));
+    else if(o.caractRes) lignes.push(phraseFinie(o.caractRes));
+    if(o.coup) lignes.push(phraseFinie(o.coup));
+    if(o.plusDit) lignes.push(phraseFinie(o.plusDit));
+    if(cible) lignes.push(cible);
     lignes.push(pioche([
       "Visite sur rendez-vous.",
       "Dossier complet et visite sur demande.",
@@ -13643,9 +14008,23 @@ function corpsPubli(style, graine){
       : (fem ? "Elle bénéficie" : "Il bénéficie") + " d'une exposition ")
       + o.exposition.toLowerCase());
     if(place.length) lignes.push(place.join(", ") + ".");
-    if(atouts.length) lignes.push(pioche([
+    /* l'atmosphère fait sa propre phrase : l'accrocher à la précédente
+       donnait « se trouve au 2e, et bénéficie…, et se révèle… » */
+    if(adj.length) lignes.push((fem ? "Elle est " : "Il est ") + joindreEt(adj) + ".");
+    /* l'exposition vient d'être dite dans la phrase précédente : la répéter
+       dans la liste donne l'impression d'un texte recollé */
+    const atoutsChal = atouts.filter(a=> !/^exposition /.test(a));
+    if(atoutsChal.length) lignes.push(pioche([
       "Ce qu'on aime : ", "Les petits plus : ", "Ce qui fait la différence : "
-    ]) + joindreEt(atouts.slice(0, 5)) + " ☀️");
+    ]) + joindreEt(atoutsChal.slice(0, 6)) + " ☀️");
+    /* les mots du négociateur : ce sont eux qui donnent envie, pas la liste */
+    if(o.coup) lignes.push(phraseFinie(o.coup) + " 💛");
+    if(quartier) lignes.push(quartier
+      + (o.caractRes ? " " + phraseFinie(o.caractRes) : ""));
+    else if(o.caractRes) lignes.push(phraseFinie(o.caractRes));
+    if(travaux) lignes.push(travaux);
+    if(o.plusDit) lignes.push(phraseFinie(o.plusDit));
+    if(cible) lignes.push(cible + " 🙂");
     lignes.push(pioche([
       "Envie de le voir ? Écrivez-nous, on organise la visite 📩",
       "Un message, et on vous ouvre la porte 🔑",
@@ -13662,9 +14041,13 @@ function corpsPubli(style, graine){
     ]));
     lignes.push([cap(type), piecesTxt, sTxt ? deDevant(sTxt) : ""]
       .filter(Boolean).join(" ") + (chTxt ? ", " + chTxt : "") + ".");
+    if(adj.length) lignes.push("✨ " + cap(joindreEt(adj)) + ".");
     if(atouts.length) lignes.push("👉 " + cap(joindreEt(atouts.slice(0, 4))) + ".");
+    if(o.coup) lignes.push("❤️ " + phraseFinie(o.coup));
+    if(quartier) lignes.push("📍 " + quartier);
     if(o.etat) lignes.push(cap(leBien) + " est " + enEtat(o.etat, fem)
-      + " : il n'y a rien à faire avant d'y entrer.");
+      + (/neu|bon/i.test(o.etat) ? " : il n'y a rien à faire avant d'y entrer." : "."));
+    if(cible) lignes.push(cible);
     lignes.push(pioche([
       "Les biens comme celui-ci ne restent pas longtemps 📞",
       "Une visite suffit souvent à se décider — appelez-nous 📞",
@@ -13680,8 +14063,11 @@ function corpsPubli(style, graine){
     if(sTxt) l2.push("surface " + sTxt);
     if(piecesTxt) l2.push(piecesTxt);
     if(chTxt) l2.push(chTxt);
-    if(prixM2) l2.push("soit " + eur(prixM2) + " le mètre carré");
-    if(l2.length) lignes.push(cap(joindreEt(l2)) + ".");
+    /* « 2 chambres et soit 4 276 € le m² » : le prix au mètre n'est pas un
+       élément de la liste, c'est la conclusion qu'on en tire */
+    if(l2.length) lignes.push(cap(joindreEt(l2)) + "."
+      + (prixM2 ? " Soit " + eur(prixM2) + " le mètre carré." : ""));
+    else if(prixM2) lignes.push("Soit " + eur(prixM2) + " le mètre carré.");
 
     const ch = [];
     if(o.charges !== null) ch.push("charges de copropriété " + eur(o.charges) + " par an");
@@ -13689,7 +14075,16 @@ function corpsPubli(style, graine){
     if(o.lots !== null) ch.push("copropriété " + deDevant(unPluriel(o.lots, "lot")));
     if(ch.length) lignes.push(cap(joindreEt(ch)) + ".");
 
-    if(atouts.length) lignes.push("Atouts locatifs : " + joindreEt(atouts.slice(0, 5)) + ".");
+    if(atouts.length) lignes.push("Atouts locatifs : " + joindreEt(atouts.slice(0, 6)) + ".");
+    /* un investisseur regarde l'emplacement avant le charme : le quartier
+       passe donc avant l'impression de visite */
+    if(quartier) lignes.push(quartier);
+    const etatInv = [];
+    if(o.etat) etatInv.push(cap(leBien) + " est " + enEtat(o.etat, fem) + ".");
+    if(travaux) etatInv.push(travaux);
+    if(etatInv.length) lignes.push(etatInv.join(" "));
+    if(cible) lignes.push(cible);
+    if(o.plusDit) lignes.push(phraseFinie(o.plusDit));
     lignes.push(pioche([
       "Étude de rentabilité sur demande.",
       "Les derniers procès-verbaux d'assemblée vous sont communiqués sur demande.",
@@ -13715,6 +14110,149 @@ function dieses(){
 
 function textePubli(style, graine){
   return corpsPubli(style, graine) + "\n\n" + mentionsPubli() + "\n\n" + dieses();
+}
+
+/* =====================================================================
+   RÉÉCRIRE L'ANNONCE AVEC L'INTELLIGENCE ARTIFICIELLE
+   ---------------------------------------------------------------------
+   Les patrons de phrases composent un texte juste ; ils ne l'écrivent pas.
+   Pour qu'une vraie plume s'en charge, il faut un modèle de langage — donc
+   une clé d'API, qui n'a rien à faire dans une page web que n'importe qui
+   peut ouvrir. Elle vit dans le script Google de Thierry, qui sert de
+   relais : l'application envoie la consigne, le script y ajoute la clé.
+
+   Trois règles tiennent tout l'édifice :
+     · le modèle ne reçoit QUE ce qui est dans le dossier, sous forme de
+       faits numérotés — il n'a donc rien à inventer ;
+     · il n'écrit PAS les mentions obligatoires : l'application les ajoute
+       elle-même, mot pour mot. Une mention légale hallucinée engagerait
+       la responsabilité de l'agent ;
+     · on relit sa copie : tout chiffre qui n'était pas dans les faits est
+       signalé avant qu'on publie quoi que ce soit.
+   ===================================================================== */
+const CONSIGNE_IA =
+  "Tu es rédacteur d'annonces immobilières pour un agent commercial en France.\n" +
+  "On te donne les FAITS d'un bien, et un STYLE. Tu écris le corps de l'annonce.\n\n" +
+  "RÈGLES ABSOLUES\n" +
+  "1. N'invente rien. N'utilise que les faits donnés. Si un fait manque, n'en " +
+  "parle pas — ne le devine pas, ne l'estime pas, ne le remplace pas par une " +
+  "formule vague.\n" +
+  "2. N'écris aucune mention légale, aucun prix, aucun honoraire, aucune classe " +
+  "énergie, aucun montant de charges ni de dépenses d'énergie : l'application " +
+  "les ajoute elle-même après ton texte. Ne les répète pas.\n" +
+  "3. N'écris aucun nom d'agence, aucun numéro de téléphone, aucune adresse " +
+  "précise du bien, aucun nom de personne.\n" +
+  "4. Pas de promesse de rendement, pas de superlatif invérifiable (« le plus " +
+  "beau », « unique », « exceptionnel »), pas d'allusion au voisinage ni à " +
+  "l'origine des occupants.\n\n" +
+  "FORME\n" +
+  "Français soigné, phrases courtes, voix active. Quatre à six paragraphes " +
+  "séparés par une ligne vide, 600 à 1 100 signes en tout. Pas de titre en " +
+  "gras, pas de liste à puces, pas de mots-dièse. Commence par une accroche " +
+  "d'une ligne. Termine par une invitation à visiter.\n" +
+  "Accorde le genre au type de bien (un appartement, une maison). Fais les " +
+  "élisions (« au cœur d'Arles »). Pluriels corrects.\n" +
+  "Réponds uniquement par le texte de l'annonce, sans commentaire.";
+
+const TON_IA = {
+  pro:   "STYLE : professionnel. Factuel et posé, les caractéristiques d'abord. "
+       + "Aucune émoticône.",
+  chal:  "STYLE : chaleureux. On s'adresse au lecteur, on lui fait voir le lieu. "
+       + "Tutoiement interdit, vouvoiement. Deux ou trois émoticônes sobres, pas plus.",
+  coup:  "STYLE : coup de cœur. Court, enlevé, une accroche forte en tête. "
+       + "Paragraphes très brefs. Quelques émoticônes.",
+  inves: "STYLE : investisseur. On s'adresse à un acheteur qui calcule : "
+       + "emplacement, état, locabilité. Ton sobre, aucune émoticône, aucune "
+       + "promesse de rentabilité."
+};
+
+/* Les faits, et rien qu'eux. Ce qui est absent du dossier est absent d'ici :
+   c'est la seule garantie contre une invention. */
+function faitsPubli(){
+  const o = donneesPubli(), f = [];
+  const a = (lib, v)=>{ if(v !== null && v !== undefined && String(v).trim() !== "")
+    f.push(lib + " : " + v); };
+  a("Type de bien", o.type);
+  a("Commune", villeLisible(o.ville));
+  a("Surface habitable", o.surface === null ? null : m2txt(o.surface));
+  a("Terrain", o.terrain === null ? null : m2txt(o.terrain));
+  a("Nombre de pièces", o.pieces);
+  a("Chambres", o.chambres);
+  a("Salles de bain", o.sdb);
+  a("Salles d'eau", o.sdEau);
+  a("Étage", etageTxt(o));
+  a("Exposition", o.exposition);
+  a("État général", o.etat);
+  a("Chauffage", o.chauffage);
+  a("Refroidissement", o.froid);
+  if(o.annexes.length) a("Annexes et extérieurs", o.annexes.join(", "));
+  if(o.copro){
+    a("Situation", "lot de copropriété" + (o.lots === null ? ""
+      : " dans une résidence de " + o.lots + " lots"));
+    if(o.ascenseur) f.push("La résidence a un ascenseur");
+    if(o.piscine) f.push("La résidence a une piscine collective");
+    if(o.parkingColl) f.push("La résidence a un parking collectif");
+  }
+  (D.pieces || []).forEach(x=>{
+    const n = String(x.nom || "").trim();
+    if(!n) return;
+    const su = num(x.surface), no = String(x.note || "").trim();
+    f.push("Pièce — " + n + (su ? " de " + su.toLocaleString("fr-FR") + " m²" : "")
+      + (no ? " (" + no + ")" : ""));
+  });
+  if(o.prox.length) a("À proximité", o.prox.join(", "));
+  if(o.adj.length) a("Caractère du bien", adjectifs(o, bienFeminin(o.type)).join(", "));
+  if(o.ambPlus.length) a("Atouts", o.ambPlus.join(", "));
+  if(o.cible.length) a("Convient à", o.cible.join(", "));
+  a("Le quartier, décrit par l'agent", o.quartier);
+  a("La résidence, décrite par l'agent", o.caractRes);
+  a("Ce que l'agent a remarqué en visitant", o.coup);
+  a("Travaux", o.travaux);
+  a("Autre précision de l'agent", o.plusDit);
+  return f.map((x, i)=> (i + 1) + ". " + x).join("\n");
+}
+
+/* On relit la copie. Un modèle de langage glisse volontiers un chiffre
+   plausible ; dans une annonce immobilière, un chiffre faux est une faute.
+   On compare donc chaque nombre du texte rendu à ceux qu'on a fournis. */
+function chiffresDe(t){
+  const l = String(t || "").match(/\d[\d  \u202f.,]*/g) || [];
+  return l.map(x=> x.replace(/[  \u202f.,]/g, "").replace(/^0+(?=\d)/, ""))
+          .filter(x=> x.length);
+}
+function chiffresSuspects(texte, faits){
+  const connus = {};
+  chiffresDe(faits).forEach(x=> connus[x] = 1);
+  /* l'année en cours et les deux précédentes sont légitimes (« refait en 2024 ») */
+  const an = new Date().getFullYear();
+  for(let k = an - 60; k <= an + 1; k++) connus[String(k)] = 1;
+  const vus = {}, out = [];
+  chiffresDe(texte).forEach(x=>{
+    if(connus[x] || vus[x]) return;
+    /* un petit nombre écrit dans une phrase (« à deux pas du 3e ») n'est pas
+       une donnée : on ne s'inquiète qu'au-delà de la dizaine */
+    if(x.length <= 1) return;
+    vus[x] = 1; out.push(x);
+  });
+  return out;
+}
+
+async function redigerParIA(style){
+  const faits = faitsPubli();
+  if(!faits) throw new Error("le dossier ne dit rien du bien : remplissez-le d'abord");
+  const invite = "FAITS\n" + faits + "\n\n" + (TON_IA[style] || TON_IA.pro)
+    + "\n\nÉcris maintenant le corps de l'annonce.";
+  const d = await webAppel({action:"redige", systeme: CONSIGNE_IA, invite,
+                            temperature: 0.95});
+  if(d.erreur === "ia_absente")
+    throw new Error("la clé Gemini n'est pas renseignée dans votre script Google — "
+      + "voyez l'aide, rubrique « Faire réécrire l'annonce »");
+  if(d.erreur) throw new Error("l'IA n'a pas répondu (" + d.erreur
+    + (d.detail ? " — " + String(d.detail).slice(0, 120) : "") + ")");
+  const texte = String(d.texte || "").trim()
+    .replace(/^[`\s]*(?:markdown)?\n?/i, "").replace(/[`]+$/,"").trim();
+  if(!texte) throw new Error("l'IA a renvoyé un texte vide");
+  return {texte, suspects: chiffresSuspects(texte, faits)};
 }
 
 /* ------------------------------------------------ trier au glisser-déposer
@@ -14142,7 +14680,7 @@ async function construirePlan(o){
   const ctx = o.ctx || contexteClip();
   if(!ctx.puces) ctx.puces = (PUB_PUCES && PUB_PUCES.length) ? PUB_PUCES : pucesProposees();
   if(ctx.logo === undefined) ctx.logo = await imageDepuis((L.agence || {}).logo);
-  if(ctx.portrait === undefined) ctx.portrait = await imageDepuis((L.agence || {}).portrait);
+  if(ctx.portrait === undefined) ctx.portrait = await imageDepuis(portraitDuDossier());
   const imgs = o.imgs || await imagesDesPieces(ids);
   const m = minutageClip(gabarit, imgs.length, o.duree || 30);
   const legendes = o.legendes || legendesAuto(ids);
@@ -14285,7 +14823,7 @@ async function construireMur(ids, duree, surAvance){
   const ctx = contexteClip();
   ctx.puces = (PUB_PUCES && PUB_PUCES.length) ? PUB_PUCES : pucesProposees();
   ctx.logo = await imageDepuis((L.agence || {}).logo);
-  ctx.portrait = await imageDepuis((L.agence || {}).portrait);
+  ctx.portrait = await imageDepuis(portraitDuDossier());
   const legendes = legendesAuto(ids);
   const plans = [];
   for(const gab of GABARITS_CLIP)
@@ -14313,6 +14851,14 @@ function animerMur(plans, canevas){
     MUR_ANIM = requestAnimationFrame(boucle);
   };
   MUR_ANIM = requestAnimationFrame(boucle);
+}
+
+/* Le portrait est celui du négociateur qui suit le vendeur : deux
+   négociateurs n'ont pas le même visage, et la carte de fin doit être la
+   leur. Faute de fiche ou de photo, la carte se dessine sans. */
+function portraitDuDossier(){
+  const n = book("negociateurs", (D.nego || {}).vendeur || "");
+  return (n && n.portrait) || "";
 }
 
 /* ------------------------------------- ce que les deux gabarits affichent */
@@ -14510,6 +15056,7 @@ let PUB_DUREE = 30;                  /* 20, 30, 40 ou 50 secondes */
 let PUB_TRANSITION = "fondu";
 let PUB_APPEL = null;                /* le message de la carte de contact */
 let PUB_MUR = null;                  /* les huit modèles en cours d'essai */
+let PUB_IA_MOT = "";                 /* ce que l'on a à dire sur la réécriture */
 const APPEL_DEFAUT = "Envie de la visiter ? Appelez-moi.";
 
 function photosDuBien(){ return photosDe(sujetBien(D)); }
@@ -14529,6 +15076,7 @@ function renderPublications(){
     PUB_PHOTOS = []; PUB_CHOIX = [];
     PUB_GABARIT = "vitrine"; PUB_PUCES = []; PUB_LEGENDES = {};
     PUB_DUREE = 30; PUB_TRANSITION = "fondu"; PUB_APPEL = null;
+    PUB_IA_MOT = "";
     arreterMur(); PUB_MUR = null;
     oublierClip();
   }
@@ -14549,10 +15097,22 @@ function renderPublications(){
       <textarea id="pubTexte" class="pubtexte" spellcheck="true">${esc(PUB_TEXTE)}</textarea>
       <div class="pubbtns">
         <button type="button" class="tbtn light" id="pubAutre">Une autre tournure</button>
+        <button type="button" class="tbtn light" id="pubIA"${
+            WEB && WEB.url ? "" : " disabled"}
+          title="${WEB && WEB.url ? "Laisser l'IA de Google réécrire ce texte"
+            : "Demande une base en ligne connectée (Listes → Base partagée)"}"
+          >✍ Faire réécrire par l'IA</button>
         <span class="grow"></span>
         <span class="muted" id="pubCompte"></span>
         <button type="button" class="addbtn" id="pubCopier">${IC_COPIE} Copier le texte</button>
       </div>
+      <p class="muted" id="pubIAmot" style="margin:8px 0 0"${PUB_IA_MOT ? "" : " hidden"}
+        >${PUB_IA_MOT ? esc(PUB_IA_MOT) : ""}</p>
+      ${arguRempli() ? "" : `<p class="muted" style="margin:8px 0 0">
+        <b>L'argumentaire du bien est vide.</b> Sans lui, le texte ne peut qu'énumérer
+        les caractéristiques. Il se remplit en bas de la
+        <a href="#" id="pubVersArgu">fiche détaillée du bien</a> — quelques cases et
+        trois lignes suffisent à changer l'annonce.</p>`}
     </div></div>
 
     <div class="card"><h2>Le clip</h2><div class="body">
@@ -14583,6 +15143,11 @@ function renderPublications(){
       <div class="f"><label>Message de la carte de contact</label>
         <input type="text" id="pubAppel" value="${esc(PUB_APPEL === null ? APPEL_DEFAUT
           : PUB_APPEL)}"></div>
+      ${portraitDuDossier() ? "" : `<p class="muted" id="pubSansPortrait">
+        <b>Aucun portrait enregistré</b> pour ${esc((D.nego || {}).vendeur
+          || "le négociateur de ce dossier")} : la carte de fin s'affichera sans photo.
+        Elle se charge une fois pour toutes sur
+        <a href="#" id="pubVersPortrait">sa fiche du carnet Négociateurs</a>.</p>`}
 
       <div class="fsep"></div>
       <p class="muted"><b>4 · le modèle.</b> Huit essais tournent côte à côte, sans rien
@@ -14642,13 +15207,48 @@ function renderPublications(){
   const t = b("pubTexte");
   if(t) t.oninput = ()=>{ PUB_TEXTE = t.value; majCompteTexte(); };
   if(b("pubAutre")) b("pubAutre").onclick = ()=>{
+    PUB_IA_MOT = "";
     PUB_GRAINE = (PUB_GRAINE * 7 + 11) % 100000 || 3;
     PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
     renderPublications();
   };
+  if(b("pubVersArgu")) b("pubVersArgu").onclick = e=>{ e.preventDefault(); ouvrirDetail(); };
+  if(b("pubIA")) b("pubIA").onclick = async ()=>{
+    const bouton = b("pubIA");
+    bouton.disabled = true; bouton.textContent = "L'IA écrit…";
+    try{
+      const r = await redigerParIA(PUB_STYLE);
+      /* les mentions obligatoires et les mots-dièse restent de notre main :
+         ce sont les seules lignes dont la justesse engage l'agent */
+      PUB_TEXTE = r.texte + "\n\n" + mentionsPubli() + "\n\n" + dieses();
+      PUB_IA_MOT = r.suspects.length
+        ? "Texte réécrit par l'IA. ⚠ Elle a écrit "
+          + (r.suspects.length === 1 ? "un chiffre qui n'est pas" : "des chiffres qui ne sont pas")
+          + " dans le dossier : " + r.suspects.join(", ")
+          + ". Vérifiez cette phrase avant de publier."
+        : "Texte réécrit par l'IA, à relire : les mentions obligatoires, elles, "
+          + "restent calculées par l'application.";
+      renderPublications();
+    }catch(e){
+      bouton.disabled = false; bouton.textContent = "✍ Faire réécrire par l'IA";
+      popup({titre:"Réécriture impossible", genre:"erreur", corps:`<p>${esc(e.message)}</p>`});
+    }
+  };
   if(b("pubCopier")) b("pubCopier").onclick = copierTextePubli;
   const pa = b("pubAppel");
   if(pa) pa.oninput = ()=>{ PUB_APPEL = pa.value; };
+  /* le portrait manque : on conduit à la fiche du négociateur concerné
+     plutôt que de laisser chercher dans le carnet */
+  if(b("pubVersPortrait")) b("pubVersPortrait").onclick = e=>{
+    e.preventDefault();
+    const nom = (D.nego || {}).vendeur || "";
+    const i = (L.negociateurs || []).findIndex(n=> n && fold(n.nom || "") === fold(nom));
+    if(i >= 0) return ouvrirFiche("negociateurs:" + i);
+    REP_Q = ""; PLIS["b_negociateurs"] = false; savePlis();
+    activerOnglet("repertoire");
+    toast(nom ? "Aucune fiche de carnet pour " + nom
+              : "Indiquez d'abord le négociateur qui suit le vendeur");
+  };
   if(b("pubMur")) b("pubMur").onclick = montrerMur;
   const pp = b("pubPuces");
   if(pp) pp.oninput = ()=>{
