@@ -345,6 +345,9 @@ input.auto{background:var(--accent-soft)!important;color:var(--navy);font-weight
 .diagnote{background:var(--accent-soft);border:1px solid #cddcf0;border-radius:8px;
   padding:9px 12px;margin:12px 0 14px;font-size:12.5px;color:var(--navy)}
 .diagnote:empty{display:none}
+.diagtete{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;
+  align-items:start}
+@media(max-width:720px){ .diagtete{grid-template-columns:1fr} }
 table.grid-t th.cdiag{width:130px}
 table.grid-t th.cact,table.grid-t td.cact{width:34px;text-align:center;padding:4px}
 .xbtn.mini{padding:2px 7px;font-size:12px;line-height:1.4}
@@ -1400,6 +1403,31 @@ table.tdb .puce.resilie{background:#64748b}
 /* le tri au glisser : on voit ce qu'on tient et où ça va tomber */
 .pubordre .pubvig{cursor:grab}
 .publeg{width:calc(100% - 16px);margin:0 8px 8px;font-size:12px;padding:5px 8px}
+/* la bande des photos retenues, dans la page : plus large que la planche de
+   choix, puisqu'on y écrit */
+.pubbande{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));margin-top:12px}
+.pubbande .pjimg{height:124px}
+.pubbande figcaption .grow{flex:1}
+.publigne{display:flex;align-items:center;gap:6px;margin:0 8px 8px}
+.publigne .publeg{flex:1;width:auto;margin:0}
+.emobtn{flex:0 0 auto;width:28px;height:28px;border:1px solid var(--field-line);
+  background:#fff;border-radius:7px;cursor:pointer;font-size:15px;line-height:1;
+  display:grid;place-items:center;padding:0;color:var(--ink-2)}
+.emobtn:hover{background:var(--accent-soft);border-color:var(--accent)}
+.emobtn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--navy)}
+.emohint{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:5px;
+  border:1px solid var(--line);background:#fff;font-size:11px;line-height:1;
+  vertical-align:-3px}
+.emopan{margin:0 8px 8px;padding:7px 8px;border:1px solid var(--line);
+  border-radius:var(--radius);background:var(--line-2)}
+.emogr{margin-bottom:5px}
+.emogr:last-child{margin-bottom:0}
+.emogr > span{display:block;font-size:10px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+.emogr > div{display:flex;flex-wrap:wrap;gap:2px}
+.emo{border:0;background:none;cursor:pointer;font-size:17px;line-height:1;
+  padding:3px 4px;border-radius:6px}
+.emo:hover{background:#fff}
 .pubvig.enmain{opacity:.4}
 .pubvig.avant{box-shadow:inset 3px 0 0 var(--accent)}
 .pubvig.apres{box-shadow:inset -3px 0 0 var(--accent)}
@@ -1508,7 +1536,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 5 octobre 2026, 9 h 25">Dossiers de vente</div>
+  <div class="brand" title="Version du 6 octobre 2026, 17 h 40">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1602,7 +1630,10 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-diagnostics">
     <div class="card"><h2>Diagnostics immobiliers</h2><div class="body">
-      <div class="f"><label>Réalisés par</label><span id="diagPar"></span></div>
+      <div class="diagtete">
+        <div class="f"><label>Réalisés par</label><span id="diagPar"></span></div>
+        <div class="f"><label>Bien dispensé de DPE</label><span id="diagDisp"></span></div>
+      </div>
       <div id="diagNote" class="diagnote"></div>
       <div style="overflow-x:auto"><table class="grid-t" id="diagTable"></table></div>
       <div class="diagajout" id="diagAjout"></div>
@@ -1707,7 +1738,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>5 octobre 2026, 9 h 25</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>6 octobre 2026, 17 h 40</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2125,6 +2156,22 @@ const DIAG_REGLES = {
   "Plomb":       {ans:1, selonResultat:true},   // 1 an si positif, illimitée si négatif
   "Loi Carrez":  {aucune:true}
 };
+/* Les biens dispensés de DPE — article R126-15 du code de la construction
+   et de l'habitation. La liste est fermée : on ne l'invente pas, et un bien
+   qui n'y figure pas doit avoir son DPE. Elle commande les mentions de
+   l'annonce : un terrain n'a pas de classe énergie, et l'écrire « … » dans
+   une publication donne l'impression d'un dossier bâclé. */
+const DPE_DISPENSES = [
+  "Terrain à bâtir ou terrain nu",
+  "Construction provisoire (deux ans ou moins)",
+  "Bâtiment indépendant de moins de 50 m²",
+  "Local agricole, artisanal ou industriel hors habitation",
+  "Lieu de culte",
+  "Monument historique classé ou inscrit",
+  "Bâtiment sans chauffage ni refroidissement (ou cheminée à foyer ouvert seule)",
+  "Occupation de moins de quatre mois par an"
+];
+
 const DIAG_RESULTAT = ["Amiante","Plomb","Gaz"];   // diagnostics à qualifier
 const DIAG_CHOIX = {
   "Amiante": ["Positif","Négatif"],
@@ -2271,6 +2318,8 @@ function blankDossier(){
     publications:[],
     divers:"",
     diagPar:"",
+    /* motif de dispense de DPE, choisi dans DPE_DISPENSES ; vide = DPE exigé */
+    dpeDispense:"",
     diags: DIAGS.map(n=>({nom:n,fait:"",renouv:"",positif:"",dpeEnergie:"",dpeGes:""})),
     quest: QUEST.reduce((o,q)=>(o[q[0]]="",o),{}),
     vendeurs:[blankPerson()],
@@ -4728,8 +4777,31 @@ function construitAvant(seuil, dossier){
   const anSeuil = parseInt(seuil.slice(0,4),10);
   return seuil.slice(5) === "01-01" ? a < anSeuil : a <= anSeuil;
 }
+/* Le DPE est-il exigible pour ce bien ? Une seule réponse, qu'il s'agisse
+   d'afficher la ligne au tableau ou d'écrire les mentions d'une annonce :
+   deux réponses finiraient par se contredire. */
+function dpeExige(dossier){
+  const d = dossier || D;
+  if(String(d.dpeDispense || "").trim()) return false;
+  const ligne = (d.diags || []).filter(x=> x && x.nom === "DPE")[0];
+  if(ligne && ligne.masque) return false;
+  return diagActif("DPE", d);
+}
+function motifDispenseDpe(dossier){
+  const d = dossier || D;
+  const m = String(d.dpeDispense || "").trim();
+  if(m) return m;
+  /* un terrain se passe de justification : il n'y a pas de bâti. Un garage,
+     lui, peut être chauffé : on ne lui invente pas un motif, on se contente
+     de ne pas écrire de classe. À l'agent de choisir le sien s'il le veut. */
+  if((d.bien || {}).type === "Terrain") return "Terrain à bâtir ou terrain nu";
+  return "";
+}
+
 function diagActif(nom, dossier){
   const b = (dossier || D).bien || {};
+  /* une dispense déclarée retire le DPE de la liste des exigibles */
+  if(nom === "DPE" && String((dossier || D).dpeDispense || "").trim()) return false;
   /* certains types de biens n'appellent qu'une poignée de diagnostics */
   const t = b.type || "";
   if(t === "Terrain") return nom === "E.R.P.";
@@ -4854,6 +4926,12 @@ function besoinRenouvellement(){
 }
 function renderDiags(){
   $("#diagPar").innerHTML = control("diagPar","book:diagnostiqueurs");
+  /* la dispense est une liste fermée : on choisit un motif prévu par le
+     code, ou rien — pas de motif inventé à la main */
+  $("#diagDisp").innerHTML = `<select data-b="dpeDispense">` +
+    `<option value="">— le DPE est exigé —</option>` +
+    DPE_DISPENSES.map(m=> `<option${m === D.dpeDispense ? " selected" : ""}>${
+      esc(m)}</option>`).join("") + `</select>`;
   const renouv = besoinRenouvellement();
   const head = `<tr><th class="cdiag">Diagnostic</th><th class="cres">Résultat</th>` +
     `<th>Fait le</th><th>Périme le</th>` +
@@ -4902,7 +4980,12 @@ function renderDiags(){
   }).join("");
   $("#diagTable").innerHTML = head + rows;
   $("#diagTable").dataset.renouv = renouv ? "1" : "0";
-  $("#diagNote").innerHTML = masques.length
+  const disp = String(D.dpeDispense || "").trim();
+  $("#diagNote").innerHTML = disp
+    ? `<b>Bien dispensé de DPE</b> — ${esc(disp)}. La ligne DPE est retirée du tableau, ` +
+      `et les annonces n'écriront <b>aucune mention de performance énergétique</b> : ` +
+      `ni classe, ni dépenses, ni pastilles sur les clips.`
+    : masques.length
     ? `Non requis pour ce bien : <b>${masques.map(esc).join(", ")}</b>. ` +
       `Le type de bien, l'année de construction et la situation juridique, saisis dans ` +
       `l'onglet Général, commandent cette liste.`
@@ -9313,7 +9396,7 @@ document.addEventListener("input", e=>{
     if(t.dataset.b.startsWith("prix."))     majDepot();
     if(t.dataset.b === "facture.cote")      renderFacture();
     if(t.dataset.b && t.dataset.b.startsWith("detail.")) majDetail();
-    if(["bien.annee","bien.dateConstruction","bien.sitJur","bien.type"]
+    if(["bien.annee","bien.dateConstruction","bien.sitJur","bien.type","dpeDispense"]
        .includes(t.dataset.b)) renderDiags();
     if(t.dataset.b.startsWith("diags."))    majDiagCalc();
     if(t.dataset.b.startsWith("dates.")){ majStade(); majOnglets(); majNotaires(); }
@@ -10671,13 +10754,17 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 4
+ * Base en ligne pour « Dossiers de vente »  —  version 5
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * Cette version 4 ajoute la RÉÉCRITURE DES ANNONCES par l'intelligence
+ * La version 5 rend la réécriture patiente : aux heures de pointe, un modèle
+ * répond « 503, trop de demandes ». Le script attend, réessaie, puis passe au
+ * modèle suivant de la liste plutôt que d'abandonner.
+ *
+ * La version 4 avait ajouté la RÉÉCRITURE DES ANNONCES par l'intelligence
  * artificielle de Google (Gemini). Le script sert de relais : votre clé
  * Gemini reste ici, dans votre script, et ne descend jamais dans la page web
  * — où n'importe qui pourrait la lire. Si vous laissez CLE_GEMINI vide, tout
@@ -10721,8 +10808,8 @@ const SCRIPT_GOOGLE = `/**
  *     votre tablette, avec la même adresse et la même clé.
  *
  * MISE À JOUR DEPUIS UNE VERSION PRÉCÉDENTE
- *  Remplacez tout le contenu de Code.gs par ce fichier, REMETTEZ VOTRE CLÉ à
- *  la ligne CLE, enregistrez, puis « Déployer » → « Gérer les déploiements »
+ *  Remplacez tout le contenu de Code.gs par ce fichier, REMETTEZ VOS DEUX
+ *  CLÉS (CLE, et CLE_GEMINI si vous l'utilisez), enregistrez, puis « Déployer » → « Gérer les déploiements »
  *  → crayon → Version « Nouvelle version » → « Déployer ». L'adresse ne change
  *  pas, et vos dossiers sont intacts. Sans cette republication, Google
  *  continue de servir l'ancien code et les pièces jointes ne partiront pas.
@@ -10741,10 +10828,14 @@ const NOM_PIECES = 'Dossiers de vente — pièces';
  *  vous ne voulez pas de cette fonction. Elle ne quitte jamais ce script. */
 const CLE_GEMINI = '';
 
-/** Modèle utilisé. Si Google le renomme un jour, le bouton de réécriture
- *  renverra une erreur « ia_http 404 » : il suffira de corriger ce nom
- *  d'après aistudio.google.com. */
-const MODELE_GEMINI = 'gemini-3.8-flash';
+/** Modèles essayés, dans l'ordre. Le premier qui répond gagne.
+ *  Les modèles rapides sont parfois saturés aux heures de pointe : plutôt
+ *  que de renvoyer une erreur, le script patiente, réessaie, puis passe au
+ *  suivant de la liste. Si Google renomme un modèle, celui-là est ignoré
+ *  (erreur 404) et l'on continue — rien à corriger dans l'urgence. */
+const MODELES_GEMINI = ['gemini-3.8-flash',
+                        'gemini-3.7-flash',
+                        'gemini-3.1-flash-lite'];
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
@@ -10918,8 +11009,6 @@ function redige(q) {
   const invite = String(q.invite || '');
   if (!invite) return { erreur: 'ia_vide' };
 
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/'
-    + MODELE_GEMINI + ':generateContent';
   const corps = {
     systemInstruction: { parts: [{ text: String(q.systeme || '') }] },
     contents: [{ role: 'user', parts: [{ text: invite }] }],
@@ -10928,28 +11017,59 @@ function redige(q) {
       maxOutputTokens: 1200
     }
   };
-  let rep;
-  try {
-    rep = UrlFetchApp.fetch(url, {
-      method: 'post',
-      contentType: 'application/json',
-      headers: { 'x-goog-api-key': CLE_GEMINI },
-      payload: JSON.stringify(corps),
-      muteHttpExceptions: true
-    });
-  } catch (err) {
-    return { erreur: 'ia_reseau', detail: String(err && err.message || err) };
+
+  /* Les attentes entre deux essais, en millisecondes. Un modèle saturé se
+     libère souvent en quelques secondes ; insister tout de suite ne sert
+     qu'à se faire refuser une seconde fois. */
+  const ATTENTES = [1200, 3500];
+  let dernier = null;
+
+  for (var m = 0; m < MODELES_GEMINI.length; m++) {
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/'
+      + MODELES_GEMINI[m] + ':generateContent';
+
+    for (var essai = 0; essai <= ATTENTES.length; essai++) {
+      if (essai > 0) Utilities.sleep(ATTENTES[essai - 1]);
+      let rep;
+      try {
+        rep = UrlFetchApp.fetch(url, {
+          method: 'post',
+          contentType: 'application/json',
+          headers: { 'x-goog-api-key': CLE_GEMINI },
+          payload: JSON.stringify(corps),
+          muteHttpExceptions: true
+        });
+      } catch (err) {
+        dernier = { erreur: 'ia_reseau', detail: String(err && err.message || err) };
+        break;                       // le réseau ne se répare pas en réessayant
+      }
+      const code = rep.getResponseCode();
+      const brut = rep.getContentText();
+
+      if (code === 200) {
+        let j;
+        try { j = JSON.parse(brut); } catch (err) { return { erreur: 'ia_json' }; }
+        const c = (j.candidates || [])[0] || {};
+        const parts = ((c.content || {}).parts) || [];
+        const texte = parts.map(function (x) { return x.text || ''; }).join('').trim();
+        if (texte) return { ok: true, texte: texte, modele: MODELES_GEMINI[m] };
+        dernier = { erreur: 'ia_rien', detail: String(c.finishReason || '') };
+        break;
+      }
+
+      /* 503 : modèle saturé. 429 : trop d'appels à la minute. Dans les deux
+         cas on patiente, puis on change de modèle. Tout autre code est
+         définitif pour ce modèle — une clé refusée le restera. */
+      dernier = { erreur: code === 503 || code === 429 ? 'ia_saturee' : 'ia_http',
+                  code: code, modele: MODELES_GEMINI[m], detail: brut.slice(0, 300) };
+      if (code !== 503 && code !== 429) break;
+    }
+    /* une clé refusée (400/403) ne marchera pas davantage avec un autre
+       modèle : inutile de dérouler toute la liste */
+    if (dernier && dernier.erreur === 'ia_http'
+        && (dernier.code === 400 || dernier.code === 401 || dernier.code === 403)) break;
   }
-  const code = rep.getResponseCode();
-  const brut = rep.getContentText();
-  if (code !== 200) return { erreur: 'ia_http', code: code, detail: brut.slice(0, 400) };
-  let j;
-  try { j = JSON.parse(brut); } catch (err) { return { erreur: 'ia_json' }; }
-  const c = (j.candidates || [])[0] || {};
-  const parts = ((c.content || {}).parts) || [];
-  const texte = parts.map(function (x) { return x.text || ''; }).join('').trim();
-  if (!texte) return { erreur: 'ia_rien', detail: String(c.finishReason || '') };
-  return { ok: true, texte: texte };
+  return dernier || { erreur: 'ia_rien' };
 }
 
 function sortie(o) {
@@ -11515,6 +11635,19 @@ function formulaireWeb(z, url, cle){
             collez-la ci-dessus, avec votre clé.</li>
         <li>Sur le second ordinateur : la même adresse et la même clé.</li>
       </ol>
+      <p class="muted"><b>Vous avez déjà une base ?</b> Pour passer à cette version :
+        ouvrez votre projet sur script.google.com, remplacez tout <code>Code.gs</code> par
+        le script ci-dessous, <b>remettez votre clé</b> à la ligne <code>CLE</code>,
+        enregistrez, puis <b>Déployer → Gérer les déploiements → crayon → Version :
+        Nouvelle version → Déployer</b>. L'adresse ne change pas et vos dossiers sont
+        intacts.</p>
+      <p class="muted"><b>Pour la réécriture des annonces par l'IA</b> (facultatif) :
+        prenez une clé gratuite sur <b>aistudio.google.com</b> → « Get API key », et
+        collez-la à la ligne <code>const CLE_GEMINI = '';</code>, entre les apostrophes.
+        Google redemandera alors son accord au premier déploiement, parce que le script
+        accède désormais à Internet — c'est normal, acceptez. Pour vérifier que la clé
+        marche, lancez la fonction <code>verifierIA</code> depuis l'éditeur
+        (menu déroulant des fonctions, puis <b>Exécuter</b>).</p>
       <button class="tbtn light" id="wCopier">Copier le script</button>
       <pre id="wScript">${esc(SCRIPT_GOOGLE)}</pre>
     </details>`;
@@ -12362,9 +12495,16 @@ const AIDE = [
   "chiffres du texte à ceux du dossier. Si l'IA a écrit une surface ou un nombre de "+
   "pièces qui n'y est pas, un avertissement le nomme sous le texte. Relisez toujours "+
   "avant de publier : c'est votre annonce, pas la sienne. "+
-  "<b>En cas de panne</b>, le script dit ce qui cloche — clé absente, nom de modèle "+
-  "périmé, réseau. Depuis l'éditeur Apps Script, la fonction <code>verifierIA</code> "+
-  "répond en trois mots si la clé fonctionne."],
+  "<b>Quand les serveurs sont chargés.</b> Aux heures de pointe, Google répond « trop "+
+  "de demandes » (erreur 503) : le modèle est saturé, ce n'est pas une panne de chez "+
+  "vous. Le script attend une seconde, réessaie, attend trois secondes et demie, "+
+  "réessaie encore, puis <b>passe au modèle suivant</b> — il en connaît trois. La "+
+  "réponse peut donc prendre une demi-minute ; le bouton le dit. Si les trois sont "+
+  "saturés, réessayez dans une minute ou deux : le texte composé par l'application, "+
+  "lui, reste là et reste publiable. "+
+  "<b>Les autres pannes</b> ont chacune leur phrase — clé absente, clé refusée, nom de "+
+  "modèle périmé, réseau — et chacune dit quoi corriger. Depuis l'éditeur Apps Script, "+
+  "la fonction <code>verifierIA</code> répond en trois mots si la clé fonctionne."],
  ["Les mentions obligatoires d'une annonce",
   "Elles sont ajoutées automatiquement et ne dépendent pas du style choisi : le "+
   "<b>prix honoraires inclus</b> et la charge des honoraires ; quand ils sont à "+
@@ -12380,12 +12520,38 @@ const AIDE = [
   "Diagnostics, sur la ligne DPE, à côté des deux lettres. "+
   "Ce qui manque est listé <b>en rouge au-dessus du texte</b>, et remplacé par « … » dans "+
   "l'annonce : mieux vaut un trou visible qu'une mention inventée."],
+ ["Les biens dispensés de DPE",
+  "Tous les biens n'ont pas de DPE, et écrire « Classe énergie … » sur l'annonce d'un "+
+  "terrain à bâtir donne l'impression d'un dossier bâclé. L'article R126-15 du code de la "+
+  "construction dispense huit catégories : <b>terrain</b> à bâtir ou nu, construction "+
+  "provisoire de deux ans ou moins, <b>bâtiment indépendant de moins de 50 m²</b> (un "+
+  "appartement d'un immeuble collectif n'y entre pas), local agricole, artisanal ou "+
+  "industriel hors habitation, lieu de culte, <b>monument historique</b> classé ou "+
+  "inscrit, bâtiment <b>sans chauffage ni refroidissement</b> — ou avec une seule "+
+  "cheminée à foyer ouvert —, et occupation de moins de quatre mois par an. "+
+  "Un <b>terrain</b> est reconnu tout seul, d'après le type de bien. Pour les sept autres "+
+  "cas, l'onglet <b>Diagnostics</b> porte une liste « <b>Bien dispensé de DPE</b> » : on y "+
+  "choisit le motif. La liste est fermée — ce sont les motifs du code, on n'en invente "+
+  "pas. "+
+  "Dès qu'un motif est choisi, la ligne DPE <b>quitte le tableau</b> des diagnostics, et "+
+  "les publications n'écrivent plus <b>aucune mention d'énergie</b> : ni classe, ni "+
+  "dépenses annuelles, ni phrase des classes F et G, ni pastilles DPE et GES sur les "+
+  "clips. L'IA, elle aussi, reçoit la consigne de n'en rien dire. "+
+  "À la place, une phrase franche : « <b>Bien non soumis au diagnostic de performance "+
+  "énergétique</b> », suivie du motif. Le silence pur ferait croire à un oubli de votre "+
+  "part. "+
+  "Les autres mentions obligatoires, elles, ne bougent pas : prix, honoraires et leur "+
+  "charge, copropriété, carte professionnelle, et l'adresse Géorisques."],
  ["Le clip pour les réseaux : deux gabarits",
   "Deux façons de montrer un bien, parce qu'une seule lasse vite un fil. "+
   "<b>Vitrine</b> : la photo occupe le haut, une fiche crème occupe le bas — prix en "+
-  "grand, surface, six arguments, DPE et GES avec leurs valeurs, téléphone, mentions "+
+  "grand, surface, six arguments (le « texte façon Vitrine », proposé d'après le dossier "+
+  "et corrigeable dans la page, un par ligne), DPE et GES avec leurs valeurs, mentions "+
   "obligatoires et adresse du site. Elle se suffit à elle-même, sans le son et sans lire "+
   "la légende. "+
+  "Le <b>téléphone n'y figure pas</b> : il était répété sur chacune des photos, où il ne "+
+  "sert à rien — on appelle à la fin d'un clip, pas au milieu. Il reste sur la carte de "+
+  "contact, là où le lecteur le cherchera. "+
   "<b>Récit</b> : la photo prend tout le cadre, un carton d'ouverture annonce le bien, "+
   "puis chaque vue porte sa <b>légende</b> dans une pastille blanche. Cela raconte au "+
   "lieu d'énumérer. Les légendes ne reprennent plus le nom du fichier — « IMG_4312 » ne "+
@@ -12408,10 +12574,17 @@ const AIDE = [
   "la page, un par ligne. "+
   "Format <b>1080 × 1350</b>, celui qui occupe le plus de place dans un fil. Le "+
   "prix est sur la fiche de la Vitrine mais jamais en travers des photos. "+
-  "« <b>Choisir les photos</b> » ouvre un assistant en trois temps : les photos du bien, "+
-  "puis celles de l'immeuble (rubrique Photos de sa fiche), puis l'ordre — que l'on règle "+
-  "en <b>glissant les vignettes</b>. Quatorze photos au maximum : au-delà, personne ne "+
-  "regarde. "+
+  "« <b>Choisir les photos</b> » ouvre une fenêtre en deux temps : les photos du bien, "+
+  "puis celles de l'immeuble (rubrique Photos de sa fiche). Tout le reste se règle "+
+  "<b>dans la page</b>, sous les yeux : les photos retenues s'affichent à la suite, on "+
+  "les range en <b>glissant les vignettes</b> — la première ouvre le clip —, la croix en "+
+  "retire une, et sous chacune se trouve la <b>légende du gabarit Récit</b>. "+
+  "Ces légendes sont proposées d'après la fiche du bien et se corrigent librement ; le "+
+  "petit bouton rond à droite ouvre une planche de <b>quarante émoticônes</b>, rangées "+
+  "par propos — le logement, dehors, l'élan, le concret. L'émoticône choisie se pose "+
+  "<b>là où se trouve le curseur</b> dans la légende, et non à la fin : placez le "+
+  "curseur où vous la voulez, puis cliquez. On peut en mettre plusieurs. "+
+  "Quatorze photos au maximum : au-delà, personne ne regarde. "+
   "<b>La durée se choisit</b> : 20, 30, 40 ou 50 secondes, et le clip tombe juste. Le "+
   "temps se partage entre les photos retenues, entre 1,6 s et 5 s chacune ; s'il y a trop "+
   "de photos pour la durée demandée, l'application le dit et <b>écarte les dernières</b> "+
@@ -13756,6 +13929,10 @@ function donneesPubli(){
     charge: (D.prix || {}).charge || "",
     net: prixNet(),
     taux: tauxHono(),
+    /* un bien dispensé de DPE n'a pas de classe à annoncer : on ne la
+       remplace pas par « … », on n'en parle pas */
+    dpeDu: dpeExige(),
+    dispense: motifDispenseDpe(),
     dpeE: dpe.dpeEnergie || "", dpeG: dpe.dpeGes || "",
     coutMin: num(dpe.dpeCoutMin), coutMax: num(dpe.dpeCoutMax),
     anneeRef: String(dpe.dpeAnnee || "").trim(),
@@ -13811,17 +13988,22 @@ function manquePubli(){
   if(!o.charge) m.push("la charge des honoraires");
   if(o.charge === "Acquéreur" && o.honoraires === null)
     m.push("le montant des honoraires (obligatoire quand ils sont à l'acquéreur)");
-  if(!o.dpeE) m.push("la classe énergie du DPE");
-  if(!o.dpeG) m.push("la classe climat du DPE");
-  if(o.coutMin === null || o.coutMax === null)
-    m.push("les dépenses annuelles d'énergie estimées (onglet Diagnostics, ligne DPE)");
-  if(!o.anneeRef) m.push("l'année des prix de référence du DPE");
+  if(o.dpeDu){
+    if(!o.dpeE) m.push("la classe énergie du DPE");
+    if(!o.dpeG) m.push("la classe climat du DPE");
+    if(o.coutMin === null || o.coutMax === null)
+      m.push("les dépenses annuelles d'énergie estimées (onglet Diagnostics, ligne DPE)");
+    if(!o.anneeRef) m.push("l'année des prix de référence du DPE");
+  }
   if(o.copro){
     if(o.lots === null) m.push("le nombre de lots de la copropriété (fiche de l'immeuble)");
     if(o.charges === null) m.push("les charges de copropriété annuelles");
     if(o.carrez === null) m.push("la surface loi Carrez");
   }
-  if(o.surface === null) m.push("la surface habitable");
+  /* un terrain n'a pas de surface habitable : c'est sa contenance qu'on attend */
+  if((D.bien || {}).type === "Terrain"){
+    if(o.terrain === null) m.push("la surface du terrain");
+  } else if(o.surface === null) m.push("la surface habitable");
   if(!o.ville) m.push("la ville du bien");
   return m;
 }
@@ -13843,13 +14025,21 @@ function mentionsPubli(){
   }
   if(o.copro && o.carrez !== null) L2.push("Surface loi Carrez : " + m2txt(o.carrez) + ".");
 
-  const exces = /^[FG]$/.test(o.dpeE);
-  if(exces) L2.push("Logement à consommation énergétique excessive : classe " + o.dpeE + ".");
-  L2.push("Classe énergie " + (o.dpeE || "…") + " — Classe climat " + (o.dpeG || "…") + ".");
-  L2.push("Montant estimé des dépenses annuelles d'énergie pour un usage standard : "
-    + (o.coutMin === null ? "…" : eur(o.coutMin)) + " à "
-    + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an"
-    + (o.anneeRef ? " (prix moyens indexés au 1er janvier " + o.anneeRef + ")" : "") + ".");
+  if(o.dpeDu){
+    const exces = /^[FG]$/.test(o.dpeE);
+    if(exces) L2.push("Logement à consommation énergétique excessive : classe " + o.dpeE + ".");
+    L2.push("Classe énergie " + (o.dpeE || "…") + " — Classe climat " + (o.dpeG || "…") + ".");
+    L2.push("Montant estimé des dépenses annuelles d'énergie pour un usage standard : "
+      + (o.coutMin === null ? "…" : eur(o.coutMin)) + " à "
+      + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an"
+      + (o.anneeRef ? " (prix moyens indexés au 1er janvier " + o.anneeRef + ")" : "") + ".");
+  } else {
+    /* le dire franchement vaut mieux qu'un silence : le lecteur croirait
+       que l'agent a oublié la mention */
+    L2.push("Bien non soumis au diagnostic de performance énergétique"
+      + (o.dispense ? " (" + o.dispense.charAt(0).toLowerCase() + o.dispense.slice(1) + ")"
+                    : "") + ".");
+  }
 
   if(o.copro){
     L2.push("Bien en copropriété"
@@ -14204,6 +14394,8 @@ function faitsPubli(){
   if(o.adj.length) a("Caractère du bien", adjectifs(o, bienFeminin(o.type)).join(", "));
   if(o.ambPlus.length) a("Atouts", o.ambPlus.join(", "));
   if(o.cible.length) a("Convient à", o.cible.join(", "));
+  if(!o.dpeDu) f.push("Ce bien n'est pas soumis au diagnostic de performance "
+    + "énergétique : n'écris donc rien sur l'énergie, la consommation ni les classes");
   a("Le quartier, décrit par l'agent", o.quartier);
   a("La résidence, décrite par l'agent", o.caractRes);
   a("Ce que l'agent a remarqué en visitant", o.coup);
@@ -14247,7 +14439,27 @@ async function redigerParIA(style){
   if(d.erreur === "ia_absente")
     throw new Error("la clé Gemini n'est pas renseignée dans votre script Google — "
       + "voyez l'aide, rubrique « Faire réécrire l'annonce »");
+  /* chaque panne a sa phrase : « ia_http 503 » ne dit rien à personne */
+  if(d.erreur === "ia_saturee")
+    throw new Error("les serveurs de Google sont saturés en ce moment. Le script a "
+      + "patienté et essayé trois modèles, sans succès. Réessayez dans une minute ou "
+      + "deux — et en attendant, le texte composé par l'application reste là, "
+      + "parfaitement utilisable.");
+  if(d.erreur === "ia_reseau")
+    throw new Error("votre script Google n'a pas pu joindre Gemini. Vérifiez qu'il est "
+      + "bien en version 5 et qu'il a été redéployé après l'ajout de la clé.");
+  if(d.erreur === "ia_http" && (d.code === 400 || d.code === 403))
+    throw new Error("Google refuse la clé Gemini (erreur " + d.code + "). Vérifiez "
+      + "qu'elle est collée en entier entre les apostrophes, à la ligne CLE_GEMINI, "
+      + "et que le script a été redéployé depuis.");
+  if(d.erreur === "ia_http" && d.code === 404)
+    throw new Error("aucun des modèles de la liste n'existe plus sous ce nom. Corrigez "
+      + "MODELES_GEMINI dans le script d'après aistudio.google.com.");
+  if(d.erreur === "ia_rien")
+    throw new Error("l'IA n'a rien renvoyé" + (d.detail ? " (" + d.detail + ")" : "")
+      + ". Réessayez ; si cela persiste, le texte composé reste utilisable.");
   if(d.erreur) throw new Error("l'IA n'a pas répondu (" + d.erreur
+    + (d.code ? " " + d.code : "")
     + (d.detail ? " — " + String(d.detail).slice(0, 120) : "") + ")");
   const texte = String(d.texte || "").trim()
     .replace(/^[`\s]*(?:markdown)?\n?/i, "").replace(/[`]+$/,"").trim();
@@ -14477,17 +14689,13 @@ function dessinerPanneauVitrine(g, ctx){
     g.fillText(s, cx + 21, cy);
   });
 
-  /* on mesure d'abord le téléphone, calé à droite, et l'on n'écrit à gauche
-     que ce qui tient avant lui */
+  /* Pas de téléphone ici. Il était répété sur chacune des photos, où il ne
+     sert à rien : on appelle à la fin d'un clip, pas au milieu. Il reste sur
+     la carte de contact, où le lecteur le cherchera. La ligne technique
+     dispose donc de toute la largeur. */
   const yt = VIT_PHOTO + 338;
   g.fillStyle = "#ded5cb"; g.fillRect(M, yt - 30, larg, 2);
-  let limite = CLIP_L - M;
-  if(ctx.tel){
-    g.font = fnt(31, 700);
-    limite -= g.measureText(ctx.tel).width + 20;
-    g.fillStyle = CL.bordeaux; g.textAlign = "right";
-    g.fillText(ctx.tel, CLIP_L - M, yt); g.textAlign = "left";
-  }
+  const limite = CLIP_L - M;
   g.fillStyle = CL.gris; g.font = fnt(25, 400);
   g.fillText("R\u00e9f. " + (ctx.ref || "\u2014"), M, yt);
   let x = M + 168;
@@ -14508,8 +14716,16 @@ function dessinerPanneauVitrine(g, ctx){
       } else x += 10;
     }
   };
-  etiquette("DPE", ctx.dpeL, ctx.dpeBg, ctx.dpeFg, ctx.dpeVal);
-  etiquette("GES", ctx.gesL, ctx.gesBg, ctx.gesFg, ctx.gesVal);
+  /* pas de pastille là où il n'y a pas de DPE : une étiquette vide ferait
+     croire à un oubli */
+  if(ctx.dpeDu){
+    etiquette("DPE", ctx.dpeL, ctx.dpeBg, ctx.dpeFg, ctx.dpeVal);
+    etiquette("GES", ctx.gesL, ctx.gesBg, ctx.gesFg, ctx.gesVal);
+  } else if(ctx.dispense){
+    g.fillStyle = CL.gris; g.font = "italic " + fnt(23, 400);
+    const t = "Bien non soumis au DPE";
+    if(x + g.measureText(t).width <= limite) g.fillText(t, x, yt);
+  }
 
   /* Les mentions sont obligatoires : on ne les rogne pas, on les replie. */
   g.fillStyle = CL.gris; g.font = fnt(20, 400); g.textAlign = "center";
@@ -14873,12 +15089,16 @@ function contexteClip(){
     titre: [o.type, ville].filter(Boolean).join(" · "),
     ville,
     prix: o.fai === null ? "Prix sur demande" : eur(o.fai),
-    surface: o.surface === null ? "" : m2txt(o.surface),
+    /* un terrain n'a pas de surface habitable : c'est sa contenance qui
+       tient la place, sinon le coin droit de l'affiche reste vide */
+    surface: o.surface !== null ? m2txt(o.surface)
+           : o.terrain !== null ? m2txt(o.terrain) + " de terrain" : "",
     ref: (D.mandat || {}).num || "",
     dpeL: o.dpeE, dpeBg: e ? e.bg : "#e5e7eb", dpeFg: e ? e.fg : "#6b7280",
     dpeVal: dpe.dpeKwh ? num(dpe.dpeKwh) + " kWh/m²/an" : "",
     gesL: o.dpeG, gesBg: ges ? ges.bg : "#e5e7eb", gesFg: ges ? ges.fg : "#6b7280",
     gesVal: dpe.dpeCo2 ? num(dpe.dpeCo2) + " kg CO₂/m²/an" : "",
+    dpeDu: o.dpeDu, dispense: o.dispense,
     tel: n.tel || "",
     email: n.email || "",
     nego: (D.nego || {}).vendeur || "",
@@ -14908,14 +15128,19 @@ function legalesCourtes(){
     : "Bien non soumis au statut de la copropriété");
   if(o.copro) p1.push(o.procedure ? "Procédure en cours" : "Aucune procédure en cours");
   l.push(p1.join("  ·  "));
-  l.push("Dépenses annuelles d'énergie estimées entre "
-    + (o.coutMin === null ? "…" : eur(o.coutMin)) + " et "
-    + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an"
-    + (o.anneeRef ? " (prix " + o.anneeRef + ", abonnement compris)" : ""));
-  if(/^[FG]$/.test(o.dpeE))
-    l.push("Logement à consommation énergétique excessive : classe " + o.dpeE);
-  else
+  if(o.dpeDu){
+    l.push("Dépenses annuelles d'énergie estimées entre "
+      + (o.coutMin === null ? "…" : eur(o.coutMin)) + " et "
+      + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an"
+      + (o.anneeRef ? " (prix " + o.anneeRef + ", abonnement compris)" : ""));
+    if(/^[FG]$/.test(o.dpeE))
+      l.push("Logement à consommation énergétique excessive : classe " + o.dpeE);
+    else
+      l.push("Informations sur les risques auxquels ce bien est exposé : www.georisques.gouv.fr");
+  } else {
+    l.push("Bien non soumis au diagnostic de performance énergétique");
     l.push("Informations sur les risques auxquels ce bien est exposé : www.georisques.gouv.fr");
+  }
   return l;
 }
 
@@ -14943,6 +15168,9 @@ function sousTitreRecit(){
 /* Les six arguments de la Vitrine, déduits du dossier puis corrigeables. */
 function pucesProposees(){
   const o = donneesPubli(), p = [];
+  /* sur un terrain, la contenance est le premier argument — et souvent
+     le seul que la fiche technique fournisse */
+  if(o.surface === null && o.terrain !== null) p.push("Terrain de " + m2txt(o.terrain));
   if(o.pieces) p.push(unPluriel(o.pieces, "pièce"));
   if(o.chambres) p.push(unPluriel(o.chambres, "chambre")
     + (o.sdEau || o.sdb ? ", " + unPluriel((o.sdEau || 0) + (o.sdb || 0),
@@ -15118,9 +15346,11 @@ function renderPublications(){
     <div class="card"><h2>Le clip</h2><div class="body">
       ${!clipPossible() ? `<div class="alerte">Ce navigateur ne sait pas enregistrer de
         vidéo. Le texte reste utilisable ; pour le clip, passez par l'ordinateur.</div>` : `
-      <p class="muted" style="margin-top:0"><b>1 · les photos.</b> Choisissez-les, rangez-les,
-        et pour le gabarit Récit corrigez leurs légendes — proposées d'après la fiche du
-        bien.</p>
+      <p class="muted" style="margin-top:0"><b>1 · les photos.</b> Choisissez-les, puis
+        rangez-les ici en les glissant — la première ouvre le clip. Sous chacune, la
+        <b>légende du gabarit Récit</b>, proposée d'après la fiche du bien et libre à
+        corriger ; le bouton <span class="emohint">☺</span> ajoute une émoticône
+        <b>là où se trouve le curseur</b>.</p>
       <div class="pubbtns">
         <button type="button" class="tbtn light" id="pubChoisir">
           Choisir les photos${PUB_PHOTOS.length ? " (" + PUB_PHOTOS.length + ")" : ""}</button>
@@ -15128,16 +15358,11 @@ function renderPublications(){
         <span class="muted">${dispo} photo${dispo > 1 ? "s" : ""} disponible${
           dispo > 1 ? "s" : ""}</span>
       </div>
+      ${bandePhotos()}
 
       <div class="fsep"></div>
-      <p class="muted"><b>2 · la durée.</b> Le temps se partage entre les photos retenues.</p>
-      <div class="pubseg">${DUREES_CLIP.map(d=>
-        `<button type="button" class="segbtn${d === PUB_DUREE ? " on" : ""}"
-           data-pubduree="${d}">${d} s</button>`).join("")}</div>
-      ${minuteDit()}
-
-      <div class="fsep"></div>
-      <p class="muted"><b>3 · les arguments de la fiche</b>, repris sur le gabarit Vitrine.</p>
+      <p class="muted"><b>2 · le texte façon Vitrine</b>, repris sur le gabarit Vitrine —
+        un argument par ligne, six au plus.</p>
       <div class="f"><textarea id="pubPuces" rows="6" placeholder="un argument par ligne">${
         esc((PUB_PUCES.length ? PUB_PUCES : pucesProposees()).join("\n"))}</textarea></div>
       <div class="f"><label>Message de la carte de contact</label>
@@ -15148,6 +15373,13 @@ function renderPublications(){
           || "le négociateur de ce dossier")} : la carte de fin s'affichera sans photo.
         Elle se charge une fois pour toutes sur
         <a href="#" id="pubVersPortrait">sa fiche du carnet Négociateurs</a>.</p>`}
+
+      <div class="fsep"></div>
+      <p class="muted"><b>3 · la durée.</b> Le temps se partage entre les photos retenues.</p>
+      <div class="pubseg">${DUREES_CLIP.map(d=>
+        `<button type="button" class="segbtn${d === PUB_DUREE ? " on" : ""}"
+           data-pubduree="${d}">${d} s</button>`).join("")}</div>
+      ${minuteDit()}
 
       <div class="fsep"></div>
       <p class="muted"><b>4 · le modèle.</b> Huit essais tournent côte à côte, sans rien
@@ -15213,9 +15445,15 @@ function renderPublications(){
     renderPublications();
   };
   if(b("pubVersArgu")) b("pubVersArgu").onclick = e=>{ e.preventDefault(); ouvrirDetail(); };
+  brancherBande();
   if(b("pubIA")) b("pubIA").onclick = async ()=>{
     const bouton = b("pubIA");
     bouton.disabled = true; bouton.textContent = "L'IA écrit…";
+    /* aux heures de pointe, le script patiente et change de modèle : la
+       réponse peut prendre une bonne demi-minute, et un bouton muet pendant
+       ce temps-là donne l'impression que rien ne se passe */
+    const patience = setTimeout(()=>{ bouton.textContent = "Serveurs chargés, on insiste…"; },
+                                6000);
     try{
       const r = await redigerParIA(PUB_STYLE);
       /* les mentions obligatoires et les mots-dièse restent de notre main :
@@ -15228,8 +15466,10 @@ function renderPublications(){
           + ". Vérifiez cette phrase avant de publier."
         : "Texte réécrit par l'IA, à relire : les mentions obligatoires, elles, "
           + "restent calculées par l'application.";
+      clearTimeout(patience);
       renderPublications();
     }catch(e){
+      clearTimeout(patience);
       bouton.disabled = false; bouton.textContent = "✍ Faire réécrire par l'IA";
       popup({titre:"Réécriture impossible", genre:"erreur", corps:`<p>${esc(e.message)}</p>`});
     }
@@ -15320,51 +15560,27 @@ function copieDeSecours(t, fait){
 function ouvrirChoixPhotos(etape){
   PUB_ETAPE = etape;
   if(etape === 0) PUB_CHOIX = PUB_PHOTOS.slice();
-  /* un clip déjà tourné ne correspond plus au choix qu'on est en train de
-     refaire : on le laisse tomber plutôt que de laisser croire le contraire */
   const imm = photosDeLImmeuble();
-  /* sans photo d'immeuble, l'étape 2 n'a pas lieu d'être */
+  /* sans photo d'immeuble, le second temps n'a pas lieu d'être */
   if(etape === 1 && !imm.length) return ouvrirChoixPhotos(2);
-  const lot = etape === 0 ? photosDuBien() : etape === 1 ? imm : [];
 
+  /* L'ordre et les légendes ne se règlent plus ici : ils se règlent dans la
+     page, sous les yeux, à côté de la durée et du modèle. Cette fenêtre ne
+     fait plus qu'une chose — retenir les photos — et la validation renvoie à
+     la bande. */
   if(etape === 2){
-    popup({titre:"3 / 3 — L'ordre des photos", large:true,
-      corps:`<p class="muted" style="margin-top:0">Glissez les vignettes pour les ranger.
-          La première ouvre le clip.</p>
-        <div class="pubordre" id="pubOrdre">${(l=> PUB_CHOIX.map((id,i)=>{
-          const p = PIECES[id]; if(!p) return "";
-          const leg = l[i] || "";
-          return `<figure class="pubvig" data-pubid="${esc(id)}">
-            <div class="pjimg" data-pjvig="${esc(id)}"></div>
-            <figcaption><span class="rang">${i + 1}</span>
-              <span>${esc(p.nom)}</span></figcaption>
-            <input type="text" class="publeg" data-publeg="${esc(id)}"
-              value="${esc(leg)}" placeholder="légende (clip Récit)"></figure>`;
-        }).join(""))(legendesAuto(PUB_CHOIX))}</div>
-        ${PUB_CHOIX.length ? "" : `<p class="muted">Aucune photo retenue.</p>`}`,
-      boutons:[{lib:"Retour", action:()=> ouvrirChoixPhotos(1)},
-               {lib:"Valider", primaire:true, action:()=>{
-                 PUB_PHOTOS = PUB_CHOIX.slice(); oublierClip(); renderPublications();
-               }}]});
-    setTimeout(()=>{
-      PUB_CHOIX.forEach(id=>{ const p = PIECES[id]; if(p) peindreVignette(p); });
-      $$("#pubOrdre .publeg").forEach(el=>{
-        /* on ne doit pas déclencher un glissé en cliquant dans la légende */
-        el.addEventListener("pointerdown", e=> e.stopPropagation());
-        el.addEventListener("input", ()=>{
-          PUB_LEGENDES[el.getAttribute("data-publeg")] = el.value;
-        });
-      });
-      activerTriGlisse($("#pubOrdre"), ".pubvig", els=>{
-        PUB_CHOIX = els.map(e=> e.getAttribute("data-pubid"));
-        els.forEach((e,i)=>{ const r = e.querySelector(".rang"); if(r) r.textContent = i + 1; });
-      });
-    }, 40);
+    /* on garde l'ordre déjà choisi pour celles qui restent, et l'on met les
+       nouvelles à la suite : refaire son choix ne doit pas tout rebattre */
+    const gardees = PUB_PHOTOS.filter(id=> PUB_CHOIX.indexOf(id) >= 0);
+    const neuves = PUB_CHOIX.filter(id=> PUB_PHOTOS.indexOf(id) < 0);
+    PUB_PHOTOS = gardees.concat(neuves);
+    arreterMur(); PUB_MUR = null; oublierClip(); renderPublications();
     return;
   }
 
-  const titre = etape === 0 ? "1 / 3 — Les photos du bien"
-                            : "2 / 3 — Les photos de l'immeuble";
+  const lot = etape === 0 ? photosDuBien() : imm;
+  const titre = etape === 0 ? "1 / 2 — Les photos du bien"
+                            : "2 / 2 — Les photos de l'immeuble";
   popup({titre, large:true,
     corps:`<p class="muted" style="margin-top:0">${lot.length
         ? "Cliquez les photos à retenir. " + PUB_CHOIX.length + " retenue"
@@ -15378,8 +15594,116 @@ function ouvrirChoixPhotos(etape){
         </figure>`).join("")}</div>`,
     boutons:[{lib:"Annuler"},
              ...(etape === 1 ? [{lib:"Retour", action:()=> ouvrirChoixPhotos(0)}] : []),
-             {lib:"Suivant", primaire:true, action:()=> ouvrirChoixPhotos(etape + 1)}]});
+             {lib: etape === 1 || !imm.length ? "Valider" : "Suivant", primaire:true,
+              action:()=> ouvrirChoixPhotos(etape + 1)}]});
   setTimeout(()=> lot.forEach(p=> peindreVignette(p)), 40);
+}
+
+/* ------------------------------------------- la bande des photos retenues
+   Les photos choisies, dans l'ordre, chacune avec la légende que le Récit
+   lui donnera. On les range en les glissant : les flèches, elles, obligent
+   à compter les clics. */
+
+/* Les émoticônes sont rangées par propos, et non par ordre d'arrivée dans
+   Unicode : on cherche « une maison » ou « du soleil », pas un point de
+   code. Quarante suffisent — une planche entière ne se lit plus. */
+const EMOJIS_PUB = [
+  {t:"Le logement", l:["🏡","🏠","🏘️","🔑","🚪","🛋️","🛏️","🚿","🍽️","🪴"]},
+  {t:"Dehors",      l:["🌳","🌿","🌸","☀️","🌅","🏖️","🏊","🅿️","🚲","🧺"]},
+  {t:"L'élan",      l:["✨","💛","❤️","😍","🤩","👌","👍","🔥","⭐","📍"]},
+  {t:"Le concret",  l:["📐","🧭","🔆","🌡️","🧱","🛠️","📶","📞","📩","✅"]}
+];
+
+function bandePhotos(){
+  if(!PUB_PHOTOS.length)
+    return `<p class="muted" style="margin:10px 0 0">Aucune photo retenue pour l'instant.</p>`;
+  const legs = legendesAuto(PUB_PHOTOS);
+  return `<div class="pubordre pubbande" id="pubBande">${PUB_PHOTOS.map((id, i)=>{
+    const p = PIECES[id];
+    if(!p) return "";
+    return `<figure class="pubvig" data-pubid="${esc(id)}">
+      <div class="pjimg" data-pjvig="${esc(id)}"></div>
+      <figcaption><span class="rang">${i + 1}</span>
+        <span>${esc(p.nom)}</span>
+        <span class="grow"></span>
+        <button type="button" class="pjmini sup" data-pubretire="${esc(id)}"
+          title="Retirer du clip">×</button></figcaption>
+      <div class="publigne">
+        <input type="text" class="publeg" data-publeg="${esc(id)}"
+          value="${esc(legs[i] || "")}" placeholder="légende (gabarit Récit)">
+        <button type="button" class="emobtn" data-pubemo="${esc(id)}"
+          title="Insérer une émoticône à l'endroit du curseur">☺</button>
+      </div>
+      <div class="emopan" data-emopan="${esc(id)}" hidden>
+        ${EMOJIS_PUB.map(g=> `<div class="emogr"><span>${esc(g.t)}</span>
+          <div>${g.l.map(e=> `<button type="button" class="emo"
+            data-emoji="${esc(e)}">${e}</button>`).join("")}</div></div>`).join("")}
+      </div></figure>`;
+  }).join("")}</div>`;
+}
+
+/* Insérer à l'endroit du curseur, et non à la fin : c'est la seule façon de
+   choisir où l'émoticône se pose sans la déplacer ensuite à la main. */
+function insererEmoji(champ, emo){
+  const v = champ.value;
+  let a = champ.selectionStart, b = champ.selectionEnd;
+  if(a === null || a === undefined){ a = b = v.length; }
+  /* on sépare d'un espace si l'on colle contre un mot */
+  const avant = v.slice(0, a), apres = v.slice(b);
+  const sep1 = avant && !/\s$/.test(avant) ? " " : "";
+  const sep2 = apres && !/^\s/.test(apres) ? " " : "";
+  champ.value = avant + sep1 + emo + sep2 + apres;
+  const pos = (avant + sep1 + emo).length;
+  champ.focus();
+  try{ champ.setSelectionRange(pos, pos); }catch(e){}
+  champ.dispatchEvent(new Event("input", {bubbles:true}));
+}
+
+function brancherBande(){
+  const z = $("#pubBande");
+  if(!z) return;
+  PUB_PHOTOS.forEach(id=>{ const p = PIECES[id]; if(p) peindreVignette(p); });
+  /* la légende se retient telle qu'on l'écrit, y compris vide */
+  $$("#pubBande .publeg").forEach(el=>{
+    el.addEventListener("pointerdown", e=> e.stopPropagation());
+    el.addEventListener("input", ()=>{
+      PUB_LEGENDES[el.getAttribute("data-publeg")] = el.value;
+    });
+  });
+  $$("#pubBande .emobtn").forEach(b=>{
+    b.addEventListener("pointerdown", e=> e.stopPropagation());
+    b.onclick = ()=>{
+      const id = b.getAttribute("data-pubemo");
+      const pan = z.querySelector(`[data-emopan="${CSS.escape(id)}"]`);
+      const ouvert = !pan.hidden;
+      $$("#pubBande .emopan").forEach(x=> x.hidden = true);
+      pan.hidden = ouvert;
+      b.classList.toggle("on", !pan.hidden);
+      $$("#pubBande .emobtn").forEach(x=>{ if(x !== b) x.classList.remove("on"); });
+    };
+  });
+  $$("#pubBande .emo").forEach(b=>{
+    b.addEventListener("pointerdown", e=> e.stopPropagation());
+    b.onclick = ()=>{
+      const pan = b.closest(".emopan");
+      const id = pan.getAttribute("data-emopan");
+      const champ = z.querySelector(`[data-publeg="${CSS.escape(id)}"]`);
+      if(champ) insererEmoji(champ, b.getAttribute("data-emoji"));
+    };
+  });
+  $$("#pubBande [data-pubretire]").forEach(b=>{
+    b.addEventListener("pointerdown", e=> e.stopPropagation());
+    b.onclick = ()=>{
+      const id = b.getAttribute("data-pubretire");
+      PUB_PHOTOS = PUB_PHOTOS.filter(x=> x !== id);
+      arreterMur(); PUB_MUR = null; oublierClip(); renderPublications();
+    };
+  });
+  activerTriGlisse(z, ".pubvig", els=>{
+    PUB_PHOTOS = els.map(e=> e.getAttribute("data-pubid"));
+    arreterMur(); PUB_MUR = null; oublierClip();
+    renderPublications();
+  });
 }
 
 /* ------------------------------------------------------- le mur d'essais */
