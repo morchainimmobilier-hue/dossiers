@@ -1459,6 +1459,20 @@ table.tdb .puce.resilie{background:#64748b}
 .pubappelb{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
 .pubappel p{margin:9px 0 0}
 @media(max-width:860px){ .pubvit{grid-template-columns:1fr} }
+/* la page de titre : repliée tant qu'on ne l'a pas touchée */
+.pubouv{margin-top:12px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--line-2);padding:10px 14px}
+.pubouv > summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--navy);
+  list-style:none}
+.pubouv > summary::-webkit-details-marker{display:none}
+.pubouv > summary::before{content:"▸ ";color:var(--ink-3)}
+.pubouv[open] > summary::before{content:"▾ "}
+.pubouv[open] > summary{margin-bottom:10px}
+.pubouvg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);
+  gap:10px 14px;align-items:start}
+@media(max-width:860px){ .pubouvg{grid-template-columns:1fr} }
+/* la première vignette : pas de légende, un mot à la place */
+.pubtetemot{margin:0 8px 8px;font-size:11.5px;color:var(--ink-3);line-height:1.4}
 .pubvig.enmain{opacity:.4}
 .pubvig.avant{box-shadow:inset 3px 0 0 var(--accent)}
 .pubvig.apres{box-shadow:inset -3px 0 0 var(--accent)}
@@ -1567,7 +1581,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 7 octobre 2026, 9 h 08">Dossiers de vente</div>
+  <div class="brand" title="Version du 7 octobre 2026, 9 h 55">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1769,7 +1783,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>7 octobre 2026, 9 h 08</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>7 octobre 2026, 9 h 55</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -11758,6 +11772,9 @@ function migrate(d){
   out.detail = Object.assign(base.detail, d.detail||{});
   /* l'argumentaire est venu après : un dossier ancien n'en a pas */
   out.argu = Object.assign(base.argu, d.argu||{});
+  /* le brouillon de publication voyage avec le dossier ; un dossier ancien
+     n'en a pas, et c'est très bien */
+  if(d.publi && typeof d.publi === "object") out.publi = d.publi;
   ["prox","amb","cible"].forEach(k=>{
     if(!out.argu[k] || typeof out.argu[k] !== "object") out.argu[k] = {};
   });
@@ -12585,16 +12602,24 @@ const AIDE = [
  ["Le clip pour les réseaux : deux gabarits",
   "Deux façons de montrer un bien, parce qu'une seule lasse vite un fil. "+
   "<b>Vitrine</b> : la photo occupe le haut, une fiche crème occupe le bas — prix en "+
-  "grand, surface, six arguments — le « texte façon Vitrine », proposé d'après le "+
+  "<b>très grand</b> — il se resserre seulement s'il risque de toucher la surface —, "+
+  "surface, six arguments — le « texte façon Vitrine », proposé d'après le "+
   "dossier et corrigeable dans la page, <b>une case par argument</b> pour qu'on voie "+
   "d'un coup d'œil qu'il en faut six ; une case vide est simplement sautée —, DPE et "+
   "GES avec leurs valeurs, mentions "+
   "obligatoires et adresse du site. Elle se suffit à elle-même, sans le son et sans lire "+
   "la légende. "+
-  "Le <b>téléphone n'y figure pas</b> : il était répété sur chacune des photos, où il ne "+
-  "sert à rien — on appelle à la fin d'un clip, pas au milieu. Il reste sur la carte de "+
-  "contact, là où le lecteur le cherchera. "+
-  "<b>Récit</b> : la photo prend tout le cadre, un carton d'ouverture annonce le bien, "+
+  "Ni le <b>téléphone</b> ni la <b>référence du mandat</b> n'y figurent. Le premier était "+
+  "répété sous chacune des photos, où il ne sert à rien — on appelle à la fin d'un clip, "+
+  "pas au milieu : il reste sur la carte de contact, là où le lecteur le cherchera. La "+
+  "seconde ne dit rien à personne d'autre qu'à vous, et occupait le début de la ligne "+
+  "technique, que le DPE et le GES remplissent mieux. "+
+  "<b>Récit</b> : il ouvre sur une <b>page de titre</b> — un aplat mauve, sans photo, "+
+  "qui porte un surtitre en ambre, le titre sur une ou deux lignes et un sous-titre. Les "+
+  "trois lignes sont proposées d'après le dossier et se récrivent dans la page, sous la "+
+  "bande des photos : c'est la première chose qu'on lit, elle mérite d'être choisie. "+
+  "Videz une ligne pour la supprimer, « Reprendre la proposition » rend la main à "+
+  "l'application. Ensuite la photo prend tout le cadre, "+
   "puis chaque vue porte sa <b>légende</b> dans une pastille blanche. Cela raconte au "+
   "lieu d'énumérer. Les légendes ne reprennent plus le nom du fichier — « IMG_4312 » ne "+
   "dit rien à personne : elles sont <b>puisées dans la fiche détaillée</b>, pièce par "+
@@ -12635,10 +12660,13 @@ const AIDE = [
   "La pastille ne porte plus de petit soleil d'office : il revenait sur chaque vue, "+
   "qu'il eût un rapport ou non avec ce qu'on voyait. Seules les émoticônes que vous "+
   "mettez dans le texte s'affichent. "+
-  "Deux listes complètent chaque photo : <b>où poser la légende</b> — en bas, au milieu, "+
-  "en haut, selon ce que la photo montre : une pastille en bas cacherait une terrasse — "+
-  "et <b>comment elle apparaît</b> : Fondu, Déroulé (elle se dévoile de gauche à "+
-  "droite), Machine à écrire (lettre à lettre), Zoom, Glissé, Rebond. "+
+  "Deux listes complètent chaque photo : <b>où poser la légende</b> — neuf places, trois "+
+  "hauteurs par trois alignements, de « Haut gauche » à « Bas droite » en passant par "+
+  "« Centré » : une pastille toujours au même endroit finit par cacher ce qu'on voulait "+
+  "montrer — et <b>comment elle apparaît</b> : Fondu, Déroulé (elle se dévoile de gauche "+
+  "à droite), Machine à écrire (lettre à lettre), Zoom, Glissé, Rebond. "+
+  "<b>La première photo n'a pas de légende</b> : elle suit immédiatement la page de "+
+  "titre, où l'on vient de lire de quoi il s'agit. "+
   "Quatorze photos au maximum : au-delà, personne ne regarde. "+
   "<b>La durée se choisit</b> : 20, 30, 40 ou 50 secondes, et le clip tombe juste. Le "+
   "temps se partage entre les photos retenues, entre 1,6 s et 5 s chacune ; s'il y a trop "+
@@ -12666,6 +12694,18 @@ const AIDE = [
   "Le chemin est donc : <b>Copier le texte</b>, <b>Télécharger le clip</b>, puis "+
   "« Ouvrir Meta Business Suite » — vous y collez le texte, vous y déposez le clip, et "+
   "vous gardez la main sur la programmation et le ciblage."],
+ ["Le brouillon se garde tout seul",
+  "Tout ce que vous réglez sur la page Publications — le texte, les photos et leur "+
+  "ordre, les légendes et leurs réglages, la page de titre, les six arguments, le "+
+  "message, la durée, le modèle retenu — est <b>enregistré dans le dossier lui-même</b>. "+
+  "Fermez le dossier, ouvrez-en dix autres, revenez : tout est là, exactement comme vous "+
+  "l'aviez laissé, et <b>sans avoir rien publié</b>. "+
+  "Comme le brouillon vit dans le dossier, il part aussi dans la <b>sauvegarde</b> et "+
+  "dans la base partagée : vous retrouvez votre travail sur la tablette. "+
+  "Seule la vidéo ne se garde pas — plusieurs méga-octets par essai, et elle se "+
+  "refabrique en quelques secondes depuis les mêmes réglages. "+
+  "C'est autre chose que l'historique : celui-ci garde les annonces que vous avez "+
+  "voulu conserver, le brouillon garde celle en cours."],
  ["L'historique des publications",
   "« <b>Garder dans l'historique</b> » conserve le texte tel que vous l'avez laissé, le "+
   "style, le gabarit du clip, les arguments, les légendes et la liste des photos "+
@@ -14733,16 +14773,27 @@ function dessinerPanneauVitrine(g, ctx){
   g.fillStyle = CL.rouge; g.font = fnt(28, 600);
   txtEspace(g, (ctx.titre || "").toUpperCase(), M, VIT_PHOTO + 48, 4.5);
 
-  g.fillStyle = CL.bordeaux; g.font = fnt(78, 700);
-  g.fillText(ctx.prix || "", M, VIT_PHOTO + 124);
+  /* le prix est ce qu'on cherche des yeux en premier : il prend la place
+     qu'il mérite, et se resserre seulement s'il déborde sur la surface */
+  const prix = ctx.prix || "";
+  let cp = 104;
+  g.font = fnt(cp, 800);
+  let wSurf = 0;
+  if(ctx.surface){ g.font = fnt(38, 500); wSurf = g.measureText(ctx.surface).width + 28; }
+  g.font = fnt(cp, 800);
+  while(cp > 68 && g.measureText(prix).width > CLIP_L - 2 * M - wSurf){
+    cp -= 3; g.font = fnt(cp, 800);
+  }
+  g.fillStyle = CL.bordeaux;
+  g.fillText(prix, M, VIT_PHOTO + 134);
   if(ctx.surface){
-    g.font = fnt(36, 500); g.textAlign = "right";
-    g.fillText(ctx.surface, CLIP_L - M, VIT_PHOTO + 118);
+    g.font = fnt(38, 500); g.textAlign = "right";
+    g.fillText(ctx.surface, CLIP_L - M, VIT_PHOTO + 124);
     g.textAlign = "left";
   }
-  g.fillStyle = CL.bordeaux; g.fillRect(M, VIT_PHOTO + 148, larg, 3);
+  g.fillStyle = CL.bordeaux; g.fillRect(M, VIT_PHOTO + 158, larg, 3);
 
-  const col = larg / 2, y0 = VIT_PHOTO + 190;
+  const col = larg / 2, y0 = VIT_PHOTO + 198;
   g.font = fnt(30, 400);
   (ctx.puces || []).slice(0, 6).forEach((p, i)=>{
     const cx = M + (i % 2) * col + 3, cy = y0 + Math.floor(i / 2) * 44;
@@ -14762,9 +14813,9 @@ function dessinerPanneauVitrine(g, ctx){
   const yt = VIT_PHOTO + 338;
   g.fillStyle = "#ded5cb"; g.fillRect(M, yt - 30, larg, 2);
   const limite = CLIP_L - M;
-  g.fillStyle = CL.gris; g.font = fnt(25, 400);
-  g.fillText("R\u00e9f. " + (ctx.ref || "\u2014"), M, yt);
-  let x = M + 168;
+  /* la référence du mandat ne dit rien à un lecteur : elle occupait le
+     début de la ligne technique, que les étiquettes DPE prennent mieux */
+  let x = M;
   const etiquette = (lab, lettre, bg, fg, val)=>{
     if(!lettre) return;
     g.fillStyle = CL.encre; g.font = fnt(26, 700);
@@ -14812,23 +14863,55 @@ function voilePrune(g, haut){
   v.addColorStop(1, "rgba(44,18,44,.94)");
   g.fillStyle = v; g.fillRect(0, haut, CLIP_L, CLIP_H - haut);
 }
+/* Le carton d'ouverture n'est plus un voile posé sur la première photo :
+   c'est une page à part, mauve de bout en bout. On lisait mal le titre sur
+   un fond qui changeait d'un bien à l'autre, et la photo, à peine entrevue
+   sous le voile, ne servait à rien. Le clip ouvre donc sur une page de
+   titre franche, et la première photo garde son plein cadre ensuite. */
 function cartonTitreRecit(g, ctx, u){
-  voilePrune(g, CLIP_H - 620);
-  const M = 70;
-  let y = CLIP_H - 430;
-  g.globalAlpha = douceur(u / .22);
-  g.fillStyle = CL.ambre; g.font = fnt(36, 700);
-  txtEspace(g, ("À VENDRE  ·  " + (ctx.ville || "")).toUpperCase(), M, y, 6);
-  y += 96;
+  const f = g.createLinearGradient(0, 0, CLIP_L, CLIP_H);
+  f.addColorStop(0, "#4a2149"); f.addColorStop(.55, CL.prune);
+  f.addColorStop(1, "#2a1029");
+  g.fillStyle = f; g.fillRect(0, 0, CLIP_L, CLIP_H);
+  /* un halo discret, pour que l'aplat ne soit pas tout à fait plat */
+  const halo = g.createRadialGradient(CLIP_L * .22, CLIP_H * .26, 40,
+                                      CLIP_L * .22, CLIP_H * .26, CLIP_L * .9);
+  halo.addColorStop(0, "rgba(250,180,49,.13)"); halo.addColorStop(1, "rgba(250,180,49,0)");
+  g.fillStyle = halo; g.fillRect(0, 0, CLIP_L, CLIP_H);
+
+  const M = 92, larg = CLIP_L - 2 * M;
+  const sur = (ctx.ouvSurtitre === undefined || ctx.ouvSurtitre === null)
+    ? ("À VENDRE  ·  " + (ctx.ville || "")) : ctx.ouvSurtitre;
+  const titre = ctx.ouvTitre && ctx.ouvTitre.length ? ctx.ouvTitre : (ctx.titreRecit || []);
+  const sous = (ctx.ouvSousTitre === undefined || ctx.ouvSousTitre === null)
+    ? ctx.sousTitre : ctx.ouvSousTitre;
+
+  /* on mesure pour centrer verticalement : le titre tient sur une à trois
+     lignes selon ce qui est écrit */
+  g.font = fnt(86, 700);
+  const lignes = [];
+  titre.slice(0, 3).forEach(t=> couper(g, String(t), larg).forEach(l=> lignes.push(l)));
+  const corps = lignes.slice(0, 3);
+  g.font = fnt(44, 400);
+  const lsous = sous ? couper(g, sous, larg).slice(0, 2) : [];
+  const total = (sur ? 96 : 0) + corps.length * 92 + (lsous.length ? 70 + lsous.length * 56 : 0);
+  let y = (CLIP_H - total) / 2 + 40;
+
+  if(sur){
+    g.globalAlpha = douceur(u / .22);
+    g.fillStyle = CL.ambre; g.font = fnt(36, 700);
+    txtEspace(g, sur.toUpperCase(), M, y, 6);
+    y += 96;
+  }
   g.globalAlpha = douceur((u - .14) / .22);
   g.fillStyle = CL.blanc; g.font = fnt(86, 700);
-  (ctx.titreRecit || []).slice(0, 2).forEach(l=>{ g.fillText(l, M, y); y += 92; });
+  corps.forEach(l=>{ g.fillText(l, M, y); y += 92; });
   g.globalAlpha = douceur((u - .34) / .22);
-  if(ctx.sousTitre){
-    g.fillStyle = CL.ambre; g.fillRect(M, y - 24, 150, 6);
-    y += 46;
+  if(lsous.length){
+    g.fillStyle = CL.ambre; g.fillRect(M, y - 20, 150, 6);
+    y += 50;
     g.fillStyle = "#e7dfe6"; g.font = fnt(44, 400);
-    g.fillText(ctx.sousTitre, M, y);
+    lsous.forEach(l=>{ g.fillText(l, M, y); y += 56; });
   }
   g.globalAlpha = 1;
 }
@@ -14838,10 +14921,24 @@ function cartonTitreRecit(g, ctx, u){
    avec ce qu'on voyait. Les émoticônes du texte suffisent — elles, au moins,
    sont choisies. */
 const POS_LEGENDE = [
-  {cle:"bas",    lib:"En bas"},
-  {cle:"milieu", lib:"Au milieu"},
-  {cle:"haut",   lib:"En haut"}
+  {cle:"hg", lib:"Haut gauche",   v:"haut",   h:"gauche"},
+  {cle:"hc", lib:"Haut centre",   v:"haut",   h:"centre"},
+  {cle:"hd", lib:"Haut droite",   v:"haut",   h:"droite"},
+  {cle:"mg", lib:"Milieu gauche", v:"milieu", h:"gauche"},
+  {cle:"mc", lib:"Centré",        v:"milieu", h:"centre"},
+  {cle:"md", lib:"Milieu droite", v:"milieu", h:"droite"},
+  {cle:"bg", lib:"Bas gauche",    v:"bas",    h:"gauche"},
+  {cle:"bc", lib:"Bas centre",    v:"bas",    h:"centre"},
+  {cle:"bd", lib:"Bas droite",    v:"bas",    h:"droite"}
 ];
+const POS_DEFAUT = "bg";
+/* les anciens réglages n'avaient que trois places : on les retrouve à gauche */
+const POS_ANCIENNES = {bas:"bg", milieu:"mg", haut:"hg"};
+function posLegende(cle){
+  const c = POS_ANCIENNES[cle] || cle || POS_DEFAUT;
+  return POS_LEGENDE.filter(p=> p.cle === c)[0]
+      || POS_LEGENDE.filter(p=> p.cle === POS_DEFAUT)[0];
+}
 /* Les apparitions, dans l'esprit des montages qu'on voit passer : un fondu
    sobre, un déroulé qui dévoile le texte de gauche à droite, une frappe
    lettre à lettre, un zoom, une glissade et un rebond. */
@@ -14873,14 +14970,25 @@ function pastilleRecit(g, texte, u, pos, appar){
   const w = Math.min(CLIP_L - 2 * M,
     Math.max.apply(null, lignes.map(l=> g.measureText(l).width)) + 76);
 
-  /* la hauteur voulue ; le haut laisse la place au logo */
-  const yBas = CLIP_H - 190 - h;
-  const y0 = pos === "haut" ? 210 : pos === "milieu" ? (CLIP_H - h) / 2 : yBas;
+  /* neuf places : trois hauteurs par trois alignements. En haut à droite
+     on évite le logo, qui occupe ce coin. */
+  const P = posLegende(pos);
+  const y0 = P.v === "haut"   ? (P.h === "droite" ? 300 : 210)
+           : P.v === "milieu" ? (CLIP_H - h) / 2
+           : CLIP_H - 190 - h;
+  const x0 = P.h === "gauche" ? M
+           : P.h === "droite" ? CLIP_L - M - w
+           : (CLIP_L - w) / 2;
 
   const a = douceur(u);
-  let y = y0, x = M, ech = 1, alpha = a, coupe = 1;
+  let y = y0, x = x0, ech = 1, alpha = a, coupe = 1;
   if(mode === "fondu")   y = y0 + (1 - a) * 26;
-  if(mode === "glisse"){ x = M - (1 - a) * 260; }
+  /* le glissé entre par le bord le plus proche : venir de la gauche quand
+     la pastille est calée à droite donnerait une traversée inutile */
+  if(mode === "glisse"){
+    const depuis = P.h === "droite" ? 1 : -1;
+    x = x0 + depuis * (1 - a) * 260;
+  }
   if(mode === "zoom"){   ech = 0.72 + a * 0.28; }
   if(mode === "rebond"){ ech = rebondir(Math.min(1, u * 1.1)); alpha = douceur(u * 2.2); }
   if(mode === "deroule"){ alpha = 1; coupe = Math.min(1, u * 1.25); }
@@ -15020,7 +15128,8 @@ async function construirePlan(o){
   if(ctx.portrait === undefined) ctx.portrait = await imageDepuis(portraitDuDossier());
   const imgs = o.imgs || await imagesDesPieces(ids);
   const m = minutageClip(gabarit, imgs.length, o.duree || 30);
-  const legendes = o.legendes || legendesAuto(ids);
+  const legendes = o.legendes
+    || (gabarit === "recit" ? legendesClip(ids) : legendesAuto(ids));
   /* la place de la légende et sa façon d'apparaître se règlent photo par
      photo : une légende en bas cacherait une terrasse, en haut un ciel */
   const poses  = o.poses  || ids.map(id=> PUB_POS[id] || "bas");
@@ -15075,18 +15184,34 @@ function peindreTrame(g, plan, t){
   const u = ouverture ? t / m.tOuv : ((t - m.tOuv) - i * m.tPhoto) / m.tPhoto;
 
   g.fillStyle = "#0f1a2b"; g.fillRect(0, 0, CLIP_L, CLIP_H);
+
+  /* la page de titre ne montre aucune photo : elle se peint seule */
+  if(ouverture){
+    cartonTitreRecit(g, ctx, u);
+    /* sur la fin du carton, la première photo vient déjà par-dessous */
+    const resteO = m.tOuv - t;
+    if(resteO < m.fondu && imgs.length){
+      g.globalAlpha = 1 - resteO / m.fondu;
+      g.save();
+      g.beginPath(); g.rect(0, 0, CLIP_L, haut); g.clip();
+      dessinerCouvrantH(g, imgs[0], haut, 1.05, 0, 0);
+      g.restore();
+      g.globalAlpha = 1;
+    }
+    return;
+  }
+
   g.save();
   g.beginPath(); g.rect(0, 0, CLIP_L, haut); g.clip();
   dessinerCouvrantH(g, imgs[i], haut, 1.05 + u * 0.07,
     (i % 2 ? -1 : 1) * (u - .5) * 22, (u - .5) * 14);
   g.restore();
-  const reste = ouverture ? 99 : m.tPhoto - ((t - m.tOuv) - i * m.tPhoto);
+  const reste = m.tPhoto - ((t - m.tOuv) - i * m.tPhoto);
   if(reste < m.fondu && i + 1 < imgs.length)
     entree(g, imgs[i + 1], haut, 1 - reste / m.fondu, transition);
 
   if(recit){
-    if(ouverture) cartonTitreRecit(g, ctx, u);
-    else {
+    {
       const om = g.createLinearGradient(0, CLIP_H - 420, 0, CLIP_H);
       om.addColorStop(0, "rgba(10,20,38,0)"); om.addColorStop(1, "rgba(10,20,38,.42)");
       g.fillStyle = om; g.fillRect(0, CLIP_H - 420, CLIP_L, 420);
@@ -15220,7 +15345,6 @@ function contexteClip(){
        tient la place, sinon le coin droit de l'affiche reste vide */
     surface: o.surface !== null ? m2txt(o.surface)
            : o.terrain !== null ? m2txt(o.terrain) + " de terrain" : "",
-    ref: (D.mandat || {}).num || "",
     dpeL: o.dpeE, dpeBg: e ? e.bg : "#e5e7eb", dpeFg: e ? e.fg : "#6b7280",
     dpeVal: dpe.dpeKwh ? num(dpe.dpeKwh) + " kWh/m²/an" : "",
     gesL: o.dpeG, gesBg: ges ? ges.bg : "#e5e7eb", gesFg: ges ? ges.fg : "#6b7280",
@@ -15235,7 +15359,13 @@ function contexteClip(){
     appel: (PUB_APPEL !== undefined && PUB_APPEL !== null) ? PUB_APPEL : APPEL_DEFAUT,
     legales: legalesCourtes(),
     titreRecit: titreRecit(),
-    sousTitre: sousTitreRecit()
+    sousTitre: sousTitreRecit(),
+    /* la page de titre se récrit à la main : null veut dire « laisse
+       l'application proposer », une chaîne vide veut dire « n'écris rien » */
+    ouvSurtitre: PUB_OUV.sur,
+    ouvTitre: PUB_OUV.titre === null ? null
+            : String(PUB_OUV.titre).split("\n").map(x=> x.trim()).filter(Boolean),
+    ouvSousTitre: PUB_OUV.sous
   };
 }
 
@@ -15371,6 +15501,13 @@ function phrasePourNom(nom, phrases){
   return t || null;
 }
 
+/* Dans le clip, la première photo suit la page de titre et n'a pas de
+   légende : on ne lui en propose donc pas, et la phrase qui lui revenait
+   sert à la suivante plutôt que d'être perdue. */
+function legendesClip(ids){
+  if(!ids.length) return [];
+  return [""].concat(legendesAuto(ids.slice(1)));
+}
 function legendesAuto(ids){
   const phrases = phrasesDuBien();
   const pris = {};
@@ -15411,6 +15548,8 @@ let PUB_APPEL = null;                /* le message de la carte de contact */
 let PUB_MUR = null;                  /* les huit modèles en cours d'essai */
 let PUB_IA_MOT = "";                 /* ce que l'on a à dire sur la réécriture */
 let PUB_POS = {};                    /* où poser la légende, par photo */
+/* la page de titre du Récit : null = proposé par l'application */
+let PUB_OUV = {sur:null, titre:null, sous:null};
 let PUB_APPAR = {};                  /* comment elle apparaît, par photo */
 const APPEL_DEFAUT = "Envie de la visiter ? Appelez-moi.";
 
@@ -15423,17 +15562,16 @@ function photosDeLImmeuble(){
 
 function renderPublications(){
   const z = $("#publiBody"); if(!z) return;
-  /* changer de dossier remet le brouillon à zéro : rien de pire qu'une
-     annonce qui garde le texte du bien précédent */
+  /* En changeant de dossier, on repart du brouillon de CELUI-LÀ. Le
+     brouillon était jusqu'ici une variable de page : fermer le dossier le
+     perdait, et un quart d'heure de réglages avec lui. Il vit maintenant
+     dans le dossier (`D.publi`), donc il est enregistré, synchronisé et
+     retrouvé tel qu'on l'a laissé — même sans avoir rien publié. */
   if(PUB_DOSSIER !== D.id){
     PUB_DOSSIER = D.id;
-    PUB_STYLE = "pro"; PUB_GRAINE = 1; PUB_TEXTE = "";
-    PUB_PHOTOS = []; PUB_CHOIX = [];
-    PUB_GABARIT = "vitrine"; PUB_PUCES = []; PUB_LEGENDES = {};
-    PUB_DUREE = 30; PUB_TRANSITION = "fondu"; PUB_APPEL = null;
-    PUB_IA_MOT = ""; PUB_POS = {}; PUB_APPAR = {};
     arreterMur(); PUB_MUR = null;
     oublierClip();
+    reprendreBrouillon();
   }
   const manque = manquePubli();
   if(!PUB_TEXTE) PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
@@ -15486,6 +15624,7 @@ function renderPublications(){
           dispo > 1 ? "s" : ""}</span>
       </div>
       ${bandePhotos()}
+      ${blocOuverture()}
 
       <div class="fsep"></div>
       <p class="muted"><b>2 · le texte façon Vitrine.</b> Six arguments, repris sur la
@@ -15649,6 +15788,20 @@ function renderPublications(){
   if(b("pubMeta")) b("pubMeta").onclick = ()=>
     ouvrirDansOnglet("https://business.facebook.com/latest/composer", "");
   if(b("pubGarder")) b("pubGarder").onclick = garderPublication;
+
+  /* tout ce qui se tape dans la page retourne au brouillon après une
+     accalmie : un enregistrement par frappe n'aurait aucun sens */
+  $$("#p-publications input, #p-publications textarea, #p-publications select")
+    .forEach(el=>{
+      el.addEventListener("input", brouillonDiffere);
+      el.addEventListener("change", brouillonDiffere);
+    });
+  /* et le clic, lui, redessine : on prend l'état tel qu'il vient d'être posé */
+  garderBrouillon();
+}
+function brouillonDiffere(){
+  clearTimeout(brouillonDiffere.t);
+  brouillonDiffere.t = setTimeout(garderBrouillon, 400);
 }
 
 const IC_COPIE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">` +
@@ -15782,19 +15935,25 @@ function bandePhotos(){
                   : "Toutes les photos sont retenues"}</em></button>`;
   if(!PUB_PHOTOS.length)
     return `<div class="pubordre pubbande" id="pubBande">${ajout}</div>`;
-  const legs = legendesAuto(PUB_PHOTOS);
+  const legs = legendesClip(PUB_PHOTOS);
   return `<div class="pubordre pubbande" id="pubBande">${PUB_PHOTOS.map((id, i)=>{
     const p = PIECES[id];
     if(!p) return "";
-    const pos = PUB_POS[id] || "bas", app = PUB_APPAR[id] || "fondu";
-    return `<figure class="pubvig" data-pubid="${esc(id)}">
+    const pos = PUB_POS[id] || POS_DEFAUT, app = PUB_APPAR[id] || "fondu";
+    /* la première photo suit immédiatement la page de titre : une légende
+       y redirait ce qu'on vient de lire. C'est la page de titre qu'on
+       récrit, un peu plus bas. */
+    const titre = i === 0;
+    return `<figure class="pubvig${titre ? " pubtete" : ""}" data-pubid="${esc(id)}">
       <div class="pjimg" data-pjvig="${esc(id)}"></div>
       <figcaption><span class="rang">${i + 1}</span>
         <span>${esc(p.nom)}</span>
         <span class="grow"></span>
         <button type="button" class="pjmini sup" data-pubretire="${esc(id)}"
           title="Retirer du clip">×</button></figcaption>
-      <div class="publigne">
+      ${titre ? `<p class="pubtetemot">Elle suit la page de titre, et n'a donc pas
+        de légende. <a href="#" id="pubVersOuv">Récrire la page de titre</a>.</p>`
+      : `<div class="publigne">
         <input type="text" class="publeg" data-publeg="${esc(id)}"
           value="${esc(legs[i] || "")}" placeholder="légende (gabarit Récit)">
         <button type="button" class="emobtn" data-pubemo="${esc(id)}"
@@ -15807,13 +15966,51 @@ function bandePhotos(){
       </div>
       <div class="publigne pubregl">
         <select data-pubpos="${esc(id)}" title="Où poser la légende sur la photo">
-          ${POS_LEGENDE.map(x=> `<option value="${x.cle}"${x.cle === pos ? " selected" : ""}
+          ${POS_LEGENDE.map(x=> `<option value="${x.cle}"${
+            x.cle === posLegende(pos).cle ? " selected" : ""}
             >${esc(x.lib)}</option>`).join("")}</select>
         <select data-pubappar="${esc(id)}" title="Comment la légende apparaît">
           ${APPARITIONS.map(x=> `<option value="${x.cle}"${x.cle === app ? " selected" : ""}
             >${esc(x.lib)}</option>`).join("")}</select>
-      </div></figure>`;
+      </div>`}</figure>`;
   }).join("") + ajout}</div>`;
+}
+
+/* ------------------------------------------- la page de titre du Récit
+   Elle ouvre le clip sur un aplat mauve, sans photo. Les trois lignes sont
+   proposées d'après le dossier et se récrivent : c'est la première chose
+   qu'on lit, elle mérite d'être choisie. Vider une ligne la supprime. */
+function ouvSur(){
+  return PUB_OUV.sur === null ? "À VENDRE  ·  " + villeLisible((D.bien || {}).ville || "")
+                              : PUB_OUV.sur;
+}
+function ouvTitre(){
+  return PUB_OUV.titre === null ? titreRecit().join("\n") : PUB_OUV.titre;
+}
+function ouvSous(){
+  return PUB_OUV.sous === null ? sousTitreRecit() : PUB_OUV.sous;
+}
+function blocOuverture(){
+  return `<details class="pubouv" id="pubOuvBloc"${PUB_OUV.sur === null
+      && PUB_OUV.titre === null && PUB_OUV.sous === null ? "" : " open"}>
+    <summary>La page de titre du clip Récit</summary>
+    <p class="muted" style="margin:0 0 10px">Le clip Récit ouvre sur un aplat mauve, sans
+      photo, qui porte ces trois lignes. Proposées d'après le dossier ; videz une ligne
+      pour la supprimer.</p>
+    <div class="pubouvg">
+      <div class="f"><label>Surtitre, en ambre</label>
+        <input type="text" id="ouvSur" value="${esc(ouvSur())}"
+          placeholder="À VENDRE · ARLES"></div>
+      <div class="f"><label>Titre, une ou deux lignes</label>
+        <textarea id="ouvTitre" rows="2"
+          placeholder="Appartement T3&#10;72,5 m² avec terrasse">${esc(ouvTitre())}</textarea></div>
+      <div class="f"><label>Sous-titre</label>
+        <input type="text" id="ouvSous" value="${esc(ouvSous())}"
+          placeholder="Résidence avec piscine"></div>
+    </div>
+    <div class="pubbtns" style="margin-top:8px">
+      <button type="button" class="tbtn light" id="ouvReset">Reprendre la proposition</button>
+    </div></details>`;
 }
 
 /* ------------------------------- le texte façon Vitrine, et le message
@@ -15943,6 +16140,22 @@ function brancherBande(){
     };
   });
   if($("#pubPlus")) $("#pubPlus").onclick = ouvrirAjoutPhotos;
+  if($("#pubVersOuv")) $("#pubVersOuv").onclick = e=>{
+    e.preventDefault();
+    const d = $("#pubOuvBloc");
+    if(d){ d.open = true; d.scrollIntoView({block:"center", behavior:"smooth"});
+           const c = $("#ouvTitre"); if(c) setTimeout(()=> c.focus(), 220); }
+  };
+  const ouvChamp = (id, cle)=>{
+    const el = $("#" + id);
+    if(!el) return;
+    el.oninput = ()=>{ PUB_OUV[cle] = el.value; arreterMur(); PUB_MUR = null; };
+  };
+  ouvChamp("ouvSur", "sur"); ouvChamp("ouvTitre", "titre"); ouvChamp("ouvSous", "sous");
+  if($("#ouvReset")) $("#ouvReset").onclick = ()=>{
+    PUB_OUV = {sur:null, titre:null, sous:null};
+    arreterMur(); PUB_MUR = null; renderPublications();
+  };
   /* la place de la légende et son apparition : un redessin immédiat du mur
      serait coûteux pour rien, on se contente d'invalider les essais */
   $$("#pubBande [data-pubpos]").forEach(el=>{
@@ -16049,6 +16262,53 @@ function telechargerClip(){
    liste des photos : de quoi refaire exactement le même clip plus tard. La
    vidéo elle-même n'est pas conservée — plusieurs méga-octets par essai, et
    elle se refabrique en dix secondes. */
+/* ------------------------------------------- le brouillon, dans le dossier
+   Tout ce qu'on règle sur la page vit dans `D.publi`. Il part donc avec le
+   dossier dans l'enregistrement et la synchronisation, et se retrouve au
+   retour — publié ou non. La vidéo, elle, ne s'enregistre pas : plusieurs
+   méga-octets, et elle se refabrique en quelques secondes. */
+function etatBrouillon(){
+  return {style:PUB_STYLE, graine:PUB_GRAINE, texte:PUB_TEXTE,
+          photos:PUB_PHOTOS.slice(), gabarit:PUB_GABARIT, puces:PUB_PUCES.slice(),
+          legendes:Object.assign({}, PUB_LEGENDES), duree:PUB_DUREE,
+          transition:PUB_TRANSITION, appel:PUB_APPEL,
+          pos:Object.assign({}, PUB_POS), appar:Object.assign({}, PUB_APPAR),
+          ouv:Object.assign({}, PUB_OUV)};
+}
+function garderBrouillon(){
+  if(!D || !D.id) return;
+  D.publi = etatBrouillon();
+  autosave();
+}
+function reprendreBrouillon(){
+  const b = (D && D.publi) || null;
+  if(!b){
+    PUB_STYLE = "pro"; PUB_GRAINE = 1; PUB_TEXTE = "";
+    PUB_PHOTOS = []; PUB_CHOIX = [];
+    PUB_GABARIT = "vitrine"; PUB_PUCES = []; PUB_LEGENDES = {};
+    PUB_DUREE = 30; PUB_TRANSITION = "fondu"; PUB_APPEL = null;
+    PUB_IA_MOT = ""; PUB_POS = {}; PUB_APPAR = {};
+    PUB_OUV = {sur:null, titre:null, sous:null};
+    return;
+  }
+  PUB_STYLE = b.style || "pro";
+  PUB_GRAINE = b.graine || 1;
+  PUB_TEXTE = b.texte || "";
+  /* une photo retirée du dossier depuis ne doit pas faire planter le clip */
+  PUB_PHOTOS = (b.photos || []).filter(id=> PIECES[id]);
+  PUB_CHOIX = PUB_PHOTOS.slice();
+  PUB_GABARIT = b.gabarit || "vitrine";
+  PUB_PUCES = (b.puces || []).slice();
+  PUB_LEGENDES = Object.assign({}, b.legendes || {});
+  PUB_DUREE = DUREES_CLIP.indexOf(b.duree) >= 0 ? b.duree : 30;
+  PUB_TRANSITION = b.transition || "fondu";
+  PUB_APPEL = b.appel === undefined ? null : b.appel;
+  PUB_POS = Object.assign({}, b.pos || {});
+  PUB_APPAR = Object.assign({}, b.appar || {});
+  PUB_OUV = Object.assign({sur:null, titre:null, sous:null}, b.ouv || {});
+  PUB_IA_MOT = "";
+}
+
 function garderPublication(){
   if(!Array.isArray(D.publications)) D.publications = [];
   D.publications.unshift({
