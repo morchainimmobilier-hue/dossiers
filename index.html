@@ -1428,6 +1428,37 @@ table.tdb .puce.resilie{background:#64748b}
 .emo{border:0;background:none;cursor:pointer;font-size:17px;line-height:1;
   padding:3px 4px;border-radius:6px}
 .emo:hover{background:#fff}
+.pubregl{gap:6px}
+.pubregl select{flex:1;min-width:0;font-size:11.5px;padding:4px 6px}
+/* la tuile d'ajout : même gabarit qu'une vignette, mais vide */
+.pubplus{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:7px;min-height:150px;border:2px dashed var(--line);border-radius:var(--radius);
+  background:#fff;cursor:pointer;color:var(--ink-3);font:inherit;padding:14px}
+.pubplus:hover{border-color:var(--accent);color:var(--navy);background:var(--accent-soft)}
+.pubplus:disabled{cursor:default;opacity:.5}
+.pubplus:disabled:hover{border-color:var(--line);color:var(--ink-3);background:#fff}
+.pubplus span{font-size:30px;line-height:1;font-weight:300}
+.pubplus em{font-style:normal;font-size:12px;text-align:center;line-height:1.3}
+/* le texte façon Vitrine : les six arguments à gauche, le message à droite */
+.pubvit{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;
+  align-items:start;margin-top:4px}
+.pubpuces{display:flex;flex-direction:column;gap:7px}
+.pucef{display:flex;align-items:center;gap:9px}
+.pucef > span{flex:0 0 auto;width:21px;height:21px;border-radius:50%;
+  background:var(--line-2);color:var(--ink-3);font-size:11px;font-weight:700;
+  display:grid;place-items:center}
+.pucef input{flex:1;min-width:0}
+.pucef input:not(:placeholder-shown) + span,
+.pucef:has(input:not(:placeholder-shown)) > span{background:var(--accent-soft);
+  color:var(--navy)}
+.pubappel{border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--line-2);padding:12px 14px}
+.pubappel h5{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--navy)}
+.pubappel select{width:100%}
+.pubappelb{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+.pubappel p{margin:9px 0 0}
+@media(max-width:860px){ .pubvit{grid-template-columns:1fr} }
 .pubvig.enmain{opacity:.4}
 .pubvig.avant{box-shadow:inset 3px 0 0 var(--accent)}
 .pubvig.apres{box-shadow:inset -3px 0 0 var(--accent)}
@@ -1536,7 +1567,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 6 octobre 2026, 17 h 40">Dossiers de vente</div>
+  <div class="brand" title="Version du 7 octobre 2026, 9 h 08">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1738,7 +1769,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>6 octobre 2026, 17 h 40</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>7 octobre 2026, 9 h 08</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -1952,6 +1983,14 @@ const LISTS_DEFAULT = {
   motifResil: ["Vendu par un autre mandataire","Vendu par le propriétaire","Retrait de la vente",
                "Bien loué","Désaccord sur le prix","Fin du mandat sans renouvellement","Autre"],
   condSusp:   ["Aucun","Financement partiel","Financement total","Vente d'un autre bien","Autre"],
+  /* les appels à l'action de la carte de fin des clips : une liste qu'on
+     complète, pour ne pas réécrire la même phrase à chaque annonce */
+  appelsClip: ["Envie de la visiter ? Appelez-moi.",
+               "Une visite ? Un message suffit.",
+               "Je vous ouvre la porte quand vous voulez.",
+               "Des questions ? Appelez-moi, on en parle.",
+               "Disponible pour une visite dès cette semaine.",
+               "Je réponds à vos questions, sans engagement."],
   residences: [],
   syndics: [],
   notaires: [{nom:"Maître Clémence TORTEL", adresse:"26-28, avenue Sixte Quenin",
@@ -1996,7 +2035,8 @@ const LIST_LABELS = {
   modeEquip:"Chauffage / refroidissement — nature", modeEcs:"Eau chaude — nature",
   energie:"Énergies", fonctionNot:"Fonctions dans une étude",
   exposition:"Expositions", etatBien:"États du bien", piecesNoms:"Noms de pièces",
-  condSusp:"Financement", motifResil:"Motifs de résiliation d'un mandat"
+  condSusp:"Financement", motifResil:"Motifs de résiliation d'un mandat",
+  appelsClip:"Messages de la carte de contact (clips)"
 };
 
 /* carnets d'adresses : "card" = affichage en fiches, "row" = tableau compact */
@@ -12545,8 +12585,10 @@ const AIDE = [
  ["Le clip pour les réseaux : deux gabarits",
   "Deux façons de montrer un bien, parce qu'une seule lasse vite un fil. "+
   "<b>Vitrine</b> : la photo occupe le haut, une fiche crème occupe le bas — prix en "+
-  "grand, surface, six arguments (le « texte façon Vitrine », proposé d'après le dossier "+
-  "et corrigeable dans la page, un par ligne), DPE et GES avec leurs valeurs, mentions "+
+  "grand, surface, six arguments — le « texte façon Vitrine », proposé d'après le "+
+  "dossier et corrigeable dans la page, <b>une case par argument</b> pour qu'on voie "+
+  "d'un coup d'œil qu'il en faut six ; une case vide est simplement sautée —, DPE et "+
+  "GES avec leurs valeurs, mentions "+
   "obligatoires et adresse du site. Elle se suffit à elle-même, sans le son et sans lire "+
   "la légende. "+
   "Le <b>téléphone n'y figure pas</b> : il était répété sur chacune des photos, où il ne "+
@@ -12562,7 +12604,10 @@ const AIDE = [
   "reste corrigeable à la dernière étape du choix, et la main l'emporte toujours. "+
   "Les deux finissent sur la même <b>carte de contact</b> : logo, portrait, nom, qualité, "+
   "un <b>message d'appel</b> (« Envie de la visiter ? Appelez-moi. », modifiable dans la "+
-  "page), téléphone, adresse et site. "+
+  "page), téléphone, adresse et site — mais <b>ni référence ni prix</b> : c'est votre "+
+  "carte, pas l'étiquette d'un produit, et le prix a déjà été dit sur chaque vue. "+
+  "Le message se choisit dans une <b>liste</b> qu'on enrichit : « Un autre message… » y "+
+  "ajoute le vôtre, qui reste disponible pour les dossiers suivants. "+
   "<b>Le portrait, le téléphone, le courriel et la qualité sont ceux du négociateur qui "+
   "suit le vendeur</b> : ils se règlent sur sa fiche du carnet <b>Négociateurs</b>, au "+
   "Répertoire. Deux négociateurs n'ont pas le même visage, et la carte de fin doit être "+
@@ -12577,13 +12622,23 @@ const AIDE = [
   "« <b>Choisir les photos</b> » ouvre une fenêtre en deux temps : les photos du bien, "+
   "puis celles de l'immeuble (rubrique Photos de sa fiche). Tout le reste se règle "+
   "<b>dans la page</b>, sous les yeux : les photos retenues s'affichent à la suite, on "+
-  "les range en <b>glissant les vignettes</b> — la première ouvre le clip —, la croix en "+
-  "retire une, et sous chacune se trouve la <b>légende du gabarit Récit</b>. "+
-  "Ces légendes sont proposées d'après la fiche du bien et se corrigent librement ; le "+
-  "petit bouton rond à droite ouvre une planche de <b>quarante émoticônes</b>, rangées "+
-  "par propos — le logement, dehors, l'élan, le concret. L'émoticône choisie se pose "+
-  "<b>là où se trouve le curseur</b> dans la légende, et non à la fin : placez le "+
-  "curseur où vous la voulez, puis cliquez. On peut en mettre plusieurs. "+
+  "les range en <b>glissant les vignettes</b> — la première ouvre le clip — et la croix "+
+  "en retire une. "+
+  "Pour en <b>ajouter une après coup</b>, la tuile « <b>+</b> » au bout de la bande ne "+
+  "montre que les photos pas encore retenues : celles qu'on y prend viennent à la suite, "+
+  "et rien de ce qui était rangé ne bouge. On ne repart donc jamais de zéro. "+
+  "Sous chaque photo, la <b>légende du gabarit Récit</b>, proposée d'après la fiche du "+
+  "bien et libre à corriger. Le petit bouton rond ouvre une planche de <b>cent "+
+  "émoticônes</b> rangées par propos — le logement, dehors, l'élan, le concret, le "+
+  "quartier. Celle qu'on clique se pose <b>là où est le curseur</b>, et non à la fin : "+
+  "placez le curseur où vous la voulez, puis cliquez. On peut en mettre plusieurs. "+
+  "La pastille ne porte plus de petit soleil d'office : il revenait sur chaque vue, "+
+  "qu'il eût un rapport ou non avec ce qu'on voyait. Seules les émoticônes que vous "+
+  "mettez dans le texte s'affichent. "+
+  "Deux listes complètent chaque photo : <b>où poser la légende</b> — en bas, au milieu, "+
+  "en haut, selon ce que la photo montre : une pastille en bas cacherait une terrasse — "+
+  "et <b>comment elle apparaît</b> : Fondu, Déroulé (elle se dévoile de gauche à "+
+  "droite), Machine à écrire (lettre à lettre), Zoom, Glissé, Rebond. "+
   "Quatorze photos au maximum : au-delà, personne ne regarde. "+
   "<b>La durée se choisit</b> : 20, 30, 40 ou 50 secondes, et le clip tombe juste. Le "+
   "temps se partage entre les photos retenues, entre 1,6 s et 5 s chacune ; s'il y a trop "+
@@ -14582,14 +14637,33 @@ function dessinerCarteFin(g, ctx, u){
   g.fillStyle = grad; g.fillRect(0, 0, CLIP_L, CLIP_H);
   g.textAlign = "center";
 
-  let y = 120;
+  /* La carte se composait du haut vers le bas, et la référence du bien,
+     collée au bas du cadre, tenait lieu de contrepoids. Elle est partie —
+     c'est la carte du négociateur, pas l'étiquette d'un produit — et le
+     bloc restait coiffé en l'air. On mesure donc tout avant de dessiner,
+     pour le poser d'aplomb au centre, qu'il y ait un logo ou non, un
+     portrait ou non. */
+  const bas = [ctx.email, ctx.adresse, ctx.site].filter(Boolean);
+  g.font = fnt(36, 600);
+  const lignesAppel = ctx.appel ? couper(g, ctx.appel, CLIP_L - 180).slice(0, 2) : [];
+  const logoH = ctx.logo ? ctx.logo.height * 560 / ctx.logo.width : 0;
+  const total =
+      (ctx.logo ? logoH + 70 : 0)
+    + (ctx.portrait ? 380 + 76 : 0)
+    + 58
+    + (ctx.qualite ? 70 : 0)
+    + (lignesAppel.length ? lignesAppel.length * 46 + 16 : 0)
+    + (ctx.tel ? 58 : 0)
+    + bas.length * 44;
+  let y = Math.max(110, (CLIP_H - total) / 2);
+
   if(ctx.logo){
-    const lw = 560, lh = ctx.logo.height * lw / ctx.logo.width;
+    const lw = 560;
     g.globalAlpha = douceur(u / .25);
-    g.drawImage(ctx.logo, (CLIP_L - lw) / 2, y, lw, lh);
+    g.drawImage(ctx.logo, (CLIP_L - lw) / 2, y, lw, logoH);
     g.globalAlpha = 1;
-    y += lh + 70;
-  } else y += 60;
+    y += logoH + 70;
+  }
 
   if(ctx.portrait){
     const r = 190, cx = CLIP_L / 2, cy = y + r;
@@ -14629,11 +14703,9 @@ function dessinerCarteFin(g, ctx, u){
   g.globalAlpha = douceur((u - .34) / .3);
   /* l'appel à l'action : sans lui, la carte dit qui l'on est mais pas ce
      qu'on attend du lecteur */
-  if(ctx.appel){
+  if(lignesAppel.length){
     g.fillStyle = CL.prune; g.font = fnt(36, 600);
-    couper(g, ctx.appel, CLIP_L - 180).slice(0, 2).forEach(l=>{
-      g.fillText(l, CLIP_L / 2, y); y += 46;
-    });
+    lignesAppel.forEach(l=>{ g.fillText(l, CLIP_L / 2, y); y += 46; });
     y += 16;
   }
   g.globalAlpha = douceur((u - .42) / .3);
@@ -14642,14 +14714,8 @@ function dessinerCarteFin(g, ctx, u){
     g.fillText(ctx.tel, CLIP_L / 2, y); y += 58;
   }
   g.fillStyle = CL.gris; g.font = fnt(32, 400);
-  [ctx.email, ctx.adresse, ctx.site].filter(Boolean).forEach(l=>{
-    g.fillText(l, CLIP_L / 2, y); y += 44;
-  });
+  bas.forEach(l=>{ g.fillText(l, CLIP_L / 2, y); y += 44; });
   g.globalAlpha = 1;
-  if(ctx.pied){
-    g.fillStyle = CL.gris; g.font = fnt(26, 400);
-    g.fillText(ctx.pied, CLIP_L / 2, CLIP_H - 72);
-  }
   g.textAlign = "left";
 }
 
@@ -14766,36 +14832,91 @@ function cartonTitreRecit(g, ctx, u){
   }
   g.globalAlpha = 1;
 }
-function pastilleRecit(g, texte, u){
+/* ---------------------------------------- la pastille de légende du Récit
+   Trois hauteurs possibles, et six façons d'apparaître. Le soleil ambre du
+   modèle a disparu : il revenait sur chaque vue, qu'il ait un rapport ou non
+   avec ce qu'on voyait. Les émoticônes du texte suffisent — elles, au moins,
+   sont choisies. */
+const POS_LEGENDE = [
+  {cle:"bas",    lib:"En bas"},
+  {cle:"milieu", lib:"Au milieu"},
+  {cle:"haut",   lib:"En haut"}
+];
+/* Les apparitions, dans l'esprit des montages qu'on voit passer : un fondu
+   sobre, un déroulé qui dévoile le texte de gauche à droite, une frappe
+   lettre à lettre, un zoom, une glissade et un rebond. */
+const APPARITIONS = [
+  {cle:"fondu",   lib:"Fondu"},
+  {cle:"deroule", lib:"Déroulé"},
+  {cle:"frappe",  lib:"Machine à écrire"},
+  {cle:"zoom",    lib:"Zoom"},
+  {cle:"glisse",  lib:"Glissé"},
+  {cle:"rebond",  lib:"Rebond"}
+];
+function libPos(c){ const x = POS_LEGENDE.filter(p=> p.cle === c)[0]; return x ? x.lib : c; }
+function libAppar(c){ const x = APPARITIONS.filter(p=> p.cle === c)[0]; return x ? x.lib : c; }
+
+/* un amorti qui dépasse puis revient : c'est tout le rebond */
+function rebondir(u){
+  if(u >= 1) return 1;
+  const p = 0.42;
+  return 1 + Math.pow(2, -9 * u) * Math.sin((u - p / 4) * (2 * Math.PI) / p) * -1;
+}
+
+function pastilleRecit(g, texte, u, pos, appar){
   if(!texte) return;
-  const M = 56, maxW = CLIP_L - 2 * M - 120;
+  const mode = appar || "fondu";
+  const M = 56, maxW = CLIP_L - 2 * M - 80;
   g.font = fnt(42, 600);
   const lignes = couper(g, texte, maxW).slice(0, 2);
-  const h = 44 + lignes.length * 52, w = Math.min(CLIP_L - 2 * M,
-    Math.max.apply(null, lignes.map(l=> g.measureText(l).width)) + 136);
+  const h = 44 + lignes.length * 52;
+  const w = Math.min(CLIP_L - 2 * M,
+    Math.max.apply(null, lignes.map(l=> g.measureText(l).width)) + 76);
+
+  /* la hauteur voulue ; le haut laisse la place au logo */
+  const yBas = CLIP_H - 190 - h;
+  const y0 = pos === "haut" ? 210 : pos === "milieu" ? (CLIP_H - h) / 2 : yBas;
+
   const a = douceur(u);
-  const y = CLIP_H - 190 - h + (1 - a) * 26;
+  let y = y0, x = M, ech = 1, alpha = a, coupe = 1;
+  if(mode === "fondu")   y = y0 + (1 - a) * 26;
+  if(mode === "glisse"){ x = M - (1 - a) * 260; }
+  if(mode === "zoom"){   ech = 0.72 + a * 0.28; }
+  if(mode === "rebond"){ ech = rebondir(Math.min(1, u * 1.1)); alpha = douceur(u * 2.2); }
+  if(mode === "deroule"){ alpha = 1; coupe = Math.min(1, u * 1.25); }
+  if(mode === "frappe"){  alpha = 1; coupe = 1; }
+  if(coupe <= 0) return;
+
   g.save();
-  g.globalAlpha = a;
+  g.globalAlpha = Math.max(0, Math.min(1, alpha));
+  if(ech !== 1){
+    const cx = x + w / 2, cy = y + h / 2;
+    g.translate(cx, cy); g.scale(ech, ech); g.translate(-cx, -cy);
+  }
+  /* le déroulé ne fait pas apparaître la pastille d'un coup : il la dévoile */
+  if(mode === "deroule"){
+    g.beginPath(); g.rect(x - 10, y - 10, (w + 20) * coupe, h + 20); g.clip();
+  }
   g.shadowColor = "rgba(10,20,38,.3)"; g.shadowBlur = 26; g.shadowOffsetY = 8;
   g.fillStyle = "rgba(255,255,255,.96)";
-  rectArrondi(g, M, y, w, h, h / 2 > 48 ? 30 : h / 2); g.fill();
+  rectArrondi(g, x, y, w, h, h / 2 > 48 ? 30 : h / 2); g.fill();
   g.shadowColor = "transparent";
-  /* le petit soleil ambre du modèle : une rondelle et des rayons */
-  const sx = M + 48, sy = y + h / 2;
-  g.fillStyle = CL.ambre;
-  g.beginPath(); g.arc(sx, sy, 13, 0, Math.PI * 2); g.fill();
-  g.strokeStyle = CL.ambre; g.lineWidth = 3.5; g.lineCap = "round";
-  for(let i = 0; i < 8; i++){
-    const an = i * Math.PI / 4;
-    g.beginPath();
-    g.moveTo(sx + Math.cos(an) * 19, sy + Math.sin(an) * 19);
-    g.lineTo(sx + Math.cos(an) * 25, sy + Math.sin(an) * 25);
-    g.stroke();
-  }
+
   g.fillStyle = CL.encre; g.font = fnt(42, 600);
   let ty = y + 56;
-  lignes.forEach(l=>{ g.fillText(l, M + 86, ty); ty += 52; });
+  lignes.forEach((l, i)=>{
+    let txt = l;
+    /* la frappe découvre les lettres l'une après l'autre, ligne à ligne */
+    if(mode === "frappe"){
+      const total = lignes.join("").length || 1;
+      const avant = lignes.slice(0, i).join("").length;
+      const vues = Math.round(Math.min(1, u * 1.35) * total) - avant;
+      if(vues <= 0) return;
+      txt = l.slice(0, vues);
+    }
+    g.fillText(txt, x + 38, ty);
+    ty += 52;
+  });
   g.restore();
 }
 
@@ -14900,9 +15021,14 @@ async function construirePlan(o){
   const imgs = o.imgs || await imagesDesPieces(ids);
   const m = minutageClip(gabarit, imgs.length, o.duree || 30);
   const legendes = o.legendes || legendesAuto(ids);
+  /* la place de la légende et sa façon d'apparaître se règlent photo par
+     photo : une légende en bas cacherait une terrasse, en haut un ciel */
+  const poses  = o.poses  || ids.map(id=> PUB_POS[id] || "bas");
+  const appars = o.appars || ids.map(id=> PUB_APPAR[id] || "fondu");
   return {gabarit, transition: o.transition || "fondu", ctx,
           imgs: imgs.slice(0, m.n), ids: ids.slice(0, m.n),
-          legendes: legendes.slice(0, m.n), m,
+          legendes: legendes.slice(0, m.n),
+          poses: poses.slice(0, m.n), appars: appars.slice(0, m.n), m,
           duree: m.tOuv + m.n * m.tPhoto + m.tFin, retirees: m.retirees};
 }
 
@@ -14964,7 +15090,8 @@ function peindreTrame(g, plan, t){
       const om = g.createLinearGradient(0, CLIP_H - 420, 0, CLIP_H);
       om.addColorStop(0, "rgba(10,20,38,0)"); om.addColorStop(1, "rgba(10,20,38,.42)");
       g.fillStyle = om; g.fillRect(0, CLIP_H - 420, CLIP_L, 420);
-      pastilleRecit(g, legendes[i], Math.min(1, u / .22));
+      pastilleRecit(g, legendes[i], Math.min(1, u / .28),
+        (plan.poses || [])[i], (plan.appars || [])[i]);
       if(ctx.logo){
         const lw = 250, lh = ctx.logo.height * lw / ctx.logo.width;
         g.globalAlpha = .96;
@@ -15106,8 +15233,6 @@ function contexteClip(){
     adresse: a.adresse || "",
     site: a.site || "",
     appel: (PUB_APPEL !== undefined && PUB_APPEL !== null) ? PUB_APPEL : APPEL_DEFAUT,
-    pied: [("Réf. " + ((D.mandat || {}).num || "")).trim(), o.type,
-           o.fai === null ? "" : eur(o.fai)].filter(Boolean).join("  ·  "),
     legales: legalesCourtes(),
     titreRecit: titreRecit(),
     sousTitre: sousTitreRecit()
@@ -15285,6 +15410,8 @@ let PUB_TRANSITION = "fondu";
 let PUB_APPEL = null;                /* le message de la carte de contact */
 let PUB_MUR = null;                  /* les huit modèles en cours d'essai */
 let PUB_IA_MOT = "";                 /* ce que l'on a à dire sur la réécriture */
+let PUB_POS = {};                    /* où poser la légende, par photo */
+let PUB_APPAR = {};                  /* comment elle apparaît, par photo */
 const APPEL_DEFAUT = "Envie de la visiter ? Appelez-moi.";
 
 function photosDuBien(){ return photosDe(sujetBien(D)); }
@@ -15304,7 +15431,7 @@ function renderPublications(){
     PUB_PHOTOS = []; PUB_CHOIX = [];
     PUB_GABARIT = "vitrine"; PUB_PUCES = []; PUB_LEGENDES = {};
     PUB_DUREE = 30; PUB_TRANSITION = "fondu"; PUB_APPEL = null;
-    PUB_IA_MOT = "";
+    PUB_IA_MOT = ""; PUB_POS = {}; PUB_APPAR = {};
     arreterMur(); PUB_MUR = null;
     oublierClip();
   }
@@ -15361,13 +15488,9 @@ function renderPublications(){
       ${bandePhotos()}
 
       <div class="fsep"></div>
-      <p class="muted"><b>2 · le texte façon Vitrine</b>, repris sur le gabarit Vitrine —
-        un argument par ligne, six au plus.</p>
-      <div class="f"><textarea id="pubPuces" rows="6" placeholder="un argument par ligne">${
-        esc((PUB_PUCES.length ? PUB_PUCES : pucesProposees()).join("\n"))}</textarea></div>
-      <div class="f"><label>Message de la carte de contact</label>
-        <input type="text" id="pubAppel" value="${esc(PUB_APPEL === null ? APPEL_DEFAUT
-          : PUB_APPEL)}"></div>
+      <p class="muted"><b>2 · le texte façon Vitrine.</b> Six arguments, repris sur la
+        fiche crème du gabarit Vitrine. Une case laissée vide est simplement sautée.</p>
+      ${blocVitrine()}
       ${portraitDuDossier() ? "" : `<p class="muted" id="pubSansPortrait">
         <b>Aucun portrait enregistré</b> pour ${esc((D.nego || {}).vendeur
           || "le négociateur de ce dossier")} : la carte de fin s'affichera sans photo.
@@ -15475,8 +15598,37 @@ function renderPublications(){
     }
   };
   if(b("pubCopier")) b("pubCopier").onclick = copierTextePubli;
-  const pa = b("pubAppel");
-  if(pa) pa.oninput = ()=>{ PUB_APPEL = pa.value; };
+  const sel = b("pubAppelSel");
+  if(sel) sel.onchange = ()=>{ PUB_APPEL = sel.value; arreterMur(); PUB_MUR = null; };
+  if(b("pubAppelAdd")) b("pubAppelAdd").onclick = ()=>{
+    const v = prompt("Nouveau message pour la carte de contact :", "");
+    const t = String(v || "").trim();
+    if(!t) return;
+    L.appelsClip = L.appelsClip || [];
+    if(L.appelsClip.indexOf(t) < 0) L.appelsClip.unshift(t);
+    saveLists(); PUB_APPEL = t;
+    arreterMur(); PUB_MUR = null; renderPublications();
+  };
+  if(b("pubAppelDel")) b("pubAppelDel").onclick = ()=>{
+    const t = appelCourant();
+    L.appelsClip = (L.appelsClip || []).filter(x=> x !== t);
+    saveLists();
+    PUB_APPEL = (L.appelsClip[0] || APPEL_DEFAUT);
+    arreterMur(); PUB_MUR = null; renderPublications();
+  };
+  /* les six cases d'arguments : on retient les lignes remplies, dans l'ordre */
+  const lirePuces = ()=> $$("#pubVitPuces [data-pubpuce], .pubpuces [data-pubpuce]")
+    .map(x=> x.value.trim());
+  $$(".pubpuces [data-pubpuce]").forEach(el=>{
+    el.oninput = ()=>{
+      PUB_PUCES = lirePuces().filter(Boolean).slice(0, 6);
+      arreterMur(); PUB_MUR = null;
+    };
+  });
+  if(b("pubPucesReset")) b("pubPucesReset").onclick = e=>{
+    e.preventDefault();
+    PUB_PUCES = []; arreterMur(); PUB_MUR = null; renderPublications();
+  };
   /* le portrait manque : on conduit à la fiche du négociateur concerné
      plutôt que de laisser chercher dans le carnet */
   if(b("pubVersPortrait")) b("pubVersPortrait").onclick = e=>{
@@ -15490,10 +15642,7 @@ function renderPublications(){
               : "Indiquez d'abord le négociateur qui suit le vendeur");
   };
   if(b("pubMur")) b("pubMur").onclick = montrerMur;
-  const pp = b("pubPuces");
-  if(pp) pp.oninput = ()=>{
-    PUB_PUCES = pp.value.split("\n").map(s=> s.trim()).filter(Boolean).slice(0, 6);
-  };
+
   if(b("pubChoisir")) b("pubChoisir").onclick = ()=> ouvrirChoixPhotos(0);
   if(b("pubFaire")) b("pubFaire").onclick = lancerClip;
   if(b("pubTel")) b("pubTel").onclick = telechargerClip;
@@ -15608,19 +15757,36 @@ function ouvrirChoixPhotos(etape){
    Unicode : on cherche « une maison » ou « du soleil », pas un point de
    code. Quarante suffisent — une planche entière ne se lit plus. */
 const EMOJIS_PUB = [
-  {t:"Le logement", l:["🏡","🏠","🏘️","🔑","🚪","🛋️","🛏️","🚿","🍽️","🪴"]},
-  {t:"Dehors",      l:["🌳","🌿","🌸","☀️","🌅","🏖️","🏊","🅿️","🚲","🧺"]},
-  {t:"L'élan",      l:["✨","💛","❤️","😍","🤩","👌","👍","🔥","⭐","📍"]},
-  {t:"Le concret",  l:["📐","🧭","🔆","🌡️","🧱","🛠️","📶","📞","📩","✅"]}
+  {t:"Le logement", l:["🏡","🏠","🏘️","🏚️","🏛️","🔑","🚪","🪟","🛋️","🛏️","🛁","🚿",
+                       "🍽️","🧑‍🍳","🪜","🧱","🪑","🪞","💡","🕯️"]},
+  {t:"Dehors",      l:["🌳","🌲","🌿","🪴","🌸","🌺","🌻","🍇","🫒","☀️","🌅","🌄",
+                       "🏖️","🌊","🏊","⛱️","🚲","🅿️","🧺","🔥"]},
+  {t:"L'élan",      l:["✨","💛","❤️","🧡","💙","😍","🤩","🥰","😊","👌","👍","🙌",
+                       "🔥","⭐","🌟","💫","🎯","🏆","🎉","👀"]},
+  {t:"Le concret",  l:["📍","📐","📏","🧭","🔆","🌡️","🧊","🛠️","🔨","🧰","📶","🔌",
+                       "📞","📱","📩","✉️","📝","✅","🗓️","🚶"]},
+  {t:"Le quartier", l:["🥖","☕","🛒","🏫","🎓","🏥","💊","🚉","🚌","🚗","🛣️","⛪",
+                       "🏟️","🎭","🎨","🐴","🐕","🧘","💪","🍷"]}
 ];
 
+function photosDisponibles(){
+  return photosDuBien().concat(photosDeLImmeuble());
+}
 function bandePhotos(){
+  const reste = photosDisponibles().filter(p=> PUB_PHOTOS.indexOf(p.id) < 0).length;
+  /* la tuile d'ajout est toujours là, même quand rien n'est retenu : c'est
+     par elle qu'on complète sans repasser par le choix complet */
+  const ajout = `<button type="button" class="pubplus" id="pubPlus"
+      ${reste ? "" : "disabled"}><span>+</span>
+      <em>${reste ? "Ajouter une photo" + (reste > 1 ? " (" + reste + " libres)" : "")
+                  : "Toutes les photos sont retenues"}</em></button>`;
   if(!PUB_PHOTOS.length)
-    return `<p class="muted" style="margin:10px 0 0">Aucune photo retenue pour l'instant.</p>`;
+    return `<div class="pubordre pubbande" id="pubBande">${ajout}</div>`;
   const legs = legendesAuto(PUB_PHOTOS);
   return `<div class="pubordre pubbande" id="pubBande">${PUB_PHOTOS.map((id, i)=>{
     const p = PIECES[id];
     if(!p) return "";
+    const pos = PUB_POS[id] || "bas", app = PUB_APPAR[id] || "fondu";
     return `<figure class="pubvig" data-pubid="${esc(id)}">
       <div class="pjimg" data-pjvig="${esc(id)}"></div>
       <figcaption><span class="rang">${i + 1}</span>
@@ -15638,8 +15804,93 @@ function bandePhotos(){
         ${EMOJIS_PUB.map(g=> `<div class="emogr"><span>${esc(g.t)}</span>
           <div>${g.l.map(e=> `<button type="button" class="emo"
             data-emoji="${esc(e)}">${e}</button>`).join("")}</div></div>`).join("")}
+      </div>
+      <div class="publigne pubregl">
+        <select data-pubpos="${esc(id)}" title="Où poser la légende sur la photo">
+          ${POS_LEGENDE.map(x=> `<option value="${x.cle}"${x.cle === pos ? " selected" : ""}
+            >${esc(x.lib)}</option>`).join("")}</select>
+        <select data-pubappar="${esc(id)}" title="Comment la légende apparaît">
+          ${APPARITIONS.map(x=> `<option value="${x.cle}"${x.cle === app ? " selected" : ""}
+            >${esc(x.lib)}</option>`).join("")}</select>
       </div></figure>`;
-  }).join("")}</div>`;
+  }).join("") + ajout}</div>`;
+}
+
+/* ------------------------------- le texte façon Vitrine, et le message
+   Six cases plutôt qu'une zone de texte : la fiche de la Vitrine en porte
+   six, et six cases numérotées le disent mieux qu'une phrase d'aide. Le
+   message de la carte de fin se tient à droite, dans son cartouche, parce
+   qu'il appartient à la même étape sans être un argument. */
+function appelCourant(){
+  return (PUB_APPEL !== undefined && PUB_APPEL !== null) ? PUB_APPEL
+       : ((L.appelsClip || [])[0] || APPEL_DEFAUT);
+}
+function blocVitrine(){
+  const p = PUB_PUCES.length ? PUB_PUCES : pucesProposees();
+  const a = appelCourant();
+  const liste = (L.appelsClip || []).slice();
+  if(a && liste.indexOf(a) < 0) liste.unshift(a);
+  return `<div class="pubvit">
+    <div class="pubpuces">${[0,1,2,3,4,5].map(i=>
+      `<div class="pucef"><span>${i + 1}</span>
+        <input type="text" data-pubpuce="${i}" value="${esc(p[i] || "")}"
+          placeholder="argument ${i + 1}"></div>`).join("")}
+      <p class="muted" style="margin:2px 0 0">Proposés d'après le dossier.
+        <a href="#" id="pubPucesReset">Reprendre la proposition</a>.</p>
+    </div>
+    <div class="pubappel">
+      <h5>Message de la carte de contact</h5>
+      <select id="pubAppelSel">${liste.map(m=>
+        `<option${m === a ? " selected" : ""}>${esc(m)}</option>`).join("")}</select>
+      <div class="pubappelb">
+        <button type="button" class="tbtn light" id="pubAppelAdd">+ Un autre message…</button>
+        <button type="button" class="xbtn sup" id="pubAppelDel"
+          ${liste.length > 1 ? "" : "disabled"}>Retirer de la liste</button>
+      </div>
+      <p class="muted">Il s'affiche sur la carte de fin, au-dessus de votre
+        téléphone. La liste se garde d'un dossier à l'autre.</p>
+    </div></div>`;
+}
+
+/* ------------------------------------------- compléter sans tout refaire
+   Rouvrir le choix complet pour ajouter une seule photo faisait perdre
+   l'ordre de tête et l'habitude : une fenêtre ne montre donc que ce qui
+   n'est pas encore retenu, et ce qu'on y prend vient à la suite. */
+function ouvrirAjoutPhotos(){
+  const libres = photosDisponibles().filter(p=> PUB_PHOTOS.indexOf(p.id) < 0);
+  if(!libres.length) return;
+  const nomsImm = {};
+  photosDeLImmeuble().forEach(p=> nomsImm[p.id] = 1);
+  let pris = [];
+  const vignette = p=> `<figure class="pubvig" data-pubadd="${esc(p.id)}">
+      <div class="pjimg" data-pjvig="${esc(p.id)}"></div>
+      <figcaption><span class="coche">✓</span><span>${esc(p.nom)}</span></figcaption>
+    </figure>`;
+  const duBien = libres.filter(p=> !nomsImm[p.id]), deImm = libres.filter(p=> nomsImm[p.id]);
+  popup({titre:"Ajouter des photos", large:true,
+    corps:`<p class="muted" style="margin-top:0">Elles viendront à la suite de celles
+        déjà retenues, et se rangeront en les glissant.</p>
+      ${duBien.length ? `<h4 class="pjtitre">Le bien</h4>
+        <div class="pubgrille">${duBien.map(vignette).join("")}</div>` : ""}
+      ${deImm.length ? `<h4 class="pjtitre">L'immeuble</h4>
+        <div class="pubgrille">${deImm.map(vignette).join("")}</div>` : ""}`,
+    boutons:[{lib:"Annuler"},
+             {lib:"Ajouter", primaire:true, action:()=>{
+               if(!pris.length) return;
+               PUB_PHOTOS = PUB_PHOTOS.concat(pris);
+               arreterMur(); PUB_MUR = null; oublierClip(); renderPublications();
+             }}]});
+  setTimeout(()=>{
+    libres.forEach(p=> peindreVignette(p));
+    $$("[data-pubadd]").forEach(el=>{
+      el.onclick = ()=>{
+        const id = el.getAttribute("data-pubadd");
+        const i = pris.indexOf(id);
+        if(i >= 0) pris.splice(i, 1); else pris.push(id);
+        el.classList.toggle("prise", i < 0);
+      };
+    });
+  }, 40);
 }
 
 /* Insérer à l'endroit du curseur, et non à la fin : c'est la seule façon de
@@ -15690,6 +15941,19 @@ function brancherBande(){
       const champ = z.querySelector(`[data-publeg="${CSS.escape(id)}"]`);
       if(champ) insererEmoji(champ, b.getAttribute("data-emoji"));
     };
+  });
+  if($("#pubPlus")) $("#pubPlus").onclick = ouvrirAjoutPhotos;
+  /* la place de la légende et son apparition : un redessin immédiat du mur
+     serait coûteux pour rien, on se contente d'invalider les essais */
+  $$("#pubBande [data-pubpos]").forEach(el=>{
+    el.addEventListener("pointerdown", e=> e.stopPropagation());
+    el.onchange = ()=>{ PUB_POS[el.getAttribute("data-pubpos")] = el.value;
+                        arreterMur(); PUB_MUR = null; oublierClip(); };
+  });
+  $$("#pubBande [data-pubappar]").forEach(el=>{
+    el.addEventListener("pointerdown", e=> e.stopPropagation());
+    el.onchange = ()=>{ PUB_APPAR[el.getAttribute("data-pubappar")] = el.value;
+                        arreterMur(); PUB_MUR = null; oublierClip(); };
   });
   $$("#pubBande [data-pubretire]").forEach(b=>{
     b.addEventListener("pointerdown", e=> e.stopPropagation());
