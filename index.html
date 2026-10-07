@@ -345,6 +345,63 @@ input.auto{background:var(--accent-soft)!important;color:var(--navy);font-weight
 .diagnote{background:var(--accent-soft);border:1px solid #cddcf0;border-radius:8px;
   padding:9px 12px;margin:12px 0 14px;font-size:12.5px;color:var(--navy)}
 .diagnote:empty{display:none}
+
+/* ------------------------------------------------- l'écran de connexion */
+.porte{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:20px;
+  background:linear-gradient(160deg,#1b2b47,#0f1a2b 60%,#2a1029);overflow:auto}
+/* « display:grid » l'emporte sur l'attribut « hidden » du navigateur :
+   sans cette ligne, l'écran de connexion ne se refermerait jamais. */
+.porte[hidden]{display:none}
+body.ferme{overflow:hidden}
+.portebox{width:min(400px,100%);background:var(--card);border-radius:14px;
+  padding:26px 26px 20px;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.portetete{display:flex;align-items:center;gap:13px;margin-bottom:20px}
+.porteM{flex:0 0 auto;width:46px;height:46px;border-radius:12px;background:var(--navy);
+  color:#fff;display:grid;place-items:center;font-size:24px;font-weight:800}
+.portetete b{display:block;font-size:17px;color:var(--navy);letter-spacing:-.2px}
+.portetete > div > span{display:block;font-size:12px;color:var(--ink-3)}
+.porteerr{margin:0 0 14px;padding:9px 12px;border-radius:8px;background:#fdecec;
+  border:1px solid #f0b9b9;color:#9c2a2a;font-size:12.5px;line-height:1.45}
+.portebox .f{display:block;margin-bottom:13px;padding:0;border-top:0}
+.portebox .f > label{display:block;margin-bottom:5px;font-size:12.5px;font-weight:600;
+  color:var(--ink-2)}
+.portebox input{width:100%;font-size:15px;padding:10px 12px}
+.portebtns{margin-top:16px}
+.portebtns .addbtn{width:100%;padding:11px;font-size:14px}
+.portemot{margin:11px 0 0;font-size:12.5px;color:var(--ink-3);line-height:1.45;min-height:1px}
+.portemot.grave{color:#9c2a2a;font-weight:600}
+.portepied{margin:16px 0 0;padding-top:13px;border-top:1px solid var(--line-2);
+  font-size:11.5px;color:var(--ink-3)}
+/* le mot de passe, sa jauge, et les comptes */
+.mdpjauge{margin:10px 0;font-size:12.5px;line-height:1.45}
+.mdpok{color:#15803d;font-weight:600}
+.mdpko{color:#9c2a2a}
+.cptform{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+.cptform .wide{grid-column:1/-1}
+.cptroles{display:grid;gap:7px}
+.cptrole{display:flex;align-items:flex-start;gap:9px;cursor:pointer;
+  border:1px solid var(--line);border-radius:var(--radius);padding:9px 12px;background:#fff}
+.cptrole:hover{border-color:#b9c8dd}
+.cptrole input{margin:2px 0 0;flex:0 0 auto}
+.cptrole b{display:block;font-size:13px;color:var(--navy)}
+.cptrole em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);
+  margin-top:1px}
+.cptrole:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.cptprov{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.cptprov code{flex:1 1 200px;font-size:16px;font-weight:700;letter-spacing:1px;
+  background:var(--line-2);border:1px solid var(--line);border-radius:8px;
+  padding:9px 12px;color:var(--navy);word-break:break-all}
+.cptprov code.vide{font-size:13px;font-weight:400;letter-spacing:0;color:var(--ink-3)}
+table.cptt td,table.cptt th{font-size:12.5px}
+@media(max-width:620px){ .cptform{grid-template-columns:1fr} }
+/* la pastille de l'utilisateur, dans la barre du haut */
+.moi{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:999px;
+  padding:4px 6px 4px 11px;font-size:12px;cursor:pointer}
+.moi:hover{background:rgba(255,255,255,.2)}
+.moi em{font-style:normal;opacity:.7;font-size:11px}
+.moi .puce{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);
+  display:grid;place-items:center;font-size:11px;font-weight:700}
 .diagtete{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;
   align-items:start}
 @media(max-width:720px){ .diagtete{grid-template-columns:1fr} }
@@ -1581,7 +1638,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 7 octobre 2026, 9 h 55">Dossiers de vente</div>
+  <div class="brand" title="Version du 7 octobre 2026, 12 h 59">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1622,6 +1679,7 @@ table.tdb .puce.resilie{background:#64748b}
   <!-- à droite, les réglages et l'aide -->
   <div class="tab droite" data-p="listes">Listes</div>
   <div class="tab aide" data-p="aide">Aide</div>
+  <button type="button" class="moi" id="moiBtn" hidden></button>
 </div>
 
 <div class="shell">
@@ -1740,6 +1798,8 @@ table.tdb .puce.resilie{background:#64748b}
     <div class="card"><h2>Agence — logo et pied de page</h2><div class="body" id="agenceBox"></div></div>
     <div class="card"><h2>Base partagée entre plusieurs ordinateurs</h2>
       <div class="body" id="fichierBox"></div></div>
+    <div class="card" id="comptesCarte"><h2>Comptes et accès</h2>
+      <div class="body" id="comptesBox"></div></div>
     <div class="card"><h2>Pièces jointes — place occupée</h2>
       <div class="body" id="pjPlace"></div></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1783,7 +1843,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>7 octobre 2026, 9 h 55</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>7 octobre 2026, 12 h 59</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -1859,6 +1919,8 @@ table.tdb .puce.resilie{background:#64748b}
     </div>
   </div>
 </div>
+
+<div class="porte" id="porte" hidden></div>
 
 <div class="modal" id="pop" hidden>
   <div class="modalbox popbox">
@@ -5372,6 +5434,9 @@ function renderCarnets(){
 
 function renderListes(){
   const chev = chevron;
+  /* la carte des comptes n'est montrée qu'à qui peut s'en servir */
+  const cc = $("#comptesCarte");
+  if(cc){ cc.hidden = !peut("comptes"); if(!cc.hidden) rendreComptes(); }
 
   $("#simpleLists").innerHTML = Object.keys(LIST_LABELS).map(k=>{
     const plie = estPlie("l_"+k, false);
@@ -10095,7 +10160,7 @@ document.addEventListener("keydown", e=>{
   if(e.key !== "Escape") return;
   if(!$("#rechDoss").hidden){ fermerRecherche(); return; }
   if(!$("#mdBox").hidden){ fermerMandatLu(); return; }
-  if(!$("#pop").hidden){ fermerPopup(); return; }
+  if(!$("#pop").hidden){ if(!MDP_IMPOSE) fermerPopup(); return; }
   if(!$("#pjBox").hidden){ fermerPieces(); return; }
   if(!$("#detailBox").hidden){ fermerDetail(); return; }
   if(!$("#secBox").hidden){ fermerSection(); return; }
@@ -10808,13 +10873,19 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 5
+ * Base en ligne pour « Dossiers de vente »  —  version 6
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * La version 5 rend la réécriture patiente : aux heures de pointe, un modèle
+ * Cette version 6 ajoute les COMPTES : identifiant, mot de passe et
+ * niveau d'accès par personne. Tant qu'aucun compte n'existe, rien ne
+ * change — la clé partagée suffit. Dès le premier compte créé, le script
+ * ne livre plus rien sans une séance ouverte : c'est là, et non dans la
+ * page, que se trouve la serrure.
+ *
+ * La version 5 rendait la réécriture patiente : aux heures de pointe, un modèle
  * répond « 503, trop de demandes ». Le script attend, réessaie, puis passe au
  * modèle suivant de la liste plutôt que d'abandonner.
  *
@@ -10894,6 +10965,8 @@ const MODELES_GEMINI = ['gemini-3.8-flash',
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (String(p.cle || '') !== CLE) return sortie({ erreur: 'cle' });
+  const porte = portier(p, 'lire');
+  if (porte.erreur) return sortie(porte);
   return sortie({ ok: true, data: lireBase() });
 }
 
@@ -10905,6 +10978,31 @@ function doPost(e) {
     return sortie({ erreur: 'json' });
   }
   if (String(q.cle || '') !== CLE) return sortie({ erreur: 'cle' });
+
+  /* La clé partagée n'ouvre plus que le hall : ce qui suit demande un
+     compte. Trois actions restent accessibles sans séance, parce qu'elles
+     servent précisément à en ouvrir une. */
+  try {
+    if (q.action === 'etat')    return sortie(etatServeur(q));
+    if (q.action === 'sel')     return sortie(selDe(q));
+    if (q.action === 'ouvrir')  return sortie(ouvrirSeance(q));
+    if (q.action === 'fermer')  return sortie(fermerSeance(q));
+  } catch (err) {
+    return sortie({ erreur: String(err && err.message || err) });
+  }
+
+  const porte = portier(q, q.action);
+  if (porte.erreur) return sortie(porte);
+
+  try {
+    if (q.action === 'mdp_changer')     return sortie(changerMdp(q));
+    if (q.action === 'comptes')         return sortie(comptesListe(q));
+    if (q.action === 'compte_creer')    return sortie(compteCreer(q));
+    if (q.action === 'compte_modifier') return sortie(compteModifier(q));
+    if (q.action === 'compte_suppr')    return sortie(compteSupprimer(q));
+  } catch (err) {
+    return sortie({ erreur: String(err && err.message || err) });
+  }
 
   /* Les pièces jointes ne touchent pas au fichier de base : elles n'ont pas
      besoin du verrou, et un envoi de plusieurs méga-octets ne doit pas bloquer
@@ -11126,6 +11224,332 @@ function redige(q) {
   return dernier || { erreur: 'ia_rien' };
 }
 
+/* ====================================================== LES COMPTES ====
+   La vraie serrure est ici, pas dans la page.
+
+   La page de l'application est publique : déposée sur GitHub Pages, son
+   code se télécharge. Un écran de connexion écrit dedans arrête un
+   collègue ou un curieux, pas quelqu'un de déterminé. Ce qu'on protège
+   pour de bon, c'est l'accès aux DONNÉES — et elles sont ici, dans votre
+   Drive, derrière ce script. Sans compte valide, le script ne livre
+   rien : ni dossiers, ni pièces jointes.
+
+   Les comptes vivent dans un fichier à part, que le script est seul à
+   lire. L'action « lire » ne le renvoie jamais : un mot de passe, même
+   dérivé, n'a pas à descendre dans un navigateur.
+
+   Ce qu'on garde d'un mot de passe : PBKDF2-HMAC-SHA256 sur 210 000
+   tours, calculé DANS LE NAVIGATEUR avec un sel propre à chaque compte,
+   puis haché une seconde fois ici avec votre clé CLE en guise de poivre.
+   Le mot de passe en clair ne quitte donc jamais le poste de celui qui
+   le tape, et quelqu'un qui lirait ce fichier de comptes n'y trouverait
+   rien d'utilisable : il lui manquerait votre CLE, qui est dans ce code
+   et non dans le fichier.
+
+   Tant qu'aucun compte n'existe, le script se comporte comme avant et
+   se contente de la clé partagée. C'est voulu : on peut déposer cette
+   version sans rien casser, puis créer les comptes depuis l'application.
+   Dès le premier compte créé, la clé seule ne suffit plus.
+   ===================================================================== */
+
+/** Nom du fichier Drive où sont rangés les comptes. */
+const NOM_COMPTES = 'Dossiers de vente - comptes.json';
+
+/** Durée d'une séance, en heures. Au-delà, il faut se reconnecter. */
+const SEANCE_H = 12;
+
+/** Blocage après cinq échecs, pendant quinze minutes. La CNIL admet un
+ *  mot de passe moins fort dès lors que les tentatives sont bridées ;
+ *  les nôtres sont forts ET bridés. */
+const ECHECS_MAX = 5;
+const BLOCAGE_MIN = 15;
+
+function fichierComptes() {
+  const it = DriveApp.getFilesByName(NOM_COMPTES);
+  while (it.hasNext()) {
+    const f = it.next();
+    if (!f.isTrashed()) return f;
+  }
+  return DriveApp.createFile(NOM_COMPTES, '{}', MimeType.PLAIN_TEXT);
+}
+function lireComptes() {
+  try {
+    const o = JSON.parse(fichierComptes().getBlob().getDataAsString('UTF-8') || '{}');
+    o.comptes = o.comptes || [];
+    o.jetons  = o.jetons  || {};
+    o.echecs  = o.echecs  || {};
+    return o;
+  } catch (err) {
+    return { comptes: [], jetons: {}, echecs: {} };
+  }
+}
+function ecrireComptes(o) {
+  fichierComptes().setContent(JSON.stringify(o));
+}
+
+/* ------------------------------------------------------------ outils */
+function hexa(oct) {
+  let s = '';
+  for (let i = 0; i < oct.length; i++) {
+    const b = (oct[i] + 256) % 256;
+    s += (b < 16 ? '0' : '') + b.toString(16);
+  }
+  return s;
+}
+function sha(txt) {
+  return hexa(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, txt,
+                                      Utilities.Charset.UTF_8));
+}
+function hmac(cle, txt) {
+  return hexa(Utilities.computeHmacSha256Signature(txt, cle));
+}
+/** De quoi tirer un sel ou un jeton qu'on ne devine pas. */
+function alea() {
+  return sha(Utilities.getUuid() + Utilities.getUuid() + new Date().getTime()
+             + Math.random());
+}
+/** Ce qu'on range à la place du mot de passe. */
+function empreinteRangee(empreinteClient) {
+  return sha(String(empreinteClient || '') + '|' + CLE);
+}
+/** Une comparaison qui ne s'arrête pas au premier caractère différent. */
+function memeChaine(a, b) {
+  a = String(a || ''); b = String(b || '');
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+function normIdent(s) {
+  return String(s || '').trim().toLowerCase();
+}
+function trouveCompte(base, ident) {
+  const id = normIdent(ident);
+  for (let i = 0; i < base.comptes.length; i++)
+    if (normIdent(base.comptes[i].ident) === id) return base.comptes[i];
+  return null;
+}
+function publicCompte(c) {
+  return { ident: c.ident, nom: c.nom || '', role: c.role || 'nego',
+           actif: c.actif !== false, doitChanger: !!c.doitChanger,
+           cree: c.cree || '', derniere: c.derniere || '' };
+}
+
+/* ----------------------------------------------- le sel, avant l'entrée
+   On répond toujours, même pour un identifiant inconnu : un sel inventé
+   mais stable, tiré de l'identifiant et de la clé. Sans cela, la page de
+   connexion dirait qui existe et qui n'existe pas. */
+function selDe(q) {
+  const base = lireComptes();
+  const c = trouveCompte(base, q.ident);
+  return { ok: true, sel: c && c.sel ? c.sel : hmac(CLE, 'sel:' + normIdent(q.ident)),
+           tours: 210000 };
+}
+
+/* ---------------------------------------------------------- se connecter */
+function ouvrirSeance(q) {
+  const base = lireComptes();
+  const id = normIdent(q.ident);
+  const maintenant = new Date().getTime();
+
+  const e = base.echecs[id];
+  if (e && e.jusqua > maintenant)
+    return { erreur: 'bloque', minutes: Math.ceil((e.jusqua - maintenant) / 60000) };
+
+  const c = trouveCompte(base, id);
+  const bon = c && c.actif !== false
+           && memeChaine(c.hash, empreinteRangee(q.empreinte));
+  if (!bon) {
+    /* On ne repart de zéro que si un blocage PRÉCÉDENT est arrivé à son
+       terme. Écrit « e.jusqua <= maintenant », le compte remettait son
+       compteur à 1 à chaque essai — puisque jusqu'à cinq échecs,
+       « jusqua » vaut 0, donc toujours inférieur à maintenant. La porte
+       ne se serait jamais bloquée. */
+    const expire = e && e.jusqua > 0 && e.jusqua <= maintenant;
+    const n = (expire || !e ? 0 : e.n) + 1;
+    base.echecs[id] = { n: n,
+      jusqua: n >= ECHECS_MAX ? maintenant + BLOCAGE_MIN * 60000 : 0 };
+    ecrireComptes(base);
+    return n >= ECHECS_MAX
+      ? { erreur: 'bloque', minutes: BLOCAGE_MIN }
+      : { erreur: 'refuse', reste: ECHECS_MAX - n };
+  }
+
+  delete base.echecs[id];
+  const jeton = alea();
+  /* on balaie les séances expirées au passage : le fichier ne doit pas
+     enfler d'un jeton par connexion depuis deux ans */
+  Object.keys(base.jetons).forEach(function (j) {
+    if (base.jetons[j].exp < maintenant) delete base.jetons[j];
+  });
+  base.jetons[jeton] = { ident: c.ident, exp: maintenant + SEANCE_H * 3600000 };
+  c.derniere = new Date().toISOString();
+  ecrireComptes(base);
+  return { ok: true, jeton: jeton, profil: publicCompte(c),
+           expire: base.jetons[jeton].exp };
+}
+
+/** Qui est derrière ce jeton ? null si personne, ou si la séance a expiré. */
+function quiEst(base, jeton) {
+  const j = base.jetons[String(jeton || '')];
+  if (!j) return null;
+  if (j.exp < new Date().getTime()) { delete base.jetons[String(jeton)]; return null; }
+  const c = trouveCompte(base, j.ident);
+  if (!c || c.actif === false) return null;
+  return c;
+}
+
+function fermerSeance(q) {
+  const base = lireComptes();
+  delete base.jetons[String(q.jeton || '')];
+  ecrireComptes(base);
+  return { ok: true };
+}
+
+/* ------------------------------------------------ changer son mot de passe */
+function changerMdp(q) {
+  const base = lireComptes();
+  const c = quiEst(base, q.jeton);
+  if (!c) return { erreur: 'seance' };
+  if (!memeChaine(c.hash, empreinteRangee(q.ancienne))) return { erreur: 'ancien' };
+  if (!q.nouvelle || String(q.nouvelle).length < 32) return { erreur: 'empreinte' };
+  c.hash = empreinteRangee(q.nouvelle);
+  c.doitChanger = false;
+  c.change = new Date().toISOString();
+  /* on ferme les autres séances : un mot de passe changé, c'est souvent
+     parce qu'on le croit connu d'un autre */
+  Object.keys(base.jetons).forEach(function (j) {
+    if (normIdent(base.jetons[j].ident) === normIdent(c.ident) && j !== q.jeton)
+      delete base.jetons[j];
+  });
+  ecrireComptes(base);
+  return { ok: true, profil: publicCompte(c) };
+}
+
+/* ------------------------------------------- l'administration des comptes */
+function estAdmin(base, jeton) {
+  const c = quiEst(base, jeton);
+  return c && c.role === 'admin' ? c : null;
+}
+
+function comptesListe(q) {
+  const base = lireComptes();
+  /* le premier compte se crée sans être connecté : tant qu'il n'y en a
+     aucun, la liste est ouverte — elle est vide, de toute façon */
+  if (base.comptes.length && !estAdmin(base, q.jeton)) return { erreur: 'droit' };
+  return { ok: true, comptes: base.comptes.map(publicCompte) };
+}
+
+function compteCreer(q) {
+  const base = lireComptes();
+  const premier = base.comptes.length === 0;
+  if (!premier && !estAdmin(base, q.jeton)) return { erreur: 'droit' };
+  const id = normIdent(q.ident);
+  if (!/^[a-z0-9._-]{3,32}$/.test(id)) return { erreur: 'ident' };
+  if (trouveCompte(base, id)) return { erreur: 'existe' };
+  if (!q.empreinte || String(q.empreinte).length < 32) return { erreur: 'empreinte' };
+  /* le tout premier compte est forcément administrateur : sans cela,
+     personne ne pourrait créer les suivants */
+  const role = premier ? 'admin'
+             : (['admin','nego','lecture'].indexOf(q.role) >= 0 ? q.role : 'nego');
+  const c = { ident: id, nom: String(q.nom || '').trim(), role: role,
+              sel: q.sel || alea(), hash: empreinteRangee(q.empreinte),
+              doitChanger: q.doitChanger !== false, actif: true,
+              cree: new Date().toISOString(), derniere: '' };
+  base.comptes.push(c);
+  ecrireComptes(base);
+  return { ok: true, compte: publicCompte(c), premier: premier };
+}
+
+function compteModifier(q) {
+  const base = lireComptes();
+  const moi = estAdmin(base, q.jeton);
+  if (!moi) return { erreur: 'droit' };
+  const c = trouveCompte(base, q.ident);
+  if (!c) return { erreur: 'inconnu' };
+  if (q.nom !== undefined) c.nom = String(q.nom).trim();
+  if (q.role !== undefined && ['admin','nego','lecture'].indexOf(q.role) >= 0) {
+    /* on ne se retire pas à soi-même le dernier trousseau */
+    const autresAdmins = base.comptes.filter(function (x) {
+      return x.role === 'admin' && x.actif !== false
+          && normIdent(x.ident) !== normIdent(c.ident); }).length;
+    if (c.role === 'admin' && q.role !== 'admin' && !autresAdmins)
+      return { erreur: 'dernieradmin' };
+    c.role = q.role;
+  }
+  if (q.actif !== undefined) {
+    const autresAdmins = base.comptes.filter(function (x) {
+      return x.role === 'admin' && x.actif !== false
+          && normIdent(x.ident) !== normIdent(c.ident); }).length;
+    if (c.role === 'admin' && q.actif === false && !autresAdmins)
+      return { erreur: 'dernieradmin' };
+    c.actif = !!q.actif;
+    if (!c.actif) Object.keys(base.jetons).forEach(function (j) {
+      if (normIdent(base.jetons[j].ident) === normIdent(c.ident)) delete base.jetons[j];
+    });
+  }
+  /* un mot de passe provisoire remis par l'administrateur */
+  if (q.empreinte) {
+    if (String(q.empreinte).length < 32) return { erreur: 'empreinte' };
+    c.sel = q.sel || c.sel;
+    c.hash = empreinteRangee(q.empreinte);
+    c.doitChanger = true;
+    delete base.echecs[normIdent(c.ident)];
+    Object.keys(base.jetons).forEach(function (j) {
+      if (normIdent(base.jetons[j].ident) === normIdent(c.ident)) delete base.jetons[j];
+    });
+  }
+  ecrireComptes(base);
+  return { ok: true, compte: publicCompte(c) };
+}
+
+function compteSupprimer(q) {
+  const base = lireComptes();
+  const moi = estAdmin(base, q.jeton);
+  if (!moi) return { erreur: 'droit' };
+  const c = trouveCompte(base, q.ident);
+  if (!c) return { erreur: 'inconnu' };
+  if (normIdent(c.ident) === normIdent(moi.ident)) return { erreur: 'soimeme' };
+  const autresAdmins = base.comptes.filter(function (x) {
+    return x.role === 'admin' && x.actif !== false
+        && normIdent(x.ident) !== normIdent(c.ident); }).length;
+  if (c.role === 'admin' && !autresAdmins) return { erreur: 'dernieradmin' };
+  base.comptes = base.comptes.filter(function (x) {
+    return normIdent(x.ident) !== normIdent(c.ident); });
+  Object.keys(base.jetons).forEach(function (j) {
+    if (normIdent(base.jetons[j].ident) === normIdent(c.ident)) delete base.jetons[j];
+  });
+  ecrireComptes(base);
+  return { ok: true };
+}
+
+/* ------------------------------------------------------ le portier
+   Appelé devant CHAQUE action qui touche aux données. Il rend le compte
+   qui agit, ou une erreur. Tant qu'aucun compte n'existe, il laisse
+   passer : c'est ce qui permet de déposer cette version sans se
+   verrouiller dehors. */
+const ACTIONS_ECRITURE = ['ecrire','piece_envoi','piece_renommer','piece_supprimer'];
+
+function portier(q, action) {
+  const base = lireComptes();
+  if (!base.comptes.length) return { ouvert: true, compte: null };
+  const c = quiEst(base, q.jeton);
+  if (!c) return { erreur: 'seance' };
+  if (c.role === 'lecture' && ACTIONS_ECRITURE.indexOf(action) >= 0)
+    return { erreur: 'lectureseule' };
+  return { ouvert: true, compte: c };
+}
+
+/** L'état de la serrure, que la page interroge avant d'afficher quoi que
+ *  ce soit. Elle ne demande aucun droit : savoir qu'une porte est fermée
+ *  n'a jamais ouvert une porte. */
+function etatServeur(q) {
+  const base = lireComptes();
+  const c = base.comptes.length ? quiEst(base, q.jeton) : null;
+  return { ok: true, version: 6, comptes: base.comptes.length,
+           profil: c ? publicCompte(c) : null };
+}
+
 function sortie(o) {
   return ContentService.createTextOutput(JSON.stringify(o))
     .setMimeType(ContentService.MimeType.JSON);
@@ -11148,6 +11572,232 @@ function verifier() {
   Logger.log(JSON.stringify(lireBase()));
   Logger.log('dossier des pièces : ' + racinePieces().getUrl());
 }`;
+/* =====================================================================
+   SÉCURITÉ — DÉRIVATION DU MOT DE PASSE
+   ---------------------------------------------------------------------
+   Le mot de passe ne quitte jamais le navigateur. Ce qui part vers le
+   script Google est une empreinte PBKDF2-HMAC-SHA256, calculée ici avec
+   le sel que le script a donné pour cet identifiant. Le script stocke
+   ensuite un SHA-256 de cette empreinte : même en lisant son fichier de
+   comptes, on ne retrouve ni le mot de passe, ni de quoi se connecter
+   sans refaire la dérivation.
+
+   210 000 tours, c'est ce que l'OWASP recommande pour PBKDF2-SHA256.
+
+   Deux implémentations, qui doivent donner le même résultat :
+     · WebCrypto quand il est là — c'est-à-dire en https, donc en ligne ;
+     · un SHA-256 écrit à la main sinon, car `crypto.subtle` n'existe pas
+       sur une page ouverte en « file:// », et la porte doit tenir là
+       aussi. Une seconde de calcul à l'ouverture d'une séance, on la
+       passe volontiers.
+   ===================================================================== */
+const PBKDF2_TOURS = 210000;
+
+/* ------------------------------------------------- SHA-256 à la main */
+const SHA_K = [
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+
+/* un état SHA-256 qu'on peut relancer : PBKDF2 enchaîne des milliers de
+   HMAC, et recréer les tableaux à chaque tour coûterait plus cher que le
+   calcul lui-même */
+function shaBloc(h, w){
+  let a = h[0], b = h[1], c = h[2], d = h[3], e = h[4], f = h[5], g = h[6], x = h[7];
+  for(let i = 16; i < 64; i++){
+    const s0 = ((w[i-15] >>> 7) | (w[i-15] << 25)) ^ ((w[i-15] >>> 18) | (w[i-15] << 14))
+             ^ (w[i-15] >>> 3);
+    const s1 = ((w[i-2] >>> 17) | (w[i-2] << 15)) ^ ((w[i-2] >>> 19) | (w[i-2] << 13))
+             ^ (w[i-2] >>> 10);
+    w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+  }
+  for(let i = 0; i < 64; i++){
+    const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+    const ch = (e & f) ^ (~e & g);
+    const t1 = (x + S1 + ch + SHA_K[i] + w[i]) | 0;
+    const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+    const mj = (a & b) ^ (a & c) ^ (b & c);
+    const t2 = (S0 + mj) | 0;
+    x = g; g = f; f = e; e = (d + t1) | 0;
+    d = c; c = b; b = a; a = (t1 + t2) | 0;
+  }
+  h[0] = (h[0] + a) | 0; h[1] = (h[1] + b) | 0; h[2] = (h[2] + c) | 0; h[3] = (h[3] + d) | 0;
+  h[4] = (h[4] + e) | 0; h[5] = (h[5] + f) | 0; h[6] = (h[6] + g) | 0; h[7] = (h[7] + x) | 0;
+}
+function sha256(oct){
+  const h = new Int32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,
+                            0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  const n = oct.length;
+  const total = ((n + 9 + 63) >> 6) << 6;
+  const m = new Uint8Array(total);
+  m.set(oct); m[n] = 0x80;
+  const bits = n * 8;
+  m[total - 4] = (bits >>> 24) & 255; m[total - 3] = (bits >>> 16) & 255;
+  m[total - 2] = (bits >>> 8) & 255;  m[total - 1] = bits & 255;
+  const w = new Int32Array(64);
+  for(let p = 0; p < total; p += 64){
+    for(let i = 0; i < 16; i++)
+      w[i] = (m[p+i*4] << 24) | (m[p+i*4+1] << 16) | (m[p+i*4+2] << 8) | m[p+i*4+3];
+    shaBloc(h, w);
+  }
+  const out = new Uint8Array(32);
+  for(let i = 0; i < 8; i++){
+    out[i*4] = (h[i] >>> 24) & 255; out[i*4+1] = (h[i] >>> 16) & 255;
+    out[i*4+2] = (h[i] >>> 8) & 255; out[i*4+3] = h[i] & 255;
+  }
+  return out;
+}
+function hmac256(cle, msg){
+  let k = cle;
+  if(k.length > 64) k = sha256(k);
+  const ip = new Uint8Array(64 + msg.length), op = new Uint8Array(96);
+  for(let i = 0; i < 64; i++){
+    const b = i < k.length ? k[i] : 0;
+    ip[i] = b ^ 0x36; op[i] = b ^ 0x5c;
+  }
+  ip.set(msg, 64);
+  op.set(sha256(ip), 64);
+  return sha256(op);
+}
+function pbkdf2JS(mdp, sel, tours){
+  const p = new TextEncoder().encode(mdp), s = new TextEncoder().encode(sel);
+  const bloc = new Uint8Array(s.length + 4);
+  bloc.set(s); bloc[s.length + 3] = 1;
+  let u = hmac256(p, bloc);
+  const out = u.slice();
+  for(let i = 1; i < tours; i++){
+    u = hmac256(p, u);
+    for(let j = 0; j < 32; j++) out[j] ^= u[j];
+  }
+  return out;
+}
+function enHexa(oct){
+  let s = "";
+  for(let i = 0; i < oct.length; i++) s += oct[i].toString(16).padStart(2, "0");
+  return s;
+}
+
+/* ------------------------------------------------- l'empreinte, enfin */
+async function empreinteMdp(mdp, sel){
+  const sub = (window.crypto && window.crypto.subtle) || null;
+  if(sub){
+    try{
+      const enc = new TextEncoder();
+      const k = await sub.importKey("raw", enc.encode(mdp), "PBKDF2", false, ["deriveBits"]);
+      const bits = await sub.deriveBits(
+        {name:"PBKDF2", salt: enc.encode(sel), iterations: PBKDF2_TOURS, hash:"SHA-256"},
+        k, 256);
+      return enHexa(new Uint8Array(bits));
+    }catch(e){ /* on retombe sur le calcul à la main */ }
+  }
+  return enHexa(pbkdf2JS(mdp, sel, PBKDF2_TOURS));
+}
+
+/* =====================================================================
+   LA POLITIQUE DE MOT DE PASSE
+   ---------------------------------------------------------------------
+   Douze caractères et les quatre familles : c'est l'un des trois jeux de
+   règles que la CNIL donne pour équivalents à 80 bits d'entropie, le
+   niveau exigé quand le mot de passe est la seule défense. Comme le
+   compte se bloque aussi après cinq échecs, on est au-delà.
+
+   S'y ajoutent les interdits demandés : rien qui reprenne le nom, le
+   prénom, l'identifiant, le nom de l'agence ou une date de naissance.
+   Et deux garde-fous de bon sens : pas de suite au clavier, pas de
+   caractère répété quatre fois.
+
+   Le renouvellement périodique n'est PAS imposé : la CNIL l'a abandonné
+   pour les comptes ordinaires, parce qu'il pousse à « MotDePasse1 »,
+   « MotDePasse2 ». Il reste conseillé pour le compte administrateur.
+   ===================================================================== */
+const MDP_MIN = 12;
+const MDP_SYMBOLES = "!@#$%^&*()-_=+[]{};:,.<>?/|~\"'`\\ ";
+const MDP_COURANTS = ["motdepasse","password","azerty","qwerty","123456","immobilier",
+  "bonjour","soleil","maison","vendeur","agence","administrateur","secret","bienvenue",
+  "printemps","janvier","mdpmdpmdp","aaaaaaaaaaaa","loulou","chouchou"];
+
+/* « azerty », « 12345 », « abcdef » : des suites au clavier ou à l'alphabet */
+const MDP_SUITES = ["azertyuiop","qwertyuiop","qsdfghjklm","asdfghjkl","wxcvbn","zxcvbn",
+  "0123456789","abcdefghijklmnopqrstuvwxyz"];
+
+function mdpDefauts(mdp, perso){
+  const m = String(mdp || "");
+  const d = [];
+  if(m.length < MDP_MIN) d.push("au moins " + MDP_MIN + " caractères (il en a " + m.length + ")");
+  if(!/[a-zà-öø-ÿ]/.test(m)) d.push("une minuscule");
+  if(!/[A-ZÀ-ÖØ-Þ]/.test(m)) d.push("une majuscule");
+  if(!/[0-9]/.test(m)) d.push("un chiffre");
+  if(!m.split("").some(c=> MDP_SYMBOLES.indexOf(c) >= 0)) d.push("un symbole (" + "!?-*$#@" + "…)");
+  if(/(.)\1{3,}/.test(m)) d.push("pas quatre fois le même caractère de suite");
+
+  const b = fold(m).replace(/[^a-z0-9]/g, "");
+  if(b.length >= 4){
+    if(MDP_SUITES.some(s=> s.indexOf(b.slice(0, 6)) >= 0 && b.length >= 6))
+      d.push("pas une suite du clavier");
+    if(MDP_COURANTS.some(x=> b.indexOf(x) >= 0))
+      d.push("pas de mot trop courant");
+  }
+  /* les mots à soi : nom, prénom, identifiant, agence — et leurs morceaux */
+  const interdits = [];
+  (perso || []).forEach(v=>{
+    String(v || "").split(/[\s\-'.,]+/).forEach(x=>{
+      const f = fold(x).replace(/[^a-z0-9]/g, "");
+      if(f.length >= 3) interdits.push(f);
+    });
+  });
+  if(interdits.some(x=> b.indexOf(x) >= 0))
+    d.push("rien qui reprenne votre nom, votre identifiant ou le nom de l'agence");
+
+  /* une date de naissance, sous toutes ses écritures courantes */
+  const chiffres = m.replace(/\D/g, "");
+  const an = new Date().getFullYear();
+  for(let y = 1930; y <= an; y++) if(chiffres.indexOf(String(y)) >= 0){
+    d.push("pas d'année de naissance (" + y + ")"); break;
+  }
+  if(/\b(0?[1-9]|[12]\d|3[01])[\/.\-]?(0?[1-9]|1[0-2])[\/.\-]?(19|20)?\d{2}\b/.test(m)
+     && !d.some(x=> /année de naissance/.test(x)))
+    d.push("pas de date de naissance");
+  return d;
+}
+function mdpValide(mdp, perso){ return mdpDefauts(mdp, perso).length === 0; }
+
+/* Un mot de passe provisoire qu'on peut dicter au téléphone : on écarte
+   les caractères qui se confondent (I, l, 1, O, 0) et l'on garantit les
+   quatre familles. */
+function mdpProvisoire(){
+  const min = "abcdefghijkmnopqrstuvwxyz", maj = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const chi = "23456789", sym = "!@#$%&*-+=?";
+  const tout = min + maj + chi + sym;
+  const tire = n=>{
+    const t = new Uint32Array(n);
+    (window.crypto || {}).getRandomValues
+      ? window.crypto.getRandomValues(t)
+      : t.forEach((_, i)=> t[i] = Math.floor(Math.random() * 4294967296));
+    return t;
+  };
+  for(let essai = 0; essai < 60; essai++){
+    const n = 14, t = tire(n), out = [];
+    out.push(min[t[0] % min.length], maj[t[1] % maj.length],
+             chi[t[2] % chi.length], sym[t[3] % sym.length]);
+    for(let i = 4; i < n; i++) out.push(tout[t[i] % tout.length]);
+    /* on mélange, sinon les quatre familles sont toujours en tête */
+    const o = tire(n);
+    for(let i = n - 1; i > 0; i--){
+      const j = o[i] % (i + 1);
+      const z = out[i]; out[i] = out[j]; out[j] = z;
+    }
+    const mdp = out.join("");
+    if(mdpValide(mdp, [])) return mdp;
+  }
+  return "Mq7!xT2vP9#zLk";               // filet, jamais atteint en pratique
+}
+
+
 let WEB = null, WEB_MAJ = 0, WEB_ETAT = "", WEB_MSG = "";
 /* ce qui a été tapé dans le formulaire, pour ne pas le perdre en cas d'échec */
 let WEB_SAISIE = {url:"", cle:""};
@@ -11385,13 +12035,117 @@ const IMPASSE_LOCALE = "cette application a été ouverte comme un fichier, et u
   + "navigateur de tablette interdit à un fichier local de joindre Google. Ouvrez-la "
   + "depuis son adresse en ligne : la base s'y connectera sans difficulté.";
 
+/* =====================================================================
+   LA SÉANCE, CÔTÉ PAGE
+   ---------------------------------------------------------------------
+   Ce qu'on garde dans l'appareil : un jeton et un profil, jamais le mot
+   de passe ni son empreinte. Le jeton se périme en douze heures, et le
+   script le révoque de son côté — ce n'est donc pas la page qui décide
+   de ce qu'on a le droit de faire, c'est le script. L'écran de connexion
+   n'est que la politesse du geste : la serrure est au bout du fil.
+   ===================================================================== */
+const LS_SEANCE = "mi_seance_v1";
+let SEANCE = null;
+
+const ROLES = [
+  {cle:"admin",   lib:"Administrateur",
+   note:"tout, plus les comptes, les listes de référence et la base"},
+  {cle:"nego",    lib:"Négociateur",
+   note:"les dossiers : créer, modifier, documents, publications"},
+  {cle:"lecture", lib:"Lecture seule",
+   note:"consulter et imprimer, sans rien modifier"}
+];
+function libRole(c){ const r = ROLES.filter(x=> x.cle === c)[0]; return r ? r.lib : c; }
+
+function chargerSeance(){
+  try{ SEANCE = JSON.parse(localStorage.getItem(LS_SEANCE) || "null"); }
+  catch(e){ SEANCE = null; }
+  if(SEANCE && SEANCE.expire && SEANCE.expire < Date.now()) SEANCE = null;
+  if(!SEANCE) localStorage.removeItem(LS_SEANCE);
+}
+function poserSeance(s){
+  SEANCE = s;
+  if(s) localStorage.setItem(LS_SEANCE, JSON.stringify(s));
+  else localStorage.removeItem(LS_SEANCE);
+}
+function connecte(){ return !!(SEANCE && SEANCE.jeton); }
+function monRole(){ return connecte() ? SEANCE.profil.role : "admin"; }
+
+/* Les droits, au singulier, pour que le code se lise :
+     peut("comptes")  — gérer les comptes
+     peut("listes")   — modifier les listes de référence et la base
+     peut("ecrire")   — créer et modifier un dossier
+   Hors serrure — aucun compte créé —, tout est permis : l'application
+   est alors ce qu'elle a toujours été. */
+function peut(droit){
+  if(!SERRURE_ACTIVE) return true;
+  if(!connecte()) return false;
+  const r = monRole();
+  if(r === "admin") return true;
+  if(r === "lecture") return false;
+  return droit === "ecrire";            // négociateur
+}
+/* vrai dès qu'un compte existe sur la base : c'est le script qui le dit */
+let SERRURE_ACTIVE = false;
+
+/* ------------------------------------------------ parler au script ----
+   Les appels d'avant la séance (état, sel, ouverture) ne passent pas par
+   le portier ; les autres portent le jeton. */
+async function webAppelLibre(charge){
+  if(!WEB) throw new Error("aucune base en ligne connectée");
+  return await webAppel(charge);
+}
+
+async function interrogerServeur(){
+  if(!WEB) { SERRURE_ACTIVE = false; return; }
+  try{
+    const d = await webAppel({action:"etat", jeton: (SEANCE || {}).jeton || ""});
+    SERRURE_ACTIVE = (d.comptes || 0) > 0;
+    if(SERRURE_ACTIVE && !d.profil) poserSeance(null);
+    else if(d.profil && SEANCE) { SEANCE.profil = d.profil; poserSeance(SEANCE); }
+  }catch(e){
+    /* hors réseau, on garde ce qu'on sait : la séance locale fait foi
+       jusqu'au prochain appel, et le script refusera de toute façon */
+    SERRURE_ACTIVE = !!(SEANCE || SERRURE_ACTIVE);
+  }
+}
+
+async function ouvrirSeance(ident, mdp){
+  const sel = await webAppel({action:"sel", ident});
+  const emp = await empreinteMdp(mdp, sel.sel || "");
+  const d = await webAppel({action:"ouvrir", ident, empreinte: emp});
+  if(d.erreur === "bloque")
+    throw new Error("trop d'essais : ce compte est bloqué pendant "
+      + (d.minutes || 15) + " minutes");
+  if(d.erreur === "refuse")
+    throw new Error("identifiant ou mot de passe incorrect"
+      + (d.reste ? " — il reste " + d.reste + " essai" + (d.reste > 1 ? "s" : "")
+                   + " avant blocage" : ""));
+  if(d.erreur) throw new Error("connexion refusée (" + d.erreur + ")");
+  poserSeance({jeton: d.jeton, profil: d.profil, expire: d.expire});
+  SERRURE_ACTIVE = true;
+  return d.profil;
+}
+
+async function fermerSeanceApp(){
+  const j = (SEANCE || {}).jeton;
+  poserSeance(null);
+  if(j && WEB) { try{ await webAppel({action:"fermer", jeton: j}); }catch(e){} }
+  location.reload();
+}
+
+const ERREURS_RENDUES = ["refuse","bloque","ancien","existe","ident","inconnu",
+                         "soimeme","dernieradmin","empreinte"];
 async function webAppel(charge){
   let r;
   try{
     r = await fetch(WEB.url, {
       method: "POST", redirect: "follow",
       headers: {"Content-Type": "text/plain;charset=utf-8"},
-      body: JSON.stringify(Object.assign({cle: WEB.cle || ""}, charge))
+      /* le jeton de séance accompagne tout ce qui touche aux données ;
+         les appels d'ouverture le portent déjà, ou s'en passent */
+      body: JSON.stringify(Object.assign({cle: WEB.cle || "",
+        jeton: (SEANCE && SEANCE.jeton) || ""}, charge))
     });
   }catch(e){
     throw new Error(enImpasseLocale() ? IMPASSE_LOCALE
@@ -11413,10 +12167,25 @@ async function webAppel(charge){
       : "réponse inattendue de la base");
   }
   if(d.erreur === "cle")    throw new Error("clé refusée par le script");
+  /* la séance a expiré, ou le compte a été désactivé pendant qu'on
+     travaillait : on rend la main à l'écran de connexion */
+  if(d.erreur === "seance"){
+    poserSeance(null); SERRURE_ACTIVE = true;
+    if(typeof montrerConnexion === "function") montrerConnexion();
+    throw new Error("votre séance a expiré — reconnectez-vous");
+  }
+  if(d.erreur === "lectureseule")
+    throw new Error("votre compte est en lecture seule : cette modification "
+      + "n'a pas été enregistrée dans la base");
+  if(d.erreur === "droit")
+    throw new Error("cette action demande un compte administrateur");
   if(d.erreur === "occupe") throw new Error("base occupée, réessayez");
-  /* les erreurs de l'IA remontent telles quelles : l'appelant sait les dire
-     en français, et une clé absente n'est pas une panne de la base */
+  /* Certaines erreurs ne sont pas des pannes : ce sont des réponses. Un
+     mot de passe faux, un identifiant déjà pris, le dernier
+     administrateur qu'on ne peut pas retirer — l'appelant sait les dire
+     en français, mieux que nous ici. On les lui rend telles quelles. */
   if(d.erreur && /^ia_/.test(d.erreur)) return d;
+  if(d.erreur && ERREURS_RENDUES.indexOf(d.erreur) >= 0) return d;
   if(d.erreur)              throw new Error(d.erreur);
   return d;
 }
@@ -12744,6 +13513,50 @@ const AIDE = [
   "referme le bandeau et la proposition reviendra. "+
   "Il n'y a donc plus de fichier à remplacer ni de <code>Ctrl + F5</code> à faire : la date "+
   "de version, en bas de cette page, dit toujours ce qui tourne réellement."],
+ ["Les comptes : qui entre, et jusqu'où",
+  "Tant qu'aucun compte n'existe, l'application s'ouvre à qui connaît son adresse. "+
+  "Pour y mettre une serrure : <b>Listes → Comptes et accès</b>. Le <b>premier compte "+
+  "créé est forcément administrateur</b> — le vôtre — et, dès cet instant, le script "+
+  "Google refuse de livrer le moindre dossier sans connexion valable. "+
+  "<b>Trois niveaux.</b> <b>Administrateur</b> : tout, plus les comptes, les listes de "+
+  "référence et la base. <b>Négociateur</b> : les dossiers — créer, modifier, "+
+  "documents, publications — mais ni comptes ni réglages. <b>Lecture seule</b> : "+
+  "consulter et imprimer, sans rien modifier ; ses champs sont verrouillés à l'écran, "+
+  "et le script refuserait de toute façon ses écritures. "+
+  "<b>Les mots de passe.</b> Vous créez le compte et l'application tire un mot de passe "+
+  "provisoire, que vous transmettez — de vive voix de préférence. L'intéressé doit le "+
+  "remplacer à sa première entrée, et <b>vous ne pourrez jamais lire le sien</b> : s'il "+
+  "l'oublie, vous lui en remettez un provisoire, c'est tout. "+
+  "<b>Où est la vraie serrure.</b> Pas dans cette page : elle est publique, son code se "+
+  "télécharge, et un écran de connexion écrit dedans arrête un collègue, pas quelqu'un "+
+  "de déterminé. La serrure est dans <b>votre script Google</b>, qui ne répond rien sans "+
+  "jeton de séance valide. C'est lui qui garde les dossiers, et c'est pour cela qu'il "+
+  "faut la <b>version 6</b> du script. "+
+  "<b>Ce qui est gardé.</b> Jamais le mot de passe. Il est transformé sur votre appareil "+
+  "— 210 000 tours de PBKDF2-SHA256 avec un grain de sel propre à votre compte — et "+
+  "seule cette empreinte voyage ; le script en garde une seconde empreinte, mêlée à "+
+  "votre clé. Quelqu'un qui lirait le fichier des comptes dans votre Drive n'y trouverait "+
+  "rien d'utilisable. "+
+  "<b>Les garde-fous.</b> Cinq essais manqués bloquent le compte un quart d'heure. Une "+
+  "séance dure douze heures, puis il faut se reconnecter. Un compte désactivé perd ses "+
+  "séances sur-le-champ. Et l'on ne peut ni rétrograder, ni désactiver, ni supprimer "+
+  "le dernier administrateur : personne ne doit pouvoir se verrouiller dehors."],
+ ["Choisir un mot de passe qui tienne",
+  "Douze caractères au moins, avec une majuscule, une minuscule, un chiffre et un "+
+  "symbole : c'est l'un des trois jeux de règles que la <b>CNIL</b> tient pour "+
+  "équivalents à 80 bits d'entropie, le niveau attendu quand le mot de passe est la "+
+  "seule défense. Ici il est doublé d'un blocage après cinq essais, donc on est au-delà. "+
+  "<b>Sont refusés</b> : votre nom, votre prénom, votre identifiant, le nom de l'agence "+
+  "— et leurs morceaux ; toute date ou année de naissance ; les suites du clavier "+
+  "(azerty, 123456) ; les mots trop courants ; et quatre fois le même caractère de "+
+  "suite. La fenêtre vous dit à mesure ce qui manque encore. "+
+  "<b>Pas de changement obligatoire tous les trois mois.</b> La CNIL l'a abandonné, et "+
+  "l'ANSSI aussi : cette règle ne produisait que des « MotDePasse1 », « MotDePasse2 ». "+
+  "On change son mot de passe quand on le croit connu d'un autre — par la pastille à "+
+  "votre nom, en haut à droite. Pour le compte administrateur, en revanche, un "+
+  "changement de temps en temps reste une bonne habitude. "+
+  "Une phrase de passe fonctionne très bien : « Mon chat dort sur le 3e radiateur ! » "+
+  "tient les règles, se retient, et se tape vite."],
  ["Travailler sur deux ordinateurs",
   "Le plus sûr est la base en ligne : Listes → « Base partagée » → « Connecter une base en "+
   "ligne ». Vous déposez une fois pour toutes, dans votre propre compte Google, un petit "+
@@ -12804,6 +13617,8 @@ function renderAll(){
   renderFacture(); renderPreview(); autosize(); refreshAllVilles();
   majStade(); majOnglets(); majObligatoires(); majMenuDossier();
   if(typeof renderPagePieces === "function") renderPagePieces();
+  if(typeof appliquerDroits === "function") appliquerDroits();
+  if(typeof majPastilleMoi === "function") majPastilleMoi();
 }
 
 /* reprise des données de la première version de l'application (une seule fois) */
@@ -16465,7 +17280,372 @@ function demanderInstall(){
   inv.prompt();
 }
 
+/* =====================================================================
+   L'ÉCRAN DE CONNEXION
+   ---------------------------------------------------------------------
+   Il couvre toute la page tant qu'on n'est pas entré. Qu'on puisse le
+   contourner en lisant le code, je ne le cache pas : ce n'est pas lui
+   qui protège les dossiers, c'est le script, qui ne répondra rien sans
+   jeton valable. Cet écran-ci empêche l'usage, pas la lecture du code.
+   ===================================================================== */
+function montrerConnexion(motif){
+  const z = $("#porte");
+  if(!z) return;
+  z.hidden = false;
+  document.body.classList.add("ferme");
+  z.innerHTML = `<div class="portebox">
+    <div class="portetete">
+      <span class="porteM">M</span>
+      <div><b>Dossiers de vente</b><span>Mon Agence Manaranche</span></div>
+    </div>
+    ${motif ? `<p class="porteerr">${esc(motif)}</p>` : ""}
+    <div class="f"><label for="pIdent">Identifiant</label>
+      <input type="text" id="pIdent" autocomplete="username" autocapitalize="none"
+        spellcheck="false" value="${esc((SEANCE && SEANCE.profil && SEANCE.profil.ident)
+          || localStorage.getItem("mi_dernier_ident") || "")}"></div>
+    <div class="f"><label for="pMdp">Mot de passe</label>
+      <input type="password" id="pMdp" autocomplete="current-password"></div>
+    <div class="portebtns">
+      <button type="button" class="addbtn" id="pEntrer">Entrer</button>
+    </div>
+    <p class="portemot" id="pMot"></p>
+    <p class="portepied">Mot de passe oublié ? Seul l'administrateur peut en
+      remettre un provisoire.</p>
+  </div>`;
+  const dire = (t, grave)=>{
+    const m = $("#pMot");
+    m.textContent = t || "";
+    m.className = "portemot" + (grave ? " grave" : "");
+  };
+  const entrer = async ()=>{
+    const id = $("#pIdent").value.trim(), mdp = $("#pMdp").value;
+    if(!id || !mdp) return dire("Identifiant et mot de passe, s'il vous plaît.", true);
+    const b = $("#pEntrer");
+    b.disabled = true; b.textContent = "Vérification…";
+    dire("Le mot de passe est passé à la moulinette — quelques secondes.");
+    try{
+      const profil = await ouvrirSeance(id, mdp);
+      localStorage.setItem("mi_dernier_ident", id);
+      z.hidden = true; document.body.classList.remove("ferme");
+      if(profil.doitChanger) ouvrirChangerMdp(true);
+      else { renderAll(); toast("Bonjour " + (profil.nom || profil.ident)); }
+    }catch(e){
+      b.disabled = false; b.textContent = "Entrer";
+      dire(e.message, true);
+      $("#pMdp").value = ""; $("#pMdp").focus();
+    }
+  };
+  $("#pEntrer").onclick = entrer;
+  [$("#pIdent"), $("#pMdp")].forEach(el=>{
+    el.addEventListener("keydown", e=>{ if(e.key === "Enter") entrer(); });
+  });
+  setTimeout(()=> ($("#pIdent").value ? $("#pMdp") : $("#pIdent")).focus(), 60);
+}
+
+/* ------------------------------------------- changer son mot de passe */
+function jaugeMdp(mdp, perso){
+  const d = mdpDefauts(mdp, perso);
+  if(!mdp) return `<span class="muted">Douze caractères au moins, avec majuscule,
+    minuscule, chiffre et symbole.</span>`;
+  if(!d.length) return `<span class="mdpok">✓ Ce mot de passe convient.</span>`;
+  return `<span class="mdpko">Il manque encore : ${esc(d.join(" ; "))}.</span>`;
+}
+function ouvrirChangerMdp(force){
+  const p = (SEANCE && SEANCE.profil) || {};
+  const perso = [p.ident, p.nom, (L.agence || {}).nom, "manaranche", "morchain"];
+  popup({titre: force ? "Choisissez votre mot de passe" : "Changer mon mot de passe",
+    corps:`<p class="muted" style="margin-top:0">${force
+        ? "Ce mot de passe vous a été remis par l'administrateur : il faut maintenant le remplacer par le vôtre, que lui-même ne connaîtra pas."
+        : "Le nouveau remplacera l'ancien sur tous vos appareils ; les autres séances ouvertes seront fermées."}</p>
+      <div class="f"><label>Mot de passe actuel</label>
+        <input type="password" id="mdpAncien" autocomplete="current-password"></div>
+      <div class="f"><label>Nouveau mot de passe</label>
+        <input type="password" id="mdpNeuf" autocomplete="new-password"></div>
+      <div class="f"><label>Répétez-le</label>
+        <input type="password" id="mdpBis" autocomplete="new-password"></div>
+      <p class="mdpjauge" id="mdpJauge">${jaugeMdp("", perso)}</p>
+      <p class="muted">Rien qui reprenne votre nom, votre identifiant, le nom de
+        l'agence ou une date de naissance. Le mot de passe ne quitte pas cet
+        appareil : seule une empreinte irréversible part vers la base.</p>`,
+    boutons: (force ? [] : [{lib:"Annuler"}]).concat([
+      {lib:"Enregistrer", primaire:true, action:()=>{}}])});
+  /* on reprend la main sur le bouton : la fenêtre ne doit pas se fermer
+     tant que le changement n'a pas abouti */
+  const pieds = $("#popPieds"), bEnr = pieds.lastElementChild;
+  const neuf = $("#mdpNeuf"), bis = $("#mdpBis"), anc = $("#mdpAncien");
+  const maj = ()=>{ $("#mdpJauge").innerHTML = jaugeMdp(neuf.value, perso); };
+  neuf.addEventListener("input", maj);
+  bEnr.onclick = async (e)=>{
+    e.stopPropagation();
+    if(neuf.value !== bis.value) return toast("Les deux saisies diffèrent");
+    const d = mdpDefauts(neuf.value, perso);
+    if(d.length) return toast("Il manque : " + d[0]);
+    if(neuf.value === anc.value) return toast("Le nouveau doit différer de l'ancien");
+    bEnr.disabled = true; bEnr.textContent = "Enregistrement…";
+    try{
+      const sel = await webAppel({action:"sel", ident: p.ident});
+      const ea = await empreinteMdp(anc.value, sel.sel || "");
+      const en = await empreinteMdp(neuf.value, sel.sel || "");
+      const r = await webAppel({action:"mdp_changer", ancienne: ea, nouvelle: en});
+      if(r.erreur === "ancien"){ throw new Error("le mot de passe actuel est faux"); }
+      if(r.erreur) throw new Error("changement refusé (" + r.erreur + ")");
+      SEANCE.profil = r.profil; poserSeance(SEANCE);
+      MDP_IMPOSE = false; fermerPopup();
+      renderAll();
+      toast("Mot de passe changé");
+    }catch(err){
+      bEnr.disabled = false; bEnr.textContent = "Enregistrer";
+      toast(err.message);
+    }
+  };
+  /* quand le changement est imposé, on ne sort pas de là par Échap : le
+     mot de passe provisoire a pu circuler de vive voix ou par courriel */
+  MDP_IMPOSE = !!force;
+  setTimeout(()=> anc.focus(), 60);
+}
+
+/* =====================================================================
+   LA PAGE DES COMPTES  (administrateur)
+   ===================================================================== */
+let COMPTES = null;
+let MDP_IMPOSE = false;
+async function chargerComptes(){
+  const d = await webAppel({action:"comptes"});
+  if(d.erreur) throw new Error(d.erreur);
+  COMPTES = d.comptes || [];
+  return COMPTES;
+}
+function rendreComptes(){
+  const z = $("#comptesBox");
+  if(!z) return;
+  if(!WEB){
+    z.innerHTML = `<p class="muted" style="margin:0">Les comptes vivent dans la base
+      en ligne, qui n'est pas connectée sur ce poste. Connectez-la d'abord,
+      juste au-dessus.</p>`;
+    return;
+  }
+  if(COMPTES === null){
+    z.innerHTML = `<p class="muted" style="margin:0">Lecture des comptes…</p>`;
+    chargerComptes().then(rendreComptes).catch(e=>{
+      z.innerHTML = `<p class="muted" style="margin:0">Comptes illisibles : ${
+        esc(e.message)}. Votre script est-il bien en <b>version 6</b> ?</p>`;
+    });
+    return;
+  }
+  if(!COMPTES.length){
+    z.innerHTML = `<div class="alerte" style="margin:0 0 12px">
+        <b>Aucun compte n'existe : l'application est ouverte à quiconque
+        connaît l'adresse.</b> Le premier compte créé sera forcément
+        administrateur — le vôtre —, et dès cet instant le script exigera
+        une connexion pour livrer le moindre dossier.</div>
+      <button type="button" class="addbtn" id="cptAjout">+ Créer le premier compte</button>`;
+    $("#cptAjout").onclick = ()=> ouvrirCompte(null);
+    return;
+  }
+  z.innerHTML = `<table class="grid-t cptt"><tr>
+      <th>Identifiant</th><th>Nom</th><th>Niveau</th><th>État</th>
+      <th>Dernière entrée</th><th class="cact"></th></tr>
+    ${COMPTES.map(c=> `<tr>
+      <td class="nm">${esc(c.ident)}${c.ident === (SEANCE.profil || {}).ident
+        ? ' <span class="ajoute">vous</span>' : ""}</td>
+      <td>${esc(c.nom || "—")}</td>
+      <td>${esc(libRole(c.role))}</td>
+      <td>${c.actif === false ? `<span class="fetat ko">désactivé</span>`
+          : c.doitChanger ? `<span class="fetat att">mot de passe à changer</span>`
+          : `<span class="fetat ok">actif</span>`}</td>
+      <td class="muted">${c.derniere ? esc(fdate(c.derniere.slice(0,10))) : "jamais"}</td>
+      <td class="cact">
+        <button type="button" class="xbtn mini" data-cptmod="${esc(c.ident)}"
+          title="Modifier">⚙</button>
+        <button type="button" class="xbtn mini sup" data-cptsup="${esc(c.ident)}"
+          title="Supprimer">✕</button></td></tr>`).join("")}</table>
+    <div style="margin-top:12px"><button type="button" class="addbtn" id="cptAjout">
+      + Ajouter un compte</button></div>
+    <p class="muted">Le mot de passe n'est connu que de son titulaire : vous ne
+      pouvez pas le lire, seulement en remettre un provisoire, que l'intéressé
+      devra remplacer à sa première entrée.</p>`;
+  $("#cptAjout").onclick = ()=> ouvrirCompte(null);
+  $$("[data-cptmod]").forEach(b=> b.onclick = ()=>
+    ouvrirCompte(COMPTES.filter(c=> c.ident === b.dataset.cptmod)[0]));
+  $$("[data-cptsup]").forEach(b=> b.onclick = ()=> supprimerCompte(b.dataset.cptsup));
+}
+
+function ouvrirCompte(c){
+  const neuf = !c;
+  const prov = neuf ? mdpProvisoire() : "";
+  popup({titre: neuf ? "Nouveau compte" : "Compte « " + c.ident + " »", large:true,
+    corps:`<div class="cptform">
+      <div class="f"><label>Identifiant</label>
+        ${neuf ? `<input type="text" id="cIdent" placeholder="prenom.nom"
+            autocapitalize="none" spellcheck="false">`
+          : `<div class="calc">${esc(c.ident)}</div>`}
+        ${neuf ? `<p class="muted">Lettres, chiffres, point, tiret. Trois caractères
+          au moins. Il ne pourra plus être changé.</p>` : ""}</div>
+      <div class="f"><label>Nom affiché</label>
+        <input type="text" id="cNom" value="${esc(neuf ? "" : (c.nom || ""))}"
+          placeholder="Thierry MORCHAIN"></div>
+      <div class="f wide"><label>Niveau d'accès</label>
+        <div class="cptroles">${ROLES.map(r=> `<label class="cptrole">
+          <input type="radio" name="cRole" value="${r.cle}"${
+            (neuf ? r.cle === "nego" : c.role === r.cle) ? " checked" : ""}>
+          <span><b>${esc(r.lib)}</b><em>${esc(r.note)}</em></span></label>`).join("")}</div>
+      </div>
+      ${neuf ? `<div class="f wide"><label>Mot de passe provisoire</label>
+          <div class="cptprov"><code id="cProv">${esc(prov)}</code>
+            <button type="button" class="tbtn light" id="cProvAutre">Un autre</button>
+            <button type="button" class="tbtn light" id="cProvCopie">Copier</button></div>
+          <p class="muted">Transmettez-le à l'intéressé — de vive voix de préférence.
+            Il devra le remplacer dès sa première entrée, et vous ne pourrez plus
+            le lire ensuite.</p></div>`
+        : `<div class="f wide"><label>Mot de passe</label>
+          <div class="cptprov"><code id="cProv" class="vide">— inchangé —</code>
+            <button type="button" class="tbtn light" id="cProvAutre">Remettre un
+              provisoire</button>
+            <button type="button" class="tbtn light" id="cProvCopie" disabled>Copier</button>
+          </div>
+          <p class="muted">Vous ne pouvez pas lire le sien. Si cette personne l'a
+            oublié, remettez-lui un provisoire : ses séances en cours seront
+            fermées.</p></div>
+          <div class="f wide"><label class="chkline">
+            <input type="checkbox" id="cActif"${c.actif !== false ? " checked" : ""}>
+            <span>Compte actif</span></label>
+            <p class="muted">Un compte désactivé ne peut plus entrer, et ses séances
+              sont fermées sur-le-champ. Préférez cela à la suppression quand
+              quelqu'un s'en va : l'historique reste lisible.</p></div>`}
+    </div>`,
+    boutons:[{lib:"Annuler"}, {lib: neuf ? "Créer le compte" : "Enregistrer",
+      primaire:true, action:()=>{}}]});
+
+  let motProv = prov;
+  const bProv = $("#cProvAutre"), bCop = $("#cProvCopie");
+  bProv.onclick = ()=>{
+    motProv = mdpProvisoire();
+    $("#cProv").textContent = motProv; $("#cProv").classList.remove("vide");
+    bCop.disabled = false;
+  };
+  bCop.onclick = ()=>{
+    if(!motProv) return;
+    if(navigator.clipboard) navigator.clipboard.writeText(motProv)
+      .then(()=> toast("Mot de passe provisoire copié"),
+            ()=> toast("Copie impossible — recopiez-le à la main"));
+    else toast("Copie impossible — recopiez-le à la main");
+  };
+  const bOk = $("#popPieds").lastElementChild;
+  bOk.onclick = async (e)=>{
+    e.stopPropagation();
+    const nom = $("#cNom").value.trim();
+    const role = ($$('input[name="cRole"]').filter(x=> x.checked)[0] || {}).value || "nego";
+    const ident = neuf ? $("#cIdent").value.trim().toLowerCase() : c.ident;
+    if(neuf && !/^[a-z0-9._-]{3,32}$/.test(ident))
+      return toast("Identifiant : lettres, chiffres, point ou tiret, 3 caractères au moins");
+    bOk.disabled = true; bOk.textContent = "Enregistrement…";
+    try{
+      let charge;
+      if(neuf){
+        const sel = await webAppel({action:"sel", ident});
+        /* le sel du script pour un inconnu est inventé mais stable : on
+           en demande donc un vrai, tiré au sort ici */
+        const selNeuf = enHexa(crypto.getRandomValues
+          ? crypto.getRandomValues(new Uint8Array(16))
+          : new Uint8Array(16).map(()=> Math.floor(Math.random() * 256)));
+        const emp = await empreinteMdp(motProv, selNeuf);
+        charge = {action:"compte_creer", ident, nom, role, sel: selNeuf,
+                  empreinte: emp, doitChanger: true};
+      } else {
+        charge = {action:"compte_modifier", ident, nom, role,
+                  actif: $("#cActif").checked};
+        if(motProv){
+          const selNeuf = enHexa(crypto.getRandomValues(new Uint8Array(16)));
+          charge.sel = selNeuf;
+          charge.empreinte = await empreinteMdp(motProv, selNeuf);
+        }
+      }
+      const r = await webAppel(charge);
+      if(r.erreur === "existe") throw new Error("cet identifiant est déjà pris");
+      if(r.erreur === "ident") throw new Error("identifiant mal formé");
+      if(r.erreur === "dernieradmin")
+        throw new Error("c'est le dernier administrateur : on ne peut pas le "
+          + "rétrograder ni le désactiver");
+      if(r.erreur) throw new Error("refusé (" + r.erreur + ")");
+      fermerPopup();
+      COMPTES = null;
+      if(r.premier){
+        /* on vient de poser la serrure : on se connecte sur-le-champ,
+           sinon la page se retrouverait dehors au prochain appel */
+        SERRURE_ACTIVE = true;
+        toast("Compte administrateur créé — connectez-vous");
+        setTimeout(()=> montrerConnexion("Votre compte est créé. Entrez avec "
+          + "l'identifiant « " + ident + " » et le mot de passe provisoire."), 400);
+        return;
+      }
+      rendreComptes();
+      toast(neuf ? "Compte créé" : "Compte enregistré");
+    }catch(err){
+      bOk.disabled = false; bOk.textContent = neuf ? "Créer le compte" : "Enregistrer";
+      toast(err.message);
+    }
+  };
+}
+
+function supprimerCompte(ident){
+  popup({titre:"Supprimer le compte « " + ident + " » ?", genre:"erreur",
+    corps:`<p>La personne ne pourra plus entrer, et ses séances en cours seront
+      fermées. <b>Les dossiers ne sont pas touchés</b> : ils appartiennent à
+      l'agence, pas au compte.</p>
+      <p class="muted">Si cette personne peut revenir, préférez la
+      <b>désactiver</b> : le compte reste, prêt à resservir.</p>`,
+    boutons:[{lib:"Annuler"}, {lib:"Supprimer", primaire:true, action: async ()=>{
+      try{
+        const r = await webAppel({action:"compte_suppr", ident});
+        if(r.erreur === "soimeme") throw new Error("on ne supprime pas son propre compte");
+        if(r.erreur === "dernieradmin")
+          throw new Error("c'est le dernier administrateur");
+        if(r.erreur) throw new Error("refusé (" + r.erreur + ")");
+        COMPTES = null; rendreComptes(); toast("Compte supprimé");
+      }catch(e){ toast(e.message); }
+    }}]});
+}
+
+
+/* -------------------------------------------------- la barre du haut */
+function majPastilleMoi(){
+  const b = $("#moiBtn");
+  if(!b) return;
+  if(!SERRURE_ACTIVE || !connecte()){ b.hidden = true; return; }
+  const p = SEANCE.profil || {};
+  const nom = (p.nom || p.ident || "").trim();
+  const ini = nom.split(/\s+/).map(x=> x[0] || "").join("").slice(0, 2).toUpperCase();
+  b.hidden = false;
+  b.innerHTML = `<span>${esc(nom.split(/\s+/)[0] || p.ident)}
+    <em>${esc(libRole(p.role))}</em></span><span class="puce">${esc(ini || "?")}</span>`;
+  b.title = p.ident + " — " + libRole(p.role);
+  b.onclick = ()=> popup({titre: nom || p.ident,
+    corps:`<p class="muted" style="margin-top:0">Identifiant <b>${esc(p.ident)}</b> —
+        niveau <b>${esc(libRole(p.role))}</b>.<br>
+        ${esc(ROLES.filter(r=> r.cle === p.role).map(r=> cap(r.note))[0] || "")}.</p>
+      <p class="muted">Votre séance se ferme d'elle-même au bout de douze heures.</p>`,
+    boutons:[{lib:"Fermer"},
+             {lib:"Changer mon mot de passe", action:()=> ouvrirChangerMdp(false)},
+             {lib:"Se déconnecter", primaire:true, action: fermerSeanceApp}]});
+}
+
+/* Une séance en lecture seule ne doit pas donner le change : les champs
+   se verrouillent, et les boutons qui créent ou effacent disparaissent.
+   Le script refuserait de toute façon — mais une application qui laisse
+   taper puis jette la saisie est pire qu'une application qui l'interdit. */
+function appliquerDroits(){
+  const lecture = SERRURE_ACTIVE && connecte() && monRole() === "lecture";
+  document.body.classList.toggle("lecture", lecture);
+  if(!lecture) return;
+  $$(".shell input, .shell select, .shell textarea, .topbar input, .topbar select")
+    .forEach(el=> el.disabled = true);
+  /* et tout ce qui crée, ajoute ou supprime */
+  $$(".shell .addbtn, .shell .xbtn, .shell [data-add], .shell [data-del]")
+    .forEach(el=> el.disabled = true);
+}
+
 (function init(){
+  chargerSeance();
   const cur = localStorage.getItem(LS_CUR);
   const all = allDossiers();
   D = (cur && all[cur]) ? migrate(all[cur]) : blankDossier();
@@ -16484,6 +17664,18 @@ function demanderInstall(){
   setTimeout(()=> filePieces(true), 2500);
   window.addEventListener("online", ()=> filePieces(true));
   window.addEventListener("beforeunload", ()=>persist(true));
+
+  /* On demande au script si une serrure existe, et s'il nous reconnaît.
+     Tant que la réponse n'est pas là, la page reste utilisable : couper
+     l'accès à cause d'un réseau lent serait pire que le mal. */
+  interrogerServeur().then(()=>{
+    majPastilleMoi();
+    if(SERRURE_ACTIVE && !connecte()) montrerConnexion();
+    else if(connecte() && SEANCE.profil && SEANCE.profil.doitChanger)
+      ouvrirChangerMdp(true);
+    appliquerDroits();
+    renderListes();
+  });
 })();
 </script>
 </body>
