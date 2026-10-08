@@ -1638,7 +1638,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 7 octobre 2026, 21 h 30">Dossiers de vente</div>
+  <div class="brand" title="Version du 8 octobre 2026, 6 h 41">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1843,7 +1843,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>7 octobre 2026, 21 h 30</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>8 octobre 2026, 6 h 41</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5369,9 +5369,27 @@ function immeublesParVille(){
    dossiers divergent, c'est qu'on y a saisi l'adresse du lot, et on préfère
    laisser le champ vide plutôt qu'y mettre « Lot 12 ». Rien n'est écrasé non
    plus : les fiches déjà présentes ne sont pas touchées. */
+/* Sous quelle orthographe exacte des pièces ont-elles déjà été déposées pour
+   un immeuble ? Le sujet d'une pièce est « immeuble:NOM », et la comparaison
+   est au caractère près : si l'on reconstituait la fiche avec une casse
+   différente de celle du dépôt, le trombone de la fiche ne retrouverait pas
+   ses documents — alors qu'ils sont bien là, dans le Drive comme dans
+   l'index. On relève donc les orthographes déjà employées, et c'est celle-là
+   qu'on reprend. */
+function orthographesImmeublesPieces(){
+  const par = {};
+  Object.keys(PIECES || {}).forEach(id=>{
+    const p = PIECES[id];
+    if(!p || p.supprime || sujetType(p.sujet) !== "immeuble") return;
+    const nom = sujetCle(p.sujet);
+    if(nom) par[fold(nom)] = nom;
+  });
+  return par;
+}
 function immeublesManquants(){
   const vus = {};
   (L.residences || []).forEach(r=>{ if(r && r.nom) vus[fold(r.nom)] = true; });
+  const dejaDeposes = orthographesImmeublesPieces();
   const trouves = new Map();
   Object.keys(allDossiers()).forEach(id=>{
     const d = allDossiers()[id], b = (d && d.bien) || {};
@@ -5379,7 +5397,8 @@ function immeublesManquants(){
     if(!nom || vus[fold(nom)]) return;
     const cle = fold(nom);
     const x = trouves.get(cle) ||
-      {nom, adresse:"", memeAdresse:true, cp:"", ville:"", pays:"", n:0};
+      {nom: dejaDeposes[cle] || nom, pj: comptePieces(sujetImmeuble(dejaDeposes[cle] || nom)),
+       adresse:"", memeAdresse:true, cp:"", ville:"", pays:"", n:0};
     const ad = String(b.adresse || "").trim();
     if(ad){
       if(!x.adresse) x.adresse = ad;
@@ -5410,12 +5429,17 @@ function blocReconstituer(){
   if(!m.length) return "";
   const n = m.length;
   const sansAdresse = m.filter(x=> !x.memeAdresse || !x.adresse).length;
+  const pj = m.reduce((s,x)=> s + (x.pj || 0), 0);
   return `<div class="alerte" style="margin:0 0 12px">
     <b>${n} immeuble${n > 1 ? "s" : ""} cité${n > 1 ? "s" : ""} par vos dossiers
     ${n > 1 ? "n'ont" : "n'a"} pas de fiche ici</b> :
     ${m.map(x=> esc(x.nom) + " <em>(" + x.n + " dossier" + (x.n > 1 ? "s" : "") +
-      ")</em>").join(", ")}.
+      (x.pj ? ", " + x.pj + " pièce" + (x.pj > 1 ? "s" : "") + " jointe" +
+              (x.pj > 1 ? "s" : "") : "") + ")</em>").join(", ")}.
     <div class="muted" style="margin:6px 0 8px">
+      ${pj ? "<b>Les " + pj + " pièces jointes déjà déposées se rebrancheront "
+        + "d'elles-mêmes</b> : elles sont rattachées au nom de l'immeuble, que la "
+        + "fiche reprendra tel quel. Rien à redéposer. " : ""}
       La fiche sera créée avec le code postal et la ville du dossier.
       ${sansAdresse ? "L'adresse reste à saisir pour " + (sansAdresse === n ?
         (n > 1 ? "toutes" : "elle") : sansAdresse + " d'entre elles") +
@@ -5438,6 +5462,7 @@ function renderImmeubles(){
       <h2 class="pliable" data-pli="im_${x.i}">${chevron(plie)}${
         esc(x.r.nom || "Sans nom")}
         <span class="cnt">${n} dossier${n > 1 ? "s" : ""}</span>
+        ${x.r.nom ? trombone(sujetImmeuble(x.r.nom), "Documents") : ""}
         <button class="xbtn" data-bookdel="residences:${x.i}">Supprimer</button></h2>
       <div class="body plibody"${plie ? ' style="display:none"' : ''}>
         ${ficheCarnet("residences", x.r, x.i, null, true)}
@@ -9906,8 +9931,15 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
+
+  /* Un trombone peut vivre DANS un titre repliable — c'est le cas sur la page
+     Immeubles. Sans cette ligne, `closest` remonterait jusqu'au titre et le
+     clic replierait la carte au lieu d'ouvrir le classeur. On le laisse donc
+     filer : le gestionnaire des pièces, enregistré après celui-ci sur le même
+     document, le recevra. */
+  if(t.dataset.pj !== undefined) return;
 
   if(t.dataset.mgo){ activerOnglet(t.dataset.mgo); return; }
   if(t.classList.contains("tab")){ activerOnglet(t.dataset.p); return; }
@@ -13752,7 +13784,13 @@ const AIDE = [
   "Le syndic, l'année de construction, le nombre de lots et le descriptif du quartier ne "+
   "figurent pas dans les dossiers : ils restent à compléter. "+
   "Rien n'est jamais écrasé : les fiches déjà présentes ne sont pas touchées, et le bandeau "+
-  "disparaît dès qu'il n'y a plus rien à reprendre."],
+  "disparaît dès qu'il n'y a plus rien à reprendre. "+
+  "<b>Vos pièces jointes ne sont jamais perdues dans l'affaire</b>, et il n'y a rien à "+
+  "redéposer. Un document d'immeuble est rattaché au <b>nom</b> de l'immeuble, pas à sa "+
+  "fiche : même sans fiche au carnet, le bouton « Documents immeubles » du bandeau d'un "+
+  "dossier continue de les ouvrir. La fiche reconstituée reprend d'ailleurs l'orthographe "+
+  "exacte sous laquelle les pièces ont été déposées, de sorte que son propre trombone les "+
+  "retrouve ; le bandeau vous annonce leur nombre avant que vous ne cliquiez."],
  ["Les carnets et la base : qui l'emporte, et la sauvegarde du jour",
   "Les <b>dossiers</b> se fondent dossier par dossier : chacun porte sa date, la version la "+
   "plus récemment enregistrée l'emporte, et deux postes peuvent travailler en parallèle sans "+
