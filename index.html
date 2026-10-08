@@ -1638,7 +1638,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 8 octobre 2026, 8 h 08">Dossiers de vente</div>
+  <div class="brand" title="Version du 8 octobre 2026, 10 h 38">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1843,7 +1843,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>8 octobre 2026, 8 h 08</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>8 octobre 2026, 10 h 38</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2069,7 +2069,8 @@ const LISTS_DEFAULT = {
                "Je réponds à vos questions, sans engagement."],
   residences: [],
   syndics: [],
-  notaires: [{nom:"Maître Clémence TORTEL", adresse:"26-28, avenue Sixte Quenin",
+  notaires: [{prenom:"Clémence", patronyme:"TORTEL",
+              nom:"Maître Clémence TORTEL", adresse:"26-28, avenue Sixte Quenin",
               pays:"France", cp:"13200", ville:"ARLES", tel:"04 90 52 18 09",
               email:"clemence.tortel@notaires.fr"}],
   negociateurs: [{nom:"Thierry MORCHAIN",tel:"",email:"morchain.immobilier@gmail.com"},
@@ -2148,8 +2149,14 @@ const BOOKS = {
     ["nom","Cabinet","text","wide"],["adresse","Adresse","text","wide"],
     ["cp","Code postal","cp"],["ville","Ville","ville"],["pays","Pays","pays"],
     ["tel","Téléphone","text"],["email","Email","text","wide"]]},
+  /* La civilité d'un notaire ne se saisit pas : c'est « Maître », toujours.
+     On ne tape donc que le prénom et le nom, chacun avec sa mise en forme
+     habituelle — « Clémence », « TORTEL » —, et l'application compose le
+     libellé « Maître Clémence TORTEL ». C'est ce libellé, et non le rang dans
+     le carnet, que les dossiers retiennent et que les documents impriment. */
   notaires:{title:"Notaires", mode:"card", label:"Notaire", cols:[
-    ["nom","Nom du notaire","text","wide"],["adresse","Étude / Adresse","text","wide"],
+    ["prenom","Prénom","text"],["patronyme","Nom","text"],
+    ["adresse","Étude / Adresse","text","wide"],
     ["cp","Code postal","cp"],["ville","Ville","ville"],["pays","Pays","pays"],
     ["tel","Téléphone","text"],["email","Email de l'étude","text","wide"]]},
   /* Pas d'étude de rattachement : une même personne peut suivre des dossiers
@@ -2212,7 +2219,19 @@ function loadListesDepuis(v){
                              (v && v.agence) || {});
   (out.notaires||[]).forEach(n=>{ ["pays","cp","ville"]
     .forEach(k=>{ if(n[k]===undefined) n[k]=""; }); if(!n.pays) n.pays="France";
-    delete n.contact; delete n.contactEmail; });
+    delete n.contact; delete n.contactEmail;
+    /* Le nom d'un seul tenant devient prénom + nom. On ne touche PAS au
+       libellé déjà enregistré : c'est la clé que portent les dossiers, et
+       la rompre ici effacerait des coordonnées d'étude sans prévenir. Elle
+       ne se recompose que si l'on modifie la fiche. */
+    if(n.patronyme === undefined && n.prenom === undefined){
+      const c = couperNotaire(n.nom);
+      n.prenom = c.prenom; n.patronyme = c.patronyme;
+    }
+    if(n.prenom === undefined)    n.prenom = "";
+    if(n.patronyme === undefined) n.patronyme = "";
+    if(!n.nom) n.nom = libelleNotaire(n);
+  });
   if(!Array.isArray(out.residences)) out.residences = [];
   (out.diagnostiqueurs||[]).forEach(x=>{ ["adresse","pays","cp","ville"]
     .forEach(k=>{ if(x[k]===undefined) x[k]=""; }); if(!x.pays) x.pays="France"; });
@@ -2587,7 +2606,7 @@ function capitaliserPhrase(s){
 }
 
 /* champs concernés, par nom de propriété */
-const CHAMPS_MAJ  = ["nom","nomNaissance","raison","ville","lieuNaissance"];
+const CHAMPS_MAJ  = ["nom","nomNaissance","raison","ville","lieuNaissance","patronyme"];
 const CHAMPS_MOTS = ["prenom"];
 const CHAMPS_PHR  = ["profession"];
 const CHAMPS_TEL  = ["tel1","tel2","tel","courtierTel"];
@@ -2631,6 +2650,142 @@ function dateLongue(iso){
 function eur(v){ const n=num(v); if(n===null) return "";
   return n.toLocaleString("fr-FR",{minimumFractionDigits:0,maximumFractionDigits:2}) + " €"; }
 function book(kind,name){ return (L[kind]||[]).find(x=>x.nom===name) || {}; }
+
+/* =====================================================================
+   LES NOTAIRES — « Maître » n'est pas une saisie
+   ---------------------------------------------------------------------
+   Un notaire s'appelle « Maître ». La civilité est donc acquise : on ne
+   tape que le prénom et le nom, chacun avec sa mise en forme habituelle,
+   et l'application compose « Maître Clémence TORTEL ».
+
+   Ce libellé composé est la CLÉ du carnet : c'est lui que le dossier
+   retient dans `notaire.vendeur`, lui que les documents impriment. On ne
+   peut donc pas le changer à la légère — d'où les trois précautions qui
+   suivent : la composition, le report d'un changement de nom sur les
+   dossiers concernés, et une recherche tolérante pour les dossiers restés
+   sur une ancienne orthographe.
+
+   Une ÉTUDE (SCP, SELARL, Office…) n'a ni prénom ni nom de famille : elle
+   reste d'un bloc et ne reçoit pas de « Maître ».
+   ===================================================================== */
+/* Des FONCTIONS et non des constantes : les carnets se normalisent dès le
+   chargement du module, bien avant cette ligne, et une constante y serait
+   encore dans sa zone morte. Une fonction, elle, est remontée en tête. */
+function estTitreNotaire(s){ return /^\s*(ma[îi]tre|me)\.?\s+/i.test(String(s || "")); }
+function estEtudeNotaire(s){
+  return /^\s*(scp|selarl|selas|sarl|sas|sci|office|[ée]tude|notaires?\b)/i.test(String(s || ""));
+}
+function sansTitreNotaire(s){ return String(s || "").replace(/^\s*(ma[îi]tre|me)\.?\s+/i, ""); }
+
+function libelleNotaire(n){
+  const ensemble = [String((n || {}).prenom || "").trim(),
+                    String((n || {}).patronyme || "").trim()]
+                   .filter(Boolean).join(" ");
+  if(!ensemble) return "";
+  return (estTitreNotaire(ensemble) || estEtudeNotaire(ensemble))
+    ? ensemble : "Maître " + ensemble;
+}
+/* Couper un libellé ancien — « Maître Clémence TORTEL » — en ses deux
+   morceaux. Les capitales font foi quand il y en a : c'est l'usage des
+   actes. Sinon, le dernier mot est le nom de famille. */
+function couperNotaire(brut){
+  const t = sansTitreNotaire(String(brut || "").trim()).trim();
+  if(!t) return {prenom:"", patronyme:""};
+  if(estEtudeNotaire(t)) return {prenom:"", patronyme:t};
+  const mots = t.split(/\s+/);
+  const caps = [], reste = [];
+  mots.forEach(m=>{ (m === m.toUpperCase() && m !== m.toLowerCase() ? caps : reste).push(m); });
+  if(caps.length && reste.length) return {prenom: reste.join(" "), patronyme: caps.join(" ")};
+  if(mots.length === 1) return {prenom:"", patronyme: mots[0]};
+  return {prenom: mots.slice(0, -1).join(" "), patronyme: mots[mots.length - 1]};
+}
+/* Le dossier garde le NOM du notaire. Si le carnet a depuis changé
+   d'orthographe — un titre ajouté, une casse corrigée —, on le retrouve
+   quand même : d'abord à l'identique, puis sans titre ni accents, puis sur
+   le seul nom de famille. Sans cela, une adresse d'étude disparaîtrait d'un
+   document sans que rien ne le dise. */
+/* Changer le prénom ou le nom d'un notaire change sa clé. Les dossiers qui le
+   désignaient garderaient l'ancienne : on les suit, et on les recale. C'est le
+   geste qu'on ne peut pas demander à l'utilisateur de faire à notre place. */
+function renommerNotaire(avant, apres){
+  if(!avant || avant === apres) return 0;
+  persist(true);                       /* le dossier ouvert d'abord sur le disque */
+  const all = allDossiers();
+  let n = 0;
+  Object.keys(all).forEach(id=>{
+    const nt = all[id].notaire; if(!nt) return;
+    let touche = false;
+    ["vendeur","acquereur"].forEach(w=>{ if(nt[w] === avant){ nt[w] = apres; touche = true; } });
+    if(touche){ all[id].maj = Date.now(); n++; }
+  });
+  if(!n) return 0;
+  try{ localStorage.setItem(LS_DOSS, JSON.stringify(all)); }catch(e){}
+  if(all[D.id]) D.notaire = all[D.id].notaire;
+  return n;
+}
+/* L'intitulé qui coiffe une fiche de carnet suit la saisie. Pour un notaire,
+   c'est le libellé composé qui s'y affiche, et non le mot que l'on vient de
+   taper. */
+function majEnteteCarnet(champ, k, i){
+  const h = champ.closest(".bookcard"); if(!h) return;
+  const w = h.querySelector(".who"); if(!w) return;
+  const r = (L[k] || [])[+i] || {};
+  w.textContent = r.nom || BOOKS[k].label;
+}
+/* Recompose le libellé pendant la frappe, et rien d'autre : « DUPON » puis
+   « DUPONT » ne doivent pas réécrire les dossiers à chaque lettre. Le report
+   attend la sortie du champ — `finirRenommage`, qui sait ce que le nom valait
+   à l'entrée. */
+function majLibelleNotaire(i){
+  const n = (L.notaires || [])[i]; if(!n) return 0;
+  const apres = libelleNotaire(n);
+  if(apres === (n.nom || "")) return 0;
+  n.nom = apres; saveLists();
+  return 1;
+}
+/* Fin d'un renommage, à la sortie du champ : la fiche prend son nom
+   définitif, l'ancien laisse une trace datée — sans quoi l'autre appareil
+   rapporterait l'entrée d'avant et l'on en aurait deux — et, pour un
+   notaire, les dossiers qui le désignaient le suivent. */
+function finirRenommage(k, i, avant){
+  const r = (L[k] || [])[+i]; if(!r) return 0;
+  if(k === "notaires") r.nom = libelleNotaire(r);
+  const apres = r.nom || "";
+  if(!avant || avant === apres) return 0;
+  noterRetraitListe(k, avant);
+  oublierRetraitListe(k, apres);
+  const n = (k === "notaires") ? renommerNotaire(avant, apres) : 0;
+  saveLists();
+  return n;
+}
+/* Au chargement, on recale les dossiers restés sur une ancienne orthographe :
+   déterministe et sans effet si tout est déjà en place, donc rejouable à
+   chaque ouverture sans rien déranger. On ne redate PAS les dossiers — la
+   correction voyagera avec la prochaine vraie modification. */
+function recalerNotairesDossiers(){
+  const all = allDossiers();
+  let n = 0;
+  Object.keys(all).forEach(id=>{
+    const nt = all[id].notaire; if(!nt) return;
+    ["vendeur","acquereur"].forEach(w=>{
+      const v = nt[w]; if(!v || book("notaires", v).nom) return;
+      const f = ficheNotaire(v);
+      if(f.nom){ nt[w] = f.nom; n++; }
+    });
+  });
+  if(n) try{ localStorage.setItem(LS_DOSS, JSON.stringify(all)); }catch(e){}
+  return n;
+}
+function nu(s){ return fold(sansTitreNotaire(s)).trim(); }
+function ficheNotaire(nom){
+  const exact = book("notaires", nom);
+  if(exact.nom) return exact;
+  const q = nu(nom);
+  if(!q) return {};
+  const t = L.notaires || [];
+  return t.filter(x=> nu(x.nom) === q)[0]
+      || t.filter(x=> x.patronyme && fold(x.patronyme) === q)[0] || {};
+}
 function ref(){ return D.mandat.num || ""; }
 
 /* Le prix FAI inclut toujours les honoraires : net vendeur = FAI − honoraires.
@@ -3071,7 +3226,7 @@ function recapValue(key){
   const which = key==="@recapNotV" ? "vendeur" : "acquereur";
   const nom = notaireNom(which);
   if(!nom) return ["Choisissez un notaire pour afficher ses coordonnées.", true];
-  const n = book("notaires", nom);
+  const n = ficheNotaire(nom);
   const adr = [n.adresse, n.cp, n.ville, (n.pays && n.pays!=="France") ? n.pays : ""]
               .filter(Boolean).join(" ");
   const s = [adr, n.tel, n.email].filter(Boolean).join("  ·  ");
@@ -5307,10 +5462,72 @@ function blocCarnet(k, o){
   return `<div class="card">
     <h2 class="pliable" data-pli="b_${k}">${chevron(plie)}${esc(opt.titre || b.title)}
       <span class="cnt">${rows.length}</span></h2>
-    <div class="body plibody"${plie?' style="display:none"':''}>${inner}
+    <div class="body plibody"${plie?' style="display:none"':''}>${blocNotairesManquants(k)}${inner}
       <div style="margin-top:12px">
         <button class="addbtn" data-bookadd="${k}">+ Ajouter</button></div>
     </div></div>`;
+}
+
+/* ------------------------------- reconstituer le carnet des notaires ------
+   Comme pour les immeubles : les dossiers nomment leur notaire, et le
+   carnet peut avoir été perdu. On sait donc recréer les fiches manquantes.
+   Le nom seul en sort — l'adresse de l'étude, le téléphone et le courriel
+   ne figurent nulle part dans un dossier et resteront à saisir. C'est déjà
+   cela de repris, et surtout le lien avec les dossiers est rétabli. */
+function notairesManquants(){
+  const vus = {};
+  (L.notaires || []).forEach(n=>{ if(n && n.nom) vus[nu(n.nom)] = true; });
+  const trouves = new Map();
+  const all = allDossiers();
+  Object.keys(all).forEach(id=>{
+    const nt = all[id].notaire || {};
+    ["vendeur","acquereur"].forEach(w=>{
+      const brut = String(nt[w] || "").trim();
+      if(!brut) return;
+      const cle = nu(brut);
+      if(!cle || vus[cle]) return;
+      const x = trouves.get(cle) || {brut, n:0};
+      x.n++;
+      trouves.set(cle, x);
+    });
+  });
+  return Array.from(trouves.values())
+    .map(x=> Object.assign({}, couperNotaire(x.brut), {n: x.n, brut: x.brut}))
+    .sort((a,b)=> triFr(a.patronyme || "", b.patronyme || ""));
+}
+function reconstituerNotaires(){
+  const m = notairesManquants();
+  if(!m.length){ toast("Aucun notaire à reconstituer"); return; }
+  m.forEach(x=>{
+    const fiche = {prenom:x.prenom, patronyme:x.patronyme, adresse:"", cp:"", ville:"",
+                   pays:"France", tel:"", email:""};
+    /* on garde le libellé tel que les dossiers l'écrivent : le lien tient
+       sans qu'il faille les réécrire */
+    fiche.nom = x.brut;
+    oublierRetraitListe("notaires", fiche);
+    (L.notaires = L.notaires || []).push(fiche);
+  });
+  saveLists(); rebuildSelects(); renderCarnets(); renderPreview();
+  toast(m.length + (m.length > 1 ? " notaires repris des dossiers"
+                                 : " notaire repris des dossiers"));
+}
+function blocNotairesManquants(k){
+  if(k !== "notaires") return "";
+  const m = notairesManquants();
+  if(!m.length) return "";
+  const n = m.length;
+  return `<div class="alerte" style="margin:0 0 12px">
+    <b>${n} notaire${n > 1 ? "s" : ""} cité${n > 1 ? "s" : ""} par vos dossiers
+    ${n > 1 ? "n'ont" : "n'a"} pas de fiche ici</b> :
+    ${m.map(x=> esc(titreNotaire(x.brut)) + " <em>(" + x.n + " dossier" +
+      (x.n > 1 ? "s" : "") + ")</em>").join(", ")}.
+    <div class="muted" style="margin:6px 0 8px">
+      La fiche sera créée avec le prénom et le nom tels que les dossiers les
+      écrivent. L'adresse de l'étude, le téléphone et le courriel n'y figurent
+      pas : ils resteront à saisir.</div>
+    <button type="button" class="addbtn" id="btnReconstNot">Créer
+      ${n > 1 ? "ces " + n + " fiches" : "cette fiche"} depuis les dossiers</button>
+  </div>`;
 }
 
 /* =====================================================================
@@ -5534,6 +5751,9 @@ function renderRepertoire(){
       <div class="body">${gardes.map(x=> ficheCarnet(k, x.r, x.i)).join("")}</div></div>`;
   }).join("") || `<p class="muted">Aucune fiche de carnet ne correspond à « ${
     esc(REP_Q)} ».</p>`;
+  const bn = $("#btnReconstNot");
+  if(bn) bn.onclick = reconstituerNotaires;
+  if(typeof appliquerDroits === "function") appliquerDroits();
 }
 
 /* Les carnets vivent désormais sur trois pages ; on ne redessine que celle
@@ -8312,21 +8532,21 @@ function notaireContact(which){
   return { personne: D.notaire[w+"Contact"] || "",
            email:    D.notaire[w+"ContactEmail"] || "" };
 }
-/* Un notaire se nomme « Maître ». On ne préfixe pas quand le carnet porte déjà
-   le titre, ni quand il s'agit d'une étude (SCP, SELARL, Office, Étude…). */
-const NOTAIRE_SANS_TITRE =
-  /^\s*(ma[îi]tre|me\b|me\.|scp|selarl|selas|sarl|sas|sci|office|[ée]tude|notaires?\b)/i;
+/* Un notaire se nomme « Maître ». Le carnet compose déjà le titre ; cette
+   fonction reste le filet pour un libellé venu d'ailleurs — un dossier ancien,
+   une base d'un autre poste — et ne préfixe ni ce qui porte déjà le titre, ni
+   une étude (SCP, SELARL, Office…). */
 function titreNotaire(nom){
   const n = String(nom || "").trim();
   if(!n) return "";
-  return NOTAIRE_SANS_TITRE.test(n) ? n : "Maître " + n;
+  return (estTitreNotaire(n) || estEtudeNotaire(n)) ? n : "Maître " + n;
 }
 
 function blocEtude(which){
   const nom = notaireNom(which);
   if(!nom) return "&nbsp;";
-  const n = book("notaires",nom);
-  const out = [titreNotaire(nom)];
+  const n = ficheNotaire(nom);
+  const out = [titreNotaire(n.nom || nom)];
   const ad = [n.adresse,n.cp,n.ville,(n.pays&&n.pays!=="France")?n.pays:""].filter(Boolean).join(" ");
   if(ad) out.push("Adresse : " + ad);
   if(n.tel) out.push("Tél : " + n.tel);
@@ -8417,8 +8637,8 @@ ${GAP}
 function blocNotaireET(which){
   const nom = notaireNom(which);
   if(!nom) return "&nbsp;";
-  const n = book("notaires", nom);
-  const l = ["<b>" + esc(titreNotaire(nom)) + "</b>"];
+  const n = ficheNotaire(nom);
+  const l = ["<b>" + esc(titreNotaire(n.nom || nom)) + "</b>"];
   const ad = [n.adresse, n.cp, n.ville, (n.pays && n.pays!=="France") ? n.pays : ""]
              .filter(Boolean).join(" ");
   if(ad) l.push(esc(ad));
@@ -9688,7 +9908,12 @@ document.addEventListener("input", e=>{
     refreshVilles(t.dataset.grp, true);
 
   if(t.dataset.list !== undefined){
-    L[t.dataset.list] = t.value.split("\n").map(s=>s.trim()).filter(Boolean);
+    /* la liste se saisit d'un bloc : ce qui n'y figure plus en est sorti */
+    const avant = (L[t.dataset.list] || []).slice();
+    const apres = t.value.split("\n").map(s=>s.trim()).filter(Boolean);
+    avant.forEach(v=>{ if(apres.indexOf(v) < 0) noterRetraitListe(t.dataset.list, v); });
+    apres.forEach(v=>{ if(avant.indexOf(v) < 0) oublierRetraitListe(t.dataset.list, v); });
+    L[t.dataset.list] = apres;
     saveLists(); rebuildSelects();
     t.style.height="auto"; t.style.height = Math.max(120,t.scrollHeight+4)+"px";
     renderPreview();
@@ -9703,8 +9928,8 @@ document.addEventListener("input", e=>{
       if(el) el.value = L[k][+i].annee;
     }
     if(t.dataset.role === "cp" || t.dataset.role === "pays") refreshVilles(t.dataset.grp, true);
-    if(f === "nom"){ const h = t.closest(".bookcard");
-      if(h) h.querySelector(".who").textContent = t.value || BOOKS[k].label; }
+    if(k === "notaires" && (f === "prenom" || f === "patronyme")) majLibelleNotaire(+i);
+    majEnteteCarnet(t, k, i);
     rebuildSelects(); refreshCalcs(); renderPreview();
   }
   if(t.dataset.piece !== undefined){
@@ -9799,8 +10024,8 @@ document.addEventListener("focusout", e=>{
     const v = formatChamp(f, t.value, (L[k][+i]||{}).pays);
     if(v === null || v === t.value) return;
     t.value = v; L[k][+i][f] = v; saveLists();
-    if(f === "nom"){ const h = t.closest(".bookcard");
-      if(h) h.querySelector(".who").textContent = v || BOOKS[k].label; }
+    if(k === "notaires" && (f === "prenom" || f === "patronyme")) majLibelleNotaire(+i);
+    majEnteteCarnet(t, k, i);
     rebuildSelects(); refreshCalcs(); renderPreview();
     return;
   }
@@ -10065,6 +10290,7 @@ document.addEventListener("click", e=>{
     if(L[k] && L[k][+i]){ L[k][+i][f] = ""; saveLists(); renderCarnets(); }
     return; }
   if(t.dataset.bookdel){ const [k,i]=t.dataset.bookdel.split(":");
+    noterRetraitListe(k, L[k][+i]);        // pour que l'autre appareil ne la rapporte pas
     L[k].splice(+i,1); saveLists(); renderCarnets(); refreshAllVilles();
     rebuildSelects(); renderPreview(); return; }
   if(t.dataset.open){ const all=allDossiers();
@@ -10175,6 +10401,8 @@ function confirmAdd(){
   });
   let nom;
   if(modalCtx.isBook){
+    /* un notaire n'a pas de champ « nom » à remplir : on le compose */
+    if(modalCtx.key === "notaires") vals.nom = libelleNotaire(vals);
     if(!vals.nom){ toast("Le nom est obligatoire"); return; }
     (L[modalCtx.key] = L[modalCtx.key] || []).push(vals);
     nom = vals.nom;
@@ -10183,6 +10411,7 @@ function confirmAdd(){
     (L[modalCtx.key] = L[modalCtx.key] || []).push(vals.valeur);
     nom = vals.valeur;
   }
+  oublierRetraitListe(modalCtx.key, nom);
   saveLists();
   const {target, attr} = modalCtx;
   if(depiler()){                       // on revient à la fenêtre précédente
@@ -11244,14 +11473,29 @@ function ecrireBase(d) {
  *  Contrepartie assumée : vider un carnet ENTIER ne se propage plus. Retirer
  *  des lignes une à une, si.
  */
+function cleEntreeGs(v) {
+  return (typeof v === 'string') ? v : String((v || {}).nom || '');
+}
 function protegerCarnets(ancien, neuf) {
   try {
     const a = (ancien || {}).listes, n = (neuf || {}).listes;
     if (!a || !n) return neuf;
+    const sup = (neuf || {}).listesSupprimes || {};
     Object.keys(a).forEach(function (k) {
       const av = a[k], nv = n[k];
-      if (av instanceof Array && av.length &&
-          (!(nv instanceof Array) || !nv.length)) n[k] = av;
+      if (!(av instanceof Array)) return;
+      if (!(nv instanceof Array)) { n[k] = av; return; }
+      /* Entrée par entrée : tout ce que la base avait et que
+         l'enregistrement n'a plus revient, SAUF ce qui a été retiré
+         volontairement — le registre des retraits le dit. */
+      const vus = {};
+      nv.forEach(function (v) { vus[cleEntreeGs(v)] = true; });
+      av.forEach(function (v) {
+        const cle = cleEntreeGs(v);
+        if (!cle || vus[cle]) return;
+        if (sup[k + '|' + cle]) return;          // retirée exprès
+        nv.push(v);
+      });
     });
   } catch (err) {}
   return neuf;
@@ -12066,6 +12310,38 @@ const LS_BASELUE = "mi_base_lue_v1";
 function baseLue(){ try{ return !!localStorage.getItem(LS_BASELUE); }catch(e){ return false; } }
 function noterBaseLue(){ try{ localStorage.setItem(LS_BASELUE, "1"); }catch(e){} }
 
+/* ------------------------------------- ce qu'on a retiré d'un carnet ----
+   Les carnets se fondent entrée par entrée : une fiche présente d'un seul
+   côté est donc GARDÉE. Sans trace des retraits, on ne pourrait plus rien
+   supprimer — l'autre appareil la rapporterait au premier échange. On tient
+   donc le même registre horodaté que pour les dossiers effacés : la clé est
+   « carnet|nom », la valeur l'instant du retrait. */
+const LS_LSUPPR = "mi_listes_supprimes_v1";
+function supprimesListes(){
+  try{ return JSON.parse(localStorage.getItem(LS_LSUPPR) || "{}"); }catch(e){ return {}; }
+}
+function ecrireSupprimesListes(s){
+  try{ localStorage.setItem(LS_LSUPPR, JSON.stringify(s || {})); }catch(e){}
+}
+function noterRetraitListe(carnet, valeur){
+  const cle = cleEntree(valeur);
+  if(!carnet || !cle) return;
+  const s = supprimesListes();
+  s[carnet + "|" + cle] = Date.now();
+  ecrireSupprimesListes(s);
+}
+/* Ce que l'on remet vaut annulation du retrait : sinon, retirer puis
+   ressaisir la même fiche donnerait une fiche qui s'efface toute seule au
+   prochain échange. */
+function oublierRetraitListe(carnet, valeur){
+  const cle = cleEntree(valeur);
+  if(!carnet || !cle) return;
+  const s = supprimesListes();
+  if(s[carnet + "|" + cle] === undefined) return;
+  delete s[carnet + "|" + cle];
+  ecrireSupprimesListes(s);
+}
+
 /* --------- mémorisation du fichier choisi, d'une session à l'autre ------- */
 function idbOuvrir(){
   return new Promise((res,rej)=>{
@@ -12105,6 +12381,8 @@ function donneesLocales(){
   });
   return {appli:"Dossiers de vente", version:3, date:new Date().toISOString(),
           majListes: baseLue() ? majListes() : 0, listes: L, dossiers: doss,
+          /* un poste qui n'a jamais lu la base n'impose pas ses valeurs d'usine */
+          vierge: !baseLue(), listesSupprimes: supprimesListes(),
           supprimes: supprimes(), pieces: piecesPubliables()};
 }
 /* ------------------------------------------------- fusion des carnets ----
@@ -12123,17 +12401,93 @@ function donneesLocales(){
    aussi. Retirer des lignes une à une se propage normalement, comme avant.
    Entre ce menu inconvénient et le risque de tout perdre, le choix est
    simple. */
-function fusionnerListes(a, b, bGagne){
-  if(!a) return b || null;
-  if(!b) return a;
-  const gagnant = bGagne ? b : a, perdant = bGagne ? a : b;
-  const out = Object.assign({}, gagnant);
-  Object.keys(perdant).forEach(k=>{
-    const garde = perdant[k], tenu = out[k];
-    if(Array.isArray(garde) && garde.length &&
-       (!Array.isArray(tenu) || !tenu.length)) out[k] = garde;
+/* L'identité d'une entrée : le nom pour une fiche de carnet, la valeur
+   elle-même pour une liste de choix. C'est aussi ce que les dossiers
+   retiennent — d'où l'importance de s'y tenir. */
+function cleEntree(v){
+  return typeof v === "string" ? v : String((v || {}).nom || "");
+}
+/* Une valeur sortie d'usine : celle que porte une installation neuve. */
+function entreeDUsine(carnet, v){
+  const d = LISTS_DEFAULT[carnet];
+  if(!Array.isArray(d)) return false;
+  const cle = cleEntree(v);
+  return d.some(x=> cleEntree(x) === cle);
+}
+
+/* ------------------------------------------------- fusion d'un carnet ----
+   ENTRÉE PAR ENTRÉE, et non plus en bloc. Le bloc entier arbitré par une
+   seule date était une faute : il suffisait qu'un appareil enregistre ses
+   carnets une seconde après la base pour que TOUT son contenu remplace
+   celui de la base — ses vides comme ses valeurs d'usine. On ne compare
+   donc plus que ce qui est comparable : chaque fiche, une à une.
+
+   Trois règles, et elles se suffisent :
+
+   · UNION. Une fiche présente d'un seul côté est gardée. Rien ne disparaît
+     parce que l'autre appareil ne la connaissait pas.
+   · LA PLUS RÉCENTE. Une fiche présente des deux côtés est prise du côté
+     qui a enregistré en dernier.
+   · SUPPRESSION DATÉE. Retirer une fiche laisse une trace horodatée
+     (`mi_listes_supprimes_v1`). La fiche ne revient pas d'un appareil dont
+     les carnets sont plus anciens que cette trace — exactement comme pour
+     un dossier effacé.
+
+   Et une précaution de plus, qui vise l'incident : un appareil qui N'A
+   JAMAIS LU LA BASE n'impose pas ses valeurs d'usine. Sans elle, une
+   tablette ouverte pour la première fois réinjecterait le notaire de
+   démonstration et les listes de choix d'origine. Ce qu'on y a vraiment
+   saisi, en revanche, voyage normalement. */
+function fusionnerCarnet(carnet, a, b, sup){
+  const premier = (b.maj > a.maj) ? b : a, second = (premier === a) ? b : a;
+  const rang = {}, sortie = [];
+  const verser = cote=>{
+    (cote.listes[carnet] || []).forEach(v=>{
+      if(cote.vierge && entreeDUsine(carnet, v)) return;
+      const cle = cleEntree(v);
+      if(!cle) return;
+      const efface = sup[carnet + "|" + cle] || 0;
+      if(efface && efface > cote.maj) return;
+      if(rang[cle] !== undefined){
+        if(cote.maj > sortie[rang[cle]].maj) sortie[rang[cle]] = {v, maj: cote.maj};
+        return;
+      }
+      rang[cle] = sortie.length;
+      sortie.push({v, maj: cote.maj});
+    });
+  };
+  verser(premier); verser(second);
+  return sortie.map(x=> x.v);
+}
+/* La fiche de l'agence n'est pas un carnet : c'est un objet unique. La plus
+   récente l'emporte — mais une fiche vide ne remplace jamais une fiche
+   remplie, même plus ancienne. */
+function fusionnerAgence(a, b, bGagne){
+  const ga = bGagne ? b : a, pe = bGagne ? a : b;
+  const garni = x=> !!(x && (String(x.nom || "").trim() || String(x.adresse || "").trim()));
+  if(!garni(ga) && garni(pe)) return pe;
+  return ga || pe;
+}
+function fusionnerListes(a, b){
+  if(!a.listes) return {listes: b.listes || null, suppr: b.suppr || {}};
+  if(!b.listes) return {listes: a.listes, suppr: a.suppr || {}};
+  const sup = Object.assign({}, a.suppr || {}, b.suppr || {});
+  Object.keys(a.suppr || {}).forEach(k=>{
+    sup[k] = Math.max(a.suppr[k] || 0, (b.suppr || {})[k] || 0);
   });
-  return out;
+  const out = {}, clefs = {};
+  [a, b].forEach(c=> Object.keys(c.listes).forEach(k=>{ clefs[k] = true; }));
+  Object.keys(clefs).forEach(k=>{
+    const va = a.listes[k], vb = b.listes[k];
+    if(k === "agence"){ out[k] = fusionnerAgence(va, vb, b.maj > a.maj); return; }
+    if(!Array.isArray(va) || !Array.isArray(vb)){
+      out[k] = (b.maj > a.maj && vb !== undefined) ? vb
+             : (va !== undefined ? va : vb);
+      return;
+    }
+    out[k] = fusionnerCarnet(k, a, b, sup);
+  });
+  return {listes: out, suppr: sup};
 }
 
 /* garde, pour chaque dossier, la version la plus récemment enregistrée ;
@@ -12156,7 +12510,11 @@ function fusionner(a, b){
   out.supprimes = sup;
   const ma = a.majListes || 0, mb = b.majListes || 0;
   out.majListes = Math.max(ma, mb);
-  out.listes = fusionnerListes(a.listes, b.listes, mb > ma);
+  const f = fusionnerListes(
+    {listes: a.listes, maj: ma, suppr: a.listesSupprimes, vierge: !!a.vierge},
+    {listes: b.listes, maj: mb, suppr: b.listesSupprimes, vierge: !!b.vierge});
+  out.listes = f.listes;
+  out.listesSupprimes = f.suppr;
   out.pieces = fusionnerPieces(a.pieces, b.pieces);
   return out;
 }
@@ -12186,6 +12544,9 @@ function adopter(m){
       localStorage.setItem(LS_LISTS, JSON.stringify(L));
       localStorage.setItem(LS_MAJL, String(m.majListes || Date.now()));
     }
+    if(m.listesSupprimes) ecrireSupprimesListes(m.listesSupprimes);
+    /* un notaire peut avoir été renommé sur l'autre poste */
+    recalerNotairesDossiers();
     /* l'échange a eu lieu : ce poste connaît désormais la base */
     noterBaseLue();
   }catch(e){ toast("Mémoire du navigateur saturée"); }
@@ -13322,6 +13683,22 @@ const AIDE = [
   "téléphone, courriel — et ramène en plus les <b>vendeurs et acquéreurs saisis dans les "+
   "dossiers</b>, chacun avec le mandat d'où il vient et un bouton pour y aller : une personne "+
   "se retrouve sans qu'il faille se rappeler où on l'a d'abord écrite."],
+ ["Les notaires : « Maître » ne se tape plus",
+  "La civilité d'un notaire est acquise une fois pour toutes. Sa fiche ne demande donc que le "+
+  "<b>Prénom</b> et le <b>Nom</b>, séparément, chacun avec sa mise en forme habituelle : une "+
+  "capitale à chaque mot du prénom (« Jean-Pierre »), le nom tout en capitales (« TORTEL »). "+
+  "L'application compose <b>« Maître Jean-Pierre TORTEL »</b>, et c'est ce libellé qui coiffe "+
+  "la fiche, qui s'affiche dans le menu d'un dossier et qui s'imprime sur la fiche notaire "+
+  "comme sur le dossier de vente. "+
+  "<b>Corriger un prénom ou un nom ne casse rien</b> : les dossiers qui désignaient ce notaire "+
+  "sont recalés au passage, y compris celui que vous avez sous les yeux. "+
+  "<b>Les fiches déjà saisies</b> se coupent toutes seules en deux au premier affichage — les "+
+  "capitales font foi, comme dans les actes : « Maître Clémence TORTEL » devient prénom "+
+  "« Clémence », nom « TORTEL ». Leur libellé, lui, ne bouge pas tant que vous n'y touchez "+
+  "pas, pour qu'aucun dossier ne perde son étude. "+
+  "<b>Une étude</b> saisie à la place d'une personne — SCP, SELARL, Office, Étude — reste "+
+  "d'un bloc dans le champ Nom et <b>ne reçoit pas de « Maître »</b> : on n'écrit pas "+
+  "« Maître SCP DUPONT »."],
  ["Aujourd'hui",
   "C'est la page sur laquelle l'application s'ouvre. Cinq blocs se suivent : dossiers en cours "+
   "par statut (le bouton « Voir » déplie la liste, prix et honoraires alignés sur les colonnes), "+
@@ -13778,6 +14155,13 @@ const AIDE = [
   "l'impression que le script est en cause. Les dossiers y seraient de surcroît effacés "+
   "avec le cache du navigateur. L'application le signale désormais et grise le bouton de "+
   "connexion dans ce cas."],
+ ["Reconstituer le carnet des notaires depuis les dossiers",
+  "Même filet que pour les immeubles. Si des dossiers désignent un notaire sans fiche au "+
+  "<b>Répertoire</b>, le carnet Notaires le signale et propose de <b>créer les fiches "+
+  "manquantes depuis les dossiers</b>. Le <b>prénom</b> et le <b>nom</b> en sortent, "+
+  "séparés comme il faut ; l'adresse de l'étude, le téléphone et le courriel ne figurent "+
+  "nulle part dans un dossier et resteront à saisir. Le lien avec les dossiers, lui, est "+
+  "rétabli d'emblée : le libellé repris est exactement celui qu'ils portent."],
  ["Reconstituer le carnet des immeubles depuis les dossiers",
   "Si une résidence est citée par des dossiers sans avoir de fiche au carnet, la page "+
   "<b>Immeubles</b> le signale d'elle-même et propose de <b>créer les fiches manquantes "+
@@ -13801,17 +14185,22 @@ const AIDE = [
  ["Les carnets et la base : qui l'emporte, et la sauvegarde du jour",
   "Les <b>dossiers</b> se fondent dossier par dossier : chacun porte sa date, la version la "+
   "plus récemment enregistrée l'emporte, et deux postes peuvent travailler en parallèle sans "+
-  "se marcher dessus. Les <b>carnets</b> — immeubles, négociateurs, notaires, clercs, "+
-  "syndics — n'ont qu'une seule date pour tout le bloc : le poste qui a enregistré le "+
-  "dernier donne le ton. "+
-  "<b>Un carnet vide ne peut plus en effacer un garni</b>, ni d'un côté ni de l'autre, et "+
-  "quelle que soit la date. C'est le correctif du 7 octobre 2026 : un poste neuf, dont les "+
-  "carnets étaient encore ceux de l'installation, pouvait l'emporter sur la date et reverser "+
-  "son vide dans la base. Un poste qui n'a encore jamais lu la base n'a d'ailleurs plus voix "+
-  "au chapitre sur les carnets : il écoute d'abord. Le script applique la même règle de son "+
-  "côté, pour le cas où un appareil tournerait encore sur une version ancienne de la page. "+
-  "<b>Contrepartie :</b> vider un carnet <i>entier</i> ne se propage plus aux autres postes "+
-  "— il faudra le vider là aussi. Retirer des lignes une à une se propage normalement. "+
+  "se marcher dessus. Les <b>carnets</b> — immeubles, notaires, négociateurs, clercs, "+
+  "syndics, diagnostiqueurs, banques — et les listes de choix se fondent désormais de la "+
+  "même façon : <b>fiche par fiche</b>, et non plus en bloc. "+
+  "<b>Trois règles, et elles se suffisent.</b> Une fiche que l'un des deux côtés ignore est "+
+  "<b>gardée</b> — rien ne disparaît parce que l'autre appareil ne la connaissait pas. Une "+
+  "fiche présente des deux côtés est prise du côté qui a <b>enregistré en dernier</b>. Et "+
+  "<b>retirer</b> une fiche laisse une trace datée, de sorte que la suppression se propage "+
+  "au lieu d'être annulée par le premier échange venu. "+
+  "<b>Un appareil ouvert pour la première fois n'impose pas ses valeurs d'usine.</b> C'est "+
+  "l'incident des 7 et 8 octobre 2026, survenu deux fois : une tablette neuve emportait les "+
+  "carnets de la base. Le premier correctif protégeait un carnet vide — mais le carnet des "+
+  "notaires n'est pas vide à l'installation, il porte un notaire de démonstration, et cette "+
+  "seule fiche suffisait à emporter tout le carnet. Désormais, tant qu'un appareil n'a pas "+
+  "lu la base, ses valeurs d'origine restent chez lui ; <b>ce qu'on y a vraiment saisi, en "+
+  "revanche, voyage normalement</b>. Le script applique la même règle de son côté, pour le "+
+  "cas où un appareil tournerait encore sur une version ancienne de la page. "+
   "<b>La sauvegarde du jour.</b> Avant la première écriture de chaque journée, le script met "+
   "de côté la base telle qu'elle était, dans un dossier <b>« Dossiers de vente - "+
   "sauvegardes »</b> de votre Drive : un fichier par jour, quinze jours en arrière. La copie "+
@@ -17966,8 +18355,36 @@ function appliquerDroits(){
     .forEach(el=> el.disabled = true);
 }
 
+/* ------------------------------------------- renommer une fiche de carnet --
+   Le nom d'une fiche est sa clé : c'est lui que les dossiers retiennent et
+   c'est sur lui que les carnets se fondent d'un appareil à l'autre. Le
+   changer est donc un geste à part, qu'on ne peut pas traiter lettre par
+   lettre : on retient le nom à l'entrée dans le champ et on conclut à la
+   sortie. Ces deux écoutes sont posées en dernier, après celles qui mettent
+   la saisie en forme, pour que le nom soit arrêté quand on le compare. */
+let CARNET_AVANT = null;
+document.addEventListener("focusin", e=>{
+  const t = e.target;
+  if(!t || !t.dataset || t.dataset.book === undefined){ CARNET_AVANT = null; return; }
+  const [k, i] = t.dataset.book.split(":");
+  CARNET_AVANT = {k, i, nom: (((L[k] || [])[+i]) || {}).nom || ""};
+});
+document.addEventListener("focusout", e=>{
+  const t = e.target, a = CARNET_AVANT;
+  CARNET_AVANT = null;
+  if(!t || !t.dataset || t.dataset.book === undefined || !a) return;
+  const [k, i] = t.dataset.book.split(":");
+  if(a.k !== k || a.i !== i) return;
+  if(!finirRenommage(k, i, a.nom)) return;
+  majEnteteCarnet(t, k, i);
+  rebuildSelects(); renderPreview();
+});
+
 (function init(){
   chargerSeance();
+  /* avant de charger le dossier courant : un notaire renommé ailleurs ne doit
+     pas laisser ici des dossiers orphelins de leur étude */
+  recalerNotairesDossiers();
   const cur = localStorage.getItem(LS_CUR);
   const all = allDossiers();
   D = (cur && all[cur]) ? migrate(all[cur]) : blankDossier();
