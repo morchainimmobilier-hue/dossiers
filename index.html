@@ -1295,12 +1295,32 @@ table.tdb .puce.resilie{background:#64748b}
 .pjbtn svg{flex:0 0 auto}
 /* les cinq tiroirs d'un immeuble, posés sous son titre : on voit d'un
    regard ce que chacun contient, sans ouvrir quoi que ce soit */
-.immtiroirs{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 13px}
-.pjbtn.tiroir .cnt.zero{background:transparent;color:var(--ink-3);
-  border:1px solid var(--line);font-weight:600}
-@media (max-width:760px){
-  .immtiroirs{padding:0 12px 11px}
-  .pjbtn.tiroir{flex:1 1 auto;justify-content:center}
+.immtete{flex-wrap:wrap}
+.immtete > .immtiroirs{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+/* sur le bandeau, les tiroirs s'habillent en clair : le fond blanc des
+   boutons de pièces y ferait des pavés */
+.card > h2 .pjbtn.tiroir{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);
+  color:#fff;text-transform:none;letter-spacing:0;font-size:11.5px;padding:4px 9px;
+  font-weight:500}
+.card > h2 .pjbtn.tiroir:hover{background:rgba(255,255,255,.28);border-color:#fff;color:#fff}
+.card > h2 .pjbtn.tiroir.garni{font-weight:700;background:rgba(255,255,255,.22);
+  border-color:rgba(255,255,255,.5)}
+.card > h2 .pjbtn.tiroir .cnt{background:#fff;color:var(--bandeau)}
+.card > h2 .pjbtn.tiroir .cnt.zero{background:transparent;color:rgba(255,255,255,.6);
+  border:1px solid rgba(255,255,255,.3);font-weight:600}
+.card > h2 .xbtn{margin-left:0}
+/* Dès que la ligne se tasse — tablette, écran partagé —, les tiroirs
+   prennent leur propre rang, toujours sur le bandeau : le nom de
+   l'immeuble ne doit pas se couper en deux pour leur faire place. */
+@media (max-width:1180px){
+  .immtete > .immtiroirs{margin-left:0;width:100%;order:3;
+    padding-top:9px;border-top:1px solid rgba(255,255,255,.18)}
+  .immtete > .xbtn{order:2;margin-left:auto}
+}
+/* sur un téléphone seulement, les tiroirs s'étalent pour que la cible
+   reste large sous le pouce */
+@media (max-width:560px){
+  .card > h2 .pjbtn.tiroir{flex:1 1 auto;justify-content:center}
 }
 
 .modalbox.pjboxw{width:min(880px,100%)}
@@ -1647,7 +1667,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 8 octobre 2026, 14 h 10">Dossiers de vente</div>
+  <div class="brand" title="Version du 8 octobre 2026, 18 h 18">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1852,7 +1872,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>8 octobre 2026, 14 h 10</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>8 octobre 2026, 18 h 18</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5707,27 +5727,43 @@ function renderImmeubles(){
   const carte = x=>{
     const n = dossiersDeImmeuble(x.r.nom).length;
     const plie = estPlie("im_" + x.i, true);
+    /* Les cinq tiroirs tiennent sur le bandeau, à droite du nom : c'est là
+       qu'on les cherche, et la carte repliée les montre quand même. */
     return `<div class="card">
-      <h2 class="pliable" data-pli="im_${x.i}">${chevron(plie)}${
+      <h2 class="pliable immtete" data-pli="im_${x.i}">${chevron(plie)}${
         esc(x.r.nom || "Sans nom")}
         <span class="cnt">${n} dossier${n > 1 ? "s" : ""}</span>
+        ${x.r.nom ? `<span class="immtiroirs">${tiroirsImmeuble(x.r.nom)}</span>` : ""}
         <button class="xbtn" data-bookdel="residences:${x.i}">Supprimer</button></h2>
-      ${x.r.nom ? `<div class="immtiroirs">${tiroirsImmeuble(x.r.nom)}</div>` : ""}
       <div class="body plibody"${plie ? ' style="display:none"' : ''}>
         ${ficheCarnet("residences", x.r, x.i, null, true)}
         <div class="immbloc"><h3>Les dossiers de cet immeuble</h3>
           <div class="immlist">${listeImmeuble(x.r.nom)}</div></div>
       </div></div>`;
   };
+  /* Une commune se replie comme tout le reste. Les clés de pliage portent la
+     ville réduite — sans accents ni casse —, de sorte qu'elles survivent à
+     une correction d'orthographe. */
   const corps = !rows.length
     ? `<p class="muted">Aucun immeuble enregistré.</p>`
     : !total
     ? `<p class="muted">Aucun immeuble ne correspond à « ${esc(IMM_Q)} ».</p>`
-    : villes.map(g=>`<div class="immville">
-        <h3>${esc(g.ville || "Ville non renseignée")}${
-          g.ville && g.cp ? ` <em>${esc(g.cp)}</em>` : ""}
-          <span class="cnt">${g.items.length}</span></h3>
-        ${g.items.map(carte).join("")}</div>`).join("");
+    : villes.map(g=>{
+        const cle = "ville_" + (fold(g.ville) || "sans");
+        /* Contrairement au reste, une commune s'ouvre d'office : la page
+           s'appelle « Immeubles », elle doit montrer des immeubles. On ne
+           replie que ce qu'on a replié soi-même — et une recherche en cours
+           rouvre tout, sinon elle cacherait ses propres résultats. */
+        if(PLIS[cle] === undefined) PLIS[cle] = false;
+        const plie = IMM_Q.trim() ? false : estPlie(cle, false);
+        return `<div class="immville">
+          <h3 class="pliable" data-pli="${esc(cle)}">${chevron(plie)}${
+            esc(g.ville || "Ville non renseignée")}${
+            g.ville && g.cp ? ` <em>${esc(g.cp)}</em>` : ""}
+            <span class="cnt">${g.items.length}</span></h3>
+          <div class="plibody"${plie ? ' style="display:none"' : ''}
+            >${g.items.map(carte).join("")}</div></div>`;
+      }).join("");
   $("#immBody").innerHTML = blocReconstituer() + corps +
     `<div style="margin-top:4px">
        <button class="addbtn" data-bookadd="residences">+ Ajouter un immeuble</button></div>`;
@@ -10188,7 +10224,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   /* Un trombone peut vivre DANS un titre repliable — c'est le cas sur la page
@@ -10196,7 +10232,7 @@ document.addEventListener("click", e=>{
      clic replierait la carte au lieu d'ouvrir le classeur. On le laisse donc
      filer : le gestionnaire des pièces, enregistré après celui-ci sur le même
      document, le recevra. */
-  if(t.dataset.pj !== undefined) return;
+  if(t.dataset.pj !== undefined || t.dataset.pjrub !== undefined) return;
 
   if(t.dataset.mgo){ activerOnglet(t.dataset.mgo); return; }
   if(t.classList.contains("tab")){ activerOnglet(t.dataset.p); return; }
@@ -13707,15 +13743,36 @@ const AIDE = [
   "téléphone, courriel — et ramène en plus les <b>vendeurs et acquéreurs saisis dans les "+
   "dossiers</b>, chacun avec le mandat d'où il vient et un bouton pour y aller : une personne "+
   "se retrouve sans qu'il faille se rappeler où on l'a d'abord écrite."],
- ["Les cinq tiroirs d'un immeuble, sur sa carte",
-  "Sur la page <b>Immeubles</b>, chaque immeuble porte ses cinq tiroirs à plat sous son "+
-  "titre : <b>RCP</b>, <b>PV AG</b>, <b>Diagnostics</b>, <b>Divers</b>, <b>Photos</b>, "+
+ ["Télécharger une pièce sous son nom",
+  "Chaque pièce porte un bouton <b>Télécharger</b>, dans la fenêtre des pièces comme sur la "+
+  "page Pièces, et un <b>⤓</b> sur chaque vignette de photo. Le fichier arrive dans vos "+
+  "téléchargements sous le <b>nom qu'il porte à l'écran</b>, accents compris — c'est ce "+
+  "bouton-là qu'il faut utiliser. "+
+  "<b>« Ouvrir » ne nomme rien</b>, et ne le peut pas : la pièce s'affiche dans la visionneuse "+
+  "du navigateur, et si vous l'enregistrez de là, c'est le navigateur qui choisit le nom — "+
+  "souvent une suite de lettres et de chiffres. Ce bouton est fait pour <i>regarder</i>, "+
+  "l'autre pour <i>garder</i>. "+
+  "<b>L'extension fait partie du nom.</b> Si vous renommez une pièce sans la retaper, elle "+
+  "est remise toute seule : « Mandat exclusif du 12 mars » devient « Mandat exclusif du 12 "+
+  "mars.pdf ». Sans extension, Windows ne saurait plus avec quoi l'ouvrir, et le Drive non "+
+  "plus."],
+ ["Les cinq tiroirs d'un immeuble, sur son bandeau",
+  "Sur la page <b>Immeubles</b>, chaque immeuble porte ses cinq tiroirs <b>sur son bandeau "+
+  "bleu</b>, à droite de son nom : <b>RCP</b>, <b>PV AG</b>, <b>Diagnostics</b>, "+
+  "<b>Divers</b>, <b>Photos</b>, "+
   "chacun avec le <b>nombre de pièces</b> qu'il contient. On voit d'un coup d'œil ce qui "+
   "manque et ce qui est là, sans rien déplier ni ouvrir, et un clic mène droit au tiroir. "+
   "Un tiroir vide reste affiché, avec son zéro en gris : ce qui manque se voit aussi bien "+
   "que ce qui y est. "+
   "Ces documents sont <b>partagés par tous les lots</b> de l'immeuble : un règlement de "+
-  "copropriété se dépose une fois pour toutes."],
+  "copropriété se dépose une fois pour toutes. "+
+  "Sur une tablette ou un écran étroit, les tiroirs prennent leur propre rang — toujours "+
+  "sur le bandeau — pour que le nom de l'immeuble ne se coupe pas en deux. "+
+  "<b>Les communes se replient.</b> Cliquez le nom d'une ville pour refermer ou rouvrir la "+
+  "liste de ses immeubles. Contrairement au reste de l'application, elles s'ouvrent "+
+  "d'office : une page qui s'appelle « Immeubles » doit montrer des immeubles. On ne "+
+  "retrouve replié que ce qu'on a replié soi-même, et une recherche en cours rouvre tout — "+
+  "sinon elle cacherait ses propres résultats."],
  ["Les notaires : « Maître » ne se tape plus",
   "La civilité d'un notaire est acquise une fois pour toutes. Sa fiche ne demande donc que le "+
   "<b>Prénom</b> et le <b>Nom</b>, séparément, chacun avec sa mise en forme habituelle : une "+
@@ -14717,6 +14774,27 @@ function poids(o){
   return (o / 1024 / 1024).toFixed(o < 10 * 1024 * 1024 ? 1 : 0).replace(".", ",") + " Mo";
 }
 function nomSansExt(n){ const i = String(n).lastIndexOf("."); return i > 0 ? n.slice(0, i) : n; }
+function extDe(n){
+  const m = /\.([A-Za-z0-9]{1,5})$/.exec(String(n || ""));
+  return m ? m[1].toLowerCase() : "";
+}
+/* De quoi rendre son extension à un fichier qui l'aurait perdue : on la
+   déduit du type, faute de mieux. Un fichier sans extension n'est pas un
+   fichier qu'on ouvre d'un double-clic. */
+const EXT_PAR_TYPE = {
+  "application/pdf":"pdf", "image/jpeg":"jpg", "image/png":"png",
+  "image/webp":"webp", "image/heic":"heic", "image/heif":"heif",
+  "image/gif":"gif", "image/tiff":"tif", "text/plain":"txt"
+};
+/* Le nom sous lequel la pièce doit arriver dans les téléchargements : celui
+   qu'elle porte à l'écran, extension comprise. */
+function nomDeTelechargement(p){
+  const nom = String((p || {}).nom || "piece").trim() || "piece";
+  if(extDe(nom)) return nom;
+  const e = EXT_PAR_TYPE[String((p || {}).type || "").toLowerCase()]
+         || (p && p.photo ? "jpg" : "");
+  return e ? nom + "." + e : nom;
+}
 
 /* ------------------------------------------------------------- l'ajout */
 async function ajouterPiece(sujet, fichier, rub){
@@ -14867,7 +14945,7 @@ async function ouvrirLaPiece(p){
 async function telechargerLaPiece(p){
   const blob = await blobDeLaPiece(p, false);
   if(!blob){ toast("Pièce introuvable — réseau ?"); return; }
-  download(blob, p.nom);
+  download(blob, nomDeTelechargement(p));
 }
 
 /* ---------------------------------------------------------- la suppression
@@ -15006,6 +15084,8 @@ function rendrePieces(){
       <div class="pjnom"><b>${esc(p.nom)}</b>
         <span class="muted">${poids(p.taille)} · ${esc(fdate(String(p.date||"").slice(0,10)))}</span></div>
       ${etat}
+      <button type="button" class="tbtn light" data-pjtel="${esc(p.id)}"
+        title="Enregistrer sous « ${esc(nomDeTelechargement(p))} »">Télécharger</button>
       <button type="button" class="tbtn light" data-pjouvre="${esc(p.id)}">Ouvrir</button>
       <button type="button" class="xbtn" data-pjsup="${esc(p.id)}">Retirer</button>
     </div>`;
@@ -15018,6 +15098,8 @@ function rendrePieces(){
           data-pjprinc="${esc(p.id)}" title="Photo principale">${p.principale ? "★" : "☆"}</button>
         <span class="muted">${poids(p.taille)}</span>
         <span class="grow"></span>
+        <button type="button" class="pjmini" data-pjtel="${esc(p.id)}"
+          title="Télécharger « ${esc(nomDeTelechargement(p))} »">⤓</button>
         <button type="button" class="pjmini" data-pjmonte="${esc(p.id)}" title="Avancer">↑</button>
         <button type="button" class="pjmini" data-pjdesc="${esc(p.id)}" title="Reculer">↓</button>
         <button type="button" class="pjmini sup" data-pjsup="${esc(p.id)}" title="Retirer">×</button>
@@ -15334,7 +15416,8 @@ async function rendreApercu(){
       <b>${esc(p.nom)}</b>
       <span class="muted">${poids(p.taille)}</span>
       <span class="grow"></span>
-      <button type="button" class="tbtn light" data-pjtel="${esc(p.id)}">Télécharger</button>
+      <button type="button" class="tbtn light" data-pjtel="${esc(p.id)}"
+        title="Enregistrer sous « ${esc(nomDeTelechargement(p))} »">Télécharger</button>
       <button type="button" class="tbtn light" data-pjouvre="${esc(p.id)}">Nouvel onglet</button>
     </div>
     <div class="pjacorps"><p class="muted">Chargement…</p></div>`;
@@ -15381,8 +15464,17 @@ function renommerPiece(id){
       <input type="text" id="pjNom" value="${esc(p.nom)}"></div>`,
     boutons:[{lib:"Annuler"},{lib:"Renommer", primaire:true, action:async ()=>{
       const el = document.getElementById("pjNom");
-      const neuf = el ? String(el.value || "").trim() : "";
-      if(!neuf || neuf === p.nom) return;
+      let neuf = el ? String(el.value || "").trim() : "";
+      if(!neuf) return;
+      /* L'extension fait partie du nom d'un fichier : si on l'a effacée en
+         renommant, on la remet. Sans elle, le fichier téléchargé n'est plus
+         reconnu par Windows, et le Drive non plus ne sait plus l'ouvrir. */
+      if(!extDe(neuf)){
+        const e = extDe(p.nom) || EXT_PAR_TYPE[String(p.type || "").toLowerCase()]
+               || (p.photo ? "jpg" : "");
+        if(e) neuf += "." + e;
+      }
+      if(neuf === p.nom) return;
       const avant = p.nom;
       p.nom = neuf; p.maj = Date.now();
       ecrirePieces(); syncDiffere();
