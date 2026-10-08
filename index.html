@@ -1638,7 +1638,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 8 octobre 2026, 6 h 41">Dossiers de vente</div>
+  <div class="brand" title="Version du 8 octobre 2026, 8 h 08">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1843,7 +1843,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>8 octobre 2026, 6 h 41</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>8 octobre 2026, 8 h 08</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3197,14 +3197,21 @@ function heroDossier(){
   const chiffre = (lab, val, note)=> `<div class="hchiffre"><div class="lab">${esc(lab)}</div>
     <div class="val">${esc(val)}${note ? ` <small>${esc(note)}</small>` : ""}</div></div>`;
   const net = prixNet();
+  /* Les trois tiroirs de l'affaire étaient derrière un bouton « Pièces » : un
+     clic pour ouvrir le classeur, un second pour le tiroir. Ils sont
+     maintenant à plat dans le bandeau, dans l'ordre du classeur — un seul
+     clic, et chacun porte son propre compteur. Le classeur reste en service
+     pour l'immeuble, dont les cinq tiroirs ne tiendraient pas ici. */
+  const tiroirsAffaire = (rubriquesDe(sujetDossier(D)) || [])
+    .map(r=> trombone(sujetDossier(D), r, r));
   const actions = [
-    `<button type="button" class="xbtn" data-dbien="1">${IC_LOUPE_BIEN}<span>Fiche détaillée du bien</span></button>`,
-    trombone(sujetDossier(D), "Pièces"),
+    `<button type="button" class="xbtn" data-dbien="1">${IC_LOUPE_BIEN}<span>Fiche détaillée du bien</span></button>`
+  ].concat(tiroirsAffaire).concat([
     trombone(sujetBien(D), "Photos"),
     String(b.residence || "").trim() ? trombone(sujetImmeuble(b.residence), "Documents immeubles") : "",
     String(b.residence || "").trim() ? boutonImmeuble(b.residence, "Dossiers de l'immeuble") : "",
     venteEnCours() ? `<button type="button" class="xbtn" data-annul="1">Annuler la vente</button>` : ""
-  ].filter(Boolean).join("");
+  ]).filter(Boolean).join("");
   return `<div class="hero">
     <div class="heroin">
       <div class="heroid">
@@ -13453,20 +13460,20 @@ const AIDE = [
   "honoraires. Aucune commission n'en découle, ni pour le négociateur ni pour l'agence."],
  ["Pièces jointes — photos, PDF",
   "Un <b>trombone</b> apparaît partout où un sujet est nommé, avec le nombre de pièces "+
-  "déjà rattachées. Sur la page Général d'un dossier, trois se suivent après « Fiche "+
-  "détaillée du bien » : "+
-  "<b>Pièces</b> — tout ce qui relève de l'affaire, rangé en trois tiroirs : "+
-  "« Mandat & Admin », « Pièces techniques » (les diagnostics y ont leur place) et "+
-  "« Actes & Facturation » ; "+
-  "<b>Photos</b> — les seules photos du lot ; "+
+  "déjà rattachées. Dans le bandeau d'un dossier, après « Fiche détaillée du bien », les "+
+  "<b>trois tiroirs de l'affaire sont posés à plat</b> — « Mandat & Admin », "+
+  "« Pièces techniques » (les diagnostics y ont leur place) et « Actes & Facturation ». "+
+  "Chacun porte son propre compteur et <b>s'ouvre d'un seul clic</b> : il n'y a plus de "+
+  "bouton « Pièces » à traverser. Viennent ensuite "+
+  "<b>Photos</b> — les seules photos du lot — et "+
   "<b>Documents immeubles</b> — cinq tiroirs partagés par tous les lots : « RCP », "+
   "« PV AG », « Diagnostics », « Divers » et « Photos ». "+
-  "Les deux boutons à tiroirs ouvrent d'abord un <b>classeur</b> par-dessus la fenêtre : "+
-  "on choisit le tiroir, puis on voit ce qu'il contient. Chaque tiroir devient un "+
-  "<b>dossier dans votre Drive</b>, sous le même nom. "+
+  "Celui-là ouvre encore un <b>classeur</b> par-dessus la fenêtre : on y choisit le "+
+  "tiroir, puis on voit ce qu'il contient — cinq boutons de plus ne tiendraient pas dans "+
+  "le bandeau. Chaque tiroir devient un <b>dossier dans votre Drive</b>, sous le même nom. "+
   "On trouve aussi un trombone sur chaque <b>personne</b> des pages Vendeurs et "+
-  "Acquéreurs, sur chaque fiche du <b>Répertoire</b> et des carnets, et au bas de la fiche "+
-  "détaillée du bien. "+
+  "Acquéreurs, sur chaque fiche du <b>Répertoire</b>, sur chaque fiche de la page "+
+  "<b>Immeubles</b>, et au bas de la fiche détaillée du bien. "+
   "Une pièce rattachée à une personne la suit : elle réapparaît dans tous ses dossiers, et "+
   "elle y reste si vous <b>corrigez son nom</b> — chaque personne porte un identifiant qui "+
   "ne bouge plus une fois posé. Les fichiers déjà déposés gardent en revanche l'ancien nom "+
@@ -14493,11 +14500,20 @@ const IC_PJ = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true
   + `4.4 0 0 0 6.2 6.2l4.1-4.1" fill="none" stroke="currentColor" stroke-width="1.5" `
   + `stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-function trombone(sujet, texte){
+/* Avec une rubrique, le trombone mène DROIT au tiroir : son compteur ne
+   compte plus que ce tiroir, et le clic ouvre la liste sans passer par le
+   classeur. C'est ce qui permet de poser les tiroirs d'un sujet côte à côte
+   là où un seul bouton les cachait. */
+function trombone(sujet, texte, rub){
   if(!sujet || !sujetCle(sujet)) return "";    /* une personne encore sans nom */
-  const n = comptePieces(sujet);
-  return `<button type="button" class="pjbtn${n ? " garni" : ""}" data-pj="${esc(sujet)}"`
-    + ` title="Pièces jointes">${IC_PJ}<span>${esc(texte || "Pièces")}</span>`
+  const n = comptePieces(sujet, rub);
+  const cible = rub === undefined
+    ? ` data-pj="${esc(sujet)}"`
+    : ` data-pjrub="${esc(sujet)}|${esc(rub)}"`;
+  return `<button type="button" class="pjbtn${n ? " garni" : ""}"${cible}`
+    + ` title="${esc(rub === undefined ? "Pièces jointes"
+                                       : "Pièces jointes — " + rub)}">`
+    + `${IC_PJ}<span>${esc(texte || "Pièces")}</span>`
     + (n ? `<span class="cnt">${n}</span>` : "") + `</button>`;
 }
 
