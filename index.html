@@ -1638,7 +1638,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 7 octobre 2026, 12 h 59">Dossiers de vente</div>
+  <div class="brand" title="Version du 7 octobre 2026, 21 h 30">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1843,7 +1843,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>7 octobre 2026, 12 h 59</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>7 octobre 2026, 21 h 30</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2253,8 +2253,14 @@ function loadListesDepuis(v){
   });
   return out;
 }
-function saveLists(){ try{ localStorage.setItem(LS_LISTS, JSON.stringify(L)); }catch(e){}
-  noterMajListes(); }
+/* Enregistre les carnets sur ce poste. La date d'enregistrement sert
+   d'arbitre lors de la fusion avec la base partagée : celui qui a la date
+   la plus récente parle. Une REPRISE AUTOMATIQUE — une migration de
+   structure jouée au démarrage — n'est pas une saisie : elle ne doit donc
+   jamais dater les carnets, sous peine de faire passer pour « tout neuf »
+   un poste qui n'a encore rien lu de la base. D'où le drapeau. */
+function saveLists(sansDater){ try{ localStorage.setItem(LS_LISTS, JSON.stringify(L)); }catch(e){}
+  if(!sansDater) noterMajListes(); }
 
 /* ---------------------------------------------------------------- modèle */
 const DIAGS = ["DPE","Termites","E.R.P.","Électricité","Gaz","Amiante","Plomb","Loi Carrez"];
@@ -5351,6 +5357,77 @@ function immeublesParVille(){
   villes.forEach(g=> g.items.sort((a,b)=> triFr(a.r.nom || "", b.r.nom || "")));
   return {villes, total:gardes.length};
 }
+/* ------------------------------------------------- reconstituer le carnet --
+   Les dossiers nomment leur immeuble ; le carnet, lui, peut avoir été vidé —
+   c'est arrivé une fois, par une mauvaise fusion de la base partagée. On sait
+   donc le reconstituer : chaque résidence citée par un dossier et absente du
+   carnet y reprend place.
+
+   Rien n'est inventé. Le code postal, la ville et le pays viennent du dossier.
+   L'ADRESSE n'est reprise que si tous les dossiers citant cette résidence
+   donnent la même — pour un immeuble, c'est bien la sienne ; dès que deux
+   dossiers divergent, c'est qu'on y a saisi l'adresse du lot, et on préfère
+   laisser le champ vide plutôt qu'y mettre « Lot 12 ». Rien n'est écrasé non
+   plus : les fiches déjà présentes ne sont pas touchées. */
+function immeublesManquants(){
+  const vus = {};
+  (L.residences || []).forEach(r=>{ if(r && r.nom) vus[fold(r.nom)] = true; });
+  const trouves = new Map();
+  Object.keys(allDossiers()).forEach(id=>{
+    const d = allDossiers()[id], b = (d && d.bien) || {};
+    const nom = String(b.residence || "").trim();
+    if(!nom || vus[fold(nom)]) return;
+    const cle = fold(nom);
+    const x = trouves.get(cle) ||
+      {nom, adresse:"", memeAdresse:true, cp:"", ville:"", pays:"", n:0};
+    const ad = String(b.adresse || "").trim();
+    if(ad){
+      if(!x.adresse) x.adresse = ad;
+      else if(fold(x.adresse) !== fold(ad)) x.memeAdresse = false;
+    }
+    if(!x.cp    && b.cp)    x.cp    = b.cp;
+    if(!x.ville && b.ville) x.ville = b.ville;
+    if(!x.pays  && b.pays)  x.pays  = b.pays;
+    x.n++;
+    trouves.set(cle, x);
+  });
+  return Array.from(trouves.values()).sort((a,b)=> triFr(a.nom, b.nom));
+}
+function reconstituerImmeubles(){
+  const m = immeublesManquants();
+  if(!m.length){ toast("Aucun immeuble à reconstituer"); return; }
+  L.residences = (L.residences || []).concat(m.map(x=>({
+    nom:    x.nom,
+    adresse: x.memeAdresse ? x.adresse : "",
+    cp:     x.cp, ville: x.ville, pays: x.pays || "France"
+  })));
+  saveLists(); rebuildSelects(); refreshAllVilles(); renderImmeubles();
+  toast(m.length + (m.length > 1 ? " immeubles repris des dossiers"
+                                 : " immeuble repris des dossiers"));
+}
+function blocReconstituer(){
+  const m = immeublesManquants();
+  if(!m.length) return "";
+  const n = m.length;
+  const sansAdresse = m.filter(x=> !x.memeAdresse || !x.adresse).length;
+  return `<div class="alerte" style="margin:0 0 12px">
+    <b>${n} immeuble${n > 1 ? "s" : ""} cité${n > 1 ? "s" : ""} par vos dossiers
+    ${n > 1 ? "n'ont" : "n'a"} pas de fiche ici</b> :
+    ${m.map(x=> esc(x.nom) + " <em>(" + x.n + " dossier" + (x.n > 1 ? "s" : "") +
+      ")</em>").join(", ")}.
+    <div class="muted" style="margin:6px 0 8px">
+      La fiche sera créée avec le code postal et la ville du dossier.
+      ${sansAdresse ? "L'adresse reste à saisir pour " + (sansAdresse === n ?
+        (n > 1 ? "toutes" : "elle") : sansAdresse + " d'entre elles") +
+        " : les dossiers ne s'accordent pas dessus." :
+        "L'adresse est reprise des dossiers, qui s'accordent dessus."}
+      Le syndic, l'année de construction et le descriptif du quartier ne sont
+      pas dans les dossiers : ils resteront à compléter.</div>
+    <button type="button" class="addbtn" id="btnReconstImm">Créer
+      ${n > 1 ? "ces " + n + " fiches" : "cette fiche"} depuis les dossiers</button>
+  </div>`;
+}
+
 function renderImmeubles(){
   const rows = L.residences || [];
   const {villes, total} = immeublesParVille();
@@ -5377,9 +5454,12 @@ function renderImmeubles(){
           g.ville && g.cp ? ` <em>${esc(g.cp)}</em>` : ""}
           <span class="cnt">${g.items.length}</span></h3>
         ${g.items.map(carte).join("")}</div>`).join("");
-  $("#immBody").innerHTML = corps +
+  $("#immBody").innerHTML = blocReconstituer() + corps +
     `<div style="margin-top:4px">
        <button class="addbtn" data-bookadd="residences">+ Ajouter un immeuble</button></div>`;
+  const br = $("#btnReconstImm");
+  if(br) br.onclick = reconstituerImmeubles;
+  if(typeof appliquerDroits === "function") appliquerDroits();
 }
 
 /* =====================================================================
@@ -6311,6 +6391,43 @@ function nomCourtNego(nom){
 function partNegoTTC(d, qui){
   return partNego(commissions(d), qui) * (1 + TVA_TAUX);
 }
+/* Une colonne d'honoraires à zéro ne dit pas pourquoi elle est à zéro. Or
+   il n'y a qu'une poignée de raisons, toutes réparables en dix secondes :
+   le pourcentage de commission n'est pas saisi, la case « appartient à
+   l'agence » n'est pas cochée — elle commande la saisie du pourcentage —,
+   ou les dossiers n'indiquent personne au suivi. Autant le dire. */
+function alerteCommission(cote, qui, list){
+  if(!list.length) return "";
+  const engage = list.filter(d=> AUJ_ACQUIS.includes(stade(d).cls));
+  const porte = engage.length ? engage : list;
+  if(porte.some(d=> partNegoTTC(d, qui) > 0)) return "";
+
+  const manques = [];
+  if(qui){
+    const n = book("negociateurs", qui);
+    if(!n || !n.nom) manques.push(`<b>${esc(nomCourtNego(qui))}</b> n'a pas de fiche au
+      carnet Négociateurs`);
+    else if(num(n.commission) === null || num(n.commission) === 0){
+      /* la case « appartient à l'agence » ne retire rien au négociateur : elle
+         décide seulement où va le solde. Mais elle grise la saisie du
+         pourcentage, et c'est souvent par là que le blocage arrive. */
+      manques.push(`son <b>pourcentage de commission</b> n'est pas renseigné`
+        + (n.manaranche ? "" : ` — et il reste grisé tant que la case
+          « <b>Appartient à l'agence Manaranche</b> » n'est pas cochée sur sa fiche`));
+    }
+    if(!porte.some(d=> suitLeDossier(qui, d)))
+      manques.push(`aucun de ces dossiers ne l'indique au suivi, côté vendeur ou
+        acquéreur (onglet Général, « Suivi par »)`);
+  } else {
+    manques.push(`aucun négociateur de la maison n'a de pourcentage de commission
+      renseigné`);
+  }
+  if(!manques.length) return "";
+  return `<p class="muted potnote"><b>La colonne des honoraires du négociateur reste à
+    zéro</b> : ${manques.join(" ; ")}. Cela se corrige au
+    <a href="#" data-versnego="1">carnet Négociateurs</a>, au Répertoire.</p>`;
+}
+
 function panneauStatuts(cote){
   const list = dossiersDuCote(cote);
   const qui = perimetre(cote);
@@ -6398,6 +6515,7 @@ function panneauStatuts(cote){
       esc(eur(pot.nego) || "0 €")} pour ${esc(qui ? nomCourtNego(qui) : "les négociateurs")}.
       Rien n'est engagé tant qu'aucune offre n'est signée : le liseré entoure ce qui
       s'additionne.</p>` : ""}
+    ${alerteCommission(cote, qui, list)}
     </div></div>`;
 }
 
@@ -9788,7 +9906,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   if(t.dataset.mgo){ activerOnglet(t.dataset.mgo); return; }
@@ -9810,6 +9928,11 @@ document.addEventListener("click", e=>{
     appliquerYn(t.dataset.ynb, val, t.dataset.ynattr === "bookyn");
     return;
   }
+  if(t.dataset.versnego){
+    REP_Q = ""; PLIS["b_negociateurs"] = false; savePlis();
+    activerOnglet("repertoire");
+    setTimeout(()=> signaler(document.getElementById("bk_negociateurs_0")), 90);
+    return; }
   if(t.dataset.sect){ ouvrirSection(t.dataset.sect); return; }
   if(t.dataset.tir){
     if(!basculerAlerte(t.dataset.tir)) ouvrirTiroirAuj(t.dataset.tir);
@@ -10873,13 +10996,20 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 6
+ * Base en ligne pour « Dossiers de vente »  —  version 7
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * Cette version 6 ajoute les COMPTES : identifiant, mot de passe et
+ * Cette version 7 protège les CARNETS et SAUVEGARDE la base. Un
+ * enregistrement qui viderait un carnet garni — immeubles, négociateurs,
+ * notaires, clercs, syndics — ne passe plus : le script recolle le carnet
+ * d'avant. Et avant la première écriture de chaque journée, il met de côté
+ * la base telle qu'elle était, dans un dossier « Dossiers de vente -
+ * sauvegardes » : quinze jours en arrière, un fichier par jour.
+ *
+ * La version 6 avait ajouté les COMPTES : identifiant, mot de passe et
  * niveau d'accès par personne. Tant qu'aucun compte n'existe, rien ne
  * change — la clé partagée suffit. Dès le premier compte créé, le script
  * ne livre plus rien sans une séance ouverte : c'est là, et non dans la
@@ -11025,7 +11155,7 @@ function doPost(e) {
   }
   try {
     if (q.action === 'ecrire') {
-      ecrireBase(q.data || {});
+      ecrireBase(protegerCarnets(lireBase(), q.data || {}));
       return sortie({ ok: true });
     }
     return sortie({ ok: true, data: lireBase() });   // action « lire » par défaut
@@ -11055,7 +11185,73 @@ function lireBase() {
 }
 
 function ecrireBase(d) {
-  fichierBase().setContent(JSON.stringify(d));
+  const f = fichierBase();
+  copieDuJour(f);
+  f.setContent(JSON.stringify(d));
+}
+
+/* --------------------------------------------------- filet de sécurité ----
+ *  DERNIER REMPART SUR LES CARNETS. Les carnets — immeubles, négociateurs,
+ *  notaires, clercs, syndics — n'ont qu'une seule date pour tout le bloc :
+ *  à la fusion, le plus récent l'emporte. Un appareil dont les carnets
+ *  étaient encore ceux de l'installation a donc pu, un jour, reverser son
+ *  vide ici et effacer les immeubles partout.
+ *
+ *  La page corrigée ne le fait plus. Mais un appareil resté sur une version
+ *  ancienne de la page, lui, ne le sait pas — et c'est le script qui garde
+ *  le fichier. On recolle donc ici tout carnet garni que l'enregistrement
+ *  entrant viderait, sans rien refuser à l'appelant.
+ *
+ *  Contrepartie assumée : vider un carnet ENTIER ne se propage plus. Retirer
+ *  des lignes une à une, si.
+ */
+function protegerCarnets(ancien, neuf) {
+  try {
+    const a = (ancien || {}).listes, n = (neuf || {}).listes;
+    if (!a || !n) return neuf;
+    Object.keys(a).forEach(function (k) {
+      const av = a[k], nv = n[k];
+      if (av instanceof Array && av.length &&
+          (!(nv instanceof Array) || !nv.length)) n[k] = av;
+    });
+  } catch (err) {}
+  return neuf;
+}
+
+/* ------------------------------------------------- sauvegardes du jour ----
+ *  Avant la première écriture de chaque journée, on met de côté la base
+ *  telle qu'elle était. Quinze jours en arrière, un fichier par jour, dans
+ *  un dossier « Dossiers de vente - sauvegardes ». La copie du jour n'est
+ *  jamais réécrite : elle garde l'état du MATIN, ce qui est précisément ce
+ *  qu'on veut le soir où l'on s'aperçoit d'une perte.
+ */
+const NOM_COPIES = 'Dossiers de vente - sauvegardes';
+const COPIES_GARDEES = 15;
+
+function dossierCopies() {
+  const it = DriveApp.getFoldersByName(NOM_COPIES);
+  while (it.hasNext()) {
+    const f = it.next();
+    if (!f.isTrashed()) return f;
+  }
+  return DriveApp.createFolder(NOM_COPIES);
+}
+
+function copieDuJour(fichier) {
+  try {
+    const texte = fichier.getBlob().getDataAsString('UTF-8');
+    if (!texte || texte.length < 64) return;          // rien d'utile à garder
+    const jour = Utilities.formatDate(new Date(), 'Europe/Paris', 'yyyy-MM-dd');
+    const nom = 'base ' + jour + '.json';
+    const dos = dossierCopies();
+    if (dos.getFilesByName(nom).hasNext()) return;    // déjà faite ce matin
+    dos.createFile(nom, texte, MimeType.PLAIN_TEXT);
+    const gardees = [];
+    const it = dos.getFiles();
+    while (it.hasNext()) gardees.push(it.next());
+    gardees.sort(function (x, y) { return x.getName() < y.getName() ? 1 : -1; });
+    for (let i = COPIES_GARDEES; i < gardees.length; i++) gardees[i].setTrashed(true);
+  } catch (err) {}
 }
 
 /* --------------------------------------------------------- pièces jointes */
@@ -11823,6 +12019,13 @@ function majListes(){ return +(localStorage.getItem(LS_MAJL) || 0); }
 function noterMajListes(){
   try{ localStorage.setItem(LS_MAJL, String(Date.now())); }catch(e){}
 }
+/* Tant que ce poste n'a jamais lu la base partagée, il ne sait rien des
+   carnets des autres : il n'a donc aucune autorité pour les remplacer. On
+   le retient, et la fusion fait alors parler la base. Le drapeau se pose au
+   premier échange réussi, et l'on redevient un poste comme les autres. */
+const LS_BASELUE = "mi_base_lue_v1";
+function baseLue(){ try{ return !!localStorage.getItem(LS_BASELUE); }catch(e){ return false; } }
+function noterBaseLue(){ try{ localStorage.setItem(LS_BASELUE, "1"); }catch(e){} }
 
 /* --------- mémorisation du fichier choisi, d'une session à l'autre ------- */
 function idbOuvrir(){
@@ -11862,9 +12065,38 @@ function donneesLocales(){
     if(tous[id].mandat && tous[id].mandat.num) doss[id] = tous[id];
   });
   return {appli:"Dossiers de vente", version:3, date:new Date().toISOString(),
-          majListes: majListes(), listes: L, dossiers: doss,
+          majListes: baseLue() ? majListes() : 0, listes: L, dossiers: doss,
           supprimes: supprimes(), pieces: piecesPubliables()};
 }
+/* ------------------------------------------------- fusion des carnets ----
+   Les carnets — immeubles, négociateurs, notaires, clercs, syndics… — n'ont
+   pas de date par ligne : une seule date pour le bloc entier. Le plus récent
+   l'emporte donc, et c'est bien ainsi tant que les deux côtés sont garnis.
+
+   Mais un bloc vide ne doit JAMAIS effacer un bloc garni. C'est arrivé : un
+   poste neuf, dont les carnets étaient encore ceux de l'installation,
+   l'emportait sur la date et reversait son vide dans la base, effaçant les
+   immeubles partout. On garde donc, carnet par carnet, celui qui a quelque
+   chose dedans.
+
+   Le prix à payer est assumé : vider un carnet ENTIER d'un côté ne se
+   propage plus à l'autre — il y restera garni jusqu'à ce qu'on l'y vide
+   aussi. Retirer des lignes une à une se propage normalement, comme avant.
+   Entre ce menu inconvénient et le risque de tout perdre, le choix est
+   simple. */
+function fusionnerListes(a, b, bGagne){
+  if(!a) return b || null;
+  if(!b) return a;
+  const gagnant = bGagne ? b : a, perdant = bGagne ? a : b;
+  const out = Object.assign({}, gagnant);
+  Object.keys(perdant).forEach(k=>{
+    const garde = perdant[k], tenu = out[k];
+    if(Array.isArray(garde) && garde.length &&
+       (!Array.isArray(tenu) || !tenu.length)) out[k] = garde;
+  });
+  return out;
+}
+
 /* garde, pour chaque dossier, la version la plus récemment enregistrée ;
    un dossier effacé ne revient pas si l'effacement est postérieur */
 function fusionner(a, b){
@@ -11885,7 +12117,7 @@ function fusionner(a, b){
   out.supprimes = sup;
   const ma = a.majListes || 0, mb = b.majListes || 0;
   out.majListes = Math.max(ma, mb);
-  out.listes = (mb > ma && b.listes) ? b.listes : (a.listes || b.listes);
+  out.listes = fusionnerListes(a.listes, b.listes, mb > ma);
   out.pieces = fusionnerPieces(a.pieces, b.pieces);
   return out;
 }
@@ -11915,6 +12147,8 @@ function adopter(m){
       localStorage.setItem(LS_LISTS, JSON.stringify(L));
       localStorage.setItem(LS_MAJL, String(m.majListes || Date.now()));
     }
+    /* l'échange a eu lieu : ce poste connaît désormais la base */
+    noterBaseLue();
   }catch(e){ toast("Mémoire du navigateur saturée"); }
 }
 
@@ -13505,6 +13739,40 @@ const AIDE = [
   "l'impression que le script est en cause. Les dossiers y seraient de surcroît effacés "+
   "avec le cache du navigateur. L'application le signale désormais et grise le bouton de "+
   "connexion dans ce cas."],
+ ["Reconstituer le carnet des immeubles depuis les dossiers",
+  "Si une résidence est citée par des dossiers sans avoir de fiche au carnet, la page "+
+  "<b>Immeubles</b> le signale d'elle-même et propose de <b>créer les fiches manquantes "+
+  "depuis les dossiers</b>. C'est le filet de secours si le carnet a été perdu, mais cela "+
+  "sert aussi au quotidien, quand une résidence a été saisie à la main dans un dossier sans "+
+  "passer par le carnet. "+
+  "Ce qui est repris : le <b>code postal</b>, la <b>ville</b> et le <b>pays</b> du dossier. "+
+  "L'<b>adresse</b> ne l'est que si tous les dossiers d'une même résidence donnent la même — "+
+  "pour un immeuble, c'est bien la sienne ; dès que deux dossiers divergent, c'est qu'on y a "+
+  "saisi l'adresse du lot, et le champ est laissé vide plutôt que de porter « Lot 12 ». "+
+  "Le syndic, l'année de construction, le nombre de lots et le descriptif du quartier ne "+
+  "figurent pas dans les dossiers : ils restent à compléter. "+
+  "Rien n'est jamais écrasé : les fiches déjà présentes ne sont pas touchées, et le bandeau "+
+  "disparaît dès qu'il n'y a plus rien à reprendre."],
+ ["Les carnets et la base : qui l'emporte, et la sauvegarde du jour",
+  "Les <b>dossiers</b> se fondent dossier par dossier : chacun porte sa date, la version la "+
+  "plus récemment enregistrée l'emporte, et deux postes peuvent travailler en parallèle sans "+
+  "se marcher dessus. Les <b>carnets</b> — immeubles, négociateurs, notaires, clercs, "+
+  "syndics — n'ont qu'une seule date pour tout le bloc : le poste qui a enregistré le "+
+  "dernier donne le ton. "+
+  "<b>Un carnet vide ne peut plus en effacer un garni</b>, ni d'un côté ni de l'autre, et "+
+  "quelle que soit la date. C'est le correctif du 7 octobre 2026 : un poste neuf, dont les "+
+  "carnets étaient encore ceux de l'installation, pouvait l'emporter sur la date et reverser "+
+  "son vide dans la base. Un poste qui n'a encore jamais lu la base n'a d'ailleurs plus voix "+
+  "au chapitre sur les carnets : il écoute d'abord. Le script applique la même règle de son "+
+  "côté, pour le cas où un appareil tournerait encore sur une version ancienne de la page. "+
+  "<b>Contrepartie :</b> vider un carnet <i>entier</i> ne se propage plus aux autres postes "+
+  "— il faudra le vider là aussi. Retirer des lignes une à une se propage normalement. "+
+  "<b>La sauvegarde du jour.</b> Avant la première écriture de chaque journée, le script met "+
+  "de côté la base telle qu'elle était, dans un dossier <b>« Dossiers de vente - "+
+  "sauvegardes »</b> de votre Drive : un fichier par jour, quinze jours en arrière. La copie "+
+  "du jour n'est jamais réécrite — elle garde l'état du matin, ce qui est précisément ce "+
+  "qu'on veut le soir où l'on s'aperçoit d'une perte. Cela demande la <b>version 7</b> du "+
+  "script."],
  ["Mettre à jour une application installée",
   "Quand une version plus récente est déposée en ligne, l'application la télécharge "+
   "<b>en arrière-plan</b> et affiche un bandeau « Une nouvelle version est prête ». Tant "+
@@ -13531,7 +13799,7 @@ const AIDE = [
   "télécharge, et un écran de connexion écrit dedans arrête un collègue, pas quelqu'un "+
   "de déterminé. La serrure est dans <b>votre script Google</b>, qui ne répond rien sans "+
   "jeton de séance valide. C'est lui qui garde les dossiers, et c'est pour cela qu'il "+
-  "faut la <b>version 6</b> du script. "+
+  "faut la <b>version 6 du script au moins</b>. "+
   "<b>Ce qui est gardé.</b> Jamais le mot de passe. Il est transformé sur votre appareil "+
   "— 210 000 tours de PBKDF2-SHA256 avec un grain de sel propre à votre compte — et "+
   "seule cette empreinte voyage ; le script en garde une seconde empreinte, mêlée à "+
@@ -13672,7 +13940,7 @@ function renderAll(){
         n++;
       });
     });
-    if(n) saveLists();
+    if(n) saveLists(true);                 // reprise, pas une saisie : on ne date pas
     localStorage.setItem("mi_clercs_repris", "1");
   }catch(e){}
 })();
@@ -13700,7 +13968,7 @@ function renderAll(){
       fusions++;
     });
     L.clercs = gardees;
-    saveLists();
+    saveLists(true);                       // reprise : on ne date pas
     localStorage.setItem("mi_clercs_sans_etude", "1");
     if(fusions) setTimeout(()=> toast(fusions + " fiche" + (fusions > 1 ? "s" : "") +
       " en double fondue" + (fusions > 1 ? "s" : "")), 1200);
@@ -13722,7 +13990,7 @@ function renderAll(){
       if(n){ n.portrait = url; }
     }
     if(L.agence) delete L.agence.portrait;
-    saveLists();
+    saveLists(true);                       // reprise : on ne date pas
     localStorage.setItem("mi_portrait_nego", "1");
   }catch(e){}
 })();
@@ -13737,7 +14005,7 @@ function renderAll(){
     img.onload = ()=>{
       if(!img.width || !img.height) return;
       L.agence.logoRatio = img.height / img.width;
-      saveLists();
+      saveLists(true);                     // mesure technique : on ne date pas
       if(typeof renderPreview === "function" && $("#preview")) renderPreview();
     };
     img.src = a.logo;
@@ -17428,7 +17696,7 @@ function rendreComptes(){
     z.innerHTML = `<p class="muted" style="margin:0">Lecture des comptes…</p>`;
     chargerComptes().then(rendreComptes).catch(e=>{
       z.innerHTML = `<p class="muted" style="margin:0">Comptes illisibles : ${
-        esc(e.message)}. Votre script est-il bien en <b>version 6</b> ?</p>`;
+        esc(e.message)}. Votre script est-il bien en <b>version 6 ou plus récente</b> ?</p>`;
     });
     return;
   }
