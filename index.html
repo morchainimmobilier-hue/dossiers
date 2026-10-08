@@ -1638,7 +1638,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 8 octobre 2026, 10 h 38">Dossiers de vente</div>
+  <div class="brand" title="Version du 8 octobre 2026, 13 h 27">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1843,7 +1843,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>8 octobre 2026, 10 h 38</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>8 octobre 2026, 13 h 27</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2699,6 +2699,179 @@ function couperNotaire(brut){
   if(mots.length === 1) return {prenom:"", patronyme: mots[0]};
   return {prenom: mots.slice(0, -1).join(" "), patronyme: mots[mots.length - 1]};
 }
+/* =====================================================================
+   CHERCHER UNE ÉTUDE DANS L'ANNUAIRE PUBLIC
+   ---------------------------------------------------------------------
+   La source est le répertoire des entreprises de l'État — Sirene et le
+   registre national, interrogés par l'API publique « Recherche
+   d'entreprises ». C'est une donnée officielle, à jour et gratuite.
+
+   Elle donne la dénomination, l'enseigne, l'adresse du siège, le code
+   postal, la commune et les dirigeants. Elle NE donne PAS le téléphone ni
+   le courriel : ils ne figurent dans aucun fichier public ouvert. On ne
+   les devine pas — une adresse électronique inventée part dans un acte.
+
+   L'appel passe par votre script Google, comme la réécriture par l'IA :
+   la page n'a ainsi jamais qu'un seul interlocuteur, et le bouton marche
+   pareil sur la tablette et sur l'ordinateur.
+   ===================================================================== */
+const IC_ANNUAIRE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+  <circle cx="7" cy="7" r="4.5"/><path d="M10.4 10.4 L14 14"/></svg>`;
+
+/* Sirene écrit tout en capitales et sans accents. On rend l'adresse
+   lisible sans prétendre rétablir ce qui n'y est pas : les particules
+   restent en minuscules, le reste prend sa capitale. */
+const PARTICULES = ["de","du","des","la","le","les","d","l","et","sur","sous",
+                    "au","aux","en","lès","sainte","saint"];
+function casseAdresse(t){
+  return capitaliserMots(String(t || "").toLowerCase())
+    .replace(/\b([A-Za-zÀ-ÿ']+)\b/g, (m)=>{
+      const b = m.toLowerCase().replace(/'$/, "");
+      return (PARTICULES.indexOf(b) >= 0 && b !== "saint" && b !== "sainte")
+        ? m.toLowerCase() : m;
+    })
+    .replace(/^([a-zà-ÿ])/, c=> c.toUpperCase());
+}
+/* La rue seule : l'annuaire livre souvent l'adresse entière, code postal
+   et commune compris, qui ont leur propre champ dans la fiche. */
+function rueDeSiege(g){
+  const bout = [g.numero_voie, g.indice_repetition, g.type_voie, g.libelle_voie]
+    .map(x=> String(x || "").trim()).filter(Boolean).join(" ");
+  if(bout) return casseAdresse([String(g.complement_adresse || "").trim(), bout]
+    .filter(Boolean).join(" "));
+  /* Pas de champs séparés : on coupe au code postal. Ce qui le suit est la
+     commune, qui a son propre champ — et dont on ne peut pas se servir pour
+     découper, l'annuaire écrivant « AIX EN PROVENCE » là où la commune
+     s'appelle « AIX-EN-PROVENCE ». Le code postal, lui, ne varie pas. */
+  let t = String(g.adresse || "").trim();
+  const cp = String(g.code_postal || "").trim();
+  const ou = cp ? t.indexOf(cp) : -1;
+  if(ou > 0) t = t.slice(0, ou);
+  else t = t.replace(/\s+\d{5}(\s.*)?$/, "");
+  return casseAdresse(t.replace(/\s+/g, " ").trim());
+}
+
+let ANN_RES = [], ANN_CIBLE = -1;
+
+async function chercherEtude(i){
+  const n = (L.notaires || [])[+i];
+  if(!n) return;
+  if(!WEB || !WEB.url){
+    popup({titre:"Base en ligne non connectée", genre:"erreur",
+      corps:`<p>La recherche passe par votre script Google : il faut donc que la
+        <b>base en ligne</b> soit connectée sur ce poste
+        (<b>Listes → Base partagée</b>).</p>`});
+    return;
+  }
+  ANN_CIBLE = +i;
+  popup({titre:"Recherche en cours…", corps:
+    `<p class="muted" style="margin:0">Interrogation du répertoire public des
+      entreprises pour <b>${esc(n.nom || n.patronyme)}</b>…</p>`, boutons:[]});
+  const demande = {action:"annuaire", nom: n.patronyme || "", prenom: n.prenom || ""};
+  if(String(n.cp || "").trim())    demande.cp = String(n.cp).trim();
+  if(!demande.nom) { demande.texte = n.nom || ""; delete demande.nom; }
+  let d;
+  try{ d = await webAppel(demande); }
+  catch(e){
+    popup({titre:"Recherche impossible", genre:"erreur",
+      corps:`<p>${esc(e.message)}</p>`});
+    return;
+  }
+  if(d.erreur){
+    const quoi = {
+      annuaire_vide:"il faut au moins un nom pour chercher",
+      annuaire_trop:"l'annuaire est momentanément saturé — réessayez dans un instant",
+      annuaire_reseau:"le script n'a pas pu joindre l'annuaire",
+      annuaire_illisible:"l'annuaire a répondu quelque chose d'inattendu",
+      annuaire_http:"l'annuaire a répondu une erreur " + (d.code || "")
+    }[d.erreur] || d.erreur;
+    popup({titre:"Recherche impossible", genre:"erreur",
+      corps:`<p>${esc(quoi)}.</p><p class="muted">Votre script est-il bien en
+        <b>version 8</b> ? C'est elle qui sait interroger l'annuaire.</p>`});
+    return;
+  }
+  /* Deuxième tentative, plus large, si le filtre « activités juridiques »
+     n'a rien donné : une étude mal classée vaut mieux qu'aucun résultat. */
+  let brut = (d.annuaire || {}).results || [];
+  if(!brut.length && (n.patronyme || n.nom)){
+    try{
+      const large = await webAppel({action:"annuaire",
+        texte:["notaire", n.patronyme || n.nom, n.ville || ""].filter(Boolean).join(" "),
+        tout:true});
+      brut = (large.annuaire || {}).results || [];
+    }catch(e){}
+  }
+  ANN_RES = brut.map(r=>{
+    const g = r.siege || {};
+    return {
+      nom: r.nom_complet || r.nom_raison_sociale || "",
+      enseigne: (g.liste_enseignes || [])[0] || g.nom_commercial || "",
+      adresse: rueDeSiege(g),
+      cp: String(g.code_postal || "").trim(),
+      ville: casseAdresse(g.libelle_commune || "").toUpperCase(),
+      naf: r.activite_principale || "",
+      siren: r.siren || "",
+      gens: (r.dirigeants || []).map(x=> [x.prenoms, x.nom].filter(Boolean).join(" ")
+        || x.denomination || "").filter(Boolean).slice(0, 6)
+    };
+  }).filter(x=> x.adresse || x.cp || x.ville);
+  montrerEtudes(n);
+}
+
+function montrerEtudes(n){
+  if(!ANN_RES.length){
+    popup({titre:"Aucune étude trouvée",
+      corps:`<p>Le répertoire public ne connaît pas d'étude au nom de
+        <b>${esc(n.nom || n.patronyme)}</b>${n.ville ? " du côté de <b>" +
+        esc(n.ville) + "</b>" : ""}.</p>
+        <p class="muted">Essayez en renseignant d'abord le <b>code postal</b> de
+        l'étude, ou vérifiez l'orthographe du nom. Les études fermées ne sont
+        pas proposées.</p>`});
+    return;
+  }
+  const carte = (x, i)=>`<button type="button" class="rubbtn annres" data-annpick="${i}"
+      style="text-align:left;display:block;width:100%">
+      <b>${esc(x.enseigne || x.nom)}</b>
+      ${x.enseigne && x.nom && x.enseigne !== x.nom
+        ? `<br><span class="muted">${esc(x.nom)}</span>` : ""}
+      <br>${esc([x.adresse, [x.cp, x.ville].filter(Boolean).join(" ")]
+                .filter(Boolean).join(" — ") || "adresse non diffusée")}
+      ${x.gens.length ? `<br><span class="muted">${esc(x.gens.join(" · "))}</span>` : ""}
+      <br><span class="muted">SIREN ${esc(x.siren)}${
+        x.naf && x.naf !== "69.10Z" ? " · activité " + esc(x.naf) +
+        " — à vérifier, ce n'est pas une activité juridique" : ""}</span>
+    </button>`;
+  popup({titre:"Études trouvées — laquelle ?", large:true,
+    corps:`<p class="muted" style="margin-top:0">Source : répertoire public des
+        entreprises (Sirene / registre national). Choisissez une étude pour
+        reprendre son <b>adresse</b>, son <b>code postal</b> et sa
+        <b>commune</b>.</p>
+      <div class="classeur" style="grid-template-columns:1fr">
+        ${ANN_RES.map(carte).join("")}</div>
+      <p class="muted" style="margin-bottom:0"><b>Le téléphone et le courriel ne
+        s'y trouvent pas</b> — aucun fichier public ouvert ne les donne, et il
+        n'est pas question de les inventer. Ces deux champs restent à vous.
+        Le répertoire public écrit par ailleurs <b>sans accents</b> : relisez
+        l'adresse reprise, vous aurez peut-être un accent à remettre.</p>`,
+    boutons:[{lib:"Annuler"}]});
+}
+
+function reprendreEtude(i){
+  const x = ANN_RES[+i], n = (L.notaires || [])[ANN_CIBLE];
+  if(!x || !n) return;
+  const avant = {adresse:n.adresse || "", cp:n.cp || "", ville:n.ville || ""};
+  const pose = [];
+  [["adresse", x.adresse], ["cp", x.cp], ["ville", x.ville]].forEach(([k, v])=>{
+    if(!v) return;
+    if(avant[k] && avant[k] !== v) pose.push(k + " : « " + avant[k] + " » → « " + v + " »");
+    n[k] = v;
+  });
+  if(!n.pays) n.pays = "France";
+  saveLists(); renderCarnets(); rebuildSelects(); renderPreview();
+  toast(pose.length ? "Coordonnées remplacées" : "Coordonnées reprises de l'annuaire");
+}
+
 /* Le dossier garde le NOM du notaire. Si le carnet a depuis changé
    d'orthographe — un titre ajouté, une casse corrigée —, on le retrouve
    quand même : d'abord à l'identique, puis sans titre ni accents, puis sur
@@ -5439,6 +5612,10 @@ function ficheCarnet(k, r, i, apres, sansEntete){
     sansEntete ? "" : `<header>
     <span class="who">${esc(r.nom || (b.label+" "+(i+1)))}</span>
     ${k === "residences" && r.nom ? boutonImmeuble(r.nom, "Ses dossiers") : ""}
+    ${k === "notaires" && String(r.patronyme || r.nom || "").trim()
+      ? `<button type="button" class="xbtn" data-annuaire="${i}"
+           title="Chercher l'étude dans le répertoire public des entreprises"
+           >${IC_ANNUAIRE}<span>Chercher l'étude</span></button>` : ""}
     ${r.nom ? trombone(k === "residences" ? sujetImmeuble(r.nom)
                                           : sujetPersonne(r), "Pièces") : ""}
     <button class="xbtn" data-bookdel="${k}:${i}">Supprimer</button></header>`}
@@ -10163,7 +10340,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-annuaire],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   /* Un trombone peut vivre DANS un titre repliable — c'est le cas sur la page
@@ -10172,6 +10349,7 @@ document.addEventListener("click", e=>{
      filer : le gestionnaire des pièces, enregistré après celui-ci sur le même
      document, le recevra. */
   if(t.dataset.pj !== undefined) return;
+  if(t.dataset.annuaire !== undefined){ chercherEtude(t.dataset.annuaire); return; }
 
   if(t.dataset.mgo){ activerOnglet(t.dataset.mgo); return; }
   if(t.classList.contains("tab")){ activerOnglet(t.dataset.p); return; }
@@ -10619,6 +10797,8 @@ document.addEventListener("click", e=>{
     D.publications = (D.publications || []).filter(x=> x.id !== id);
     autosave(); renderPublications(); return;
   }
+  const an = e.target.closest("[data-annpick]");
+  if(an){ const i = an.getAttribute("data-annpick"); fermerPopup(); reprendreEtude(i); return; }
   const rb = e.target.closest("[data-pjrub]");
   if(rb){
     const [suj, rub] = rb.getAttribute("data-pjrub").split("|");
@@ -11264,13 +11444,26 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 7
+ * Base en ligne pour « Dossiers de vente »  —  version 8
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * Cette version 7 protège les CARNETS et SAUVEGARDE la base. Un
+ * Cette version 8 sait interroger l'ANNUAIRE PUBLIC DES ENTREPRISES pour
+ * remplir la fiche d'un notaire : dénomination, enseigne, adresse du siège,
+ * code postal, commune et dirigeants, depuis le répertoire Sirene de
+ * l'INSEE et le registre national (recherche-entreprises.api.gouv.fr).
+ * C'est une API d'État, publique, gratuite et sans clé. Rien à régler.
+ * Elle ne donne ni téléphone ni courriel : aucun fichier public ouvert ne
+ * les contient, et le script ne les invente pas.
+ *
+ * Elle renforce aussi la protection des CARNETS : un enregistrement qui
+ * ferait disparaître une fiche que la base possédait ne passe plus, sauf
+ * si le registre des retraits qui l'accompagne dit qu'elle a été
+ * supprimée exprès.
+ *
+ * La version 7 protégeait les CARNETS et SAUVEGARDE la base. Un
  * enregistrement qui viderait un carnet garni — immeubles, négociateurs,
  * notaires, clercs, syndics — ne passe plus : le script recolle le carnet
  * d'avant. Et avant la première écriture de chaque journée, il met de côté
@@ -11411,6 +11604,7 @@ function doPost(e) {
     if (q.action === 'piece_renommer')  return sortie(pieceRenommer(q));
     if (q.action === 'piece_supprimer') return sortie(pieceSupprimer(q));
     if (q.action === 'redige')          return sortie(redige(q));
+    if (q.action === 'annuaire')        return sortie(annuaire(q));
   } catch (err) {
     return sortie({ erreur: String(err && err.message || err) });
   }
@@ -11635,6 +11829,69 @@ function pieceSupprimer(q) {
    l'application, qui sait seule ce qu'il y a dans le dossier. Ici on ne fait
    que relayer l'appel en y mettant la clé — c'est tout l'intérêt : la clé
    reste dans votre compte Google. */
+/* ======================================================= ANNUAIRE PUBLIC
+ *  CHERCHER UNE ÉTUDE DANS LE RÉPERTOIRE DES ENTREPRISES
+ *  ---------------------------------------------------------------------
+ *  Source : « API Recherche d'entreprises » de l'État
+ *  (recherche-entreprises.api.gouv.fr), adossée au répertoire Sirene de
+ *  l'INSEE et au registre national des entreprises. Elle est publique,
+ *  gratuite, sans clé, et limitée à sept appels par seconde.
+ *
+ *  Pourquoi passer par le script plutôt que d'appeler depuis la page :
+ *  parce que la page doit continuer de fonctionner ouverte en fichier
+ *  comme sur le web, et qu'elle n'a ainsi toujours qu'un seul
+ *  interlocuteur — vous. Un appel de moins à surveiller.
+ *
+ *  Ce que l'annuaire donne : la dénomination, l'enseigne, l'adresse du
+ *  siège, le code postal, la commune, l'activité et les dirigeants.
+ *  Ce qu'il ne donne PAS : le téléphone et le courriel. Ils ne sont dans
+ *  aucun fichier public ouvert, et il n'est pas question de les deviner.
+ */
+const API_ANNUAIRE = 'https://recherche-entreprises.api.gouv.fr/search';
+const NAF_JURIDIQUE = '69.10Z';          // activités juridiques (dont notaires)
+
+function annuaire(q) {
+  const p = [];
+  const met = function (k, v) {
+    const t = String(v === undefined || v === null ? '' : v).trim();
+    if (t) p.push(k + '=' + encodeURIComponent(t));
+  };
+  met('q', q.texte);
+  met('nom_personne', q.nom);
+  met('prenoms_personne', q.prenom);
+  if (q.nom) met('type_personne', 'dirigeant');
+  met('code_postal', q.cp);
+  met('departement', q.departement);
+  if (q.tout !== true) met('activite_principale', NAF_JURIDIQUE);
+  met('etat_administratif', 'A');        // les études fermées ne nous servent pas
+  p.push('page=1');
+  p.push('per_page=10');
+  p.push('minimal=true');
+  p.push('include=siege,dirigeants');
+  if (!q.texte && !q.nom) return { erreur: 'annuaire_vide' };
+
+  let r;
+  try {
+    r = UrlFetchApp.fetch(API_ANNUAIRE + '?' + p.join('&'), {
+      method: 'get', muteHttpExceptions: true, followRedirects: true,
+      headers: { 'User-Agent': 'Dossiers de vente - agence immobiliere',
+                 'Accept': 'application/json' }
+    });
+  } catch (err) {
+    return { erreur: 'annuaire_reseau', texte: String(err && err.message || err) };
+  }
+  const code = r.getResponseCode();
+  const txt = r.getContentText();
+  if (code === 429) return { erreur: 'annuaire_trop', code: code };
+  if (code !== 200)  return { erreur: 'annuaire_http', code: code,
+                              texte: txt.slice(0, 300) };
+  try {
+    return { ok: true, annuaire: JSON.parse(txt) };
+  } catch (err) {
+    return { erreur: 'annuaire_illisible', texte: txt.slice(0, 300) };
+  }
+}
+
 function redige(q) {
   if (!CLE_GEMINI) return { erreur: 'ia_absente' };
   const invite = String(q.invite || '');
@@ -12025,7 +12282,7 @@ function portier(q, action) {
 function etatServeur(q) {
   const base = lireComptes();
   const c = base.comptes.length ? quiEst(base, q.jeton) : null;
-  return { ok: true, version: 6, comptes: base.comptes.length,
+  return { ok: true, version: 8, comptes: base.comptes.length,
            profil: c ? publicCompte(c) : null };
 }
 
@@ -12818,7 +13075,7 @@ async function webAppel(charge){
      mot de passe faux, un identifiant déjà pris, le dernier
      administrateur qu'on ne peut pas retirer — l'appelant sait les dire
      en français, mieux que nous ici. On les lui rend telles quelles. */
-  if(d.erreur && /^ia_/.test(d.erreur)) return d;
+  if(d.erreur && /^(ia_|annuaire_)/.test(d.erreur)) return d;
   if(d.erreur && ERREURS_RENDUES.indexOf(d.erreur) >= 0) return d;
   if(d.erreur)              throw new Error(d.erreur);
   return d;
@@ -13683,6 +13940,25 @@ const AIDE = [
   "téléphone, courriel — et ramène en plus les <b>vendeurs et acquéreurs saisis dans les "+
   "dossiers</b>, chacun avec le mandat d'où il vient et un bouton pour y aller : une personne "+
   "se retrouve sans qu'il faille se rappeler où on l'a d'abord écrite."],
+ ["Remplir la fiche d'un notaire depuis l'annuaire public",
+  "Sur chaque fiche du carnet <b>Notaires</b>, au Répertoire, un bouton "+
+  "<b>« Chercher l'étude »</b>. Il interroge le <b>répertoire public des "+
+  "entreprises</b> de l'État — le fichier Sirene de l'INSEE et le registre "+
+  "national —, cherche le notaire <b>comme dirigeant</b> d'une étude en activité, "+
+  "et vous présente ce qu'il trouve : enseigne, dénomination, adresse, commune, "+
+  "les notaires associés et le numéro SIREN. Vous choisissez, et l'<b>adresse</b>, "+
+  "le <b>code postal</b> et la <b>commune</b> se posent dans la fiche. "+
+  "Renseigner d'abord le <b>code postal</b> aide quand le nom est répandu. "+
+  "<b>Le téléphone et le courriel ne s'y trouvent pas</b> : aucun fichier public "+
+  "ouvert ne les donne, et il n'est pas question de les deviner — une adresse "+
+  "électronique inventée finit dans un acte. Ces deux champs restent à vous. "+
+  "Le répertoire public écrit par ailleurs <b>en capitales et sans accents</b> : "+
+  "l'adresse est remise en casse lisible, mais un accent peut manquer, "+
+  "relisez-la. "+
+  "La recherche passe par <b>votre script Google</b>, comme la réécriture par "+
+  "l'IA : la page n'a ainsi qu'un seul interlocuteur, et le bouton marche pareil "+
+  "sur la tablette. Il faut donc la <b>base en ligne connectée</b> et le script "+
+  "en <b>version 8</b>. C'est un service gratuit et sans clé : rien à régler."],
  ["Les notaires : « Maître » ne se tape plus",
   "La civilité d'un notaire est acquise une fois pour toutes. Sa fiche ne demande donc que le "+
   "<b>Prénom</b> et le <b>Nom</b>, séparément, chacun avec sa mise en forme habituelle : une "+
