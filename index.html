@@ -1293,6 +1293,15 @@ table.tdb .puce.resilie{background:#64748b}
 .pjbtn .cnt{background:var(--navy);color:#fff;border-radius:999px;font-size:11px;
   padding:1px 7px;font-weight:700}
 .pjbtn svg{flex:0 0 auto}
+/* les cinq tiroirs d'un immeuble, posés sous son titre : on voit d'un
+   regard ce que chacun contient, sans ouvrir quoi que ce soit */
+.immtiroirs{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 13px}
+.pjbtn.tiroir .cnt.zero{background:transparent;color:var(--ink-3);
+  border:1px solid var(--line);font-weight:600}
+@media (max-width:760px){
+  .immtiroirs{padding:0 12px 11px}
+  .pjbtn.tiroir{flex:1 1 auto;justify-content:center}
+}
 
 .modalbox.pjboxw{width:min(880px,100%)}
 .pjajout{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
@@ -1638,7 +1647,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 8 octobre 2026, 13 h 27">Dossiers de vente</div>
+  <div class="brand" title="Version du 8 octobre 2026, 14 h 10">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1843,7 +1852,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>8 octobre 2026, 13 h 27</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>8 octobre 2026, 14 h 10</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2699,179 +2708,6 @@ function couperNotaire(brut){
   if(mots.length === 1) return {prenom:"", patronyme: mots[0]};
   return {prenom: mots.slice(0, -1).join(" "), patronyme: mots[mots.length - 1]};
 }
-/* =====================================================================
-   CHERCHER UNE ÉTUDE DANS L'ANNUAIRE PUBLIC
-   ---------------------------------------------------------------------
-   La source est le répertoire des entreprises de l'État — Sirene et le
-   registre national, interrogés par l'API publique « Recherche
-   d'entreprises ». C'est une donnée officielle, à jour et gratuite.
-
-   Elle donne la dénomination, l'enseigne, l'adresse du siège, le code
-   postal, la commune et les dirigeants. Elle NE donne PAS le téléphone ni
-   le courriel : ils ne figurent dans aucun fichier public ouvert. On ne
-   les devine pas — une adresse électronique inventée part dans un acte.
-
-   L'appel passe par votre script Google, comme la réécriture par l'IA :
-   la page n'a ainsi jamais qu'un seul interlocuteur, et le bouton marche
-   pareil sur la tablette et sur l'ordinateur.
-   ===================================================================== */
-const IC_ANNUAIRE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
-  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-  <circle cx="7" cy="7" r="4.5"/><path d="M10.4 10.4 L14 14"/></svg>`;
-
-/* Sirene écrit tout en capitales et sans accents. On rend l'adresse
-   lisible sans prétendre rétablir ce qui n'y est pas : les particules
-   restent en minuscules, le reste prend sa capitale. */
-const PARTICULES = ["de","du","des","la","le","les","d","l","et","sur","sous",
-                    "au","aux","en","lès","sainte","saint"];
-function casseAdresse(t){
-  return capitaliserMots(String(t || "").toLowerCase())
-    .replace(/\b([A-Za-zÀ-ÿ']+)\b/g, (m)=>{
-      const b = m.toLowerCase().replace(/'$/, "");
-      return (PARTICULES.indexOf(b) >= 0 && b !== "saint" && b !== "sainte")
-        ? m.toLowerCase() : m;
-    })
-    .replace(/^([a-zà-ÿ])/, c=> c.toUpperCase());
-}
-/* La rue seule : l'annuaire livre souvent l'adresse entière, code postal
-   et commune compris, qui ont leur propre champ dans la fiche. */
-function rueDeSiege(g){
-  const bout = [g.numero_voie, g.indice_repetition, g.type_voie, g.libelle_voie]
-    .map(x=> String(x || "").trim()).filter(Boolean).join(" ");
-  if(bout) return casseAdresse([String(g.complement_adresse || "").trim(), bout]
-    .filter(Boolean).join(" "));
-  /* Pas de champs séparés : on coupe au code postal. Ce qui le suit est la
-     commune, qui a son propre champ — et dont on ne peut pas se servir pour
-     découper, l'annuaire écrivant « AIX EN PROVENCE » là où la commune
-     s'appelle « AIX-EN-PROVENCE ». Le code postal, lui, ne varie pas. */
-  let t = String(g.adresse || "").trim();
-  const cp = String(g.code_postal || "").trim();
-  const ou = cp ? t.indexOf(cp) : -1;
-  if(ou > 0) t = t.slice(0, ou);
-  else t = t.replace(/\s+\d{5}(\s.*)?$/, "");
-  return casseAdresse(t.replace(/\s+/g, " ").trim());
-}
-
-let ANN_RES = [], ANN_CIBLE = -1;
-
-async function chercherEtude(i){
-  const n = (L.notaires || [])[+i];
-  if(!n) return;
-  if(!WEB || !WEB.url){
-    popup({titre:"Base en ligne non connectée", genre:"erreur",
-      corps:`<p>La recherche passe par votre script Google : il faut donc que la
-        <b>base en ligne</b> soit connectée sur ce poste
-        (<b>Listes → Base partagée</b>).</p>`});
-    return;
-  }
-  ANN_CIBLE = +i;
-  popup({titre:"Recherche en cours…", corps:
-    `<p class="muted" style="margin:0">Interrogation du répertoire public des
-      entreprises pour <b>${esc(n.nom || n.patronyme)}</b>…</p>`, boutons:[]});
-  const demande = {action:"annuaire", nom: n.patronyme || "", prenom: n.prenom || ""};
-  if(String(n.cp || "").trim())    demande.cp = String(n.cp).trim();
-  if(!demande.nom) { demande.texte = n.nom || ""; delete demande.nom; }
-  let d;
-  try{ d = await webAppel(demande); }
-  catch(e){
-    popup({titre:"Recherche impossible", genre:"erreur",
-      corps:`<p>${esc(e.message)}</p>`});
-    return;
-  }
-  if(d.erreur){
-    const quoi = {
-      annuaire_vide:"il faut au moins un nom pour chercher",
-      annuaire_trop:"l'annuaire est momentanément saturé — réessayez dans un instant",
-      annuaire_reseau:"le script n'a pas pu joindre l'annuaire",
-      annuaire_illisible:"l'annuaire a répondu quelque chose d'inattendu",
-      annuaire_http:"l'annuaire a répondu une erreur " + (d.code || "")
-    }[d.erreur] || d.erreur;
-    popup({titre:"Recherche impossible", genre:"erreur",
-      corps:`<p>${esc(quoi)}.</p><p class="muted">Votre script est-il bien en
-        <b>version 8</b> ? C'est elle qui sait interroger l'annuaire.</p>`});
-    return;
-  }
-  /* Deuxième tentative, plus large, si le filtre « activités juridiques »
-     n'a rien donné : une étude mal classée vaut mieux qu'aucun résultat. */
-  let brut = (d.annuaire || {}).results || [];
-  if(!brut.length && (n.patronyme || n.nom)){
-    try{
-      const large = await webAppel({action:"annuaire",
-        texte:["notaire", n.patronyme || n.nom, n.ville || ""].filter(Boolean).join(" "),
-        tout:true});
-      brut = (large.annuaire || {}).results || [];
-    }catch(e){}
-  }
-  ANN_RES = brut.map(r=>{
-    const g = r.siege || {};
-    return {
-      nom: r.nom_complet || r.nom_raison_sociale || "",
-      enseigne: (g.liste_enseignes || [])[0] || g.nom_commercial || "",
-      adresse: rueDeSiege(g),
-      cp: String(g.code_postal || "").trim(),
-      ville: casseAdresse(g.libelle_commune || "").toUpperCase(),
-      naf: r.activite_principale || "",
-      siren: r.siren || "",
-      gens: (r.dirigeants || []).map(x=> [x.prenoms, x.nom].filter(Boolean).join(" ")
-        || x.denomination || "").filter(Boolean).slice(0, 6)
-    };
-  }).filter(x=> x.adresse || x.cp || x.ville);
-  montrerEtudes(n);
-}
-
-function montrerEtudes(n){
-  if(!ANN_RES.length){
-    popup({titre:"Aucune étude trouvée",
-      corps:`<p>Le répertoire public ne connaît pas d'étude au nom de
-        <b>${esc(n.nom || n.patronyme)}</b>${n.ville ? " du côté de <b>" +
-        esc(n.ville) + "</b>" : ""}.</p>
-        <p class="muted">Essayez en renseignant d'abord le <b>code postal</b> de
-        l'étude, ou vérifiez l'orthographe du nom. Les études fermées ne sont
-        pas proposées.</p>`});
-    return;
-  }
-  const carte = (x, i)=>`<button type="button" class="rubbtn annres" data-annpick="${i}"
-      style="text-align:left;display:block;width:100%">
-      <b>${esc(x.enseigne || x.nom)}</b>
-      ${x.enseigne && x.nom && x.enseigne !== x.nom
-        ? `<br><span class="muted">${esc(x.nom)}</span>` : ""}
-      <br>${esc([x.adresse, [x.cp, x.ville].filter(Boolean).join(" ")]
-                .filter(Boolean).join(" — ") || "adresse non diffusée")}
-      ${x.gens.length ? `<br><span class="muted">${esc(x.gens.join(" · "))}</span>` : ""}
-      <br><span class="muted">SIREN ${esc(x.siren)}${
-        x.naf && x.naf !== "69.10Z" ? " · activité " + esc(x.naf) +
-        " — à vérifier, ce n'est pas une activité juridique" : ""}</span>
-    </button>`;
-  popup({titre:"Études trouvées — laquelle ?", large:true,
-    corps:`<p class="muted" style="margin-top:0">Source : répertoire public des
-        entreprises (Sirene / registre national). Choisissez une étude pour
-        reprendre son <b>adresse</b>, son <b>code postal</b> et sa
-        <b>commune</b>.</p>
-      <div class="classeur" style="grid-template-columns:1fr">
-        ${ANN_RES.map(carte).join("")}</div>
-      <p class="muted" style="margin-bottom:0"><b>Le téléphone et le courriel ne
-        s'y trouvent pas</b> — aucun fichier public ouvert ne les donne, et il
-        n'est pas question de les inventer. Ces deux champs restent à vous.
-        Le répertoire public écrit par ailleurs <b>sans accents</b> : relisez
-        l'adresse reprise, vous aurez peut-être un accent à remettre.</p>`,
-    boutons:[{lib:"Annuler"}]});
-}
-
-function reprendreEtude(i){
-  const x = ANN_RES[+i], n = (L.notaires || [])[ANN_CIBLE];
-  if(!x || !n) return;
-  const avant = {adresse:n.adresse || "", cp:n.cp || "", ville:n.ville || ""};
-  const pose = [];
-  [["adresse", x.adresse], ["cp", x.cp], ["ville", x.ville]].forEach(([k, v])=>{
-    if(!v) return;
-    if(avant[k] && avant[k] !== v) pose.push(k + " : « " + avant[k] + " » → « " + v + " »");
-    n[k] = v;
-  });
-  if(!n.pays) n.pays = "France";
-  saveLists(); renderCarnets(); rebuildSelects(); renderPreview();
-  toast(pose.length ? "Coordonnées remplacées" : "Coordonnées reprises de l'annuaire");
-}
-
 /* Le dossier garde le NOM du notaire. Si le carnet a depuis changé
    d'orthographe — un titre ajouté, une casse corrigée —, on le retrouve
    quand même : d'abord à l'identique, puis sans titre ni accents, puis sur
@@ -5612,10 +5448,6 @@ function ficheCarnet(k, r, i, apres, sansEntete){
     sansEntete ? "" : `<header>
     <span class="who">${esc(r.nom || (b.label+" "+(i+1)))}</span>
     ${k === "residences" && r.nom ? boutonImmeuble(r.nom, "Ses dossiers") : ""}
-    ${k === "notaires" && String(r.patronyme || r.nom || "").trim()
-      ? `<button type="button" class="xbtn" data-annuaire="${i}"
-           title="Chercher l'étude dans le répertoire public des entreprises"
-           >${IC_ANNUAIRE}<span>Chercher l'étude</span></button>` : ""}
     ${r.nom ? trombone(k === "residences" ? sujetImmeuble(r.nom)
                                           : sujetPersonne(r), "Pièces") : ""}
     <button class="xbtn" data-bookdel="${k}:${i}">Supprimer</button></header>`}
@@ -5853,6 +5685,22 @@ function blocReconstituer(){
   </div>`;
 }
 
+/* Les cinq tiroirs d'un immeuble, à plat sur sa carte. Un seul bouton
+   « Documents » obligeait à ouvrir le classeur pour savoir s'il y avait
+   quelque chose dedans — et dans quel tiroir. Chacun porte donc son
+   compteur, et mène droit à sa liste. Le tiroir vide reste affiché : ce
+   qu'il manque se voit aussi bien que ce qu'il y a. */
+function tiroirsImmeuble(nom){
+  const sujet = sujetImmeuble(nom);
+  return (RUBRIQUES.immeuble || []).map(r=>{
+    const n = comptePieces(sujet, r);
+    return `<button type="button" class="pjbtn tiroir${n ? " garni" : ""}"
+        data-pjrub="${esc(sujet)}|${esc(r)}"
+        title="${esc(r)} — ${n ? n + " pièce" + (n > 1 ? "s" : "") : "aucune pièce"}">${
+        IC_PJ}<span>${esc(r)}</span><span class="cnt${n ? "" : " zero"}">${n}</span></button>`;
+  }).join("");
+}
+
 function renderImmeubles(){
   const rows = L.residences || [];
   const {villes, total} = immeublesParVille();
@@ -5863,8 +5711,8 @@ function renderImmeubles(){
       <h2 class="pliable" data-pli="im_${x.i}">${chevron(plie)}${
         esc(x.r.nom || "Sans nom")}
         <span class="cnt">${n} dossier${n > 1 ? "s" : ""}</span>
-        ${x.r.nom ? trombone(sujetImmeuble(x.r.nom), "Documents") : ""}
         <button class="xbtn" data-bookdel="residences:${x.i}">Supprimer</button></h2>
+      ${x.r.nom ? `<div class="immtiroirs">${tiroirsImmeuble(x.r.nom)}</div>` : ""}
       <div class="body plibody"${plie ? ' style="display:none"' : ''}>
         ${ficheCarnet("residences", x.r, x.i, null, true)}
         <div class="immbloc"><h3>Les dossiers de cet immeuble</h3>
@@ -10340,7 +10188,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-annuaire],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   /* Un trombone peut vivre DANS un titre repliable — c'est le cas sur la page
@@ -10349,7 +10197,6 @@ document.addEventListener("click", e=>{
      filer : le gestionnaire des pièces, enregistré après celui-ci sur le même
      document, le recevra. */
   if(t.dataset.pj !== undefined) return;
-  if(t.dataset.annuaire !== undefined){ chercherEtude(t.dataset.annuaire); return; }
 
   if(t.dataset.mgo){ activerOnglet(t.dataset.mgo); return; }
   if(t.classList.contains("tab")){ activerOnglet(t.dataset.p); return; }
@@ -10761,7 +10608,6 @@ document.addEventListener("click", e=>{
   const ps = e.target.closest("[data-pubstyle]");
   if(ps){
     PUB_STYLE = ps.getAttribute("data-pubstyle");
-    PUB_IA_MOT = "";
     PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
     renderPublications(); return;
   }
@@ -10797,8 +10643,6 @@ document.addEventListener("click", e=>{
     D.publications = (D.publications || []).filter(x=> x.id !== id);
     autosave(); renderPublications(); return;
   }
-  const an = e.target.closest("[data-annpick]");
-  if(an){ const i = an.getAttribute("data-annpick"); fermerPopup(); reprendreEtude(i); return; }
   const rb = e.target.closest("[data-pjrub]");
   if(rb){
     const [suj, rub] = rb.getAttribute("data-pjrub").split("|");
@@ -11444,21 +11288,20 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 8
+ * Base en ligne pour « Dossiers de vente »  —  version 9
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * Cette version 8 sait interroger l'ANNUAIRE PUBLIC DES ENTREPRISES pour
- * remplir la fiche d'un notaire : dénomination, enseigne, adresse du siège,
- * code postal, commune et dirigeants, depuis le répertoire Sirene de
- * l'INSEE et le registre national (recherche-entreprises.api.gouv.fr).
- * C'est une API d'État, publique, gratuite et sans clé. Rien à régler.
- * Elle ne donne ni téléphone ni courriel : aucun fichier public ouvert ne
- * les contient, et le script ne les invente pas.
+ * Cette version 9 NE SORT PLUS DE CHEZ VOUS. Les deux relais vers
+ * l'extérieur — la réécriture des annonces par Gemini (versions 4 et 5) et
+ * la recherche d'une étude dans l'annuaire des entreprises (version 8) —
+ * ont été retirés : à l'usage, ils ne rendaient pas le service attendu.
+ * Plus aucune clé d'un tiers à entretenir, plus aucun appel sortant : ce
+ * script ne parle qu'à votre Drive.
  *
- * Elle renforce aussi la protection des CARNETS : un enregistrement qui
+ * Elle garde la protection des CARNETS : un enregistrement qui
  * ferait disparaître une fiche que la base possédait ne passe plus, sauf
  * si le registre des retraits qui l'accompagne dit qu'elle a été
  * supprimée exprès.
@@ -11475,21 +11318,6 @@ const SCRIPT_GOOGLE = `/**
  * change — la clé partagée suffit. Dès le premier compte créé, le script
  * ne livre plus rien sans une séance ouverte : c'est là, et non dans la
  * page, que se trouve la serrure.
- *
- * La version 5 rendait la réécriture patiente : aux heures de pointe, un modèle
- * répond « 503, trop de demandes ». Le script attend, réessaie, puis passe au
- * modèle suivant de la liste plutôt que d'abandonner.
- *
- * La version 4 avait ajouté la RÉÉCRITURE DES ANNONCES par l'intelligence
- * artificielle de Google (Gemini). Le script sert de relais : votre clé
- * Gemini reste ici, dans votre script, et ne descend jamais dans la page web
- * — où n'importe qui pourrait la lire. Si vous laissez CLE_GEMINI vide, tout
- * le reste fonctionne comme avant et le bouton de réécriture reste gris.
- *
- * POUR OBTENIR UNE CLÉ GEMINI (gratuit)
- *   aistudio.google.com  →  « Get API key »  →  créer une clé  →  la coller
- *   dans CLE_GEMINI ci-dessous. L'offre gratuite autorise largement de quoi
- *   rédiger plusieurs annonces par jour.
  *
  * La version 3 avait ajouté les PIÈCES JOINTES et le renommage d'une pièce. Les dossiers eux-mêmes restent
  * dans un fichier JSON ; les pièces — photos, PDF — deviennent de vrais
@@ -11524,8 +11352,8 @@ const SCRIPT_GOOGLE = `/**
  *     votre tablette, avec la même adresse et la même clé.
  *
  * MISE À JOUR DEPUIS UNE VERSION PRÉCÉDENTE
- *  Remplacez tout le contenu de Code.gs par ce fichier, REMETTEZ VOS DEUX
- *  CLÉS (CLE, et CLE_GEMINI si vous l'utilisez), enregistrez, puis « Déployer » → « Gérer les déploiements »
+ *  Remplacez tout le contenu de Code.gs par ce fichier, REMETTEZ VOTRE CLÉ
+ *  (ligne CLE), enregistrez, puis « Déployer » → « Gérer les déploiements »
  *  → crayon → Version « Nouvelle version » → « Déployer ». L'adresse ne change
  *  pas, et vos dossiers sont intacts. Sans cette republication, Google
  *  continue de servir l'ancien code et les pièces jointes ne partiront pas.
@@ -11539,19 +11367,6 @@ const NOM_FICHIER = 'Dossiers de vente - base.json';
 
 /** Nom du dossier Drive où sont rangées les pièces jointes. */
 const NOM_PIECES = 'Dossiers de vente — pièces';
-
-/** Clé de l'API Gemini, pour la réécriture des annonces. Laissez vide si
- *  vous ne voulez pas de cette fonction. Elle ne quitte jamais ce script. */
-const CLE_GEMINI = '';
-
-/** Modèles essayés, dans l'ordre. Le premier qui répond gagne.
- *  Les modèles rapides sont parfois saturés aux heures de pointe : plutôt
- *  que de renvoyer une erreur, le script patiente, réessaie, puis passe au
- *  suivant de la liste. Si Google renomme un modèle, celui-là est ignoré
- *  (erreur 404) et l'on continue — rien à corriger dans l'urgence. */
-const MODELES_GEMINI = ['gemini-3.8-flash',
-                        'gemini-3.7-flash',
-                        'gemini-3.1-flash-lite'];
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
@@ -11603,8 +11418,6 @@ function doPost(e) {
     if (q.action === 'piece_lire')      return sortie(pieceLire(q));
     if (q.action === 'piece_renommer')  return sortie(pieceRenommer(q));
     if (q.action === 'piece_supprimer') return sortie(pieceSupprimer(q));
-    if (q.action === 'redige')          return sortie(redige(q));
-    if (q.action === 'annuaire')        return sortie(annuaire(q));
   } catch (err) {
     return sortie({ erreur: String(err && err.message || err) });
   }
@@ -11829,137 +11642,6 @@ function pieceSupprimer(q) {
    l'application, qui sait seule ce qu'il y a dans le dossier. Ici on ne fait
    que relayer l'appel en y mettant la clé — c'est tout l'intérêt : la clé
    reste dans votre compte Google. */
-/* ======================================================= ANNUAIRE PUBLIC
- *  CHERCHER UNE ÉTUDE DANS LE RÉPERTOIRE DES ENTREPRISES
- *  ---------------------------------------------------------------------
- *  Source : « API Recherche d'entreprises » de l'État
- *  (recherche-entreprises.api.gouv.fr), adossée au répertoire Sirene de
- *  l'INSEE et au registre national des entreprises. Elle est publique,
- *  gratuite, sans clé, et limitée à sept appels par seconde.
- *
- *  Pourquoi passer par le script plutôt que d'appeler depuis la page :
- *  parce que la page doit continuer de fonctionner ouverte en fichier
- *  comme sur le web, et qu'elle n'a ainsi toujours qu'un seul
- *  interlocuteur — vous. Un appel de moins à surveiller.
- *
- *  Ce que l'annuaire donne : la dénomination, l'enseigne, l'adresse du
- *  siège, le code postal, la commune, l'activité et les dirigeants.
- *  Ce qu'il ne donne PAS : le téléphone et le courriel. Ils ne sont dans
- *  aucun fichier public ouvert, et il n'est pas question de les deviner.
- */
-const API_ANNUAIRE = 'https://recherche-entreprises.api.gouv.fr/search';
-const NAF_JURIDIQUE = '69.10Z';          // activités juridiques (dont notaires)
-
-function annuaire(q) {
-  const p = [];
-  const met = function (k, v) {
-    const t = String(v === undefined || v === null ? '' : v).trim();
-    if (t) p.push(k + '=' + encodeURIComponent(t));
-  };
-  met('q', q.texte);
-  met('nom_personne', q.nom);
-  met('prenoms_personne', q.prenom);
-  if (q.nom) met('type_personne', 'dirigeant');
-  met('code_postal', q.cp);
-  met('departement', q.departement);
-  if (q.tout !== true) met('activite_principale', NAF_JURIDIQUE);
-  met('etat_administratif', 'A');        // les études fermées ne nous servent pas
-  p.push('page=1');
-  p.push('per_page=10');
-  p.push('minimal=true');
-  p.push('include=siege,dirigeants');
-  if (!q.texte && !q.nom) return { erreur: 'annuaire_vide' };
-
-  let r;
-  try {
-    r = UrlFetchApp.fetch(API_ANNUAIRE + '?' + p.join('&'), {
-      method: 'get', muteHttpExceptions: true, followRedirects: true,
-      headers: { 'User-Agent': 'Dossiers de vente - agence immobiliere',
-                 'Accept': 'application/json' }
-    });
-  } catch (err) {
-    return { erreur: 'annuaire_reseau', texte: String(err && err.message || err) };
-  }
-  const code = r.getResponseCode();
-  const txt = r.getContentText();
-  if (code === 429) return { erreur: 'annuaire_trop', code: code };
-  if (code !== 200)  return { erreur: 'annuaire_http', code: code,
-                              texte: txt.slice(0, 300) };
-  try {
-    return { ok: true, annuaire: JSON.parse(txt) };
-  } catch (err) {
-    return { erreur: 'annuaire_illisible', texte: txt.slice(0, 300) };
-  }
-}
-
-function redige(q) {
-  if (!CLE_GEMINI) return { erreur: 'ia_absente' };
-  const invite = String(q.invite || '');
-  if (!invite) return { erreur: 'ia_vide' };
-
-  const corps = {
-    systemInstruction: { parts: [{ text: String(q.systeme || '') }] },
-    contents: [{ role: 'user', parts: [{ text: invite }] }],
-    generationConfig: {
-      temperature: q.temperature === undefined ? 0.9 : Number(q.temperature),
-      maxOutputTokens: 1200
-    }
-  };
-
-  /* Les attentes entre deux essais, en millisecondes. Un modèle saturé se
-     libère souvent en quelques secondes ; insister tout de suite ne sert
-     qu'à se faire refuser une seconde fois. */
-  const ATTENTES = [1200, 3500];
-  let dernier = null;
-
-  for (var m = 0; m < MODELES_GEMINI.length; m++) {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/'
-      + MODELES_GEMINI[m] + ':generateContent';
-
-    for (var essai = 0; essai <= ATTENTES.length; essai++) {
-      if (essai > 0) Utilities.sleep(ATTENTES[essai - 1]);
-      let rep;
-      try {
-        rep = UrlFetchApp.fetch(url, {
-          method: 'post',
-          contentType: 'application/json',
-          headers: { 'x-goog-api-key': CLE_GEMINI },
-          payload: JSON.stringify(corps),
-          muteHttpExceptions: true
-        });
-      } catch (err) {
-        dernier = { erreur: 'ia_reseau', detail: String(err && err.message || err) };
-        break;                       // le réseau ne se répare pas en réessayant
-      }
-      const code = rep.getResponseCode();
-      const brut = rep.getContentText();
-
-      if (code === 200) {
-        let j;
-        try { j = JSON.parse(brut); } catch (err) { return { erreur: 'ia_json' }; }
-        const c = (j.candidates || [])[0] || {};
-        const parts = ((c.content || {}).parts) || [];
-        const texte = parts.map(function (x) { return x.text || ''; }).join('').trim();
-        if (texte) return { ok: true, texte: texte, modele: MODELES_GEMINI[m] };
-        dernier = { erreur: 'ia_rien', detail: String(c.finishReason || '') };
-        break;
-      }
-
-      /* 503 : modèle saturé. 429 : trop d'appels à la minute. Dans les deux
-         cas on patiente, puis on change de modèle. Tout autre code est
-         définitif pour ce modèle — une clé refusée le restera. */
-      dernier = { erreur: code === 503 || code === 429 ? 'ia_saturee' : 'ia_http',
-                  code: code, modele: MODELES_GEMINI[m], detail: brut.slice(0, 300) };
-      if (code !== 503 && code !== 429) break;
-    }
-    /* une clé refusée (400/403) ne marchera pas davantage avec un autre
-       modèle : inutile de dérouler toute la liste */
-    if (dernier && dernier.erreur === 'ia_http'
-        && (dernier.code === 400 || dernier.code === 401 || dernier.code === 403)) break;
-  }
-  return dernier || { erreur: 'ia_rien' };
-}
-
 /* ====================================================== LES COMPTES ====
    La vraie serrure est ici, pas dans la page.
 
@@ -12282,23 +11964,13 @@ function portier(q, action) {
 function etatServeur(q) {
   const base = lireComptes();
   const c = base.comptes.length ? quiEst(base, q.jeton) : null;
-  return { ok: true, version: 8, comptes: base.comptes.length,
+  return { ok: true, version: 9, comptes: base.comptes.length,
            profil: c ? publicCompte(c) : null };
 }
 
 function sortie(o) {
   return ContentService.createTextOutput(JSON.stringify(o))
     .setMimeType(ContentService.MimeType.JSON);
-}
-
-/** Lancez cette fonction depuis l'éditeur (menu « Exécuter ») pour vérifier
- *  que votre clé Gemini fonctionne, AVANT de chercher pourquoi le bouton ne
- *  marche pas dans l'application. Le résultat s'affiche dans le journal. */
-function verifierIA() {
-  const r = redige({ systeme: 'Tu réponds en français, en trois mots.',
-                     invite: 'Dis bonjour.' });
-  Logger.log(JSON.stringify(r));
-  return r;
 }
 
 /** Facultatif : lancez cette fonction une fois depuis l'éditeur pour vérifier
@@ -13027,11 +12699,63 @@ async function fermerSeanceApp(){
 
 const ERREURS_RENDUES = ["refuse","bloque","ancien","existe","ident","inconnu",
                          "soimeme","dernieradmin","empreinte"];
+/* ------------------------------------------------- les ratés passagers ----
+   Un appel qui échoue n'est pas forcément une panne. Deux situations se
+   produisent tous les jours et n'ont rien d'anormal :
+
+   · « occupé » — un autre appareil écrit dans la base au même instant et
+     le script refuse poliment. Google ne tient qu'un verrou à la fois ;
+     avec un ordinateur et une tablette qui enregistrent toutes les quinze
+     secondes, la rencontre est courante.
+   · un creux de réseau, ou un script qui se réveille — Apps Script met
+     parfois dix secondes à démarrer quand il n'a pas servi depuis un
+     moment.
+
+   Jusqu'ici, l'un ou l'autre suffisait à faire passer la pastille à
+   l'ambre, où elle restait jusqu'à ce qu'on appuie sur un bouton. On
+   réessaie donc, trois fois, en espaçant — et l'on ne dérange personne
+   si la deuxième tentative passe.
+
+   Prudence sur CE qu'on rejoue : « occupé » est sûr, le script n'a rien
+   fait. Un échec réseau, lui, peut cacher une requête arrivée quand même
+   — on ne rejoue alors que les actions sans effet de bord ou idempotentes.
+   Envoyer une pièce n'en fait pas partie : on créerait un doublon. */
+const ACTIONS_REJOUABLES = ["lire","ecrire","etat","sel","comptes"];
+const ATTENTES_WEB = [800, 2600, 6500];
+const DELAI_WEB = 45000, DELAI_WEB_PIECE = 180000;
+
+function dormir(ms){ return new Promise(r=> setTimeout(r, ms)); }
+
 async function webAppel(charge){
+  const action = (charge || {}).action || "lire";
+  const rejouable = ACTIONS_REJOUABLES.indexOf(action) >= 0;
+  let dernier = null;
+  for(let essai = 0; ; essai++){
+    try{
+      const d = await webAppelUneFois(charge, action);
+      if(d && d.__occupe){
+        if(essai < ATTENTES_WEB.length){ await dormir(ATTENTES_WEB[essai]); continue; }
+        throw new Error("base occupée, réessayez");
+      }
+      return d;
+    }catch(e){
+      dernier = e;
+      /* on ne rejoue que ce qui peut l'être, et jamais une réponse de
+         fond : clé refusée, séance expirée, droit manquant */
+      if(!rejouable || e.definitif || essai >= ATTENTES_WEB.length) throw e;
+      await dormir(ATTENTES_WEB[essai]);
+    }
+  }
+}
+
+async function webAppelUneFois(charge, action){
   let r;
+  const stop = new AbortController();
+  const minuteur = setTimeout(()=> stop.abort(),
+    action === "piece_envoi" || action === "piece_lire" ? DELAI_WEB_PIECE : DELAI_WEB);
   try{
     r = await fetch(WEB.url, {
-      method: "POST", redirect: "follow",
+      method: "POST", redirect: "follow", signal: stop.signal,
       headers: {"Content-Type": "text/plain;charset=utf-8"},
       /* le jeton de séance accompagne tout ce qui touche aux données ;
          les appels d'ouverture le portent déjà, ou s'en passent */
@@ -13040,12 +12764,18 @@ async function webAppel(charge){
     });
   }catch(e){
     throw new Error(enImpasseLocale() ? IMPASSE_LOCALE
-      : "aucune réponse — vérifiez la connexion, l'adresse, et que le " +
-        "déploiement est bien accessible à « Tout le monde »");
+      : e && e.name === "AbortError"
+        ? "la base n'a pas répondu dans le temps imparti"
+        : "aucune réponse — vérifiez la connexion, l'adresse, et que le " +
+          "déploiement est bien accessible à « Tout le monde »");
+  }finally{
+    clearTimeout(minuteur);
   }
-  if(r.status === 401 || r.status === 403)
-    throw new Error(enImpasseLocale() ? IMPASSE_LOCALE
+  if(r.status === 401 || r.status === 403){
+    const e = new Error(enImpasseLocale() ? IMPASSE_LOCALE
       : "accès refusé par Google — redéployez en « Qui a accès : Tout le monde »");
+    e.definitif = true; throw e;          // réessayer n'y changerait rien
+  }
   if(!r.ok) throw new Error(enImpasseLocale() ? IMPASSE_LOCALE
     : "réponse " + r.status + " de Google");
   const t = await r.text();
@@ -13057,25 +12787,33 @@ async function webAppel(charge){
       ? "Google renvoie une page de connexion : le déploiement n'est pas public"
       : "réponse inattendue de la base");
   }
-  if(d.erreur === "cle")    throw new Error("clé refusée par le script");
+  if(d.erreur === "cle"){
+    const e = new Error("clé refusée par le script"); e.definitif = true; throw e;
+  }
   /* la séance a expiré, ou le compte a été désactivé pendant qu'on
      travaillait : on rend la main à l'écran de connexion */
   if(d.erreur === "seance"){
     poserSeance(null); SERRURE_ACTIVE = true;
     if(typeof montrerConnexion === "function") montrerConnexion();
-    throw new Error("votre séance a expiré — reconnectez-vous");
+    const e = new Error("votre séance a expiré — reconnectez-vous");
+    e.definitif = true; throw e;
   }
-  if(d.erreur === "lectureseule")
-    throw new Error("votre compte est en lecture seule : cette modification "
+  if(d.erreur === "lectureseule"){
+    const e = new Error("votre compte est en lecture seule : cette modification "
       + "n'a pas été enregistrée dans la base");
-  if(d.erreur === "droit")
-    throw new Error("cette action demande un compte administrateur");
-  if(d.erreur === "occupe") throw new Error("base occupée, réessayez");
+    e.definitif = true; throw e;
+  }
+  if(d.erreur === "droit"){
+    const e = new Error("cette action demande un compte administrateur");
+    e.definitif = true; throw e;
+  }
+  /* « occupé » remonte tel quel : l'appelant réessaiera, quelle que soit
+     l'action — le script n'a rien fait, rien ne peut être fait deux fois */
+  if(d.erreur === "occupe") return {__occupe: true};
   /* Certaines erreurs ne sont pas des pannes : ce sont des réponses. Un
      mot de passe faux, un identifiant déjà pris, le dernier
      administrateur qu'on ne peut pas retirer — l'appelant sait les dire
      en français, mieux que nous ici. On les lui rend telles quelles. */
-  if(d.erreur && /^(ia_|annuaire_)/.test(d.erreur)) return d;
   if(d.erreur && ERREURS_RENDUES.indexOf(d.erreur) >= 0) return d;
   if(d.erreur)              throw new Error(d.erreur);
   return d;
@@ -13089,11 +12827,13 @@ async function webCharger(silencieux){
     const all = allDossiers();
     if(all[D.id]) D = migrate(all[D.id]);
     WEB_ETAT = "ok"; WEB_MAJ = Date.now(); WEB_MSG = "";
+    calmerReprise();
     renderAll(); renderFichier();
     if(!silencieux) toast("Dossiers repris de la base en ligne");
     return true;
   }catch(e){
     WEB_ETAT = "erreur"; WEB_MSG = e.message; renderFichier();
+    armerReprise();
     if(!silencieux) toast("Base injoignable : " + e.message);
     return false;
   }
@@ -13107,11 +12847,13 @@ async function webEnregistrer(silencieux){
     await webAppel({action:"ecrire", data:m});
     adopter(m);
     WEB_ETAT = "ok"; WEB_MAJ = Date.now(); WEB_MSG = "";
+    calmerReprise();
     renderFichier();
     if(!silencieux) toast("Enregistré dans la base en ligne");
     return true;
   }catch(e){
     WEB_ETAT = "erreur"; WEB_MSG = e.message; renderFichier();
+    armerReprise();
     if(!silencieux) toast("Enregistrement impossible : " + e.message);
     return false;
   }
@@ -13166,6 +12908,37 @@ function syncDiffere(){
   syncDiffere.t = setTimeout(()=> syncEnregistrer(true), 4000);
 }
 function syncActif(){ return !!(WEB || FICHIER); }
+
+/* --------------------------------------------- la reprise, toute seule ----
+   Une fois la pastille à l'ambre, rien ne la ramenait au vert : il fallait
+   appuyer sur un bouton. C'était l'erreur. Un ennui de liaison se répare
+   de lui-même la plupart du temps — le verrou se libère, le réseau
+   revient, le script se réveille. L'application doit donc retenter seule,
+   en espaçant pour ne pas s'acharner : quinze secondes, puis trente, puis
+   une minute, jusqu'à cinq minutes entre deux essais. Et tout de suite
+   quand le réseau revient ou quand on revient sur l'onglet — c'est à ces
+   deux moments-là que ça remarche. */
+let SYNC_REPRISE = null, SYNC_ATTENTE = 0;
+function armerReprise(){
+  if(!syncActif()) return;
+  clearTimeout(SYNC_REPRISE);
+  SYNC_ATTENTE = Math.min(SYNC_ATTENTE ? SYNC_ATTENTE * 2 : 15000, 300000);
+  SYNC_REPRISE = setTimeout(()=>{ SYNC_REPRISE = null; syncEnregistrer(true); },
+                            SYNC_ATTENTE);
+}
+function calmerReprise(){
+  clearTimeout(SYNC_REPRISE); SYNC_REPRISE = null; SYNC_ATTENTE = 0;
+}
+function repriseImmediate(){
+  if(!WEB || WEB_ETAT !== "erreur") return;
+  clearTimeout(SYNC_REPRISE); SYNC_REPRISE = null; SYNC_ATTENTE = 0;
+  syncEnregistrer(true);
+}
+window.addEventListener("online", repriseImmediate);
+window.addEventListener("online", ()=>{ calmerReprisePieces(); filePieces(true); });
+document.addEventListener("visibilitychange", ()=>{
+  if(!document.hidden) repriseImmediate();
+});
 
 function renderFichier(){
   const z = $("#fichierBox");
@@ -13306,7 +13079,8 @@ function majPuceSync(){
   p.className = "fpuce" + (ennui ? " att" : "");
   p.textContent = WEB ? "Base en ligne" : FICHIER_NOM.replace(/\.json$/i, "");
   p.title = WEB
-    ? (ennui ? "Base en ligne injoignable — voir l'onglet Listes" : "Relié à la base en ligne")
+    ? (ennui ? "Base en ligne injoignable — nouvelle tentative automatique en cours"
+             : "Relié à la base en ligne")
     : (ennui ? "Fichier " + FICHIER_NOM + " — action requise dans l'onglet Listes"
              : "Relié au fichier " + FICHIER_NOM);
   p.style.cursor = "pointer";
@@ -13355,13 +13129,6 @@ function formulaireWeb(z, url, cle){
         enregistrez, puis <b>Déployer → Gérer les déploiements → crayon → Version :
         Nouvelle version → Déployer</b>. L'adresse ne change pas et vos dossiers sont
         intacts.</p>
-      <p class="muted"><b>Pour la réécriture des annonces par l'IA</b> (facultatif) :
-        prenez une clé gratuite sur <b>aistudio.google.com</b> → « Get API key », et
-        collez-la à la ligne <code>const CLE_GEMINI = '';</code>, entre les apostrophes.
-        Google redemandera alors son accord au premier déploiement, parce que le script
-        accède désormais à Internet — c'est normal, acceptez. Pour vérifier que la clé
-        marche, lancez la fonction <code>verifierIA</code> depuis l'éditeur
-        (menu déroulant des fonctions, puis <b>Exécuter</b>).</p>
       <button class="tbtn light" id="wCopier">Copier le script</button>
       <pre id="wScript">${esc(SCRIPT_GOOGLE)}</pre>
     </details>`;
@@ -13940,25 +13707,15 @@ const AIDE = [
   "téléphone, courriel — et ramène en plus les <b>vendeurs et acquéreurs saisis dans les "+
   "dossiers</b>, chacun avec le mandat d'où il vient et un bouton pour y aller : une personne "+
   "se retrouve sans qu'il faille se rappeler où on l'a d'abord écrite."],
- ["Remplir la fiche d'un notaire depuis l'annuaire public",
-  "Sur chaque fiche du carnet <b>Notaires</b>, au Répertoire, un bouton "+
-  "<b>« Chercher l'étude »</b>. Il interroge le <b>répertoire public des "+
-  "entreprises</b> de l'État — le fichier Sirene de l'INSEE et le registre "+
-  "national —, cherche le notaire <b>comme dirigeant</b> d'une étude en activité, "+
-  "et vous présente ce qu'il trouve : enseigne, dénomination, adresse, commune, "+
-  "les notaires associés et le numéro SIREN. Vous choisissez, et l'<b>adresse</b>, "+
-  "le <b>code postal</b> et la <b>commune</b> se posent dans la fiche. "+
-  "Renseigner d'abord le <b>code postal</b> aide quand le nom est répandu. "+
-  "<b>Le téléphone et le courriel ne s'y trouvent pas</b> : aucun fichier public "+
-  "ouvert ne les donne, et il n'est pas question de les deviner — une adresse "+
-  "électronique inventée finit dans un acte. Ces deux champs restent à vous. "+
-  "Le répertoire public écrit par ailleurs <b>en capitales et sans accents</b> : "+
-  "l'adresse est remise en casse lisible, mais un accent peut manquer, "+
-  "relisez-la. "+
-  "La recherche passe par <b>votre script Google</b>, comme la réécriture par "+
-  "l'IA : la page n'a ainsi qu'un seul interlocuteur, et le bouton marche pareil "+
-  "sur la tablette. Il faut donc la <b>base en ligne connectée</b> et le script "+
-  "en <b>version 8</b>. C'est un service gratuit et sans clé : rien à régler."],
+ ["Les cinq tiroirs d'un immeuble, sur sa carte",
+  "Sur la page <b>Immeubles</b>, chaque immeuble porte ses cinq tiroirs à plat sous son "+
+  "titre : <b>RCP</b>, <b>PV AG</b>, <b>Diagnostics</b>, <b>Divers</b>, <b>Photos</b>, "+
+  "chacun avec le <b>nombre de pièces</b> qu'il contient. On voit d'un coup d'œil ce qui "+
+  "manque et ce qui est là, sans rien déplier ni ouvrir, et un clic mène droit au tiroir. "+
+  "Un tiroir vide reste affiché, avec son zéro en gris : ce qui manque se voit aussi bien "+
+  "que ce qui y est. "+
+  "Ces documents sont <b>partagés par tous les lots</b> de l'immeuble : un règlement de "+
+  "copropriété se dépose une fois pour toutes."],
  ["Les notaires : « Maître » ne se tape plus",
   "La civilité d'un notaire est acquise une fois pour toutes. Sa fiche ne demande donc que le "+
   "<b>Prénom</b> et le <b>Nom</b>, séparément, chacun avec sa mise en forme habituelle : une "+
@@ -14222,41 +13979,6 @@ const AIDE = [
   "Les quatre styles s'en servent différemment : le Professionnel énumère puis "+
   "raconte, le Chaleureux met vos mots en avant, le Coup de cœur les resserre, "+
   "l'Investisseur fait passer l'emplacement avant le charme."],
- ["Faire réécrire l'annonce par l'IA",
-  "Les quatre styles <b>composent</b> un texte à partir de patrons de phrases. C'est "+
-  "juste, c'est conforme, mais cela reste une mécanique. Pour qu'une vraie plume s'en "+
-  "charge, l'application peut faire réécrire le texte par <b>Gemini</b>, l'IA de "+
-  "Google — bouton « <b>Faire réécrire par l'IA</b> », à côté de « Une autre "+
-  "tournure ». "+
-  "<b>Ce qu'il faut pour que le bouton s'allume.</b> Une base en ligne connectée, et "+
-  "une clé Gemini dans votre script Google. La clé s'obtient gratuitement sur "+
-  "aistudio.google.com (« Get API key »). On la colle dans le script, ligne "+
-  "<code>CLE_GEMINI</code>, puis on redéploie — la version 4 du script, dans "+
-  "Listes → Base partagée, contient tout ce qu'il faut. L'offre gratuite de Google "+
-  "autorise de quoi rédiger plusieurs annonces par jour sans rien payer. "+
-  "<b>Pourquoi passer par le script.</b> Une clé d'API dans une page web est lisible "+
-  "par quiconque ouvre la page : on publierait à votre compte. Dans le script, elle "+
-  "reste chez vous. L'application envoie la consigne, le script y ajoute la clé. "+
-  "<b>Ce que l'IA reçoit.</b> Les faits du dossier, numérotés, et rien d'autre : ni "+
-  "prix, ni honoraires, ni classe énergie, ni votre nom, ni l'adresse exacte. Elle "+
-  "a donc peu de prise pour inventer. "+
-  "<b>Ce qu'elle n'écrit pas.</b> Les <b>mentions obligatoires</b> et les mots-dièse "+
-  "restent calculés par l'application et recollés après son texte. Une mention légale "+
-  "inventée vous engagerait ; celle-ci ne peut pas l'être. "+
-  "<b>On relit sa copie.</b> Après chaque réécriture, l'application compare les "+
-  "chiffres du texte à ceux du dossier. Si l'IA a écrit une surface ou un nombre de "+
-  "pièces qui n'y est pas, un avertissement le nomme sous le texte. Relisez toujours "+
-  "avant de publier : c'est votre annonce, pas la sienne. "+
-  "<b>Quand les serveurs sont chargés.</b> Aux heures de pointe, Google répond « trop "+
-  "de demandes » (erreur 503) : le modèle est saturé, ce n'est pas une panne de chez "+
-  "vous. Le script attend une seconde, réessaie, attend trois secondes et demie, "+
-  "réessaie encore, puis <b>passe au modèle suivant</b> — il en connaît trois. La "+
-  "réponse peut donc prendre une demi-minute ; le bouton le dit. Si les trois sont "+
-  "saturés, réessayez dans une minute ou deux : le texte composé par l'application, "+
-  "lui, reste là et reste publiable. "+
-  "<b>Les autres pannes</b> ont chacune leur phrase — clé absente, clé refusée, nom de "+
-  "modèle périmé, réseau — et chacune dit quoi corriger. Depuis l'éditeur Apps Script, "+
-  "la fonction <code>verifierIA</code> répond en trois mots si la clé fonctionne."],
  ["Les mentions obligatoires d'une annonce",
   "Elles sont ajoutées automatiquement et ne dépendent pas du style choisi : le "+
   "<b>prix honoraires inclus</b> et la charge des honoraires ; quand ils sont à "+
@@ -14483,6 +14205,38 @@ const AIDE = [
   "du jour n'est jamais réécrite — elle garde l'état du matin, ce qui est précisément ce "+
   "qu'on veut le soir où l'on s'aperçoit d'une perte. Cela demande la <b>version 7</b> du "+
   "script."],
+ ["Quand la liaison avec la base se coupe",
+  "La pastille du bandeau passe à l'<b>ambre</b> quand un échange avec la base n'a pas "+
+  "abouti. Elle revient au vert <b>toute seule</b> : l'application réessaie sans rien vous "+
+  "demander, en espaçant — un quart de minute, puis une demie, puis une minute, jusqu'à cinq "+
+  "au plus. Et <b>tout de suite</b> dès que le réseau revient ou que vous revenez sur "+
+  "l'onglet, parce que c'est à ces deux moments-là que ça remarche. Vous n'avez plus à "+
+  "appuyer sur « Reprendre les dossiers ». "+
+  "<b>Pourquoi ça coupait si souvent.</b> Le plus fréquent n'est pas une panne : c'est "+
+  "<b>« occupé »</b>. Google ne tient qu'un verrou à la fois sur votre base ; si "+
+  "l'ordinateur et la tablette enregistrent au même instant, l'un des deux est refusé. "+
+  "Désormais, un refus de ce genre est simplement <b>réessayé trois fois</b>, à huit "+
+  "secondes d'intervalle au total — et vous n'en savez rien. Même traitement pour un creux "+
+  "de réseau et pour un script qui met du temps à se réveiller. "+
+  "Un appel qui ne répond pas est par ailleurs <b>abandonné au bout de quarante-cinq "+
+  "secondes</b> (trois minutes pour une pièce jointe, qui peut être lourde), de sorte qu'un "+
+  "échange bloqué n'empêche plus les suivants. "+
+  "<b>Ce qui n'est jamais réessayé :</b> l'envoi d'une pièce jointe. Un échec de réseau peut "+
+  "cacher une requête arrivée quand même — on créerait un doublon dans votre Drive. La pièce "+
+  "reste en file et repart entière au tour suivant. Une clé refusée, une séance expirée ou "+
+  "un droit manquant ne sont pas réessayés non plus : ce ne sont pas des ennuis passagers, "+
+  "ce sont des réponses."],
+ ["Les pièces jointes partent toutes seules",
+  "Une pièce ajoutée part aussitôt. <b>Il n'y a plus rien à valider</b> : si vous en "+
+  "choisissez cinq d'un coup, les cinq partent — l'envoi en cours accueille les nouvelles "+
+  "venues au lieu de les laisser en file. C'était le défaut qui vous faisait appuyer sur "+
+  "« envoyer maintenant ». "+
+  "Si un envoi échoue, la pièce <b>reste dans l'appareil</b> et repart d'elle-même : douze "+
+  "secondes plus tard, puis à intervalles croissants, et sans attendre dès que le réseau "+
+  "revient. Le bandeau du bas vous dit ce qu'il reste et ce qui est prévu ; le bouton "+
+  "« envoyer maintenant » demeure, mais vous ne devriez plus avoir à vous en servir. "+
+  "Rien ne se perd : tant qu'une pièce n'a pas son identifiant dans le Drive, elle reste en "+
+  "file, même si vous fermez l'application."],
  ["Mettre à jour une application installée",
   "Quand une version plus récente est déposée en ligne, l'application la télécharge "+
   "<b>en arrière-plan</b> et affiche un bandeau « Une nouvelle version est prête ». Tant "+
@@ -15040,10 +14794,24 @@ function pjAttente(){
    sur « envoyer maintenant ». Désormais, tant qu'il reste quelque chose, on
    continue ; l'envoi ne s'arrête que sur un échec, et reprendra au retour
    du réseau. */
+/* Une pièce ajoutée pendant qu'un envoi tourne ne doit pas rester en
+   rade : on note qu'il faudra repasser, et l'envoi se relance tout seul
+   en sortant. C'est ce qui manquait — en choisissant cinq fichiers d'un
+   coup, le premier partait et les quatre autres attendaient qu'on appuie
+   sur « envoyer maintenant ». */
+let PJ_REJOUER = false, PJ_REPRISE = null, PJ_ATTENTE = 0;
+function armerReprisePieces(){
+  clearTimeout(PJ_REPRISE);
+  PJ_ATTENTE = Math.min(PJ_ATTENTE ? PJ_ATTENTE * 2 : 12000, 300000);
+  PJ_REPRISE = setTimeout(()=>{ PJ_REPRISE = null; filePieces(true); }, PJ_ATTENTE);
+}
+function calmerReprisePieces(){
+  clearTimeout(PJ_REPRISE); PJ_REPRISE = null; PJ_ATTENTE = 0;
+}
 async function filePieces(silencieux){
-  if(PJ_ENVOI) return;
+  if(PJ_ENVOI){ PJ_REJOUER = true; return; }
   if(!WEB){ majPjBandeau(); return; }           /* sans base, tout reste ici */
-  if(!pjAttente().length){ majPjBandeau(); return; }
+  if(!pjAttente().length){ calmerReprisePieces(); majPjBandeau(); return; }
   PJ_ENVOI = true; majPjBandeau();
   let faits = 0, rate = false;
   const vus = {};
@@ -15061,7 +14829,14 @@ async function filePieces(silencieux){
   PJ_ENVOI = false; majPjBandeau();
   if(faits){ syncDiffere(); rafraichirPieces(); }
   if(faits && !silencieux) toast(faits + (faits > 1 ? " pièces envoyées" : " pièce envoyée"));
-  if(rate && !silencieux) toast("Envoi interrompu — il reprendra au retour du réseau");
+  /* des pièces sont arrivées pendant l'envoi : on repasse sans rien demander */
+  if(PJ_REJOUER){ PJ_REJOUER = false; return filePieces(true); }
+  if(rate){
+    armerReprisePieces();
+    if(!silencieux) toast("Envoi interrompu — il reprendra tout seul dans un instant");
+  } else {
+    calmerReprisePieces();
+  }
 }
 
 /* ------------------------------------------------------------- la lecture */
@@ -15361,9 +15136,10 @@ function majPjBandeau(){
   if(att) z.innerHTML = PJ_ENVOI
     ? `<span class="pjpoint"></span>Envoi des pièces… <b>${att}</b> restante${att > 1 ? "s" : ""}`
     : `<span class="pjpoint att"></span><b>${att}</b> pièce${att > 1 ? "s" : ""} en attente —
+       ${PJ_REPRISE ? "nouvelle tentative dans un instant" : "l'envoi va repartir"} ·
        <button type="button" class="lienbtn" id="pjRelance">envoyer maintenant</button>`;
   const r = $("#pjRelance");
-  if(r) r.onclick = ()=> filePieces(false);
+  if(r) r.onclick = ()=>{ calmerReprisePieces(); filePieces(false); };
   majPjInfo(); majPjPageInfo();
 }
 
@@ -16197,171 +15973,6 @@ function dieses(){
 
 function textePubli(style, graine){
   return corpsPubli(style, graine) + "\n\n" + mentionsPubli() + "\n\n" + dieses();
-}
-
-/* =====================================================================
-   RÉÉCRIRE L'ANNONCE AVEC L'INTELLIGENCE ARTIFICIELLE
-   ---------------------------------------------------------------------
-   Les patrons de phrases composent un texte juste ; ils ne l'écrivent pas.
-   Pour qu'une vraie plume s'en charge, il faut un modèle de langage — donc
-   une clé d'API, qui n'a rien à faire dans une page web que n'importe qui
-   peut ouvrir. Elle vit dans le script Google de Thierry, qui sert de
-   relais : l'application envoie la consigne, le script y ajoute la clé.
-
-   Trois règles tiennent tout l'édifice :
-     · le modèle ne reçoit QUE ce qui est dans le dossier, sous forme de
-       faits numérotés — il n'a donc rien à inventer ;
-     · il n'écrit PAS les mentions obligatoires : l'application les ajoute
-       elle-même, mot pour mot. Une mention légale hallucinée engagerait
-       la responsabilité de l'agent ;
-     · on relit sa copie : tout chiffre qui n'était pas dans les faits est
-       signalé avant qu'on publie quoi que ce soit.
-   ===================================================================== */
-const CONSIGNE_IA =
-  "Tu es rédacteur d'annonces immobilières pour un agent commercial en France.\n" +
-  "On te donne les FAITS d'un bien, et un STYLE. Tu écris le corps de l'annonce.\n\n" +
-  "RÈGLES ABSOLUES\n" +
-  "1. N'invente rien. N'utilise que les faits donnés. Si un fait manque, n'en " +
-  "parle pas — ne le devine pas, ne l'estime pas, ne le remplace pas par une " +
-  "formule vague.\n" +
-  "2. N'écris aucune mention légale, aucun prix, aucun honoraire, aucune classe " +
-  "énergie, aucun montant de charges ni de dépenses d'énergie : l'application " +
-  "les ajoute elle-même après ton texte. Ne les répète pas.\n" +
-  "3. N'écris aucun nom d'agence, aucun numéro de téléphone, aucune adresse " +
-  "précise du bien, aucun nom de personne.\n" +
-  "4. Pas de promesse de rendement, pas de superlatif invérifiable (« le plus " +
-  "beau », « unique », « exceptionnel »), pas d'allusion au voisinage ni à " +
-  "l'origine des occupants.\n\n" +
-  "FORME\n" +
-  "Français soigné, phrases courtes, voix active. Quatre à six paragraphes " +
-  "séparés par une ligne vide, 600 à 1 100 signes en tout. Pas de titre en " +
-  "gras, pas de liste à puces, pas de mots-dièse. Commence par une accroche " +
-  "d'une ligne. Termine par une invitation à visiter.\n" +
-  "Accorde le genre au type de bien (un appartement, une maison). Fais les " +
-  "élisions (« au cœur d'Arles »). Pluriels corrects.\n" +
-  "Réponds uniquement par le texte de l'annonce, sans commentaire.";
-
-const TON_IA = {
-  pro:   "STYLE : professionnel. Factuel et posé, les caractéristiques d'abord. "
-       + "Aucune émoticône.",
-  chal:  "STYLE : chaleureux. On s'adresse au lecteur, on lui fait voir le lieu. "
-       + "Tutoiement interdit, vouvoiement. Deux ou trois émoticônes sobres, pas plus.",
-  coup:  "STYLE : coup de cœur. Court, enlevé, une accroche forte en tête. "
-       + "Paragraphes très brefs. Quelques émoticônes.",
-  inves: "STYLE : investisseur. On s'adresse à un acheteur qui calcule : "
-       + "emplacement, état, locabilité. Ton sobre, aucune émoticône, aucune "
-       + "promesse de rentabilité."
-};
-
-/* Les faits, et rien qu'eux. Ce qui est absent du dossier est absent d'ici :
-   c'est la seule garantie contre une invention. */
-function faitsPubli(){
-  const o = donneesPubli(), f = [];
-  const a = (lib, v)=>{ if(v !== null && v !== undefined && String(v).trim() !== "")
-    f.push(lib + " : " + v); };
-  a("Type de bien", o.type);
-  a("Commune", villeLisible(o.ville));
-  a("Surface habitable", o.surface === null ? null : m2txt(o.surface));
-  a("Terrain", o.terrain === null ? null : m2txt(o.terrain));
-  a("Nombre de pièces", o.pieces);
-  a("Chambres", o.chambres);
-  a("Salles de bain", o.sdb);
-  a("Salles d'eau", o.sdEau);
-  a("Étage", etageTxt(o));
-  a("Exposition", o.exposition);
-  a("État général", o.etat);
-  a("Chauffage", o.chauffage);
-  a("Refroidissement", o.froid);
-  if(o.annexes.length) a("Annexes et extérieurs", o.annexes.join(", "));
-  if(o.copro){
-    a("Situation", "lot de copropriété" + (o.lots === null ? ""
-      : " dans une résidence de " + o.lots + " lots"));
-    if(o.ascenseur) f.push("La résidence a un ascenseur");
-    if(o.piscine) f.push("La résidence a une piscine collective");
-    if(o.parkingColl) f.push("La résidence a un parking collectif");
-  }
-  (D.pieces || []).forEach(x=>{
-    const n = String(x.nom || "").trim();
-    if(!n) return;
-    const su = num(x.surface), no = String(x.note || "").trim();
-    f.push("Pièce — " + n + (su ? " de " + su.toLocaleString("fr-FR") + " m²" : "")
-      + (no ? " (" + no + ")" : ""));
-  });
-  if(o.prox.length) a("À proximité", o.prox.join(", "));
-  if(o.adj.length) a("Caractère du bien", adjectifs(o, bienFeminin(o.type)).join(", "));
-  if(o.ambPlus.length) a("Atouts", o.ambPlus.join(", "));
-  if(o.cible.length) a("Convient à", o.cible.join(", "));
-  if(!o.dpeDu) f.push("Ce bien n'est pas soumis au diagnostic de performance "
-    + "énergétique : n'écris donc rien sur l'énergie, la consommation ni les classes");
-  a("Le quartier, décrit par l'agent", o.quartier);
-  a("La résidence, décrite par l'agent", o.caractRes);
-  a("Ce que l'agent a remarqué en visitant", o.coup);
-  a("Travaux", o.travaux);
-  a("Autre précision de l'agent", o.plusDit);
-  return f.map((x, i)=> (i + 1) + ". " + x).join("\n");
-}
-
-/* On relit la copie. Un modèle de langage glisse volontiers un chiffre
-   plausible ; dans une annonce immobilière, un chiffre faux est une faute.
-   On compare donc chaque nombre du texte rendu à ceux qu'on a fournis. */
-function chiffresDe(t){
-  const l = String(t || "").match(/\d[\d  \u202f.,]*/g) || [];
-  return l.map(x=> x.replace(/[  \u202f.,]/g, "").replace(/^0+(?=\d)/, ""))
-          .filter(x=> x.length);
-}
-function chiffresSuspects(texte, faits){
-  const connus = {};
-  chiffresDe(faits).forEach(x=> connus[x] = 1);
-  /* l'année en cours et les deux précédentes sont légitimes (« refait en 2024 ») */
-  const an = new Date().getFullYear();
-  for(let k = an - 60; k <= an + 1; k++) connus[String(k)] = 1;
-  const vus = {}, out = [];
-  chiffresDe(texte).forEach(x=>{
-    if(connus[x] || vus[x]) return;
-    /* un petit nombre écrit dans une phrase (« à deux pas du 3e ») n'est pas
-       une donnée : on ne s'inquiète qu'au-delà de la dizaine */
-    if(x.length <= 1) return;
-    vus[x] = 1; out.push(x);
-  });
-  return out;
-}
-
-async function redigerParIA(style){
-  const faits = faitsPubli();
-  if(!faits) throw new Error("le dossier ne dit rien du bien : remplissez-le d'abord");
-  const invite = "FAITS\n" + faits + "\n\n" + (TON_IA[style] || TON_IA.pro)
-    + "\n\nÉcris maintenant le corps de l'annonce.";
-  const d = await webAppel({action:"redige", systeme: CONSIGNE_IA, invite,
-                            temperature: 0.95});
-  if(d.erreur === "ia_absente")
-    throw new Error("la clé Gemini n'est pas renseignée dans votre script Google — "
-      + "voyez l'aide, rubrique « Faire réécrire l'annonce »");
-  /* chaque panne a sa phrase : « ia_http 503 » ne dit rien à personne */
-  if(d.erreur === "ia_saturee")
-    throw new Error("les serveurs de Google sont saturés en ce moment. Le script a "
-      + "patienté et essayé trois modèles, sans succès. Réessayez dans une minute ou "
-      + "deux — et en attendant, le texte composé par l'application reste là, "
-      + "parfaitement utilisable.");
-  if(d.erreur === "ia_reseau")
-    throw new Error("votre script Google n'a pas pu joindre Gemini. Vérifiez qu'il est "
-      + "bien en version 5 et qu'il a été redéployé après l'ajout de la clé.");
-  if(d.erreur === "ia_http" && (d.code === 400 || d.code === 403))
-    throw new Error("Google refuse la clé Gemini (erreur " + d.code + "). Vérifiez "
-      + "qu'elle est collée en entier entre les apostrophes, à la ligne CLE_GEMINI, "
-      + "et que le script a été redéployé depuis.");
-  if(d.erreur === "ia_http" && d.code === 404)
-    throw new Error("aucun des modèles de la liste n'existe plus sous ce nom. Corrigez "
-      + "MODELES_GEMINI dans le script d'après aistudio.google.com.");
-  if(d.erreur === "ia_rien")
-    throw new Error("l'IA n'a rien renvoyé" + (d.detail ? " (" + d.detail + ")" : "")
-      + ". Réessayez ; si cela persiste, le texte composé reste utilisable.");
-  if(d.erreur) throw new Error("l'IA n'a pas répondu (" + d.erreur
-    + (d.code ? " " + d.code : "")
-    + (d.detail ? " — " + String(d.detail).slice(0, 120) : "") + ")");
-  const texte = String(d.texte || "").trim()
-    .replace(/^[`\s]*(?:markdown)?\n?/i, "").replace(/[`]+$/,"").trim();
-  if(!texte) throw new Error("l'IA a renvoyé un texte vide");
-  return {texte, suspects: chiffresSuspects(texte, faits)};
 }
 
 /* ------------------------------------------------ trier au glisser-déposer
@@ -17348,7 +16959,6 @@ let PUB_DUREE = 30;                  /* 20, 30, 40 ou 50 secondes */
 let PUB_TRANSITION = "fondu";
 let PUB_APPEL = null;                /* le message de la carte de contact */
 let PUB_MUR = null;                  /* les huit modèles en cours d'essai */
-let PUB_IA_MOT = "";                 /* ce que l'on a à dire sur la réécriture */
 let PUB_POS = {};                    /* où poser la légende, par photo */
 /* la page de titre du Récit : null = proposé par l'application */
 let PUB_OUV = {sur:null, titre:null, sous:null};
@@ -17392,17 +17002,10 @@ function renderPublications(){
       <textarea id="pubTexte" class="pubtexte" spellcheck="true">${esc(PUB_TEXTE)}</textarea>
       <div class="pubbtns">
         <button type="button" class="tbtn light" id="pubAutre">Une autre tournure</button>
-        <button type="button" class="tbtn light" id="pubIA"${
-            WEB && WEB.url ? "" : " disabled"}
-          title="${WEB && WEB.url ? "Laisser l'IA de Google réécrire ce texte"
-            : "Demande une base en ligne connectée (Listes → Base partagée)"}"
-          >✍ Faire réécrire par l'IA</button>
         <span class="grow"></span>
         <span class="muted" id="pubCompte"></span>
         <button type="button" class="addbtn" id="pubCopier">${IC_COPIE} Copier le texte</button>
       </div>
-      <p class="muted" id="pubIAmot" style="margin:8px 0 0"${PUB_IA_MOT ? "" : " hidden"}
-        >${PUB_IA_MOT ? esc(PUB_IA_MOT) : ""}</p>
       ${arguRempli() ? "" : `<p class="muted" style="margin:8px 0 0">
         <b>L'argumentaire du bien est vide.</b> Sans lui, le texte ne peut qu'énumérer
         les caractéristiques. Il se remplit en bas de la
@@ -17503,41 +17106,12 @@ function renderPublications(){
   const t = b("pubTexte");
   if(t) t.oninput = ()=>{ PUB_TEXTE = t.value; majCompteTexte(); };
   if(b("pubAutre")) b("pubAutre").onclick = ()=>{
-    PUB_IA_MOT = "";
     PUB_GRAINE = (PUB_GRAINE * 7 + 11) % 100000 || 3;
     PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
     renderPublications();
   };
   if(b("pubVersArgu")) b("pubVersArgu").onclick = e=>{ e.preventDefault(); ouvrirDetail(); };
   brancherBande();
-  if(b("pubIA")) b("pubIA").onclick = async ()=>{
-    const bouton = b("pubIA");
-    bouton.disabled = true; bouton.textContent = "L'IA écrit…";
-    /* aux heures de pointe, le script patiente et change de modèle : la
-       réponse peut prendre une bonne demi-minute, et un bouton muet pendant
-       ce temps-là donne l'impression que rien ne se passe */
-    const patience = setTimeout(()=>{ bouton.textContent = "Serveurs chargés, on insiste…"; },
-                                6000);
-    try{
-      const r = await redigerParIA(PUB_STYLE);
-      /* les mentions obligatoires et les mots-dièse restent de notre main :
-         ce sont les seules lignes dont la justesse engage l'agent */
-      PUB_TEXTE = r.texte + "\n\n" + mentionsPubli() + "\n\n" + dieses();
-      PUB_IA_MOT = r.suspects.length
-        ? "Texte réécrit par l'IA. ⚠ Elle a écrit "
-          + (r.suspects.length === 1 ? "un chiffre qui n'est pas" : "des chiffres qui ne sont pas")
-          + " dans le dossier : " + r.suspects.join(", ")
-          + ". Vérifiez cette phrase avant de publier."
-        : "Texte réécrit par l'IA, à relire : les mentions obligatoires, elles, "
-          + "restent calculées par l'application.";
-      clearTimeout(patience);
-      renderPublications();
-    }catch(e){
-      clearTimeout(patience);
-      bouton.disabled = false; bouton.textContent = "✍ Faire réécrire par l'IA";
-      popup({titre:"Réécriture impossible", genre:"erreur", corps:`<p>${esc(e.message)}</p>`});
-    }
-  };
   if(b("pubCopier")) b("pubCopier").onclick = copierTextePubli;
   const sel = b("pubAppelSel");
   if(sel) sel.onchange = ()=>{ PUB_APPEL = sel.value; arreterMur(); PUB_MUR = null; };
@@ -18089,7 +17663,7 @@ function reprendreBrouillon(){
     PUB_PHOTOS = []; PUB_CHOIX = [];
     PUB_GABARIT = "vitrine"; PUB_PUCES = []; PUB_LEGENDES = {};
     PUB_DUREE = 30; PUB_TRANSITION = "fondu"; PUB_APPEL = null;
-    PUB_IA_MOT = ""; PUB_POS = {}; PUB_APPAR = {};
+    PUB_POS = {}; PUB_APPAR = {};
     PUB_OUV = {sur:null, titre:null, sous:null};
     return;
   }
@@ -18108,7 +17682,6 @@ function reprendreBrouillon(){
   PUB_POS = Object.assign({}, b.pos || {});
   PUB_APPAR = Object.assign({}, b.appar || {});
   PUB_OUV = Object.assign({sur:null, titre:null, sous:null}, b.ouv || {});
-  PUB_IA_MOT = "";
 }
 
 function garderPublication(){
