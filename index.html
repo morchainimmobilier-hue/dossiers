@@ -1293,6 +1293,10 @@ table.tdb .puce.resilie{background:#64748b}
 .pjbtn .cnt{background:var(--navy);color:#fff;border-radius:999px;font-size:11px;
   padding:1px 7px;font-weight:700}
 .pjbtn svg{flex:0 0 auto}
+/* le bouton « Contact » : discret comme les autres actions d'une fiche */
+.xbtn.vcf{display:inline-flex;align-items:center;gap:6px}
+.card > h2 .xbtn.vcf{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);
+  color:#fff}
 /* les cinq tiroirs d'un immeuble, posés sous son titre : on voit d'un
    regard ce que chacun contient, sans ouvrir quoi que ce soit */
 .immtete{flex-wrap:wrap}
@@ -1667,7 +1671,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 8 octobre 2026, 18 h 18">Dossiers de vente</div>
+  <div class="brand" title="Version du 12 octobre 2026, 10 h 10">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1872,7 +1876,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>8 octobre 2026, 18 h 18</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>12 octobre 2026, 10 h 10</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5042,6 +5046,7 @@ function renderPeople(kind){
     const suj = sujetPersonne(p);
     return `<div class="person" id="pers_${kind}_${i}">
       <header><span class="idx">${i+1}</span><span class="who">${esc(who)}</span>${memeAdr}
+      ${nomPersonne(p) ? boutonCarte("partie:" + kind + ":" + i, who) : ""}
       ${suj ? trombone(suj, "Pièces") : ""}
       ${arr.length>1?`<button class="xbtn" data-del="${kind}:${i}">Supprimer</button>`:""}
       </header><div class="pgrid">${fields}</div></div>`;
@@ -5468,6 +5473,7 @@ function ficheCarnet(k, r, i, apres, sansEntete){
     sansEntete ? "" : `<header>
     <span class="who">${esc(r.nom || (b.label+" "+(i+1)))}</span>
     ${k === "residences" && r.nom ? boutonImmeuble(r.nom, "Ses dossiers") : ""}
+    ${r.nom && k !== "residences" ? boutonCarte("carnet:" + k + ":" + i, r.nom) : ""}
     ${r.nom ? trombone(k === "residences" ? sujetImmeuble(r.nom)
                                           : sujetPersonne(r), "Pièces") : ""}
     <button class="xbtn" data-bookdel="${k}:${i}">Supprimer</button></header>`}
@@ -5492,8 +5498,11 @@ function blocCarnet(k, o){
     <h2 class="pliable" data-pli="b_${k}">${chevron(plie)}${esc(opt.titre || b.title)}
       <span class="cnt">${rows.length}</span></h2>
     <div class="body plibody"${plie?' style="display:none"':''}>${blocNotairesManquants(k)}${inner}
-      <div style="margin-top:12px">
-        <button class="addbtn" data-bookadd="${k}">+ Ajouter</button></div>
+      <div style="margin-top:12px" class="fbtns">
+        <button class="addbtn" data-bookadd="${k}">+ Ajouter</button>
+        ${k !== "residences" && rows.length
+          ? `<button type="button" class="tbtn light" data-vcf="tout:${k}"
+               >${IC_CARTE} Exporter ce carnet (.vcf)</button>` : ""}</div>
     </div></div>`;
 }
 
@@ -5795,6 +5804,8 @@ function renderRepertoire(){
             esc((x.d.mandat || {}).num || "—")}${
             lotDe(x.d) ? " · " + esc(lotDe(x.d)) : ""}</em></span>
         <span class="repco">${esc(co || "—")}</span>
+        ${boutonCarte("trouve:" + x.d.id + ":" + x.kind + ":" + x.i,
+                      titrePersonne(x.p))}
         ${trombone(sujetPersonne(x.p), "Pièces")}
         <button type="button" class="xbtn" data-opers="${esc(x.d.id)}:${x.kind}:${x.i}"
           >Voir</button></div>`;
@@ -9888,6 +9899,202 @@ function download(blob,name){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 4000);
 }
+
+/* =====================================================================
+   LA CARTE DE VISITE — vers le répertoire du téléphone et de Gmail
+   ---------------------------------------------------------------------
+   Un fichier .vcf, et rien d'autre. C'est le format que lisent Google
+   Contacts, Outlook, le carnet d'adresses de l'iPhone et celui d'Android :
+   on l'enregistre, on l'ouvre, le contact est proposé à l'ajout. Sur un
+   téléphone, le geste est immédiat ; sur l'ordinateur, on dépose le
+   fichier dans contacts.google.com → Importer.
+
+   Pourquoi pas l'API Google Contacts, qui créerait la fiche sans rien
+   télécharger : il faudrait une autorisation OAuth, un identifiant
+   d'application, un écran de consentement Google et le droit permanent
+   d'écrire dans votre répertoire. Beaucoup d'engrenages, une dépendance
+   de plus, et un accès en écriture à vos contacts qu'il faudrait
+   surveiller — pour un geste que le .vcf règle hors ligne et sans clé.
+
+   On écrit du vCard 3.0 : c'est celui que tout le monde lit sans
+   discuter. Les lignes se replient à 75 octets, les séparateurs se
+   protègent, et le tout part en UTF-8 avec des fins de ligne CRLF, comme
+   la norme le demande.
+   ===================================================================== */
+function vcEch(s){
+  return String(s == null ? "" : s).trim()
+    .replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n")
+    .replace(/,/g, "\\,").replace(/;/g, "\\;");
+}
+/* Le pliage se compte en OCTETS, pas en caractères : « é » en vaut deux,
+   et couper au milieu d'un caractère donnerait un fichier illisible. */
+function vcPlier(ligne){
+  const enc = new TextEncoder();
+  if(enc.encode(ligne).length <= 75) return ligne;
+  const out = [];
+  let courante = "", poids = 0, max = 75;
+  for(const ch of ligne){
+    const n = enc.encode(ch).length;
+    if(poids + n > max){ out.push(courante); courante = " "; poids = 1; max = 75; }
+    courante += ch; poids += n;
+  }
+  if(courante) out.push(courante);
+  return out.join("\r\n");
+}
+/* Une fiche normalisée, d'où qu'elle vienne : carnet ou partie d'un
+   dossier. Ne jamais inventer un champ absent — une carte de visite se
+   relit telle quelle. */
+function vcarte(c){
+  const l = [];
+  const met = (cle, val)=>{ const v = vcEch(val); if(v) l.push(vcPlier(cle + ":" + v)); };
+  l.push("BEGIN:VCARD", "VERSION:3.0");
+  const nom = String(c.nom || "").trim(), prenom = String(c.prenom || "").trim();
+  if(nom || prenom)
+    l.push(vcPlier("N:" + vcEch(nom) + ";" + vcEch(prenom) + ";;" +
+                   vcEch(c.civilite || "") + ";"));
+  met("FN", c.fn || [prenom, nom].filter(Boolean).join(" "));
+  met("ORG", c.org);
+  met("TITLE", c.titre);
+  (c.tels || []).forEach(t=>{
+    if(String(t.num || "").trim())
+      l.push(vcPlier("TEL;TYPE=" + (t.genre || "WORK") + ",VOICE:" + vcEch(t.num)));
+  });
+  (c.emails || []).forEach(e=>{
+    if(String(e || "").trim())
+      l.push(vcPlier("EMAIL;TYPE=INTERNET,WORK:" + vcEch(e)));
+  });
+  const a = c.adr || {};
+  if([a.rue, a.cp, a.ville].some(x=> String(x || "").trim()))
+    l.push(vcPlier("ADR;TYPE=WORK:;;" + vcEch(a.rue) + ";" + vcEch(a.ville) + ";;" +
+                   vcEch(a.cp) + ";" + vcEch(a.pays || "France")));
+  met("NOTE", c.note);
+  /* la date du jour, telle que la norme l'attend */
+  const d = new Date();
+  l.push("REV:" + d.toISOString().replace(/\.\d+/, ""));
+  l.push("END:VCARD");
+  return l.join("\r\n") + "\r\n";
+}
+function enregistrerCarte(cartes, nomFichier){
+  const txt = (Array.isArray(cartes) ? cartes : [cartes]).join("");
+  if(!txt){ toast("Rien à enregistrer"); return; }
+  download(new Blob([txt], {type:"text/vcard;charset=utf-8"}),
+           (nomFichier || "contact") + ".vcf");
+}
+
+/* ----------------------------------- de nos fiches vers la carte ------- */
+/* Un carnet d'entreprises — syndic, diagnostiqueur, banque — n'a pas de
+   prénom : son intitulé est une raison sociale, et c'est l'ORG qui la
+   porte. Google Contacts range alors la fiche sous « Entreprise », ce qui
+   est exactement ce qu'on veut. */
+const CARNETS_MORAUX = ["syndics", "diagnostiqueurs", "banques"];
+function carteDuCarnet(k, r){
+  if(!r) return "";
+  const adr = {rue:r.adresse, cp:r.cp, ville:r.ville, pays:r.pays};
+  if(k === "notaires"){
+    return vcarte({nom:r.patronyme || r.nom, prenom:r.prenom, civilite:"Maître",
+      fn:r.nom, titre:"Notaire", org:"Étude notariale", adr,
+      tels:[{num:r.tel}], emails:[r.email]});
+  }
+  if(k === "clercs"){
+    const c = couperNotaire(r.nom);          // « Julie MERCIER » → nom + prénom
+    return vcarte({nom:c.patronyme, prenom:c.prenom, fn:r.nom,
+      titre:r.fonction, org:"Étude notariale",
+      tels:[{num:r.tel}], emails:[r.email]});
+  }
+  if(k === "negociateurs"){
+    const c = couperNotaire(r.nom);
+    return vcarte({nom:c.patronyme, prenom:c.prenom, fn:r.nom,
+      titre:r.qualite || "Négociateur", org:(L.agence || {}).nom || "",
+      tels:[{num:r.tel, genre:"CELL"}], emails:[r.email]});
+  }
+  if(k === "banques"){
+    const qui = String(r.interlocuteur || "").trim();
+    const c = qui ? couperNotaire(qui) : {prenom:"", patronyme:""};
+    return vcarte({nom:c.patronyme || r.nom, prenom:c.prenom,
+      fn:qui || r.nom, org:r.nom, titre:qui ? "Interlocuteur" : "",
+      adr:{rue:r.adresse}, tels:[{num:r.tel}], emails:[r.email]});
+  }
+  if(CARNETS_MORAUX.indexOf(k) >= 0){
+    return vcarte({nom:r.nom, fn:r.nom, org:r.nom, adr,
+      titre:k === "syndics" ? "Syndic de copropriété"
+          : k === "diagnostiqueurs" ? "Diagnostiqueur" : "",
+      tels:[{num:r.tel}], emails:[r.email]});
+  }
+  return vcarte({nom:r.nom, fn:r.nom, adr, tels:[{num:r.tel}], emails:[r.email]});
+}
+/* Une partie d'un dossier. On note au passage de quel mandat elle vient :
+   dans un répertoire de plusieurs centaines de fiches, « Vendeur — mandat
+   n° 1051 » vaut toutes les recherches. */
+function cartePersonne(p, role, dossier){
+  if(!p) return "";
+  const morale = estMorale(p);
+  const num = ((dossier || {}).mandat || {}).num || "";
+  const note = [role || "", num ? "mandat n° " + num : "",
+                lotDe(dossier || {}) || ""].filter(Boolean).join(" — ");
+  return vcarte({
+    nom: morale ? (p.raison || "") : (p.nom || ""),
+    prenom: morale ? "" : (p.prenom || ""),
+    civilite: morale ? "" : (p.civilite || ""),
+    fn: titrePersonne(p) || nomPersonne(p),
+    org: morale ? (p.raison || "") : "",
+    titre: morale ? "" : (p.profession || ""),
+    adr:{rue:p.adresse, cp:p.cp, ville:p.ville, pays:p.pays},
+    tels:[{num:p.tel1, genre:"CELL"}, {num:p.tel2}],
+    emails:[p.email1, p.email2],
+    note
+  });
+}
+/* Le nom du fichier : celui du contact, nettoyé de ce qui fâche un
+   système de fichiers. */
+function nomDeCarte(t){
+  return (String(t || "contact").replace(/[\\/:*?"<>|]+/g, " ")
+    .replace(/\s+/g, " ").trim() || "contact");
+}
+const IC_CARTE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+  stroke-linejoin="round"><rect x="1.6" y="3.2" width="12.8" height="9.6" rx="1.6"/>
+  <circle cx="6" cy="7" r="1.6"/><path d="M3.4 11.2c.5-1.2 1.5-1.8 2.6-1.8s2.1.6 2.6 1.8"/>
+  <path d="M10.6 6.6h2.2M10.6 9h2.2"/></svg>`;
+/* Ce que le bouton déclenche, selon d'où il vient. */
+function enregistrerContact(cible){
+  const m = String(cible || "").split(":");
+  if(m[0] === "carnet"){
+    const r = (L[m[1]] || [])[+m[2]];
+    if(!r || !r.nom){ toast("Fiche sans nom"); return; }
+    enregistrerCarte(carteDuCarnet(m[1], r), nomDeCarte(r.nom));
+    toast("Carte de visite enregistrée");
+    return;
+  }
+  if(m[0] === "partie"){
+    const p = (D[m[1]] || [])[+m[2]];
+    if(!p){ toast("Fiche introuvable"); return; }
+    enregistrerCarte(cartePersonne(p, m[1] === "vendeurs" ? "Vendeur" : "Acquéreur", D),
+                     nomDeCarte(titrePersonne(p) || nomPersonne(p)));
+    toast("Carte de visite enregistrée");
+    return;
+  }
+  if(m[0] === "trouve"){
+    const d = allDossiers()[m[1]];
+    const p = d && (d[m[2]] || [])[+m[3]];
+    if(!p){ toast("Fiche introuvable"); return; }
+    enregistrerCarte(cartePersonne(p, m[2] === "vendeurs" ? "Vendeur" : "Acquéreur", d),
+                     nomDeCarte(titrePersonne(p) || nomPersonne(p)));
+    toast("Carte de visite enregistrée");
+    return;
+  }
+  if(m[0] === "tout"){
+    const k = m[1], rows = (L[k] || []).filter(r=> r && r.nom);
+    if(!rows.length){ toast("Ce carnet est vide"); return; }
+    enregistrerCarte(rows.map(r=> carteDuCarnet(k, r)),
+                     nomDeCarte(BOOKS[k] ? BOOKS[k].title : k));
+    toast(rows.length + (rows.length > 1 ? " contacts enregistrés" : " contact enregistré"));
+  }
+}
+function boutonCarte(cible, titre){
+  return `<button type="button" class="xbtn vcf" data-vcf="${esc(cible)}"
+    title="Enregistrer ${esc(titre || "ce contact")} dans votre répertoire (fichier .vcf)"
+    >${IC_CARTE}<span>Contact</span></button>`;
+}
 function fileName(which){
   /* une facture se classe par son numéro, les autres pièces par le mandat */
   const s = which === "fa"
@@ -10224,7 +10431,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   /* Un trombone peut vivre DANS un titre repliable — c'est le cas sur la page
@@ -10233,6 +10440,7 @@ document.addEventListener("click", e=>{
      filer : le gestionnaire des pièces, enregistré après celui-ci sur le même
      document, le recevra. */
   if(t.dataset.pj !== undefined || t.dataset.pjrub !== undefined) return;
+  if(t.dataset.vcf !== undefined){ enregistrerContact(t.dataset.vcf); return; }
 
   if(t.dataset.mgo){ activerOnglet(t.dataset.mgo); return; }
   if(t.classList.contains("tab")){ activerOnglet(t.dataset.p); return; }
@@ -13743,6 +13951,26 @@ const AIDE = [
   "téléphone, courriel — et ramène en plus les <b>vendeurs et acquéreurs saisis dans les "+
   "dossiers</b>, chacun avec le mandat d'où il vient et un bouton pour y aller : une personne "+
   "se retrouve sans qu'il faille se rappeler où on l'a d'abord écrite."],
+ ["Enregistrer un contact dans votre répertoire",
+  "Sur la fiche de chaque <b>notaire</b>, <b>personne en charge</b>, <b>syndic</b>, "+
+  "<b>négociateur</b>, <b>diagnostiqueur</b> et <b>banque</b> du Répertoire, ainsi que sur "+
+  "chaque <b>vendeur</b> et <b>acquéreur</b> d'un dossier, un bouton <b>Contact</b> "+
+  "enregistre un fichier <b>.vcf</b> — une carte de visite. "+
+  "<b>Sur le téléphone</b>, ouvrez le fichier : le répertoire propose d'ajouter le contact, "+
+  "et il remonte dans vos contacts Google tout seul. "+
+  "<b>Sur l'ordinateur</b>, allez sur <b>contacts.google.com</b> → <b>Importer</b> → "+
+  "choisissez le fichier. "+
+  "Y passent le nom et le prénom séparés, la civilité, la fonction, l'organisation, le "+
+  "téléphone, le courriel et l'adresse complète. Pour un vendeur ou un acquéreur, une note "+
+  "rappelle d'où vient la fiche : « Vendeur — mandat n° 1051 — 12 bd des Lices ». "+
+  "<b>Un carnet entier d'un coup</b> : au bas de chaque carnet du Répertoire, "+
+  "« <b>Exporter ce carnet (.vcf)</b> » réunit toutes ses fiches dans un seul fichier, que "+
+  "Google Contacts importe en une fois. Pratique la première fois. "+
+  "<b>Pourquoi un fichier plutôt qu'un envoi direct à Google.</b> Créer la fiche sans rien "+
+  "télécharger demanderait une autorisation permanente d'écrire dans votre répertoire, un "+
+  "compte développeur et un écran de consentement Google. Le fichier .vcf fait le même "+
+  "travail, <b>hors ligne</b>, sans clé et sans rien qui puisse tomber en panne — et il "+
+  "marche aussi bien avec Outlook ou l'iPhone."],
  ["Télécharger une pièce sous son nom",
   "Chaque pièce porte un bouton <b>Télécharger</b>, dans la fenêtre des pièces comme sur la "+
   "page Pièces, et un <b>⤓</b> sur chaque vignette de photo. Le fichier arrive dans vos "+
