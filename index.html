@@ -599,7 +599,38 @@ table.envois tr.repondu td.emode b{color:#166534}
   padding:1px 7px;font-size:11.5px}
 .rapok{background:#dcfce7;color:#14532d;border:1px solid #86efac;border-radius:6px;
   padding:1px 7px;font-size:11.5px}
+/* « on ne sait pas » n'est pas « non » : gris, et non ambre */
+.rapmanque{background:#f1f5f9;color:#475569;border:1px dashed #cbd5e1;border-radius:6px;
+  padding:1px 7px;font-size:11.5px}
+.ecartes{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.ecartes > summary{cursor:pointer;font-size:12px;color:var(--ink-2);
+  list-style:none;display:flex;align-items:center;gap:6px}
+.ecartes > summary::before{content:"▸";font-size:10px;transition:transform .12s}
+.ecartes[open] > summary::before{transform:rotate(90deg)}
+.ecartes > summary:hover{color:var(--bandeau)}
+.ecrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) auto;gap:10px;
+  align-items:center;padding:5px 8px;margin-top:5px;border:1px solid var(--line);
+  border-radius:7px;background:#fff;font-size:12.5px}
+.ecqui{min-width:0;color:var(--ink-2)}
+.ecqui em{display:block;font-style:normal;font-size:11px;color:var(--ink-3)}
+.ecpour{min-width:0;color:#78350f;overflow-wrap:anywhere}
+@media(max-width:860px){.ecrow{grid-template-columns:1fr auto}.ecpour{grid-column:1/-1}}
+#secCorps .ecrow{grid-template-columns:minmax(0,1fr) auto}
+#secCorps .ecpour{grid-column:1/-1}
 .rapfin{display:flex;align-items:center;gap:6px}
+
+/* le plan : barre d'outils, cadre de la carte, et le mot d'excuse hors ligne */
+.planbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.planadr{font-weight:600;color:var(--bandeau);font-size:13.5px}
+.planz{font-size:12px;color:var(--ink-2);min-width:58px;text-align:center}
+.planbox{width:100%;height:min(62vh,640px);border:1px solid var(--line);
+  border-radius:10px;overflow:hidden;background:#e8eef5}
+.planbox iframe{width:100%;height:100%;border:0;display:block}
+#popCorps .planbox{height:min(52vh,460px)}
+.planpied{margin:8px 0 0;font-size:11.5px}
+.planhors{border:1px dashed var(--line);border-radius:10px;padding:22px 18px;
+  text-align:center;color:var(--ink-2);background:#f8fafc;font-size:13px}
+@media(max-width:700px){.planbox{height:54vh}.planadr{width:100%}}
 .rapqui em,.rapquoi{overflow-wrap:anywhere}
 /* dans la fenêtre d'une section du dossier, la ligne n'a pas la largeur de
    la page : elle se replie d'elle-même en trois étages */
@@ -1711,7 +1742,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 14 octobre 2026, 20 h 41">Dossiers de vente</div>
+  <div class="brand" title="Version du 14 octobre 2026, 21 h 31">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1764,6 +1795,7 @@ table.tdb .puce.resilie{background:#64748b}
     <span class="drsub" id="dossRailSub"></span>
   </div>
   <button class="mitem" data-mgo="general">Général</button>
+  <button class="mitem" data-mgo="plan">Plan</button>
   <button class="mitem" data-mgo="vendeurs">Vendeurs <b id="cntV"></b></button>
   <button class="mitem" data-mgo="acquereurs">Acquéreurs <b id="cntA"></b></button>
   <button class="mitem" data-mgo="notaires">Notaires</button>
@@ -1780,6 +1812,8 @@ table.tdb .puce.resilie{background:#64748b}
 <main>
   <div class="alerte" id="alerte" hidden></div>
   <div class="panel on" id="p-general"><div id="generalGrid"></div></div>
+
+  <div class="panel" id="p-plan"><div id="planBody"></div></div>
 
   <div class="panel" id="p-vendeurs">
     <div id="listV"></div>
@@ -1916,7 +1950,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>14 octobre 2026, 20 h 41</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>14 octobre 2026, 21 h 31</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3616,7 +3650,8 @@ function lignesTuile(cle){
   if(cle === "acqs"){
     const list = acquereursPourBien();
     list.slice(0, 4).forEach(x=>
-      l(x.nom, x.ecarts.length ? x.ecarts[0] : "tous ses critères", x.ecarts.length > 0));
+      l(x.nom, (x.ecarts || [])[0] || (x.flous || [])[0] || "tous ses critères",
+        !!((x.ecarts || []).length || (x.flous || []).length)));
     if(!list.length) l("Personne", "pour l'instant", true);
   }
   if(cle === "annulees"){
@@ -3669,7 +3704,7 @@ function piedTuile(cle){
   }
   if(cle === "acqs"){
     const list = acquereursPourBien();
-    const net = list.filter(x=> !x.ecarts.length).length;
+    const net = list.filter(x=> !x.ecarts.length && !(x.flous || []).length).length;
     if(!list.length) return "Aucune recherche en cours ne porte sur ce bien.";
     return `<b>${list.length}</b> recherche${list.length > 1 ? "s" : ""} en cours` +
       (net ? ` · <b>${net}</b> sans réserve` : " · toutes avec un écart");
@@ -4964,7 +4999,7 @@ const ONGLETS_SANS_MANDAT = ["aujourdhui","tdb","dossiers","immeubles","repertoi
   "listes","aide"];
 /* Les pages du dossier ouvert ne sont plus dans la barre du haut : elles
    tiennent dans une colonne à gauche, toutes visibles d'un coup. */
-const ONGLETS_DOSSIER = ["general","vendeurs","acquereurs","notaires","financement",
+const ONGLETS_DOSSIER = ["general","plan","vendeurs","acquereurs","notaires","financement",
   "diagnostics","questionnaire","divers","documents","pieces","publications","avis"];
 let PAGE = "aujourdhui";
 function pageActive(){ return PAGE; }
@@ -5036,6 +5071,7 @@ function activerOnglet(p){
   $$(".panel").forEach(x=>x.classList.remove("on"));
   panneau.classList.add("on");
   if(p==="documents")  renderPreview();
+  if(p==="plan")       renderPlan();
   if(p==="pieces")     renderPagePieces();
   if(p==="publications") renderPublications();
   if(p==="avis")       renderAvis();
@@ -5876,7 +5912,10 @@ function tiroirsImmeuble(nom){
         data-pjrub="${esc(sujet)}|${esc(r)}"
         title="${esc(r)} — ${n ? n + " pièce" + (n > 1 ? "s" : "") : "aucune pièce"}">${
         IC_PJ}<span>${esc(r)}</span><span class="cnt${n ? "" : " zero"}">${n}</span></button>`;
-  }).join("");
+  }).join("") +
+  /* un sixième bouton, qui n'ouvre pas des pièces mais la carte */
+  `<button type="button" class="pjbtn tiroir" data-plan="${esc(nom)}"
+      title="Situer cet immeuble sur le plan">${IC_PLAN}<span>Plan</span></button>`;
 }
 
 function renderImmeubles(){
@@ -7938,11 +7977,23 @@ function etageMot(n){
 /* --------------------------------------------- ce qu'un bien a à offrir ---
    Lu sur le dossier ET sur la fiche de son immeuble : l'ascenseur et le
    parking collectif appartiennent à l'immeuble, pas au lot. */
+/* ------------------------------------------- oui, non, ou on ne sait pas ---
+   Les réponses de la fiche détaillée ont TROIS états : « OUI », « NON », et
+   rien du tout. Les confondre est l'erreur qui a coûté cher : un bien dont la
+   fiche détaillée n'est pas remplie n'est pas un bien SANS terrasse, et il ne
+   doit pas être écarté pour cela. On ne répond donc « non » que si toutes les
+   réponses ont été données et qu'elles disent non. */
+function ouNon(valeurs){
+  const v = (valeurs || []).map(x=> String(x || "").trim().toUpperCase());
+  if(!v.length) return null;
+  if(v.some(x=> x === "OUI")) return true;
+  if(v.every(x=> x === "NON")) return false;
+  return null;
+}
 function critBien(d){
   const b = d.bien || {}, det = d.detail || {};
   const r = book("residences", b.residence);
   const dpe = (d.diags || []).filter(x=> x.nom === "DPE")[0] || {};
-  const oui = k => det[k] === "OUI";
   const surf = num(det.surface);
   return {
     id: d.id,
@@ -7957,9 +8008,12 @@ function critBien(d){
     pieces: num(det.pieces),
     chambres: num(det.chambres),
     etage: etageNombre(det.etage),
-    ascenseur: r.ascenseur === "OUI",
-    exterieur: oui("terrasse") || oui("balcon") || oui("jardin"),
-    stationnement: oui("garage") || oui("parking") || r.parkingColl === "OUI",
+    ascenseur: ouNon([r.ascenseur]),
+    exterieur: ouNon([det.terrasse, det.balcon, det.jardin]),
+    /* le parking collectif de l'immeuble ne peut que CONFIRMER : une maison
+       n'a pas d'immeuble, et son silence ne doit pas rendre la réponse floue */
+    stationnement: r.parkingColl === "OUI" ? true
+                 : ouNon([det.garage, det.parking]),
     etat: det.etat || "",
     dpe: String(dpe.dpeEnergie || "").trim().toUpperCase()
   };
@@ -7992,66 +8046,102 @@ function rechercheRenseignee(c){
          c.chambresMin !== null || c.piecesMin !== null;
 }
 /* ----------------------------------------------------- la comparaison -----
-   Retourne null si le bien est écarté, sinon les écarts et ce qu'ils coûtent. */
+   Retourne {pts, ecarts} si le bien est retenu, {rejet:"la raison"} sinon.
+   Le motif du rejet n'est pas un luxe : sans lui, un bien qui ne sort pas ne
+   s'explique pas, et l'on soupçonne l'outil plutôt que le critère.
+
+   Trois degrés, donc :
+   — l'écart NOMMÉ, qui coûte des points et se lit en clair ;
+   — l'écart LÉGER « non renseigné », qui ne coûte presque rien : c'est une
+     invitation à compléter la fiche, pas un défaut du bien ;
+   — le REJET, quand l'écart n'est plus discutable. */
 function comparerAcqBien(c, o){
-  const ec = [];
+  const ec = [], flous = [];
   let pts = 0;
   const ecart = (p, txt)=>{ pts += p; ec.push(txt); };
+  /* un « on ne sait pas » se signale à part, et ne pèse presque rien */
+  const flou = txt=>{ pts += 8; flous.push(txt); };
+  const rejet = txt=> ({rejet:txt});
 
   /* 1. le type et la commune : pas de « presque » */
-  if(c.types.length && o.type &&
-     !c.types.some(t=> fold(t) === fold(o.type))) return null;
-  if(c.communes.length && o.ville &&
-     !c.communes.some(v=> fold(v) === fold(o.ville))) return null;
+  if(c.types.length && o.type && !c.types.some(t=> fold(t) === fold(o.type)))
+    return rejet("type de bien non demandé (" + o.type + ")");
+  if(c.communes.length && o.ville && !c.communes.some(v=> fold(v) === fold(o.ville)))
+    return rejet("commune non demandée (" + o.ville + ")");
 
   /* 2. le budget */
   if(c.budget !== null && c.budget > 0 && o.fai !== null && o.fai > c.budget){
     const d = o.fai - c.budget, part = d / c.budget;
-    if(part > 0.15) return null;
-    ecart(part > 0.07 ? 45 : 25,
-      "dépasse le budget de " + eur(d) + " (" + Math.round(part * 100) + " %)");
+    const dit = "dépasse le budget de " + eur(d) + " (" + Math.round(part * 100) + " %)";
+    if(part > 0.15) return rejet(dit);
+    ecart(part > 0.07 ? 45 : 25, dit);
   }
   /* 3. les surfaces */
   if(c.surfaceMin !== null && c.surfaceMin > 0 &&
      o.surface !== null && o.surface < c.surfaceMin){
     const d = c.surfaceMin - o.surface, part = d / c.surfaceMin;
-    if(part > 0.20) return null;
-    ecart(part > 0.10 ? 40 : 20, m2txt(d) + " de moins que la surface demandée");
+    const dit = m2txt(d) + " de moins que la surface demandée";
+    if(part > 0.20) return rejet(dit);
+    ecart(part > 0.10 ? 40 : 20, dit);
   }
   if(c.terrainMin !== null && c.terrainMin > 0 &&
      o.terrain !== null && o.terrain < c.terrainMin){
     const d = c.terrainMin - o.terrain, part = d / c.terrainMin;
-    if(part > 0.25) return null;
-    ecart(part > 0.12 ? 40 : 20, m2txt(d) + " de terrain en moins");
+    const dit = m2txt(d) + " de terrain en moins";
+    if(part > 0.25) return rejet(dit);
+    ecart(part > 0.12 ? 40 : 20, dit);
   }
   /* 4. les comptes de pièces : une de moins se discute, deux non */
   if(c.chambresMin !== null && o.chambres !== null && o.chambres < c.chambresMin){
-    if(c.chambresMin - o.chambres > 1) return null;
+    const d = c.chambresMin - o.chambres;
+    if(d > 1) return rejet(d + " chambres de moins");
     ecart(30, "une chambre de moins");
   }
   if(c.piecesMin !== null && o.pieces !== null && o.pieces < c.piecesMin){
-    if(c.piecesMin - o.pieces > 1) return null;
+    const d = c.piecesMin - o.pieces;
+    if(d > 1) return rejet(d + " pièces de moins");
     ecart(25, "une pièce de moins");
   }
-  /* 5. le confort */
-  if(c.exterieur && !o.exterieur) ecart(35, "ni terrasse, ni balcon, ni jardin");
-  if(c.stationnement && !o.stationnement) ecart(30, "pas de garage ni de parking");
-  if(c.ascenseurOui && !o.ascenseur) ecart(45, "pas d'ascenseur");
-  if(c.etageMax !== null && o.etage !== null && !o.ascenseur && o.etage > c.etageMax){
-    if(o.etage - c.etageMax > 1) return null;
-    ecart(40, etageMot(o.etage) + " sans ascenseur");
+  /* 5. le confort — et c'est ici que « non renseigné » se distingue de « non » */
+  if(c.exterieur){
+    if(o.exterieur === false) ecart(35, "ni terrasse, ni balcon, ni jardin");
+    else if(o.exterieur === null) flou("extérieur non renseigné");
   }
-  if(c.travauxNon && o.etat === ETAT_GROS) return null;
-  if(c.travauxNon && o.etat === ETAT_RAFRAICHIR) ecart(35, "à rénover");
+  if(c.stationnement){
+    if(o.stationnement === false) ecart(30, "pas de garage ni de parking");
+    else if(o.stationnement === null) flou("stationnement non renseigné");
+  }
+  if(c.ascenseurOui){
+    if(o.ascenseur === false) ecart(45, "pas d'ascenseur");
+    else if(o.ascenseur === null) flou("ascenseur non renseigné");
+  }
+  if(c.etageMax !== null && o.etage !== null && o.etage > c.etageMax){
+    if(o.ascenseur === null) flou(etageMot(o.etage) + ", ascenseur non renseigné");
+    else if(o.ascenseur === false){
+      const dit = etageMot(o.etage) + " sans ascenseur";
+      if(o.etage - c.etageMax > 1) return rejet(dit);
+      ecart(40, dit);
+    }
+    /* avec ascenseur, l'étage ne pose plus de question */
+  }
+  if(c.travauxNon){
+    if(o.etat === ETAT_GROS) return rejet("gros travaux à prévoir");
+    if(o.etat === ETAT_RAFRAICHIR) ecart(35, "à rénover");
+    if(!o.etat) flou("état du bien non renseigné");
+  }
   /* 6. le DPE */
-  if(c.dpeMin !== null && o.dpe && DPE_RANG[o.dpe]){
-    const d = DPE_RANG[o.dpe] - c.dpeMin;
-    if(d > 2) return null;
-    if(d > 0) ecart(d === 1 ? 25 : 50,
-      "DPE " + o.dpe + " au lieu de " + DPE_LETTRE[c.dpeMin] + " demandé");
+  if(c.dpeMin !== null){
+    if(!o.dpe || !DPE_RANG[o.dpe]) flou("classe DPE non renseignée");
+    else {
+      const d = DPE_RANG[o.dpe] - c.dpeMin;
+      const dit = "DPE " + o.dpe + " au lieu de " + DPE_LETTRE[c.dpeMin] + " demandé";
+      if(d > 2) return rejet(dit);
+      if(d > 0) ecart(d === 1 ? 25 : 50, dit);
+    }
   }
-  if(pts > RAPPRO_SEUIL) return null;
-  return {pts:pts, ecarts:ec};
+  if(pts > RAPPRO_SEUIL)
+    return rejet("trop d'écarts à la fois — " + ec.concat(flous).join(", "));
+  return {pts:pts, ecarts:ec, flous:flous};
 }
 /* Le portefeuille : les mandats en vente, lus tels qu'ils sont à l'écran —
    le dossier ouvert peut porter une saisie que l'enregistrement différé n'a
@@ -8062,18 +8152,19 @@ function portefeuilleRappro(){
 }
 function rapprochementsDe(r){
   const c = critAcq(r);
-  if(!rechercheRenseignee(c)) return {vide:true, biens:[]};
-  const out = [];
+  if(!rechercheRenseignee(c)) return {vide:true, biens:[], ecartes:[]};
+  const out = [], hors = [];
   portefeuilleRappro().forEach(d=>{
     const o = critBien(d);
     const v = comparerAcqBien(c, o);
-    if(!v) return;
-    out.push({d:d, o:o, pts:v.pts, ecarts:v.ecarts});
+    if(v.rejet){ hors.push({d:d, o:o, motif:v.rejet}); return; }
+    out.push({d:d, o:o, pts:v.pts, ecarts:v.ecarts, flous:v.flous});
   });
   /* du plus proche au plus loin ; à écarts égaux, le moins cher d'abord */
   out.sort((a,b)=> a.pts - b.pts ||
     ((a.o.fai === null ? Infinity : a.o.fai) - (b.o.fai === null ? Infinity : b.o.fai)));
-  return {vide:false, biens:out};
+  hors.sort((a,b)=> triFr(a.o.mandat, b.o.mandat));
+  return {vide:false, biens:out, ecartes:hors};
 }
 /* ------------------------------------- le registre des rapprochements vus -
    Il ne sert qu'à la pastille « nouveau ». Il reste sur ce poste : ce que
@@ -8140,6 +8231,16 @@ function resumeBien(o){
   return b.join("  ·  ");
 }
 /* ------------------------------------------------------------- affichage --- */
+/* Les pastilles d'une ligne : les écarts nommés en ambre, les « on ne sait
+   pas » en gris — ils n'accusent pas le bien, ils signalent une fiche à
+   compléter. Aucun des deux : le bien coche tout. */
+function pastillesEcarts(x, sien){
+  const ec = x.ecarts || [], fl = x.flous || [];
+  if(!ec.length && !fl.length)
+    return `<span class="rapok">tous ${sien ? "ses" : "les"} critères</span>`;
+  return ec.map(t=>`<span class="rapgap">${esc(t)}</span>`).join("") +
+         fl.map(t=>`<span class="rapmanque">${esc(t)}</span>`).join("");
+}
 function ligneRapproBien(b){
   const o = b.o;
   return `<div class="raprow${b.neuf ? " neuf" : ""}">
@@ -8148,9 +8249,7 @@ function ligneRapproBien(b){
         o.adresse ? " · " + esc(o.adresse) : ""}</em></span>
     <span class="rapquoi">${esc(resumeBien(o)) || "—"}</span>
     <span class="rapprix">${o.fai === null ? "—" : esc(eur(o.fai))}</span>
-    <span class="rapec">${b.ecarts.length
-      ? b.ecarts.map(t=>`<span class="rapgap">${esc(t)}</span>`).join("")
-      : `<span class="rapok">tous les critères</span>`}</span>
+    <span class="rapec">${pastillesEcarts(b)}</span>
     <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></div>`;
 }
 function blocRapproAcq(r, i){
@@ -8160,13 +8259,43 @@ function blocRapproAcq(r, i){
   if(res.vide) return `<p class="muted" style="margin:10px 0 0">Aucun critère saisi :
     renseignez au moins le budget, le type de bien ou la commune pour que le
     rapprochement se fasse.</p>`;
+  /* zéro bien retenu est précisément le moment où il faut dire pourquoi */
   if(!res.biens.length) return `<p class="muted" style="margin:10px 0 0">Aucun bien du
-    portefeuille ne correspond à cette recherche.</p>`;
+    portefeuille ne correspond à cette recherche.</p>` + blocEcartes(res.ecartes);
   const vus = rapproVus();
   res.biens.forEach(b=> b.neuf = !vus[cleRappro(r, b.d)]);
   return `<div class="rapacq nue"><h4>Biens qui correspondent
     <span class="cnt">${res.biens.length}</span></h4>
-    ${res.biens.map(ligneRapproBien).join("")}</div>`;
+    ${res.biens.map(ligneRapproBien).join("")}
+    ${blocEcartes(res.ecartes)}</div>`;
+}
+/* Pourquoi les autres ne sortent pas. Replié, il ne gêne personne ; ouvert, il
+   répond à la seule question qui vient quand une liste paraît trop courte. */
+function blocEcartes(hors){
+  if(!hors || !hors.length) return "";
+  return `<details class="ecartes"><summary>${hors.length} autre${
+      hors.length > 1 ? "s" : ""} bien${hors.length > 1 ? "s" : ""} en vente — voir
+      pourquoi ${hors.length > 1 ? "ils ne sortent" : "il ne sort"} pas</summary>
+    ${hors.map(x=>`<div class="ecrow">
+      <span class="ecqui">${esc([x.o.type, x.o.ville].filter(Boolean).join(" — ") || "Bien")}
+        <em>mandat n° ${esc(x.o.mandat || "—")}${
+          x.o.fai === null ? "" : " · " + esc(eur(x.o.fai))}</em></span>
+      <span class="ecpour">${esc(x.motif)}</span>
+      <button type="button" class="xbtn" data-open="${esc(x.o.id)}">Voir</button>
+      </div>`).join("")}</details>`;
+}
+/* le même volet, pris par l'autre bout : pourquoi telle recherche ne figure
+   pas dans la liste des acquéreurs de ce bien */
+function blocAcqEcartes(hors){
+  if(!hors || !hors.length) return "";
+  return `<details class="ecartes"><summary>${hors.length} autre${
+      hors.length > 1 ? "s" : ""} recherche${hors.length > 1 ? "s" : ""} en cours — voir
+      pourquoi ${hors.length > 1 ? "elles n'y figurent" : "elle n'y figure"} pas</summary>
+    ${hors.map(x=>`<div class="ecrow">
+      <span class="ecqui">${esc(x.nom)}</span>
+      <span class="ecpour">${esc(x.motif)}</span>
+      <button type="button" class="xbtn" data-ofiche="acquereurs:${x.i}">Fiche</button>
+      </div>`).join("")}</details>`;
 }
 /* la zone est redessinée seule quand on modifie un critère : la fiche fait
    deux écrans, on ne va pas y perdre sa place à chaque frappe */
@@ -8193,15 +8322,18 @@ function acquereursPourBien(d){
   let o;
   try{ o = critBien(dd); }
   catch(e){ if(window.console) console.error(e); return []; }
-  const out = [];
+  const out = [], hors = [];
   acquereursActifs().forEach(x=>{
     const c = critAcq(x.r);
     if(!rechercheRenseignee(c)) return;
     const v = comparerAcqBien(c, o);
-    if(!v) return;
-    out.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), pts:v.pts, ecarts:v.ecarts});
+    if(v.rejet){ hors.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), motif:v.rejet}); return; }
+    out.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), pts:v.pts, ecarts:v.ecarts,
+              flous:v.flous});
   });
   out.sort((a,b)=> a.pts - b.pts || triFr(a.nom, b.nom));
+  hors.sort((a,b)=> triFr(a.nom, b.nom));
+  out.ecartes = hors;
   return out;
 }
 function ligneAcqPourBien(x){
@@ -8213,19 +8345,18 @@ function ligneAcqPourBien(x){
     <span class="rapquoi">${esc(resumeRecherche(r)) || "—"}</span>
     <span class="rapprix">${r.contact
       ? "vu le " + esc(fdate(r.contact)) : `<span class="muted">jamais vu</span>`}</span>
-    <span class="rapec">${x.ecarts.length
-      ? x.ecarts.map(t=>`<span class="rapgap">${esc(t)}</span>`).join("")
-      : `<span class="rapok">tous ses critères</span>`}</span>
+    <span class="rapec">${pastillesEcarts(x, true)}</span>
     <span class="rapfin">${boutonCarte("carnet:acquereurs:" + x.i, x.nom)}
       <button type="button" class="xbtn" data-ofiche="acquereurs:${x.i}"
         >Fiche</button></span></div>`;
 }
 function carteAcquereursBien(){
   const list = acquereursPourBien();
+  const hors = list.ecartes || [];
   if(!list.length) return `<p class="muted" style="margin:0">Aucune recherche en cours de
-    votre fichier ne porte sur ce bien.</p>`;
+    votre fichier ne porte sur ce bien.</p>${blocAcqEcartes(hors)}`;
   return `<div class="rapacq nue" style="margin-top:0">
-    ${list.map(ligneAcqPourBien).join("")}</div>`;
+    ${list.map(ligneAcqPourBien).join("")}${blocAcqEcartes(hors)}</div>`;
 }
 
 /* La carte d'Aujourd'hui. Vide, elle ne s'affiche pas : une carte qui ne dit
@@ -8263,6 +8394,116 @@ function marquerRapproVus(){
   noterRapproVus(cles);
   renderAujourdhui();
   toast("Rapprochements marqués comme vus");
+}
+
+/* =====================================================================
+   LE PLAN — SITUER LE BIEN
+   ---------------------------------------------------------------------
+   Une carte Google Maps, glissée dans un cadre. C'est la SEULE chose de
+   l'application qui sorte sur Internet, et il faut le dire franchement :
+   ouvrir cette page envoie l'adresse du bien à Google, comme le ferait une
+   recherche faite à la main. Rien d'autre ne part — ni les noms, ni les
+   prix, ni le reste du dossier — et aucune clé n'est nécessaire.
+
+   Deux précautions en découlent :
+   — la carte n'est fabriquée qu'au moment où l'on ouvre la page ou le
+     tiroir. Tant qu'on ne la regarde pas, aucun appel n'est fait ;
+   — hors ligne, on le dit au lieu de laisser un cadre gris. Tout le reste
+     de l'application continue de fonctionner comme avant.
+
+   Le zoom se fait de deux façons : les boutons − et +, qui rechargent la
+   carte au niveau demandé, et les commandes de Google à l'intérieur du
+   cadre (molette, pincement, + / −), qui ne rechargent rien. Les deux
+   cohabitent ; la seconde est la plus agréable, la première existe parce
+   qu'elle se voit.
+   ===================================================================== */
+const PLAN_Z_MIN = 3, PLAN_Z_MAX = 20;
+/* le niveau et la vue valent pour toute la séance : on règle une fois */
+let PLAN = {z:17, t:"m"};
+
+/* L'adresse telle qu'on la donnerait à quelqu'un : la rue, le code postal et
+   la commune, puis le pays. Sans rue, la commune seule situe déjà. */
+function adressePlan(b){
+  const o = b || {};
+  /* le complément d'adresse — « Bât. B », « appt 3 », « lot 12 » — ne sert pas
+     à situer et brouille la recherche : on ne le donne pas à la carte */
+  const rue = String(o.adresse || "").trim() || String(o.adresse2 || "").trim();
+  const loc = [String(o.cp || "").trim(), String(o.ville || "").trim()]
+    .filter(Boolean).join(" ");
+  const bouts = [rue, loc].filter(Boolean);
+  if(!bouts.length) return "";
+  const pays = String(o.pays || "").trim() || "France";
+  return bouts.concat(pays).join(", ");
+}
+function urlPlan(adr, z, t){
+  return "https://maps.google.com/maps?q=" + encodeURIComponent(adr) +
+         "&z=" + z + "&t=" + t + "&hl=fr&output=embed";
+}
+function urlPlanGrand(adr){
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(adr);
+}
+const IC_PLAN = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+  <path d="M8 1.9c2.1 0 3.8 1.7 3.8 3.8 0 2.7-3.8 7-3.8 7s-3.8-4.3-3.8-7c0-2.1 1.7-3.8 3.8-3.8Z"/>
+  <circle cx="8" cy="5.7" r="1.5"/></svg>`;
+
+function blocPlan(adr, etat){
+  if(!adr) return `<p class="muted" style="margin:0">Aucune adresse saisie pour ce bien :
+    renseignez au moins la commune, dans <b>Général › Le bien</b>, et la carte s'affichera.</p>`;
+  if(typeof navigator !== "undefined" && navigator.onLine === false)
+    return `<div class="planhors"><b>Pas de connexion internet.</b><br>
+      La carte vient de Google Maps : elle a besoin du réseau. Tout le reste de
+      l'application fonctionne hors ligne — revenez sur cette page une fois
+      reconnecté.<br><br>${esc(adr)}</div>`;
+  const z = etat.z, t = etat.t;
+  return `<div class="planbar">
+      <span class="planadr">${esc(adr)}</span>
+      <span style="flex:1"></span>
+      <div class="seg planvue">
+        <button type="button" data-plant="m"${t === "m" ? ' class="on"' : ""}>Plan</button>
+        <button type="button" data-plant="k"${t === "k" ? ' class="on"' : ""}>Satellite</button>
+      </div>
+      <button type="button" class="tbtn light" data-planz="-1"
+        ${z <= PLAN_Z_MIN ? " disabled" : ""} title="Dézoomer">−</button>
+      <span class="planz">zoom ${z}</span>
+      <button type="button" class="tbtn light" data-planz="1"
+        ${z >= PLAN_Z_MAX ? " disabled" : ""} title="Zoomer">+</button>
+      <a class="tbtn light" href="${esc(urlPlanGrand(adr))}" target="_blank"
+        rel="noopener">Ouvrir dans Google Maps</a>
+    </div>
+    <div class="planbox"><iframe src="${esc(urlPlan(adr, z, t))}" loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade" allowfullscreen
+      title="Plan — ${esc(adr)}"></iframe></div>
+    <p class="muted planpied">Carte fournie par Google Maps. L'affichage demande une
+      connexion et envoie <b>l'adresse seule</b> à Google ; rien d'autre du dossier ne
+      sort. Vous pouvez aussi zoomer à la molette, au pincement, ou avec les commandes
+      de la carte — c'est plus doux que les boutons, qui la rechargent.</p>`;
+}
+/* La zone se redessine seule quand on change de zoom ou de vue : elle porte
+   son adresse, et il peut y en avoir deux à l'écran (la page et un tiroir). */
+function zonePlan(adr){
+  return `<div data-planzone="${esc(adr)}">${blocPlan(adr, PLAN)}</div>`;
+}
+function majPlans(){
+  document.querySelectorAll("[data-planzone]").forEach(z=>{
+    z.innerHTML = blocPlan(z.dataset.planzone, PLAN);
+  });
+}
+function renderPlan(){
+  const z = $("#planBody");
+  if(!z) return;
+  const b = D.bien || {};
+  const adr = adressePlan(b);
+  const res = String(b.residence || "").trim();
+  z.innerHTML = `<div class="card">
+    <h2>Situation du bien${res ? " — " + esc(res) : ""}</h2>
+    <div class="body">${zonePlan(adr)}</div></div>`;
+}
+/* le même plan, en tiroir, depuis la fiche d'un immeuble */
+function ouvrirPlanImmeuble(nom){
+  const r = book("residences", nom);
+  const adr = adressePlan(r);
+  popup({titre:"Plan — " + (nom || "immeuble"), large:true, corps:zonePlan(adr)});
 }
 
 function renderAujourdhui(){
@@ -10984,7 +11225,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   /* Un trombone peut vivre DANS un titre repliable — c'est le cas sur la page
@@ -11101,6 +11342,11 @@ document.addEventListener("click", e=>{
     autosave(); renderDiags(); renderPreview();
     return;
   }
+  if(t.dataset.plan !== undefined){ ouvrirPlanImmeuble(t.dataset.plan); return; }
+  if(t.dataset.planz){
+    PLAN.z = Math.max(PLAN_Z_MIN, Math.min(PLAN_Z_MAX, PLAN.z + (+t.dataset.planz)));
+    majPlans(); return; }
+  if(t.dataset.plant){ PLAN.t = t.dataset.plant; majPlans(); return; }
   if(t.dataset.bookadd){ const k=t.dataset.bookadd;
     const row={}; BOOKS[k].cols.forEach(c=>row[c[0]] = c[2]==="pays" ? "France" : "");
     /* une fiche dont le nom changera porte un identifiant propre : c'est lui,
@@ -14623,7 +14869,14 @@ const AIDE = [
   "n'a qu'une chambre de moins reste proposé, avec l'écart dit en clair — "+
   "« <i>dépasse le budget de 8 000 € (3 %)</i> », « <i>une chambre de moins</i> ». Les biens "+
   "sont classés du plus proche au plus loin de la demande, et au-delà d'un certain cumul "+
-  "d'écarts ils ne sortent plus. "+
+  "d'écarts ils ne sortent plus — mais sous la liste, un volet <b>« voir pourquoi ils ne "+
+  "sortent pas »</b> nomme chaque bien écarté et son motif, de sorte qu'une liste courte "+
+  "s'explique toujours. Le dossier a le même volet, pour les recherches qui n'y figurent "+
+  "pas. "+
+  "Attention à ne pas confondre <b>non</b> et <b>non renseigné</b> : un bien dont la fiche "+
+  "détaillée n'est pas remplie n'est <b>pas</b> écarté — l'application le propose quand "+
+  "même et affiche une étiquette grise « extérieur non renseigné », qui vous invite à "+
+  "compléter la fiche plutôt qu'à écarter le bien. "+
   "Deux critères ne se discutent pas : le <b>type de bien</b> et la <b>commune</b> — "+
   "laissés vides, ils ne filtrent rien, c'est ainsi qu'on cherche « tous types » ou "+
   "« partout ». La pastille <b>nouveau</b> marque les rapprochements que vous n'avez pas "+
@@ -14638,6 +14891,20 @@ const AIDE = [
   "<b>Contact</b> pour enregistrer la carte de visite, <b>Fiche</b> pour ouvrir la fiche au "+
   "Répertoire. La tuile ne s'affiche pas sur un bien passé sous offre ou sous compromis : "+
   "il n'y a plus d'acquéreur à lui chercher."],
+ ["Le plan du bien",
+  "La colonne du dossier porte un onglet <b>Plan</b> : la carte Google Maps du bien, "+
+  "centrée sur l'adresse saisie dans <b>Général</b>. Vous y basculez entre <b>Plan</b> et "+
+  "<b>Satellite</b>, vous zoomez avec les boutons <b>−</b> et <b>+</b> — ou, plus "+
+  "agréablement, à la molette, au pincement et avec les commandes de la carte, qui ne la "+
+  "rechargent pas. <b>Ouvrir dans Google Maps</b> bascule vers l'application complète, où "+
+  "se trouvent l'itinéraire et Street View. La fiche d'un immeuble a le même plan, en "+
+  "tiroir, à côté de RCP, PV AG, Diagnostics, Divers et Photos."],
+ ["Le plan et votre connexion",
+  "C'est la <b>seule</b> partie de l'application qui sorte sur Internet. Ouvrir la page "+
+  "envoie <b>l'adresse du bien</b> à Google, comme le ferait une recherche faite à la main — "+
+  "rien d'autre du dossier ne part, et aucune clé n'est nécessaire. Tant que vous n'ouvrez "+
+  "pas cette page, aucun appel n'est fait. Hors ligne, la page le dit au lieu de laisser un "+
+  "cadre gris, et tout le reste continue de fonctionner comme avant."],
  ["Aujourd'hui",
   "C'est la page sur laquelle l'application s'ouvre. Cinq blocs se suivent : dossiers en cours "+
   "par statut (le bouton « Voir » déplie la liste, prix et honoraires alignés sur les colonnes), "+
@@ -15255,6 +15522,9 @@ function renderAll(){
   renderFacture(); renderPreview(); autosize(); refreshAllVilles();
   majStade(); majOnglets(); majObligatoires(); majMenuDossier();
   if(typeof renderPagePieces === "function") renderPagePieces();
+  /* la carte ne se recharge qu'à l'écran : changer de dossier la rafraîchit,
+     mais une page qu'on ne regarde pas n'appelle pas Google */
+  if(pageActive() === "plan") renderPlan();
   if(typeof appliquerDroits === "function") appliquerDroits();
   if(typeof majPastilleMoi === "function") majPastilleMoi();
 }
