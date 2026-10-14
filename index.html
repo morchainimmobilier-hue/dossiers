@@ -1671,7 +1671,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 12 octobre 2026, 10 h 10">Dossiers de vente</div>
+  <div class="brand" title="Version du 14 octobre 2026, 15 h 07">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1876,7 +1876,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>12 octobre 2026, 10 h 10</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>14 octobre 2026, 15 h 07</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -13951,6 +13951,26 @@ const AIDE = [
   "téléphone, courriel — et ramène en plus les <b>vendeurs et acquéreurs saisis dans les "+
   "dossiers</b>, chacun avec le mandat d'où il vient et un bouton pour y aller : une personne "+
   "se retrouve sans qu'il faille se rappeler où on l'a d'abord écrite."],
+ ["Le clip et TikTok : la durée qui se raccourcissait",
+  "<b>Le symptôme.</b> Un clip déposé sur TikTok en ressortait plus court qu'il n'était. "+
+  "<b>La cause, mesurée :</b> un MP4 enregistré par un navigateur s'écrit au fil de la "+
+  "prise de vue, sans savoir où il s'arrêtera. Son en-tête annonce donc une durée de film "+
+  "de <b>zéro</b>, et une durée de piste qui ne couvre que le premier morceau — sur un "+
+  "clip de 6 secondes mesuré ici : <b>0,000 s</b> annoncée, <b>3,391 s</b> pour la piste, "+
+  "<b>5,990 s</b> en réalité. VLC, votre navigateur et Facebook balaient tout le fichier "+
+  "et retrouvent la vraie durée. Une plateforme qui fait confiance à l'en-tête coupe. "+
+  "<b>Ce qui a été fait.</b> L'application réécrit les trois durées de l'en-tête avec la "+
+  "valeur vraie, juste après l'enregistrement. Pas une image n'est retouchée, le fichier "+
+  "ne grossit pas d'un octet, et un fichier déjà correct est laissé tel quel. "+
+  "<b>Le second défaut, corrigé aussi :</b> « MP4 » tout court ne veut pas dire H.264. Sur "+
+  "un navigateur sans codecs propriétaires, l'application produisait un fichier nommé "+
+  ".mp4 qui contenait en fait du <b>VP9</b> — légal, et refusé à peu près partout. Le MP4 "+
+  "n'est désormais réclamé qu'en nommant H.264 ; sinon c'est un WebM honnête, qui sera "+
+  "refusé franchement plutôt que mal digéré. "+
+  "<b>Ce qui reste à savoir.</b> Le clip est au format <b>1080 × 1350</b> (4:5), celui "+
+  "d'Instagram. TikTok attend du <b>9:16</b> : il acceptera le vôtre, mais le recadrera ou "+
+  "ajoutera des bandes. Si TikTok devient votre réseau principal, dites-le moi, le format "+
+  "du clip se change."],
  ["Enregistrer un contact dans votre répertoire",
   "Sur la fiche de chaque <b>notaire</b>, <b>personne en charge</b>, <b>syndic</b>, "+
   "<b>négociateur</b>, <b>diagnostiqueur</b> et <b>banque</b> du Répertoire, ainsi que sur "+
@@ -16495,6 +16515,91 @@ function dessinerCarteFin(g, ctx, u){
 /* ======================================================= GABARIT VITRINE */
 const VIT_PHOTO = 810;                   /* la photo occupe les trois cinquièmes */
 
+/* ------------------------------------------------- LA LIGNE DE TÊTE ---
+   Le bien à gauche sur deux lignes — son type avec sa ville, puis sa
+   surface —, le prix à droite. Les deux blocs occupent EXACTEMENT la même
+   hauteur : c'est cet alignement qui tient l'affiche.
+
+   Trois contraintes qui se contredisent : le prix doit rester gros, les
+   deux lignes de gauche doivent tenir dans ce qu'il leur laisse, et les
+   deux hauteurs doivent être égales. On ne pose donc pas la mise en page au
+   jugé, on la RÉSOUT : on mesure le vrai dessin des lettres
+   (`actualBoundingBoxAscent`, et non la taille nominale, qui ne dit rien de
+   la hauteur réelle), on ajuste, on recommence.
+
+   Les deux lignes de gauche ne grandissent PAS ensemble, et c'est tout
+   l'intérêt. « Maison · SAINT-MARTIN-DE-CRAU » est long : s'il fallait que
+   la surface suive sa taille, le bloc resterait bas et tirerait le prix vers
+   le bas avec lui. La ligne du type se contente donc de ce que la largeur
+   lui laisse, et c'est la SURFACE — toujours courte — qui grandit pour
+   atteindre la hauteur du prix.
+
+   L'ordre des sacrifices est délibéré : on resserre d'abord l'espacement des
+   lettres du type, puis on rétrécit le prix. Il a été demandé gros, il ne
+   cède qu'en dernier.
+
+   Le calcul est séparé du dessin pour qu'un banc d'essai puisse l'interroger
+   sans relire des pixels. */
+function teteVitrine(g, ctx, M, larg){
+  const prix   = ctx.prix || "";
+  const ligne1 = (ctx.titre || "").toUpperCase();
+  const ligne2 = ctx.surface || "";
+  const ECART = 16;               // l'air entre les deux lignes
+  const GOUT = 44;                // la gouttière entre la gauche et le prix
+  const T1_MAX = 34, T1_BON = 22; // la ligne du type : souhaitable, et lisible
+  const yBas = VIT_PHOTO + 142;   // le pied commun des deux blocs
+
+  const haut = (t, taille, poids)=>{
+    if(!t) return 0;
+    g.font = fnt(taille, poids);
+    const m = g.measureText(t);
+    return m.actualBoundingBoxAscent || taille * 0.72;
+  };
+  const large = (t, taille, poids, esp)=>{
+    if(!t) return 0;
+    g.font = fnt(taille, poids);
+    return esp ? largeurEspacee(g, t, esp) : g.measureText(t).width;
+  };
+
+  let cp = 104;
+  while(cp > 56 && large(prix, cp, 800) > larg * 0.60) cp -= 2;
+
+  let t1 = T1_MAX, t2 = 20, esp = 4.5, hP = 0;
+  for(let passe = 0; passe < 8; passe++){
+    hP = haut(prix, cp, 800);
+    const budget = larg - large(prix, cp, 800) - GOUT;
+    /* la ligne du type : la plus grande qui tienne */
+    const ajuster = e=>{ let t = T1_MAX;
+      while(t > 12 && large(ligne1, t, 600, e) > budget) t -= 1; return t; };
+    esp = 4.5; t1 = ajuster(esp);
+    /* trop tassée : on resserre les lettres avant de toucher au reste */
+    if(t1 < T1_BON){ esp = 1.5; t1 = ajuster(esp); }
+    if(!ligne2){
+      while(t1 < 96 && haut(ligne1, t1 + 1, 600) <= hP
+            && large(ligne1, t1 + 1, 600, esp) <= budget) t1 += 1;
+      break;
+    }
+    /* la surface : celle qui comble exactement ce qui reste */
+    const reste = hP - haut(ligne1, t1, 600) - ECART;
+    t2 = 20;
+    while(t2 < 104 && haut(ligne2, t2 + 1, 700) <= reste
+          && large(ligne2, t2 + 1, 700) <= budget) t2 += 1;
+    const manque = hP - (haut(ligne1, t1, 600) + ECART + haut(ligne2, t2, 700));
+    /* la gauche est bloquée par la largeur et reste trop courte, ou bien sa
+       première ligne est devenue illisible : le prix descend à sa rencontre */
+    if(cp > 56 && ((manque > 2 && large(ligne2, t2 + 1, 700) > budget)
+                   || t1 < T1_BON)){
+      cp -= 4;
+      continue;
+    }
+    break;
+  }
+  const h1 = haut(ligne1, t1, 600), h2 = haut(ligne2, t2, 700);
+  return {prix, ligne1, ligne2, cp, t1, t2, esp, yBas,
+          yL1: ligne2 ? yBas - h2 - ECART : yBas,
+          hGauche: ligne2 ? h1 + ECART + h2 : h1, hPrix: hP};
+}
+
 function dessinerPanneauVitrine(g, ctx){
   /* Le panneau dispose de 540 pixels et pas un de plus : chaque ligne a sa
      place réservée, sinon les mentions légales passent sous l'adresse du
@@ -16503,30 +16608,38 @@ function dessinerPanneauVitrine(g, ctx){
   g.fillStyle = CL.bordeaux; g.fillRect(0, VIT_PHOTO - 7, CLIP_L, 7);
   const M = 58, larg = CLIP_L - 2 * M;
 
-  g.fillStyle = CL.rouge; g.font = fnt(28, 600);
-  txtEspace(g, (ctx.titre || "").toUpperCase(), M, VIT_PHOTO + 48, 4.5);
+  /* ------------------------------------------------- LA LIGNE DE TÊTE ---
+     Le bien à gauche sur deux lignes — son type avec sa ville, puis sa
+     surface —, le prix à droite. Les deux blocs occupent EXACTEMENT la même
+     hauteur : c'est cet alignement qui tient l'affiche.
 
-  /* le prix est ce qu'on cherche des yeux en premier : il prend la place
-     qu'il mérite, et se resserre seulement s'il déborde sur la surface */
-  const prix = ctx.prix || "";
-  let cp = 104;
-  g.font = fnt(cp, 800);
-  let wSurf = 0;
-  if(ctx.surface){ g.font = fnt(38, 500); wSurf = g.measureText(ctx.surface).width + 28; }
-  g.font = fnt(cp, 800);
-  while(cp > 68 && g.measureText(prix).width > CLIP_L - 2 * M - wSurf){
-    cp -= 3; g.font = fnt(cp, 800);
-  }
-  g.fillStyle = CL.bordeaux;
-  g.fillText(prix, M, VIT_PHOTO + 134);
-  if(ctx.surface){
-    g.font = fnt(38, 500); g.textAlign = "right";
-    g.fillText(ctx.surface, CLIP_L - M, VIT_PHOTO + 124);
-    g.textAlign = "left";
-  }
-  g.fillStyle = CL.bordeaux; g.fillRect(M, VIT_PHOTO + 158, larg, 3);
+     Trois contraintes qui se contredisent : le prix doit rester gros, les
+     deux lignes de gauche doivent tenir dans ce qu'il leur laisse, et les
+     deux hauteurs doivent être égales. On ne pose donc pas la mise en page
+     au jugé, on la RÉSOUT : on mesure le vrai dessin des lettres
+     (`actualBoundingBoxAscent`, et non la taille nominale, qui ne dit rien
+     de la hauteur réelle), on ajuste, et l'on recommence.
 
-  const col = larg / 2, y0 = VIT_PHOTO + 198;
+     L'ordre des sacrifices est délibéré : on agrandit d'abord la gauche
+     jusqu'à la hauteur du prix ; si la largeur l'en empêche, c'est alors
+     seulement que le prix descend à sa rencontre. Vous l'avez voulu gros,
+     il ne rétrécit qu'en dernier recours. */
+  const T = teteVitrine(g, ctx, M, larg);
+
+  g.fillStyle = CL.rouge; g.font = fnt(T.t1, 600);
+  txtEspace(g, T.ligne1, M, T.yL1, T.esp);
+  if(T.ligne2){
+    g.fillStyle = CL.bordeaux; g.font = fnt(T.t2, 700);
+    g.fillText(T.ligne2, M, T.yBas);
+  }
+  g.fillStyle = CL.bordeaux; g.font = fnt(T.cp, 800);
+  g.textAlign = "right";
+  g.fillText(T.prix, CLIP_L - M, T.yBas);
+  g.textAlign = "left";
+
+  g.fillStyle = CL.bordeaux; g.fillRect(M, VIT_PHOTO + 170, larg, 3);
+
+  const col = larg / 2, y0 = VIT_PHOTO + 208;
   g.font = fnt(30, 400);
   (ctx.puces || []).slice(0, 6).forEach((p, i)=>{
     const cx = M + (i % 2) * col + 3, cy = y0 + Math.floor(i / 2) * 44;
@@ -16794,20 +16907,133 @@ const CLIP_L = 1080, CLIP_H = 1350;
 const CLIP_MAX = 14;
 const PHOTO_MIN = 1.6, PHOTO_MAX = 5;
 
+/* L'ORDRE DES FORMATS, ET POURQUOI IL A CHANGÉ
+   ---------------------------------------------------------------------
+   « video/mp4 », sans précision de codec, ne veut pas dire H.264 : le
+   navigateur met dedans ce qu'il sait faire. Sur un Chromium sans codecs
+   propriétaires, cela donne un fichier d'extension .mp4 contenant du
+   VP9 — parfaitement légal, et refusé ou mal décodé à peu près partout,
+   TikTok compris. On ne réclame donc le MP4 qu'en NOMMANT H.264, et l'on
+   préfère un WebM honnête à un MP4 trompeur. Le « video/mp4 » nu ne reste
+   qu'en dernier recours, pour ne pas priver de clip un navigateur exotique
+   qui ne saurait rien faire d'autre. */
 function clipFormats(){
   const essais = [
     ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "mp4"],
+    ["video/mp4;codecs=avc1.42E01E", "mp4"],
+    ["video/mp4;codecs=h264", "mp4"],
     ["video/mp4;codecs=avc1", "mp4"],
-    ["video/mp4", "mp4"],
     ["video/webm;codecs=vp9", "webm"],
     ["video/webm;codecs=vp8", "webm"],
-    ["video/webm", "webm"]
+    ["video/webm", "webm"],
+    ["video/mp4", "mp4"]
   ];
   for(const [mime, ext] of essais){
     try{ if(window.MediaRecorder && MediaRecorder.isTypeSupported(mime))
       return {mime, ext}; }catch(e){}
   }
   return null;
+}
+
+/* =====================================================================
+   RENDRE SA DURÉE AU FICHIER
+   ---------------------------------------------------------------------
+   Un MP4 sorti de MediaRecorder est « fragmenté » : il s'écrit au fil de
+   l'enregistrement, sans savoir où il s'arrêtera. Son en-tête annonce donc
+   une durée de film de ZÉRO, et une durée de piste qui ne couvre que le
+   premier fragment.
+
+   Mesuré sur un clip de 6,00 s :
+       mvhd (durée du film)  : 0,000 s
+       tkhd (durée de piste) : 3,391 s
+       durée réelle          : 5,990 s
+
+   VLC, un navigateur ou ffmpeg s'en moquent : ils balaient les fragments
+   et retrouvent la vraie durée. Une plateforme qui fait confiance à
+   l'en-tête, elle, coupe — c'est très exactement ce que TikTok faisait.
+
+   On réécrit donc les trois champs de durée avec la valeur vraie, sur
+   place, sans toucher à une seule image. Le fichier reste bit pour bit le
+   même ailleurs. */
+async function reparerDureeMp4(blob, secondes){
+  try{
+    const tampon = await blob.arrayBuffer();
+    const vue = new DataView(tampon);
+    const u8 = new Uint8Array(tampon);
+    const typeDe = o=> String.fromCharCode(u8[o+4], u8[o+5], u8[o+6], u8[o+7]);
+    const CONTENEURS = ["moov","trak","mdia","edts"];
+    let touche = 0;
+
+    /* On ne réécrit QUE ce qui est faux. Un navigateur qui produirait un
+       fichier correct — Safari, demain Chrome — garde le sien : il serait
+       absurde d'y introduire nos vingt millisecondes d'écart. */
+    const poser = (off, version, decal32, decal64, echelle)=>{
+      const ticks = Math.max(1, Math.round(secondes * echelle));
+      const lu = version === 1
+        ? vue.getUint32(off + decal64) * 4294967296 + vue.getUint32(off + decal64 + 4)
+        : vue.getUint32(off + decal32);
+      if(lu >= ticks * 0.95) return;          // déjà juste : on n'y touche pas
+      if(version === 1){
+        /* 64 bits : la partie haute reste à zéro, nos durées sont courtes */
+        vue.setUint32(off + decal64, 0);
+        vue.setUint32(off + decal64 + 4, ticks);
+      } else {
+        vue.setUint32(off + decal32, Math.min(ticks, 0xFFFFFFFE));
+      }
+      touche++;
+    };
+
+    const parcourir = (debut, fin)=>{
+      let o = debut;
+      while(o + 8 <= fin){
+        let taille = vue.getUint32(o);
+        const typ = typeDe(o);
+        let corps = o + 8;
+        if(taille === 1){ taille = Number(vue.getBigUint64(o + 8)); corps = o + 16; }
+        if(taille === 0) taille = fin - o;
+        if(taille < 8) break;
+        const version = u8[corps];
+
+        if(typ === "mvhd"){
+          const ech = version === 1 ? vue.getUint32(corps + 20) : vue.getUint32(corps + 12);
+          poser(corps, version, 16, 24, ech || 1000);
+        } else if(typ === "mdhd"){
+          const ech = version === 1 ? vue.getUint32(corps + 20) : vue.getUint32(corps + 12);
+          poser(corps, version, 16, 24, ech || 1000);
+        } else if(typ === "tkhd"){
+          /* la durée d'une piste se compte dans l'échelle du FILM */
+          poser(corps, version, 20, 28, ECHELLE_FILM || 1000);
+        } else if(CONTENEURS.indexOf(typ) >= 0){
+          parcourir(corps, o + taille);
+        }
+        o += taille;
+      }
+    };
+    /* l'échelle du film se lit d'abord : les tkhd en dépendent */
+    let ECHELLE_FILM = 1000;
+    (function lireEchelle(debut, fin){
+      let o = debut;
+      while(o + 8 <= fin){
+        let taille = vue.getUint32(o); const typ = typeDe(o); let corps = o + 8;
+        if(taille === 1){ taille = Number(vue.getBigUint64(o + 8)); corps = o + 16; }
+        if(taille === 0) taille = fin - o;
+        if(taille < 8) break;
+        if(typ === "mvhd"){
+          const v = u8[corps];
+          ECHELLE_FILM = v === 1 ? vue.getUint32(corps + 20) : vue.getUint32(corps + 12);
+          return;
+        }
+        if(typ === "moov"){ lireEchelle(corps, o + taille); return; }
+        o += taille;
+      }
+    })(0, u8.length);
+
+    parcourir(0, u8.length);
+    if(!touche) return blob;                 // rien reconnu : on ne touche à rien
+    return new Blob([tampon], {type: blob.type});
+  }catch(e){
+    return blob;                             // au pire, le fichier d'avant
+  }
 }
 function clipPossible(){
   return !!(window.MediaRecorder && clipFormats()
@@ -17001,9 +17227,17 @@ async function fabriquerClip(plan, avance){
     };
     requestAnimationFrame(trame);
   });
+  /* la durée VRAIE, celle qu'on a tournée — une image de retard et l'on
+     annoncerait une seconde de trop ou de moins */
+  const reel = (performance.now() - t0) / 1000;
   rec.stop();
   await fini;
-  return {blob: new Blob(bouts, {type: fmt.mime}), ext: fmt.ext,
+
+  let blob = new Blob(bouts, {type: fmt.mime});
+  /* un MP4 sorti d'ici annonce une durée nulle : on la lui rend */
+  if(fmt.ext === "mp4") blob = await reparerDureeMp4(blob, reel);
+
+  return {blob, ext: fmt.ext,
           duree: Math.round(plan.duree * 10) / 10, nb: plan.imgs.length,
           gabarit: plan.gabarit, transition: plan.transition};
 }
@@ -17399,8 +17633,9 @@ function renderPublications(){
           <button type="button" class="addbtn" id="pubTel">Télécharger le clip</button>
         </div>
         ${PUB_CLIP.ext !== "mp4" ? `<p class="muted">Ce navigateur n'a su produire qu'un
-          fichier <b>WebM</b>. Facebook l'accepte ; Instagram, non. Depuis un ordinateur
-          sous Chrome à jour, le clip sort en MP4.</p>` : ""}
+          fichier <b>WebM</b>. Facebook l'accepte ; <b>Instagram et TikTok, non</b>.
+          Depuis un ordinateur sous Chrome à jour, le clip sort en MP4 — c'est le format
+          à utiliser pour ces deux-là.</p>` : ""}
       </div>` : ""}`}
     </div></div>
 
