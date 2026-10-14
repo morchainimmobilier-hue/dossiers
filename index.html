@@ -569,6 +569,46 @@ table.envois tr.repondu td.emode b{color:#166534}
 .immbloc{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
 .immbloc h3{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.5px;
   text-transform:uppercase;color:var(--ink-2)}
+.multibox{display:flex;flex-wrap:wrap;gap:2px 16px;padding:2px 0}
+.multibox .chkline{margin:0}
+/* une valeur de liste se lit telle qu'elle est écrite : « Garage / Parking »,
+   et non en capitales comme les intitulés de champ */
+.multibox .chkline span{text-transform:none;letter-spacing:0;color:var(--ink)}
+
+/* rapprochement acquéreurs / biens en vente */
+.rapacq{border:1px solid var(--line);border-radius:10px;background:var(--fond-2,#f8fafc);
+  padding:9px 11px;margin-bottom:10px}
+.rapacq:last-child{margin-bottom:0}
+.rapacq.nue{margin-top:12px}
+.rapacq > h4{margin:0 0 7px;font-size:13px;color:var(--bandeau);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rapacq > h4 em{font-style:normal;font-weight:400;font-size:11.5px;color:var(--ink-2)}
+.rapneuf{background:#0284c7;color:#fff;border-radius:999px;padding:1px 8px;
+  font-size:10.5px;font-weight:700;letter-spacing:.3px}
+.raprow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.9fr) auto minmax(0,1.3fr) auto;
+  gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;background:#fff;
+  padding:7px 10px;margin-bottom:6px;font-size:13px}
+.raprow:last-child{margin-bottom:0}
+.raprow.neuf{border-color:#7dd3fc;box-shadow:inset 3px 0 0 #0284c7}
+.rapqui{min-width:0;font-weight:600;color:var(--bandeau)}
+.rapqui em{display:block;font-style:normal;font-weight:400;font-size:11.5px;color:var(--ink-2)}
+.rapquoi{min-width:0;color:var(--ink-2);font-size:12.5px}
+.rapprix{font-weight:700;white-space:nowrap}
+.rapec{min-width:0;display:flex;flex-wrap:wrap;gap:4px}
+.rapgap{background:#fef3c7;color:#78350f;border:1px solid #fcd34d;border-radius:6px;
+  padding:1px 7px;font-size:11.5px}
+.rapok{background:#dcfce7;color:#14532d;border:1px solid #86efac;border-radius:6px;
+  padding:1px 7px;font-size:11.5px}
+.rapfin{display:flex;align-items:center;gap:6px}
+.rapqui em,.rapquoi{overflow-wrap:anywhere}
+/* dans la fenêtre d'une section du dossier, la ligne n'a pas la largeur de
+   la page : elle se replie d'elle-même en trois étages */
+#secCorps .raprow{grid-template-columns:minmax(0,1fr) auto auto}
+#secCorps .rapquoi,#secCorps .rapec{grid-column:1/-1}
+@media(max-width:860px){
+  .raprow{grid-template-columns:1fr auto}
+  .rapquoi,.rapec{grid-column:1/-1}
+}
 .reprow{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) auto;gap:12px;
   align-items:center;border:1px solid var(--line);border-radius:8px;background:#fff;
   padding:7px 10px;margin-bottom:6px;font-size:13px}
@@ -1671,7 +1711,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 14 octobre 2026, 15 h 07">Dossiers de vente</div>
+  <div class="brand" title="Version du 14 octobre 2026, 20 h 41">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -1876,7 +1916,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>14 octobre 2026, 15 h 07</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>14 octobre 2026, 20 h 41</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2102,6 +2142,9 @@ const LISTS_DEFAULT = {
                "Je réponds à vos questions, sans engagement."],
   residences: [],
   syndics: [],
+  /* les lettres du DPE, pour le seuil que se fixe un acquéreur */
+  classeDpe: ["A","B","C","D","E","F","G"],
+  acquereurs: [],
   notaires: [{prenom:"Clémence", patronyme:"TORTEL",
               nom:"Maître Clémence TORTEL", adresse:"26-28, avenue Sixte Quenin",
               pays:"France", cp:"13200", ville:"ARLES", tel:"04 90 52 18 09",
@@ -2214,6 +2257,34 @@ const BOOKS = {
     ["nom","Cabinet","text","wide"],["adresse","Adresse","text","wide"],
     ["cp","Code postal","cp"],["ville","Ville","ville"],["pays","Pays","pays"],
     ["tel","Téléphone","text"],["email","Email","text","wide"]]},
+  /* LE FICHIER DES ACQUÉREURS
+     Une fiche par personne qui cherche, avec ce qu'elle cherche. C'est ce
+     second volet qui permet le rapprochement : sans critères saisis, une
+     fiche d'acquéreur n'est qu'un contact de plus. */
+  acquereurs:{title:"Acquéreurs à la recherche", mode:"card", label:"Acquéreur",
+    dep:{etageMax:"ascenseurNon"}, idStable:true, defauts:{actif:true}, cols:[
+    ["nom","Nom","text"],["prenom","Prénom","text"],
+    ["tel","Téléphone","text"],["email","Email","text","wide"],
+    ["@quoi","Ce qu'il ou elle cherche","sep"],
+    ["budget","Budget maximum (FAI)","money"],
+    ["types","Types de biens","multi:typeBien","wide"],
+    ["communes","Communes — séparées par des virgules","text","wide"],
+    ["surfaceMin","Surface minimum (m²)","nb"],
+    ["terrainMin","Terrain minimum (m²)","nb"],
+    ["chambresMin","Chambres au minimum","nb"],
+    ["piecesMin","Pièces au minimum","nb"],
+    ["@conf","Ce qui compte aussi","sep"],
+    ["exterieur","Extérieur exigé (terrasse, balcon ou jardin)","check"],
+    ["stationnement","Garage ou parking exigé","check"],
+    ["ascenseurOui","Ascenseur obligatoire","check"],
+    ["ascenseurNon","Limiter l'étage sans ascenseur","check"],
+    ["etageMax","Étage maximum sans ascenseur","nb"],
+    ["travauxNon","Pas de travaux lourds","check"],
+    ["dpeMin","Classe DPE au minimum","list:classeDpe"],
+    ["@suivi","Suivi","sep"],
+    ["actif","Recherche en cours","check"],
+    ["contact","Dernier contact","date"],
+    ["note","Notes","area","wide"]]},
   banques:{title:"Banques / organismes", mode:"card", label:"Banque", cols:[
     ["nom","Banque","text","wide"],["adresse","Adresse","text","wide"],
     ["interlocuteur","Interlocuteur","text"],["tel","Téléphone","text"],
@@ -2280,10 +2351,26 @@ function loadListesDepuis(v){
   (out.syndics||[]).forEach(x=>{ if(!x.pays) x.pays = "France"; });
   /* identifiant stable des fiches de carnet, pour que leurs pièces jointes
      survivent à une correction de nom (voir pidDepuis) */
-  ["notaires","clercs","syndics","negociateurs","diagnostiqueurs","banques"]
+  ["notaires","clercs","syndics","negociateurs","diagnostiqueurs","banques",
+   "acquereurs"]
     .forEach(k=> (out[k] || []).forEach(x=>{
       if(x && !x.pid && x.nom) x.pid = pidDepuis(String(x.nom).trim());
     }));
+  if(!Array.isArray(out.acquereurs)) out.acquereurs = [];
+  /* le carnet des acquéreurs : les champs qu'une base d'avant ne porte pas,
+     et l'identifiant propre de chaque fiche */
+  out.acquereurs.forEach(x=>{
+    if(!x) return;
+    if(!x.id) x.id = idCarnet();
+    (BOOKS.acquereurs.cols || []).forEach(c=>{
+      if(c[2] === "sep") return;
+      if(x[c[0]] === undefined) x[c[0]] = c[2] === "check" ? false : "";
+    });
+  });
+  /* les lettres du DPE ne se modifient pas : une base ancienne les reçoit,
+     une base qui les aurait perdues les retrouve */
+  if(!Array.isArray(out.classeDpe) || out.classeDpe.length !== 7)
+    out.classeDpe = LISTS_DEFAULT.classeDpe.slice();
   /* les champs syndic autrefois portés par la résidence deviennent une fiche à part */
   (out.residences||[]).forEach(x=>{
     /* « type AirBnB » est devenu « location saisonnière » : on reprend la valeur */
@@ -2763,7 +2850,17 @@ function majEnteteCarnet(champ, k, i){
   const h = champ.closest(".bookcard"); if(!h) return;
   const w = h.querySelector(".who"); if(!w) return;
   const r = (L[k] || [])[+i] || {};
-  w.textContent = r.nom || BOOKS[k].label;
+  w.textContent = libelleCarnet(k, r) || BOOKS[k].label;
+}
+/* « Prénom NOM » pour un acquéreur, qui se saisit en deux champs comme un
+   notaire ; le nom seul partout ailleurs. */
+function libelleAcquereur(r){
+  return [String((r || {}).prenom || "").trim(),
+          String((r || {}).nom || "").trim()].filter(Boolean).join(" ");
+}
+function libelleCarnet(k, r){
+  if(k === "acquereurs") return libelleAcquereur(r);
+  return String((r || {}).nom || "").trim();
 }
 /* Recompose le libellé pendant la frappe, et rien d'autre : « DUPON » puis
    « DUPONT » ne doivent pas réécrire les dossiers à chaque lettre. Le report
@@ -2867,6 +2964,10 @@ function tauxHono(){
    l'ordre de saisie dans l'onglet Listes, lui, n'est pas touché */
 function triFr(a,b){ return String(a).localeCompare(String(b), "fr",
   {sensitivity:"base", numeric:true}); }
+/* une saisie à plusieurs valeurs — « Maison, Appartement » — remise à plat */
+function listeMulti(v){
+  return String(v || "").split(",").map(x=> x.trim()).filter(Boolean);
+}
 function optionsFor(kind, path){
   if(kind.startsWith("list:")) return (L[kind.slice(5)]||[]).slice().sort(triFr);
   if(kind.startsWith("book:")) return (L[kind.slice(5)]||[]).map(x=>x.nom).sort(triFr);
@@ -2875,7 +2976,8 @@ function optionsFor(kind, path){
   return [];
 }
 /* listes fermées : pas de bouton + (la charge des honoraires n'a que deux valeurs) */
-const SANS_AJOUT = ["list:chargeHono","list:baseHono","list:coteHono"];
+const SANS_AJOUT = ["list:chargeHono","list:baseHono","list:coteHono",
+                    "list:classeDpe"];
 
 /* grp relie pays / cp / ville d'une même adresse */
 function control(path,kind,grp){
@@ -3051,6 +3153,20 @@ function controlBase(path,kind,v,grp,attr){
       (v ? `<button type="button" class="xbtn sup" data-bookportraitdel="${path}"
               >Retirer</button>` : "") + `</div>`;
   }
+  /* ------------------------------------------------- plusieurs réponses ----
+     Un acquéreur cherche « une maison OU un appartement ». Tapé à la main,
+     cela ne se rapproche de rien : il faut des valeurs arrêtées, prises dans
+     la liste. Les cases sont donc celles de la liste, et la fiche garde leurs
+     intitulés séparés par des virgules — lisible à l'œil, et exploitable. */
+  if(kind.startsWith("multi:")){
+    const choix = (L[kind.slice(6)] || []).slice().sort(triFr);
+    const pris = listeMulti(v);
+    if(!choix.length) return `<span class="muted">Liste vide.</span>`;
+    return `<div class="multibox">` + choix.map(o=>
+      `<label class="chkline"><input type="checkbox" data-bmulti="${esc(path)}"` +
+      ` value="${esc(o)}"${pris.indexOf(o) >= 0 ? " checked" : ""}>` +
+      `<span>${esc(o)}</span></label>`).join("") + `</div>`;
+  }
   if(kind==="cp")    return `<input type="text" ${a} value="${esc(v)}" inputmode="numeric"
       data-grp="${grp}" data-role="cp" list="dl-${grp}-cp" autocomplete="off">
       <datalist id="dl-${grp}-cp"></datalist>`;
@@ -3162,6 +3278,11 @@ const SCHEMA_GENERAL = [
    ["dates.butoirComp","Date butoir compromis","echeance","",null, phaseDates],
    ["dates.acte","Date de l'acte authentique","date","",null, phaseDates],
    ["@annul","","annul","",null, venteEnCours]
+ ]},
+ /* qui, dans le fichier des acquéreurs, cherche ce bien-là — le
+    rapprochement pris par l'autre bout */
+ {col:1,t:"Acquéreurs pour ce bien",n:"",id:"cardAcqs",cle:"acqs",f:[
+   ["@acqs","","acqs"]
  ]},
  {col:1,t:"Mobilier",n:"6",cle:"mobilier",f:[
    ["mobilier.liste","Liste de meubles","area"],
@@ -3280,6 +3401,7 @@ function lignesSection(sec){
     if(kind==="courbe") return courbePrix();
     if(kind==="annul") return boutonAnnulation();
     if(kind==="annuls") return carteAnnulations();
+    if(kind==="acqs") return carteAcquereursBien();
     if(kind==="recap"){
       const [txt,empty] = recapValue(path);
       return `<div class="recap${empty?" empty":""}" data-recap="${path}">${esc(txt)}</div>`;
@@ -3313,6 +3435,10 @@ function renderSchema(schema, target){
    ouvre sa section dans une fenêtre, où la saisie se fait au calme.
    ===================================================================== */
 const ICG = {
+  acqs:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/>
+    <path d="M3.5 19.5c.6-3 2.8-4.6 5.5-4.6 1.1 0 2.1.3 3 .8"/>
+    <circle cx="16.5" cy="15.5" r="3.4"/><path d="M19 18l2.3 2.3"/></svg>`,
   bien:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
     stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/>
     <path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/></svg>`,
@@ -3425,6 +3551,8 @@ const TUILES_GENERAL = [
   {cle:"dates",    titre:"Dates clés"},
   {cle:"suivi",    titre:"Suivi du dossier"},
   {cle:"copro",    titre:"Infos sur copropriété", si:coproRenseigne},
+  {cle:"acqs",     titre:"Acquéreurs pour ce bien",
+   si:()=> acquereursPourBien().length > 0},
   {cle:"mobilier", titre:"Mobilier"},
   {cle:"annulees", titre:"Ventes annulées", si:()=> (D.annulations || []).length > 0}
 ];
@@ -3485,6 +3613,12 @@ function lignesTuile(cle){
       !t);
     l("Document annexe", D.mobilier.annexe === "OUI" ? "oui" : "non", D.mobilier.annexe !== "OUI");
   }
+  if(cle === "acqs"){
+    const list = acquereursPourBien();
+    list.slice(0, 4).forEach(x=>
+      l(x.nom, x.ecarts.length ? x.ecarts[0] : "tous ses critères", x.ecarts.length > 0));
+    if(!list.length) l("Personne", "pour l'instant", true);
+  }
   if(cle === "annulees"){
     const a = (D.annulations || []);
     const der = a[a.length - 1] || {};
@@ -3532,6 +3666,13 @@ function piedTuile(cle){
       .filter(Boolean).filter((x,i,t)=> t.indexOf(x) === i).length;
     return n ? `<b>${n}</b> négociateur${n > 1 ? "s" : ""} sur ce dossier`
              : "Aucun négociateur désigné.";
+  }
+  if(cle === "acqs"){
+    const list = acquereursPourBien();
+    const net = list.filter(x=> !x.ecarts.length).length;
+    if(!list.length) return "Aucune recherche en cours ne porte sur ce bien.";
+    return `<b>${list.length}</b> recherche${list.length > 1 ? "s" : ""} en cours` +
+      (net ? ` · <b>${net}</b> sans réserve` : " · toutes avec un écart");
   }
   if(cle === "mobilier") return "Repris tel quel sur le dossier de vente.";
   if(cle === "annulees") return "Les dates et le client de chaque tentative.";
@@ -3581,7 +3722,9 @@ const SOUS_SECTION = {
   suivi:"Qui suit le vendeur, qui suit l'acquéreur, et l'intermédiaire éventuel.",
   copro:"Repris de la fiche de l'immeuble, dans l'onglet Immeubles.",
   mobilier:"Repris tel quel sur le dossier de vente.",
-  annulees:"Chaque processus interrompu garde ses dates, son client et sa note."
+  annulees:"Chaque processus interrompu garde ses dates, son client et sa note.",
+  acqs:"Les recherches en cours de votre fichier d'acquéreurs qui portent sur ce bien, " +
+       "avec ce qui ne colle pas tout à fait."
 };
 function ouvrirSection(cle){
   const sec = SCHEMA_GENERAL.find(x=> x.cle === cle);
@@ -4987,6 +5130,11 @@ function empreinte(s){
   return ("00000" + h.toString(36)).slice(-6);
 }
 function pidDepuis(nom){ return nom ? "pe" + empreinte(nom) : ""; }
+/* identifiant d'une fiche de carnet : l'horloge et un grain de hasard, pour
+   que deux appareils qui ajoutent une fiche en même temps n'en fassent pas une */
+function idCarnet(){
+  return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
 function estPid(s){ return /^pe[0-9a-z]{6}$/.test(String(s || "")); }
 
 /* L'identifiant d'une personne, qu'elle en porte déjà un ou non. */
@@ -5469,13 +5617,14 @@ function ficheCarnet(k, r, i, apres, sansEntete){
     return `<div class="pf${w==="wide"?" wide":""}${off?" off":""}">` +
            `<label>${esc(lab)}</label>${h}</div>`;
   }).join("");
+  const lib = libelleCarnet(k, r);
   return `<div class="bookcard${sansEntete ? " nue" : ""}" id="bk_${esc(k)}_${i}">${
     sansEntete ? "" : `<header>
-    <span class="who">${esc(r.nom || (b.label+" "+(i+1)))}</span>
-    ${k === "residences" && r.nom ? boutonImmeuble(r.nom, "Ses dossiers") : ""}
-    ${r.nom && k !== "residences" ? boutonCarte("carnet:" + k + ":" + i, r.nom) : ""}
-    ${r.nom ? trombone(k === "residences" ? sujetImmeuble(r.nom)
-                                          : sujetPersonne(r), "Pièces") : ""}
+    <span class="who">${esc(lib || (b.label+" "+(i+1)))}</span>
+    ${k === "residences" && lib ? boutonImmeuble(lib, "Ses dossiers") : ""}
+    ${lib && k !== "residences" ? boutonCarte("carnet:" + k + ":" + i, lib) : ""}
+    ${lib ? trombone(k === "residences" ? sujetImmeuble(lib)
+                                        : sujetPersonne(r), "Pièces") : ""}
     <button class="xbtn" data-bookdel="${k}:${i}">Supprimer</button></header>`}
     <div class="pgrid">${fields}</div>${apres ? apres(r, i) : ""}</div>`;
 }
@@ -5788,7 +5937,8 @@ function renderImmeubles(){
    saisis dans les dossiers : chercher une personne ne doit pas dépendre de
    l'endroit où on l'a d'abord écrite.
    ===================================================================== */
-const CARNETS_REP = ["notaires","clercs","syndics","negociateurs","diagnostiqueurs","banques"];
+const CARNETS_REP = ["acquereurs","notaires","clercs","syndics","negociateurs",
+                     "diagnostiqueurs","banques"];
 let REP_Q = "";
 function renderRepertoire(){
   /* les parties des dossiers, qui n'ont pas de fiche au carnet */
@@ -5814,13 +5964,15 @@ function renderRepertoire(){
   /* puis les carnets, filtrés par la même recherche */
   const mots = fold(REP_Q).split(/\s+/).filter(Boolean);
   $("#repBody").innerHTML = CARNETS_REP.map(k=>{
-    if(!mots.length) return blocCarnet(k);
+    if(!mots.length)
+      return blocCarnet(k, k === "acquereurs" ? {apres:apresFicheAcq} : null);
     const gardes = (L[k] || []).map((r,i)=>({r,i}))
       .filter(x=> mots.every(m=> texteFiche(k, x.r).includes(m)));
     if(!gardes.length) return "";
+    const ap = k === "acquereurs" ? apresFicheAcq : null;
     return `<div class="card">
       <h2>${esc(BOOKS[k].title)} <span class="cnt">${gardes.length}</span></h2>
-      <div class="body">${gardes.map(x=> ficheCarnet(k, x.r, x.i)).join("")}</div></div>`;
+      <div class="body">${gardes.map(x=> ficheCarnet(k, x.r, x.i, ap)).join("")}</div></div>`;
   }).join("") || `<p class="muted">Aucune fiche de carnet ne correspond à « ${
     esc(REP_Q)} ».</p>`;
   const bn = $("#btnReconstNot");
@@ -7738,6 +7890,381 @@ function carteIncident(e){
   </div></div>`;
 }
 
+/* =====================================================================
+   RAPPROCHEMENT — LES ACQUÉREURS ET LE PORTEFEUILLE
+   ---------------------------------------------------------------------
+   Le carnet des acquéreurs dit ce que chacun cherche ; le portefeuille dit
+   ce qu'il y a à vendre. Le rapprochement se fait tout seul.
+
+   Il ne se contente pas du oui ou non. Un bien qui dépasse le budget de
+   8 000 €, ou qui n'a qu'une chambre de moins, c'est souvent LE bien : un
+   filtre strict le ferait disparaître sans rien dire, alors que c'est au
+   négociateur d'en décider. Chaque écart est donc nommé en clair — « dépasse
+   le budget de 8 000 € (3 %) », « une chambre de moins » — et les biens sont
+   classés du plus proche au plus loin de la demande. Au-delà d'un certain
+   total d'écarts, le bien sort : ce n'est plus « presque ».
+
+   Deux critères, eux, ne se discutent pas : le TYPE de bien et la COMMUNE.
+   Qui cherche une maison ne veut pas d'un garage, et une commune voisine
+   n'est pas la commune demandée. Laissés vides, ils ne filtrent rien — c'est
+   ainsi qu'on cherche « partout » ou « tous types ».
+
+   Rien n'est enregistré : tout se recalcule à chaque affichage, de sorte
+   qu'un prix modifié ou une fiche complétée se voit aussitôt. Seule
+   exception, le registre des rapprochements déjà vus, qui ne sert qu'à poser
+   la pastille « nouveau » et reste sur ce poste.
+   ===================================================================== */
+const LS_RAPPRO = "mi_rappro_v1";
+const RAPPRO_SEUIL = 80;            /* au-delà, ce n'est plus « presque » */
+const DPE_RANG = {A:1, B:2, C:3, D:4, E:5, F:6, G:7};
+const DPE_LETTRE = ["", "A", "B", "C", "D", "E", "F", "G"];
+/* ce que « pas de travaux lourds » écarte : le second est rédhibitoire */
+const ETAT_RAFRAICHIR = "À rénover";
+const ETAT_GROS = "Gros travaux à prévoir";
+
+/* un étage en nombre : « RDC », « rez-de-chaussée », « 3 », « 3e » */
+function etageNombre(v){
+  const t = String(v || "").trim();
+  if(!t) return null;
+  if(/rdc|rez/i.test(t)) return 0;
+  const n = parseInt(t, 10);
+  return isFinite(n) ? n : null;
+}
+function etageMot(n){
+  return n === 0 ? "en rez-de-chaussée"
+       : "au " + (n === 1 ? "1er" : n + "e") + " étage";
+}
+
+/* --------------------------------------------- ce qu'un bien a à offrir ---
+   Lu sur le dossier ET sur la fiche de son immeuble : l'ascenseur et le
+   parking collectif appartiennent à l'immeuble, pas au lot. */
+function critBien(d){
+  const b = d.bien || {}, det = d.detail || {};
+  const r = book("residences", b.residence);
+  const dpe = (d.diags || []).filter(x=> x.nom === "DPE")[0] || {};
+  const oui = k => det[k] === "OUI";
+  const surf = num(det.surface);
+  return {
+    id: d.id,
+    mandat: (d.mandat || {}).num || "",
+    type: b.type === "Autre" ? (b.typeAutre || "Autre") : (b.type || ""),
+    ville: b.ville || "",
+    adresse: lotDe(d),
+    fai: num((d.prix || {}).fai),
+    /* à défaut de surface habitable, la loi Carrez dit la même chose */
+    surface: surf === null ? num(det.carrez) : surf,
+    terrain: num(det.terrain),
+    pieces: num(det.pieces),
+    chambres: num(det.chambres),
+    etage: etageNombre(det.etage),
+    ascenseur: r.ascenseur === "OUI",
+    exterieur: oui("terrasse") || oui("balcon") || oui("jardin"),
+    stationnement: oui("garage") || oui("parking") || r.parkingColl === "OUI",
+    etat: det.etat || "",
+    dpe: String(dpe.dpeEnergie || "").trim().toUpperCase()
+  };
+}
+/* ------------------------------------------- ce qu'un acquéreur demande --- */
+function critAcq(r){
+  const a = r || {};
+  return {
+    budget: num(a.budget),
+    types: listeMulti(a.types),
+    communes: listeMulti(a.communes),
+    surfaceMin: num(a.surfaceMin),
+    terrainMin: num(a.terrainMin),
+    chambresMin: num(a.chambresMin),
+    piecesMin: num(a.piecesMin),
+    exterieur: !!a.exterieur,
+    stationnement: !!a.stationnement,
+    ascenseurOui: !!a.ascenseurOui,
+    /* l'étage maximum n'a de sens que si l'on a dit vouloir le limiter */
+    etageMax: a.ascenseurNon ? num(a.etageMax) : null,
+    travauxNon: !!a.travauxNon,
+    dpeMin: DPE_RANG[String(a.dpeMin || "").trim().toUpperCase()] || null
+  };
+}
+/* Une fiche sans critère ne se rapproche de rien : on ne va pas proposer tout
+   le portefeuille à qui n'a rien dit de ce qu'il cherche. */
+function rechercheRenseignee(c){
+  return c.budget !== null || c.types.length > 0 || c.communes.length > 0 ||
+         c.surfaceMin !== null || c.terrainMin !== null ||
+         c.chambresMin !== null || c.piecesMin !== null;
+}
+/* ----------------------------------------------------- la comparaison -----
+   Retourne null si le bien est écarté, sinon les écarts et ce qu'ils coûtent. */
+function comparerAcqBien(c, o){
+  const ec = [];
+  let pts = 0;
+  const ecart = (p, txt)=>{ pts += p; ec.push(txt); };
+
+  /* 1. le type et la commune : pas de « presque » */
+  if(c.types.length && o.type &&
+     !c.types.some(t=> fold(t) === fold(o.type))) return null;
+  if(c.communes.length && o.ville &&
+     !c.communes.some(v=> fold(v) === fold(o.ville))) return null;
+
+  /* 2. le budget */
+  if(c.budget !== null && c.budget > 0 && o.fai !== null && o.fai > c.budget){
+    const d = o.fai - c.budget, part = d / c.budget;
+    if(part > 0.15) return null;
+    ecart(part > 0.07 ? 45 : 25,
+      "dépasse le budget de " + eur(d) + " (" + Math.round(part * 100) + " %)");
+  }
+  /* 3. les surfaces */
+  if(c.surfaceMin !== null && c.surfaceMin > 0 &&
+     o.surface !== null && o.surface < c.surfaceMin){
+    const d = c.surfaceMin - o.surface, part = d / c.surfaceMin;
+    if(part > 0.20) return null;
+    ecart(part > 0.10 ? 40 : 20, m2txt(d) + " de moins que la surface demandée");
+  }
+  if(c.terrainMin !== null && c.terrainMin > 0 &&
+     o.terrain !== null && o.terrain < c.terrainMin){
+    const d = c.terrainMin - o.terrain, part = d / c.terrainMin;
+    if(part > 0.25) return null;
+    ecart(part > 0.12 ? 40 : 20, m2txt(d) + " de terrain en moins");
+  }
+  /* 4. les comptes de pièces : une de moins se discute, deux non */
+  if(c.chambresMin !== null && o.chambres !== null && o.chambres < c.chambresMin){
+    if(c.chambresMin - o.chambres > 1) return null;
+    ecart(30, "une chambre de moins");
+  }
+  if(c.piecesMin !== null && o.pieces !== null && o.pieces < c.piecesMin){
+    if(c.piecesMin - o.pieces > 1) return null;
+    ecart(25, "une pièce de moins");
+  }
+  /* 5. le confort */
+  if(c.exterieur && !o.exterieur) ecart(35, "ni terrasse, ni balcon, ni jardin");
+  if(c.stationnement && !o.stationnement) ecart(30, "pas de garage ni de parking");
+  if(c.ascenseurOui && !o.ascenseur) ecart(45, "pas d'ascenseur");
+  if(c.etageMax !== null && o.etage !== null && !o.ascenseur && o.etage > c.etageMax){
+    if(o.etage - c.etageMax > 1) return null;
+    ecart(40, etageMot(o.etage) + " sans ascenseur");
+  }
+  if(c.travauxNon && o.etat === ETAT_GROS) return null;
+  if(c.travauxNon && o.etat === ETAT_RAFRAICHIR) ecart(35, "à rénover");
+  /* 6. le DPE */
+  if(c.dpeMin !== null && o.dpe && DPE_RANG[o.dpe]){
+    const d = DPE_RANG[o.dpe] - c.dpeMin;
+    if(d > 2) return null;
+    if(d > 0) ecart(d === 1 ? 25 : 50,
+      "DPE " + o.dpe + " au lieu de " + DPE_LETTRE[c.dpeMin] + " demandé");
+  }
+  if(pts > RAPPRO_SEUIL) return null;
+  return {pts:pts, ecarts:ec};
+}
+/* Le portefeuille : les mandats en vente, lus tels qu'ils sont à l'écran —
+   le dossier ouvert peut porter une saisie que l'enregistrement différé n'a
+   pas encore écrite. */
+function portefeuilleRappro(){
+  return dossiersVivants().filter(d=>
+    d && d.mandat && d.mandat.num && stade(d).cls === "vente");
+}
+function rapprochementsDe(r){
+  const c = critAcq(r);
+  if(!rechercheRenseignee(c)) return {vide:true, biens:[]};
+  const out = [];
+  portefeuilleRappro().forEach(d=>{
+    const o = critBien(d);
+    const v = comparerAcqBien(c, o);
+    if(!v) return;
+    out.push({d:d, o:o, pts:v.pts, ecarts:v.ecarts});
+  });
+  /* du plus proche au plus loin ; à écarts égaux, le moins cher d'abord */
+  out.sort((a,b)=> a.pts - b.pts ||
+    ((a.o.fai === null ? Infinity : a.o.fai) - (b.o.fai === null ? Infinity : b.o.fai)));
+  return {vide:false, biens:out};
+}
+/* ------------------------------------- le registre des rapprochements vus -
+   Il ne sert qu'à la pastille « nouveau ». Il reste sur ce poste : ce que
+   l'on a vu sur la tablette n'a pas à être tenu pour vu sur l'ordinateur. */
+function rapproVus(){
+  try{ return JSON.parse(localStorage.getItem(LS_RAPPRO) || "{}") || {}; }
+  catch(e){ return {}; }
+}
+function cleRappro(r, d){
+  return ((r || {}).id || libelleAcquereur(r)) + "|" + ((d || {}).id || "");
+}
+function noterRapproVus(cles){
+  const v = rapproVus();
+  cles.forEach(k=> v[k] = 1);
+  try{ localStorage.setItem(LS_RAPPRO, JSON.stringify(v)); }catch(e){}
+}
+/* une recherche close ne remonte plus : la case « Recherche en cours » est
+   ce qui met une fiche en sommeil sans l'effacer */
+function acquereursActifs(){
+  return (L.acquereurs || []).map((r,i)=>({r:r, i:i}))
+    .filter(x=> x.r && libelleAcquereur(x.r) &&
+                (x.r.actif === undefined || !!x.r.actif));
+}
+function tousLesRapprochements(){
+  const vus = rapproVus();
+  const out = [];
+  acquereursActifs().forEach(x=>{
+    const res = rapprochementsDe(x.r);
+    if(!res.biens.length) return;
+    res.biens.forEach(b=> b.neuf = !vus[cleRappro(x.r, b.d)]);
+    out.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), biens:res.biens,
+              neufs:res.biens.filter(b=> b.neuf).length});
+  });
+  /* les recherches qui ont du nouveau passent devant */
+  out.sort((a,b)=> b.neufs - a.neufs || triFr(a.nom, b.nom));
+  return out;
+}
+/* ------------------------------------------------------- mise en mots ----- */
+function resumeRecherche(r){
+  const c = critAcq(r), b = [];
+  if(c.types.length) b.push(c.types.join(", "));
+  if(c.communes.length) b.push(c.communes.join(", "));
+  if(c.budget !== null) b.push("jusqu'à " + eur(c.budget));
+  if(c.surfaceMin !== null) b.push("à partir de " + m2txt(c.surfaceMin));
+  if(c.terrainMin !== null) b.push("terrain " + m2txt(c.terrainMin) + " et plus");
+  if(c.piecesMin !== null) b.push(c.piecesMin + " pièce" + (c.piecesMin > 1 ? "s" : "") + " et plus");
+  if(c.chambresMin !== null) b.push(c.chambresMin + " chambre" + (c.chambresMin > 1 ? "s" : "") + " et plus");
+  if(c.exterieur) b.push("extérieur");
+  if(c.stationnement) b.push("stationnement");
+  if(c.ascenseurOui) b.push("ascenseur");
+  if(c.etageMax !== null) b.push("étage " + c.etageMax + " maximum sans ascenseur");
+  if(c.travauxNon) b.push("sans travaux lourds");
+  if(c.dpeMin !== null) b.push("DPE " + DPE_LETTRE[c.dpeMin] + " au mieux");
+  return b.join("  ·  ");
+}
+function resumeBien(o){
+  const b = [];
+  if(o.surface !== null) b.push(m2txt(o.surface));
+  if(o.pieces !== null) b.push(o.pieces + " pièce" + (o.pieces > 1 ? "s" : ""));
+  if(o.chambres !== null) b.push(o.chambres + " ch.");
+  if(o.terrain !== null) b.push("terrain " + m2txt(o.terrain));
+  if(o.etage !== null) b.push(etageMot(o.etage));
+  if(o.dpe) b.push("DPE " + o.dpe);
+  return b.join("  ·  ");
+}
+/* ------------------------------------------------------------- affichage --- */
+function ligneRapproBien(b){
+  const o = b.o;
+  return `<div class="raprow${b.neuf ? " neuf" : ""}">
+    <span class="rapqui">${esc([o.type, o.ville].filter(Boolean).join(" — ") || "Bien")}
+      <em>mandat n° ${esc(o.mandat || "—")}${
+        o.adresse ? " · " + esc(o.adresse) : ""}</em></span>
+    <span class="rapquoi">${esc(resumeBien(o)) || "—"}</span>
+    <span class="rapprix">${o.fai === null ? "—" : esc(eur(o.fai))}</span>
+    <span class="rapec">${b.ecarts.length
+      ? b.ecarts.map(t=>`<span class="rapgap">${esc(t)}</span>`).join("")
+      : `<span class="rapok">tous les critères</span>`}</span>
+    <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></div>`;
+}
+function blocRapproAcq(r, i){
+  let res;
+  try{ res = rapprochementsDe(r); }
+  catch(e){ if(window.console) console.error(e); return ""; }
+  if(res.vide) return `<p class="muted" style="margin:10px 0 0">Aucun critère saisi :
+    renseignez au moins le budget, le type de bien ou la commune pour que le
+    rapprochement se fasse.</p>`;
+  if(!res.biens.length) return `<p class="muted" style="margin:10px 0 0">Aucun bien du
+    portefeuille ne correspond à cette recherche.</p>`;
+  const vus = rapproVus();
+  res.biens.forEach(b=> b.neuf = !vus[cleRappro(r, b.d)]);
+  return `<div class="rapacq nue"><h4>Biens qui correspondent
+    <span class="cnt">${res.biens.length}</span></h4>
+    ${res.biens.map(ligneRapproBien).join("")}</div>`;
+}
+/* la zone est redessinée seule quand on modifie un critère : la fiche fait
+   deux écrans, on ne va pas y perdre sa place à chaque frappe */
+function apresFicheAcq(r, i){
+  return `<div class="rapzone">${blocRapproAcq(r, i)}</div>`;
+}
+function majRapproFiche(k, i){
+  if(k !== "acquereurs") return;
+  const h = document.getElementById("bk_acquereurs_" + i);
+  const z = h ? h.querySelector(".rapzone") : null;
+  if(z) z.innerHTML = blocRapproAcq((L.acquereurs || [])[+i], +i);
+}
+/* ------------------------------------------------------- le sens inverse -
+   La même mécanique, lue par l'autre bout : non plus « quels biens pour cet
+   acquéreur ? », mais « qui cherche CE bien ? ». C'est la question qu'on se
+   pose en rentrant d'une visite, ou le jour où l'on prend le mandat.
+
+   Un bien qui n'est plus en vente n'a pas d'acquéreur à chercher : sous offre
+   ou sous compromis, la liste ne s'affiche pas. */
+function acquereursPourBien(d){
+  const dd = d || D;
+  if(!dd || !(dd.mandat || {}).num) return [];
+  if(stade(dd).cls !== "vente") return [];
+  let o;
+  try{ o = critBien(dd); }
+  catch(e){ if(window.console) console.error(e); return []; }
+  const out = [];
+  acquereursActifs().forEach(x=>{
+    const c = critAcq(x.r);
+    if(!rechercheRenseignee(c)) return;
+    const v = comparerAcqBien(c, o);
+    if(!v) return;
+    out.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), pts:v.pts, ecarts:v.ecarts});
+  });
+  out.sort((a,b)=> a.pts - b.pts || triFr(a.nom, b.nom));
+  return out;
+}
+function ligneAcqPourBien(x){
+  const r = x.r;
+  const co = [r.tel, r.email].filter(Boolean).join("  ·  ");
+  return `<div class="raprow">
+    <span class="rapqui">${esc(x.nom)}
+      <em>${esc(co || "aucune coordonnée saisie")}</em></span>
+    <span class="rapquoi">${esc(resumeRecherche(r)) || "—"}</span>
+    <span class="rapprix">${r.contact
+      ? "vu le " + esc(fdate(r.contact)) : `<span class="muted">jamais vu</span>`}</span>
+    <span class="rapec">${x.ecarts.length
+      ? x.ecarts.map(t=>`<span class="rapgap">${esc(t)}</span>`).join("")
+      : `<span class="rapok">tous ses critères</span>`}</span>
+    <span class="rapfin">${boutonCarte("carnet:acquereurs:" + x.i, x.nom)}
+      <button type="button" class="xbtn" data-ofiche="acquereurs:${x.i}"
+        >Fiche</button></span></div>`;
+}
+function carteAcquereursBien(){
+  const list = acquereursPourBien();
+  if(!list.length) return `<p class="muted" style="margin:0">Aucune recherche en cours de
+    votre fichier ne porte sur ce bien.</p>`;
+  return `<div class="rapacq nue" style="margin-top:0">
+    ${list.map(ligneAcqPourBien).join("")}</div>`;
+}
+
+/* La carte d'Aujourd'hui. Vide, elle ne s'affiche pas : une carte qui ne dit
+   rien n'a rien à faire sur la page que l'on ouvre le matin. */
+function carteRapprochements(){
+  let tout;
+  try{ tout = tousLesRapprochements(); }
+  catch(e){ if(window.console) console.error(e); return ""; }
+  if(!tout.length) return "";
+  const neufs = tout.reduce((n,x)=> n + x.neufs, 0);
+  /* s'il y a du nouveau, la carte s'ouvre d'elle-même la première fois */
+  if(neufs && PLIS["auj_rappro"] === undefined) PLIS["auj_rappro"] = false;
+  const plie = estPlie("auj_rappro", false);
+  return `<div class="card" id="carteRappro">
+    <h2 class="pliable" data-pli="auj_rappro">${chevron(plie)}Acquéreurs et biens en vente
+      <span class="cnt">${tout.length}</span>${neufs
+        ? ` <span class="rapneuf">${neufs} nouveau${neufs > 1 ? "x" : ""}</span>` : ""}</h2>
+    <div class="body plibody"${plie ? ' style="display:none"' : ''}>
+      ${tout.map(x=>`<div class="rapacq">
+        <h4>${esc(x.nom)} <span class="cnt">${x.biens.length}</span>${x.neufs
+          ? ` <span class="rapneuf">${x.neufs} nouveau${x.neufs > 1 ? "x" : ""}</span>` : ""}
+          <em>${esc(resumeRecherche(x.r))}</em></h4>
+        ${x.biens.map(ligneRapproBien).join("")}</div>`).join("")}
+      <div class="fbtns" style="margin-top:10px">
+        ${neufs ? `<button type="button" class="tbtn light" id="btnRapproVus"
+          >Marquer ces rapprochements comme vus</button>` : ""}
+        <button type="button" class="tbtn light" id="btnRapproRep"
+          >Ouvrir le carnet des acquéreurs</button></div>
+    </div></div>`;
+}
+function marquerRapproVus(){
+  const cles = [];
+  tousLesRapprochements().forEach(x=>
+    x.biens.forEach(b=> cles.push(cleRappro(x.r, b.d))));
+  noterRapproVus(cles);
+  renderAujourdhui();
+  toast("Rapprochements marqués comme vus");
+}
+
 function renderAujourdhui(){
   try{ construireAujourdhui(); }
   catch(e){
@@ -7857,6 +8384,7 @@ function construireAujourdhui(){
        c=>carteCamembert(c, "bien"), c=>carteCamembert(c, "mandat")]
         .map(f=> rang(AUJ_COTES.map(c=>f(c.k)).join(""))).join("")
     : rang(tuilesAlertes("g"), true) +
+      (carteRapprochements() ? rang(carteRapprochements(), true) : "") +
       rang(panneauStatuts("g"), true) +
       rang(`<div class="aujpied"><button type="button" class="xbtn" data-tir="rep">${
         ICONE_ANNEAU} Répartition par type de bien et de mandat</button></div>`, true);
@@ -7864,6 +8392,10 @@ function construireAujourdhui(){
     `<div id="aujGrille" class="${AUJ_DUO ? "duo" : "uni"}">` +
     (carteDatesDouteuses() ? rang(carteDatesDouteuses(), true) : "") +
     `${corps}</div>`;
+  const bv = $("#btnRapproVus");
+  if(bv) bv.onclick = marquerRapproVus;
+  const br = $("#btnRapproRep");
+  if(br) br.onclick = ()=>{ activerOnglet("repertoire"); };
   majTiroirAuj();
 }
 const ICONE_ANNEAU = `<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"
@@ -10020,6 +10552,11 @@ function carteDuCarnet(k, r){
           : k === "diagnostiqueurs" ? "Diagnostiqueur" : "",
       tels:[{num:r.tel}], emails:[r.email]});
   }
+  if(k === "acquereurs"){
+    return vcarte({nom:r.nom, prenom:r.prenom, fn:libelleAcquereur(r),
+      titre:"Acquéreur", adr, tels:[{num:r.tel, genre:"CELL"}], emails:[r.email],
+      note:resumeRecherche(r)});
+  }
   return vcarte({nom:r.nom, fn:r.nom, adr, tels:[{num:r.tel}], emails:[r.email]});
 }
 /* Une partie d'un dossier. On note au passage de quel mandat elle vient :
@@ -10060,8 +10597,9 @@ function enregistrerContact(cible){
   const m = String(cible || "").split(":");
   if(m[0] === "carnet"){
     const r = (L[m[1]] || [])[+m[2]];
-    if(!r || !r.nom){ toast("Fiche sans nom"); return; }
-    enregistrerCarte(carteDuCarnet(m[1], r), nomDeCarte(r.nom));
+    const lib = libelleCarnet(m[1], r);
+    if(!r || !lib){ toast("Fiche sans nom"); return; }
+    enregistrerCarte(carteDuCarnet(m[1], r), nomDeCarte(lib));
     toast("Carte de visite enregistrée");
     return;
   }
@@ -10198,6 +10736,7 @@ document.addEventListener("input", e=>{
     if(t.dataset.role === "cp" || t.dataset.role === "pays") refreshVilles(t.dataset.grp, true);
     if(k === "notaires" && (f === "prenom" || f === "patronyme")) majLibelleNotaire(+i);
     majEnteteCarnet(t, k, i);
+    majRapproFiche(k, i);
     rebuildSelects(); refreshCalcs(); renderPreview();
   }
   if(t.dataset.piece !== undefined){
@@ -10360,6 +10899,20 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("change", e=>{
   const t = e.target;
+  /* un groupe de cases écrit une seule valeur : on relit tout le groupe */
+  if(t.dataset && t.dataset.bmulti !== undefined){
+    const [k,i,f] = t.dataset.bmulti.split(":");
+    if(L[k] && L[k][+i]){
+      const pris = Array.from(document.querySelectorAll(
+        `[data-bmulti="${t.dataset.bmulti}"]`)).filter(x=> x.checked).map(x=> x.value);
+      L[k][+i][f] = pris.join(", ");
+      saveLists();
+      /* pas de redessin : les cases sont déjà dans l'état voulu, et la fiche
+         est souvent longue — on y perdrait sa place */
+      majRapproFiche(k, i);
+    }
+    return;
+  }
   if(t.dataset && t.dataset.bookchk !== undefined){
     const [k,i,f] = t.dataset.bookchk.split(":");
     L[k][+i][f] = t.checked;
@@ -10550,6 +11103,10 @@ document.addEventListener("click", e=>{
   }
   if(t.dataset.bookadd){ const k=t.dataset.bookadd;
     const row={}; BOOKS[k].cols.forEach(c=>row[c[0]] = c[2]==="pays" ? "France" : "");
+    /* une fiche dont le nom changera porte un identifiant propre : c'est lui,
+       et non le nom, qui la reconnaît lors de la fusion avec la base */
+    if(BOOKS[k].idStable) row.id = idCarnet();
+    Object.assign(row, BOOKS[k].defauts || {});
     (L[k]=L[k]||[]).push(row);
     /* la fiche neuve s'ouvre : on vient de la demander */
     if(k === "residences"){ PLIS["im_" + (L[k].length - 1)] = false; savePlis(); }
@@ -11532,13 +12089,21 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 9
+ * Base en ligne pour « Dossiers de vente »  —  version 10
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * Cette version 9 NE SORT PLUS DE CHEZ VOUS. Les deux relais vers
+ * Cette version 10 reconnaît une fiche de carnet à son IDENTIFIANT quand
+ * elle en porte un, et non plus à son seul nom. C'est ce qu'exige le
+ * nouveau fichier des acquéreurs : deux personnes peuvent s'appeler
+ * pareil et chercher deux biens différents, et aucune ne doit effacer
+ * l'autre quand deux appareils se retrouvent. Tout le reste est
+ * identique à la version 9 ; si vous ne tenez pas de fichier
+ * d'acquéreurs, la mise à jour ne change rien pour vous.
+ *
+ * La version 9 NE SORT PLUS DE CHEZ VOUS. Les deux relais vers
  * l'extérieur — la réécriture des annonces par Gemini (versions 4 et 5) et
  * la recherche d'une étude dans l'annuaire des entreprises (version 8) —
  * ont été retirés : à l'usage, ils ne rendaient pas le service attendu.
@@ -11725,7 +12290,10 @@ function ecrireBase(d) {
  *  des lignes une à une, si.
  */
 function cleEntreeGs(v) {
-  return (typeof v === 'string') ? v : String((v || {}).nom || '');
+  /* même règle que dans l'application : une fiche qui porte un identifiant
+     propre se reconnaît par lui — deux acquéreurs peuvent porter le même nom */
+  if (typeof v === 'string') return v;
+  return String((v || {}).id || (v || {}).nom || '');
 }
 function protegerCarnets(ancien, neuf) {
   try {
@@ -12208,7 +12776,7 @@ function portier(q, action) {
 function etatServeur(q) {
   const base = lireComptes();
   const c = base.comptes.length ? quiEst(base, q.jeton) : null;
-  return { ok: true, version: 9, comptes: base.comptes.length,
+  return { ok: true, version: 10, comptes: base.comptes.length,
            profil: c ? publicCompte(c) : null };
 }
 
@@ -12578,7 +13146,11 @@ function donneesLocales(){
    elle-même pour une liste de choix. C'est aussi ce que les dossiers
    retiennent — d'où l'importance de s'y tenir. */
 function cleEntree(v){
-  return typeof v === "string" ? v : String((v || {}).nom || "");
+  if(typeof v === "string") return v;
+  /* une fiche qui porte un identifiant propre se reconnaît par lui : deux
+     acquéreurs peuvent s'appeler pareil, et l'un ne doit pas effacer
+     l'autre à la fusion */
+  return String((v || {}).id || (v || {}).nom || "");
 }
 /* Une valeur sortie d'usine : celle que porte une installation neuve. */
 function entreeDUsine(carnet, v){
@@ -14037,6 +14609,35 @@ const AIDE = [
   "<b>Une étude</b> saisie à la place d'une personne — SCP, SELARL, Office, Étude — reste "+
   "d'un bloc dans le champ Nom et <b>ne reçoit pas de « Maître »</b> : on n'écrit pas "+
   "« Maître SCP DUPONT »."],
+ ["Le fichier des acquéreurs",
+  "Au <b>Répertoire</b>, le carnet <b>Acquéreurs à la recherche</b> tient une fiche par "+
+  "personne qui cherche : ses coordonnées, puis <b>ce qu'elle cherche</b> — budget "+
+  "maximum, types de biens (des cases, pas du texte libre), communes séparées par des "+
+  "virgules, surfaces et nombres de pièces minimum, puis ce qui compte aussi : extérieur, "+
+  "stationnement, ascenseur, étage maximum sans ascenseur, pas de travaux lourds, classe "+
+  "de DPE. La case <b>Recherche en cours</b> met une fiche en sommeil sans l'effacer."],
+ ["Le rapprochement avec le portefeuille",
+  "Dès qu'une fiche porte un critère, l'application la compare à <b>tous les mandats en "+
+  "vente</b> et affiche les biens qui correspondent, sous la fiche et sur <b>Aujourd'hui</b>. "+
+  "Elle ne se contente pas du oui ou non : un bien qui dépasse le budget de 8 000 € ou qui "+
+  "n'a qu'une chambre de moins reste proposé, avec l'écart dit en clair — "+
+  "« <i>dépasse le budget de 8 000 € (3 %)</i> », « <i>une chambre de moins</i> ». Les biens "+
+  "sont classés du plus proche au plus loin de la demande, et au-delà d'un certain cumul "+
+  "d'écarts ils ne sortent plus. "+
+  "Deux critères ne se discutent pas : le <b>type de bien</b> et la <b>commune</b> — "+
+  "laissés vides, ils ne filtrent rien, c'est ainsi qu'on cherche « tous types » ou "+
+  "« partout ». La pastille <b>nouveau</b> marque les rapprochements que vous n'avez pas "+
+  "encore vus ; le bouton au bas de la carte les passe tous en « vus ». Rien n'est "+
+  "enregistré : tout se recalcule, de sorte qu'un prix modifié se voit aussitôt."],
+ ["Qui cherche ce bien ? — depuis le dossier",
+  "Le rapprochement se lit aussi par l'autre bout. Sur l'onglet <b>Général</b> d'un mandat "+
+  "<b>en vente</b>, une tuile <b>Acquéreurs pour ce bien</b> apparaît dès qu'une recherche "+
+  "de votre fichier porte sur lui : elle nomme les personnes et dit, pour chacune, ce qui "+
+  "colle ou ce qui ne colle pas tout à fait. En l'ouvrant, vous avez leurs coordonnées, la "+
+  "date de votre dernier contact, le résumé de leur recherche, et deux boutons — "+
+  "<b>Contact</b> pour enregistrer la carte de visite, <b>Fiche</b> pour ouvrir la fiche au "+
+  "Répertoire. La tuile ne s'affiche pas sur un bien passé sous offre ou sous compromis : "+
+  "il n'y a plus d'acquéreur à lui chercher."],
  ["Aujourd'hui",
   "C'est la page sur laquelle l'application s'ouvre. Cinq blocs se suivent : dossiers en cours "+
   "par statut (le bouton « Voir » déplie la liste, prix et honoraires alignés sur les colonnes), "+
