@@ -1905,7 +1905,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 15 octobre 2026, 12 h 32">Dossiers de vente</div>
+  <div class="brand" title="Version du 15 octobre 2026, 13 h 05">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2116,7 +2116,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>15 octobre 2026, 12 h 32</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>15 octobre 2026, 13 h 05</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -13639,6 +13639,9 @@ function lireMandat(lignes, info){
 
 /* ============================= LA FENÊTRE DE VÉRIFICATION ============ */
 let MD_LU = null;
+/* le PDF ouvert : il ne sert pas qu'à être lu, il est RANGÉ dans le dossier
+   qu'il crée — voir rangerLeMandat */
+let MD_FICHIER = null;
 
 function mdChamp(cle, lab, val, etat, kind, options){
   const id = "md_" + cle.replace(/[^\w]/g, "_");
@@ -13803,7 +13806,9 @@ function renderMandatLu(){
        ${esc(stade(doublon).lib.toLowerCase())}. Créer ce dossier ferait un doublon.</p>` : "") +
     `<p class="mdnote">Tout est modifiable ici. <b>lu</b> : repris tel quel du mandat ·
        <b>déduit</b> : calculé ou deviné, à vérifier · <b>absent</b> : le mandat ne le dit
-       pas. Le dossier ne sera créé qu'au clic sur « Créer le dossier ».</p>
+       pas. Le dossier ne sera créé qu'au clic sur « Créer le dossier », et le <b>PDF du
+       mandat</b> sera rangé avec lui, dans les pièces de l'affaire — rubrique « Mandat &amp;
+       Admin ».</p>
 
     <div class="mdsect"><h4>Le mandat</h4><div class="mdgrid">
       ${ch("mandat.num", "Numéro de mandat", r.mandat.num)}
@@ -13985,7 +13990,7 @@ function ouvrirMandatLu(r, nomFichier){
   renderMandatLu();
   $("#mdBox").hidden = false;
 }
-function fermerMandatLu(){ $("#mdBox").hidden = true; MD_LU = null; }
+function fermerMandatLu(){ $("#mdBox").hidden = true; MD_LU = null; MD_FICHIER = null; }
 
 /* ce que la fenêtre contient au moment de valider : c'est cela qui fait foi,
    et non ce qui avait été lu */
@@ -13994,7 +13999,24 @@ function mdValeurs(){
   $$("#mdCorps [data-md]").forEach(el=> v[el.dataset.md] = mdNettoie(el.value));
   return v;
 }
-function creerDepuisMandat(){
+/* ------------------------------------------- le mandat se range tout seul
+   Le PDF qui a servi à créer le dossier EST une pièce de l'affaire : le
+   classer à la main juste après l'avoir ouvert serait le faire deux fois, et
+   c'est le genre de geste qu'on oublie. Il part donc dans les pièces de
+   l'affaire, rubrique « Mandat & Admin », sous le nom « Mandat n° 1104.pdf »
+   quand le numéro a été lu — et de là, tout seul, vers le Drive. */
+async function rangerLeMandat(fichier, numero){
+  if(!fichier) return null;
+  let f = fichier;
+  const voulu = numero ? "Mandat n° " + String(numero).trim() + ".pdf" : "";
+  if(voulu && voulu !== fichier.name){
+    try{ f = new File([fichier], voulu, {type: fichier.type || "application/pdf"}); }
+    catch(e){ f = fichier; }            /* un navigateur sans File() : tant pis */
+  }
+  try{ return await ajouterPiece(sujetDossier(D), f, "Mandat & Admin"); }
+  catch(e){ return null; }              /* le dossier est créé : il ne tombe pas pour ça */
+}
+async function creerDepuisMandat(){
   const v = mdValeurs();
   const num = v["mandat.num"] || "";
   if(num && doublonMandat(num) &&
@@ -14041,9 +14063,14 @@ function creerDepuisMandat(){
                      honoraires: d.prix.honoraires || "", note: "Prix au mandat"}];
 
   D = migrate(d);
+  const pdf = MD_FICHIER;
   fermerMandatLu();
   renderAll(); activerOnglet("general"); persist(true);
   toast("Dossier créé depuis le mandat");
+  /* le PDF rejoint les pièces de l'affaire, une fois le dossier posé : c'est
+     son identifiant qui donne le sujet, et le rangement du Drive */
+  const piece = await rangerLeMandat(pdf, d.mandat.num);
+  if(piece){ renderAll(); toast("Le mandat est rangé dans les pièces de l'affaire"); }
 }
 
 /* ------------------------------------------------------- l'ouverture */
@@ -14064,6 +14091,7 @@ async function ouvrirFichierMandat(fichier){
           Créez le dossier à la main avec « Nouveau ».`});
       return;
     }
+    MD_FICHIER = fichier;
     ouvrirMandatLu(r, fichier.name);
   }catch(e){
     popup({genre:"erreur", titre:"Lecture impossible",
@@ -16561,6 +16589,9 @@ const AIDE = [
   "mandat. La désignation du bien telle que le mandat la rédige n'est <b>pas reprise</b> "+
   "dans le dossier : elle ne sert qu'à deviner le type de bien, et la fenêtre vous montre "+
   "sur quelle phrase elle s'est fondée. "+
+  "Le <b>PDF du mandat lui-même est rangé</b> avec le dossier qu'il crée : il rejoint les "+
+  "pièces de l'affaire, rubrique « Mandat &amp; Admin », sous le nom « Mandat n° 1104.pdf », "+
+  "et part de là tout seul vers votre Drive. Vous n'avez pas à le classer après coup. "+
   "La lecture est calée sur le modèle de mandat de l'agence (Modelo). Un mandat "+
   "<b>scanné</b> n'est qu'une image : il ne contient aucun texte et ne peut pas être lu — "+
   "l'application le dit plutôt que de remplir n'importe quoi."],
