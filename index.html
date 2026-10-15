@@ -1017,17 +1017,15 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .mdetat.absent{background:var(--line-2);color:var(--ink-3)}
 .mdetat.repris{background:#e4ecfb;color:#1e40af}
 .mdetat.saisi{background:#ede4fb;color:#5b21b6}
-/* les fiches de la base qui ressemblent au vendeur lu */
-.mddup{background:#fff8e6;color:#7a4c07}
-.mddup b{color:#6b3f05}
-.mdrepris{background:#e4ecfb;color:#1e3a8a}
-.mdrepris b{color:#172f6b}
-.mddupl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:9px;
-  background:#fff;border:1px solid #f0dcb0;border-radius:8px;padding:8px 10px}
-.mddupq{flex:1;min-width:190px;line-height:1.35}
-.mddupq span{display:block;font-size:11.5px;color:var(--ink-3)}
-.mddupq em{font-style:normal;font-size:11px;font-weight:700;color:#8a5a08}
-.mddupb{display:flex;gap:7px;flex-wrap:wrap}
+/* deux boutons francs, sur fond clair : .tbtn est fait pour le bandeau sombre
+   et s'y perdait, blanc sur blanc */
+.mddupb button{font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;
+  border-radius:8px;cursor:pointer;white-space:nowrap;line-height:1.2}
+.mddupb .dupoui{background:var(--navy);color:#fff;border:1px solid var(--navy)}
+.mddupb .dupoui:hover{background:#122a56}
+.mddupb .dupnon{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+.mddupb .dupnon:hover{background:#f1f4f9;color:var(--ink)}
+.tbtn.mini{padding:4px 10px;font-size:12.5px}
 /* un mandat qui prend la suite d'un autre */
 .renq{width:100%;background:var(--field);border:1px solid var(--field-line);
   border-radius:var(--radius-sm,8px);padding:8px 11px;font-size:13.5px}
@@ -1064,6 +1062,17 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .mdnote b{color:var(--navy)}
 .mdalerte{background:#fdeaea;color:#9c1c1c}
 .mdalerte b{color:#7f1414}
+/* les fiches de la base qui ressemblent au vendeur lu */
+.mddup{background:#fff8e6;color:#7a4c07}
+.mddup b{color:#6b3f05}
+.mdrepris{background:#e4ecfb;color:#1e3a8a}
+.mdrepris b{color:#172f6b}
+.mddupl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:9px;
+  background:#fff;border:1px solid #f0dcb0;border-radius:8px;padding:8px 10px}
+.mddupq{flex:1;min-width:190px;line-height:1.35}
+.mddupq span{display:block;font-size:11.5px;color:var(--ink-3)}
+.mddupq em{font-style:normal;font-size:11px;font-weight:700;color:#8a5a08}
+.mddupb{display:flex;gap:7px;flex-wrap:wrap}
 .mdcad{width:100%;border-collapse:collapse;font-size:12.5px}
 .mdcad th,.mdcad td{border:1px solid var(--line-2);padding:5px 9px;text-align:left}
 .mdcad th{background:var(--accent-soft);color:var(--navy);font-size:11px;font-weight:600}
@@ -1896,7 +1905,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 15 octobre 2026, 12 h 00">Dossiers de vente</div>
+  <div class="brand" title="Version du 15 octobre 2026, 12 h 32">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2107,7 +2116,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>15 octobre 2026, 12 h 00</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>15 octobre 2026, 12 h 32</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -13448,6 +13457,62 @@ function mdTypeBien(txt){
     if(MD_TYPES[k][0].test(txt)) return MD_TYPES[k][1];
   return "";
 }
+/* ------------------------------------------- les parcelles cadastrales
+   Le mandat les présente en TABLEAU, sous une ligne d'en-têtes « Préfixe
+   Section Numéro Lieudit Contenance ». Il faut en reprendre AUTANT DE LIGNES
+   qu'il y en a — jusqu'à la dernière du tableau —, et non la première venue :
+   un bien se vend souvent sur cinq ou six parcelles, et une parcelle oubliée
+   est une parcelle qui manquera à l'acte.
+
+   Deux pièges, et c'est pour eux que la lecture est écrite ainsi :
+     · un tableau long est COUPÉ PAR UN SAUT DE PAGE — un pied de page
+       s'intercale, et l'en-tête se répète ; on passe outre, et l'on
+       dédoublonne à la fin ;
+     · la colonne Préfixe est parfois vide, la section peut commencer par un
+       chiffre (0B) et le lieudit contenir des nombres. D'où une lecture
+       MOT À MOT plutôt qu'une expression régulière d'un seul bloc, qui
+       laissait tomber en silence toute ligne qui ne lui ressemblait pas. */
+const MD_RE_ENTETE_PARC = /Pr[ée]fixe\s+Section\s+Num[ée]ro/i;
+const MD_RE_FIN_PARC = /^Contenance totale|^Le MANDANT|^Le pr[ée]sent mandat|^Prix de vente|^D[ée]signation|^Honoraires|^Un cong[ée]|^Mandat\b|^D'UNE PART|^Le Mandataire/i;
+/* « 1ha 1a 60ca », « 8a 72ca », « 60 ca » : ce qui termine la ligne */
+const MD_RE_CONTENANCE = /((?:\d+\s*ha\s*)?(?:\d+\s*a\s*)?\d+\s*ca|\d+\s*ha(?:\s*\d+\s*a)?|\d+\s*a)\s*\.?$/i;
+function mdLigneParcelle(l){
+  let t = mdNettoie(l);
+  if(!t) return null;
+  let contenance = "";
+  const mc = MD_RE_CONTENANCE.exec(t);
+  if(mc){ contenance = mdNettoie(mc[1]); t = mdNettoie(t.slice(0, mc.index)); }
+  const mots = t.split(" ").filter(Boolean);
+  const estSection = w => /^[0-9]?[A-Z]{1,3}[0-9]{0,2}$/.test(w);
+  const estNumero  = w => /^\d{1,5}[A-Z]?$/i.test(w);
+  let prefixe = "";
+  if(mots.length > 1 && /^\d{1,4}$/.test(mots[0]) && estSection(mots[1])) prefixe = mots.shift();
+  if(!mots.length || !estSection(mots[0])) return null;
+  const section = mots.shift();
+  if(!mots.length || !estNumero(mots[0])) return null;
+  const numero = mots.shift();
+  return {prefixe, section, numero, lieudit: mdSansPonct(mots.join(" ")), contenance};
+}
+function mdParcelles(lignes){
+  const out = [], vues = {};
+  for(let i = 0; i < lignes.length; i++){
+    if(!MD_RE_ENTETE_PARC.test(lignes[i])) continue;
+    for(let k = i + 1; k < lignes.length; k++){
+      const l = lignes[k];
+      if(!mdNettoie(l)) continue;
+      if(/^Page \d+ sur \d+$/.test(mdNettoie(l))) continue;   /* saut de page */
+      if(MD_RE_ENTETE_PARC.test(l)) continue;                  /* en-tête répété */
+      if(MD_RE_FIN_PARC.test(l)) break;                        /* fin du tableau */
+      const p = mdLigneParcelle(l);
+      if(!p) break;
+      const cle = (p.section + "|" + p.numero + "|" + p.prefixe).toUpperCase();
+      if(vues[cle]) continue;
+      vues[cle] = true;
+      out.push(p);
+    }
+  }
+  return out;
+}
 function mdBien(lignes){
   const b = {parcelles:[]};
   const i = mdIndex(lignes, /^Désignation et usage des biens/i);
@@ -13481,12 +13546,8 @@ function mdBien(lignes){
   }
   b.description = mdSansPonct(desc);
 
-  zone.forEach(l=>{
-    const m = /^(\d{3})\s+([A-Z]{1,3})\s+(\d+)\s+(.*?)\s+((?:\d+\s*ha\s*)?(?:\d+\s*a\s*)?\d+\s*ca)$/.exec(l);
-    if(m) b.parcelles.push({prefixe:m[1], section:m[2], numero:m[3],
-                            lieudit:mdNettoie(m[4]), contenance:mdNettoie(m[5])});
-  });
-  const tot = zone.map(l=> /^Contenance totale\s*:\s*(.+?)\s*\.?$/i.exec(l)).find(Boolean);
+  b.parcelles = mdParcelles(lignes);
+  const tot = lignes.map(l=> /^Contenance totale\s*:\s*(.+?)\s*\.?$/i.exec(l)).find(Boolean);
   b.contenance = tot ? mdNettoie(tot[1]) : "";
   b.contenanceM2 = mdContenance(b.contenance);
   b.type = mdTypeBien(b.description + " " + mdBloc(lignes, 0, 14));
@@ -13850,10 +13911,10 @@ function mdBlocDoublons(i, p){
             .filter(Boolean).join(" · "))}</span>
           <em>${esc(c.raisons.join(", "))}${c.pts >= 80 ? " — très probable" : ""}</em></div>
         <div class="mddupb">
-          <button type="button" class="tbtn mini" data-mddup="${i}|oui|${esc(ref)}">C'est
+          <button type="button" class="dupoui" data-mddup="${i}|oui|${esc(ref)}">C'est
             la même</button>
-          <button type="button" class="tbtn light mini" data-mddup="${i}|non|${esc(ref)}">Ce
-            n'est pas elle</button></div></div>`;
+          <button type="button" class="dupnon" data-mddup="${i}|non|${esc(ref)}">Ce n'est
+            pas elle</button></div></div>`;
     }).join("")}</div>`;
 }
 /* Ce que la fenêtre porte à l'écran redevient la vérité avant tout
@@ -16524,8 +16585,13 @@ const AIDE = [
   "<b>le prix honoraires d'agence inclus</b>, retenu comme prix FAI du dossier, les "+
   "honoraires étant alors la différence exacte avec le prix proposé par le vendeur — jamais "+
   "un pourcentage recalculé ; "+
-  "et <b>le type de bien malgré la rédaction</b> : un mas avec terrain attenant est une "+
-  "maison, pas un terrain. "+
+  "<b>le type de bien malgré la rédaction</b> : un mas avec terrain attenant est une "+
+  "maison, pas un terrain ; "+
+  "et <b>toutes les parcelles du tableau cadastral</b> — autant de lignes qu'il y en a sous "+
+  "les en-têtes « Préfixe / Section / Numéro / Lieudit / Contenance », jusqu'à la dernière, "+
+  "même quand le tableau est coupé par un saut de page et que ses en-têtes se répètent. Une "+
+  "ligne sans préfixe, une section qui commence par un chiffre ou une parcelle sans lieudit "+
+  "sont lues comme les autres. "+
   "Toute valeur lue est reprise dans la fenêtre de vérification même si elle sort des choix "+
   "habituels de l'application : rien de ce que dit le mandat ne disparaît en silence."],
  ["Le mandat lu : les fiches qui ressemblent déjà à ce vendeur",
