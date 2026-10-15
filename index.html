@@ -335,7 +335,17 @@ input.auto{background:var(--accent-soft)!important;color:var(--navy);font-weight
 .calc.mini.proche{background:#fef3c7;border-color:#fcd34d;color:#92400e}
 .calc.mini.urgent{background:#ffedd5;border-color:#fb923c;color:#9a3412}
 .calc.mini.perime{background:#fee2e2;border-color:#f87171;color:#991b1b}
-.dpe{display:flex;gap:8px}
+.dpe{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+/* les deux étiquettes closent la ligne : elles vont ensemble, et se
+   distinguent de ce qui les produit */
+.dpeetiqs{display:flex;gap:10px;padding:3px 9px 4px;border-radius:8px;
+  background:#f1f5f9;border:1px solid var(--line)}
+.dpeone.etiq .dpelab::after{content:" ·calculée";letter-spacing:0;text-transform:none;
+  font-size:9px;opacity:.75}
+.dpeone.etiq.main .dpelab::after{content:" ·à la main";color:#9a3412;opacity:1}
+.dpenote{align-self:center;font-size:11.5px;color:#9a3412;background:#fff7ed;
+  border:1px solid #fdba74;border-radius:7px;padding:4px 9px;max-width:230px;
+  line-height:1.3}
 .dpeone{display:flex;flex-direction:column;gap:2px}
 .dpelab{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);
   white-space:nowrap;padding-left:2px}
@@ -756,6 +766,11 @@ table.histot{width:100%}
 table.histot th{font-size:11.5px}
 table.histot td{padding:5px 6px}
 table.histot input{width:100%}
+table.histot tr.hanc td{background:var(--line-2,#eef1f6);color:var(--ink-2);
+  font-size:12.5px}
+table.histot tr.hanc .hancb{display:inline-block;font-size:10.5px;font-weight:700;
+  letter-spacing:.3px;text-transform:uppercase;background:#fff;color:var(--ink-3);
+  border-radius:999px;padding:1px 7px;margin-right:5px}
 td.hvar{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600;
   color:var(--ink-2);text-align:right}
 td.hvar small{font-weight:400}
@@ -1000,6 +1015,47 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .mdetat.lu{background:#e2f5e9;color:#14663d}
 .mdetat.deduit{background:#fdeedd;color:#9a3412}
 .mdetat.absent{background:var(--line-2);color:var(--ink-3)}
+.mdetat.repris{background:#e4ecfb;color:#1e40af}
+.mdetat.saisi{background:#ede4fb;color:#5b21b6}
+/* les fiches de la base qui ressemblent au vendeur lu */
+.mddup{background:#fff8e6;color:#7a4c07}
+.mddup b{color:#6b3f05}
+.mdrepris{background:#e4ecfb;color:#1e3a8a}
+.mdrepris b{color:#172f6b}
+.mddupl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:9px;
+  background:#fff;border:1px solid #f0dcb0;border-radius:8px;padding:8px 10px}
+.mddupq{flex:1;min-width:190px;line-height:1.35}
+.mddupq span{display:block;font-size:11.5px;color:var(--ink-3)}
+.mddupq em{font-style:normal;font-size:11px;font-weight:700;color:#8a5a08}
+.mddupb{display:flex;gap:7px;flex-wrap:wrap}
+/* un mandat qui prend la suite d'un autre */
+.renq{width:100%;background:var(--field);border:1px solid var(--field-line);
+  border-radius:var(--radius-sm,8px);padding:8px 11px;font-size:13.5px}
+.renq:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);
+  background:#fff}
+.renlist{margin-top:9px;max-height:260px;overflow:auto;border:1px solid var(--line-2);
+  border-radius:9px}
+.renl{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:#fff;
+  border:0;border-bottom:1px solid var(--line-2);padding:8px 11px;cursor:pointer;font:inherit}
+.renl:last-child{border-bottom:0}
+.renl:hover{background:var(--accent-soft)}
+.renl .rennum{font-weight:700;color:var(--navy);font-size:12.5px;white-space:nowrap}
+.renl .renou{flex:1;min-width:0;font-size:12.5px;line-height:1.3}
+.renl .renou em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.renchoisi{display:flex;align-items:center;gap:12px;border:1px solid var(--line);
+  border-radius:9px;padding:9px 12px;background:#fbfcfe}
+.renchoisi > div{flex:1;min-width:0;font-size:13px;line-height:1.35}
+.renchoisi b{color:var(--navy)}
+.renchoisi span{display:block;font-size:12px;color:var(--ink-2)}
+.renchoisi em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.rengr{margin-top:10px}
+.rengr h5{margin:0 0 5px;font-size:11.5px;font-weight:700;color:var(--ink-2)}
+.rendoc{display:flex;align-items:flex-start;gap:9px;padding:5px 2px;font-size:13px;
+  line-height:1.35;cursor:pointer}
+.rendoc input{margin-top:2px;flex:0 0 auto}
+.rendoc span{min-width:0}
+.rendoc em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.renpied{display:flex;gap:14px;margin:0 0 4px}
 .mdpers{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;
   margin-bottom:10px;background:#fbfcfe}
 .mdpers > h5{margin:0 0 10px;font-size:13px;font-weight:650;color:var(--navy)}
@@ -1044,6 +1100,10 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .copro .cpav{margin:8px 0 0;font-size:12.5px;font-weight:700;color:#b91c1c}
 .copro .cpied{margin:6px 0 0;font-size:11.5px;color:var(--ink-2)}
 .copro .cpied .lienbtn + .lienbtn{margin-left:10px}
+/* « à la suite du mandat n° … », sous l'adresse du bien */
+.hsuite{margin-top:5px;font-size:12px;color:var(--ink-2)}
+.hsuite b{color:var(--navy)}
+.hsuite .lienbtn{margin-left:6px}
 
 /* -------------------------------------------- les dossiers d'un immeuble */
 button[data-imm]{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
@@ -1836,7 +1896,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 15 octobre 2026, 7 h 57">Dossiers de vente</div>
+  <div class="brand" title="Version du 15 octobre 2026, 12 h 00">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2047,7 +2107,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>15 octobre 2026, 7 h 57</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>15 octobre 2026, 12 h 00</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2070,6 +2130,24 @@ table.tdb .puce.resilie{background:#64748b}
       <span class="muted" id="mdBilan"></span><span class="grow"></span>
       <button type="button" class="tbtn light" data-mdfermer>Annuler</button>
       <button type="button" class="addbtn" id="mdCreer">Créer le dossier</button>
+    </div>
+  </div>
+</div>
+
+<!-- un mandat qui prend la suite d'un autre : le dossier se reprend, le prix non -->
+<div class="modal" id="renBox" hidden>
+  <div class="modalbox secbox mdbox">
+    <div class="sh">
+      <div><h3>Un mandat qui suit un mandat existant</h3>
+        <p>Le bien et les vendeurs sont repris ; le prix et les honoraires se saisissent à
+          neuf.</p></div>
+      <button type="button" class="sfermer" id="renFermer" aria-label="Fermer">×</button>
+    </div>
+    <div class="scorps" id="renCorps"></div>
+    <div class="spieds">
+      <span class="muted" id="renBilan"></span><span class="grow"></span>
+      <button type="button" class="tbtn light" data-renfermer>Annuler</button>
+      <button type="button" class="addbtn" id="renCreer">Créer le dossier</button>
     </div>
   </div>
 </div>
@@ -2285,7 +2363,7 @@ const LISTS_DEFAULT = {
   baseHono:   ["HT","TTC"],
   coteHono:   ["Vendeur","Acquéreur","Les deux"],
   motifResil: ["Vendu par un autre mandataire","Vendu par le propriétaire","Retrait de la vente",
-               "Bien loué","Désaccord sur le prix","Fin du mandat sans renouvellement","Autre"],
+               "Bien loué","Désaccord sur le prix","Fin du mandat","Autre"],
   condSusp:   ["Aucun","Financement partiel","Financement total","Vente d'un autre bien","Autre"],
   /* les appels à l'action de la carte de fin des clips : une liste qu'on
      complète, pour ne pas réécrire la même phrase à chaque annonce */
@@ -2592,6 +2670,13 @@ function loadListesDepuis(v){
   (out.diagnostiqueurs||[]).forEach(x=>{ ["adresse","pays","cp","ville"]
     .forEach(k=>{ if(x[k]===undefined) x[k]=""; }); if(!x.pays) x.pays="France"; });
   out.condSusp = (out.condSusp||[]).map(v=> v === "Aucune" ? "Aucun" : v);
+  /* « Fin du mandat sans renouvellement » disait trop : un mandat prend fin,
+     qu'on le renouvelle ou non — et le renouvellement se lit désormais dans
+     le dossier qui le reprend. La liste enregistrée suit le nouveau libellé,
+     sans quoi le motif apparaîtrait deux fois. */
+  out.motifResil = (out.motifResil||[]).map(v=>
+    v === "Fin du mandat sans renouvellement" ? "Fin du mandat" : v)
+    .filter((v,i,t)=> t.indexOf(v) === i);
   (out.negociateurs||[]).forEach(x=>{
     if(x.manaranche === undefined) x.manaranche = false;
     if(x.commission === undefined) x.commission = "";
@@ -2749,12 +2834,64 @@ const DPE_GES = [
   {l:"E", bg:"#9560c2", fg:"#ffffff"}, {l:"F", bg:"#7c3fb4", fg:"#ffffff"},
   {l:"G", bg:"#5d2a8a", fg:"#ffffff"}
 ];
+/* ---------------------------------------------- les seuils des étiquettes
+   Arrêté du 31 mars 2021, en vigueur depuis le 1er juillet 2021. Deux
+   échelles : l'énergie primaire en kWh/m²/an, les émissions en kg CO₂/m²/an.
+   Chaque seuil est la borne BASSE de la classe suivante — 70 kWh est un B,
+   pas un A — et au-delà du dernier, c'est G.
+
+   L'étiquette du logement est la PLUS MAUVAISE des deux : un logement B en
+   énergie et F en climat est un F. L'application affiche les deux, comme le
+   veut l'annonce, et ne les mélange pas.
+
+   Une réserve, dite à l'écran : depuis le 1er juillet 2024, les logements
+   d'une surface de référence inférieure à 40 m² ont des seuils ADAPTÉS, qui
+   varient mètre carré par mètre carré (arrêté du 25 mars 2024), et les
+   logements situés au-dessus de 800 m d'altitude ont les leurs. On ne les
+   devine pas : sous 40 m², l'application ne remplit rien et le dit. */
+const SEUILS_DPE_E = [["A",70],["B",110],["C",180],["D",250],["E",330],["F",420]];
+const SEUILS_DPE_G = [["A",6],["B",11],["C",30],["D",50],["E",70],["F",100]];
+function classeSeuil(v, table){
+  const n = num(v);
+  if(n === null || n < 0) return "";
+  for(let i = 0; i < table.length; i++) if(n < table[i][1]) return table[i][0];
+  return "G";
+}
+function classeEnergieDpe(kwh){ return classeSeuil(kwh, SEUILS_DPE_E); }
+function classeGesDpe(co2){     return classeSeuil(co2,  SEUILS_DPE_G); }
+/* vrai quand les seuils ordinaires ne s'appliquent pas : petite surface */
+function dpeHorsBareme(){
+  const su = num((D.detail || {}).surface);
+  return su !== null && su > 0 && su < 40;
+}
+/* Recalcule une étiquette d'après la valeur saisie, sauf si on l'a choisie
+   soi-même. Vider le menu rend la main au calcul. */
+function majClasseDpe(i, quoi){
+  const d = (D.diags || [])[+i];
+  if(!d) return false;
+  const manuel = quoi === "E" ? d.dpeEManuel : d.dpeGManuel;
+  if(manuel || dpeHorsBareme()) return false;
+  const champ = quoi === "E" ? "dpeEnergie" : "dpeGes";
+  const veut = quoi === "E" ? classeEnergieDpe(d.dpeKwh) : classeGesDpe(d.dpeCo2);
+  if(d[champ] === veut) return false;
+  d[champ] = veut;
+  const sel = document.querySelector(`[data-dpesel="${i}:${champ}"]`);
+  if(sel){
+    sel.value = veut;
+    const ech = quoi === "E" ? DPE_ENERGIE : DPE_GES;
+    sel.setAttribute("style", styleDpe(ech.filter(x=> x.l === veut)[0]));
+  }
+  return true;
+}
 function styleDpe(c){
   return c ? `background:${c.bg};color:${c.fg};font-weight:800;border-color:rgba(0,0,0,.3)` : "";
 }
 function dpeSelect(i, champ, echelle, titre){
   const v = D.diags[i][champ] || "";
-  return `<span class="dpeone"><span class="dpelab">${titre}</span>` +
+  const manuel = champ === "dpeEnergie" ? D.diags[i].dpeEManuel : D.diags[i].dpeGManuel;
+  return `<span class="dpeone etiq${manuel ? " main" : ""}"` +
+    `${manuel ? ` title="Classe choisie à la main — videz le menu pour revenir au calcul"`
+              : ""}><span class="dpelab">${titre}</span>` +
     `<select class="dpesel" data-dpesel="${i}:${champ}" title="Classe ${titre.toLowerCase()}" ` +
     `style="${styleDpe(echelle.find(x=>x.l===v))}"><option value=""></option>` +
     echelle.map(x=>`<option value="${x.l}" style="background:${x.bg};color:${x.fg}"` +
@@ -2822,7 +2959,7 @@ const QUEST_COND = {
 function questVisible(k){ const f = QUEST_COND[k]; return f ? f() : true; }
 
 function blankPerson(){
-  return {civilite:"",raison:"",civiliteRepr:"",prenom:"",nom:"",nomNaissance:"",dateNaissance:"",lieuNaissance:"",
+  return {civilite:"",raison:"",civiliteRepr:"",prenom:"",prenoms:"",nom:"",nomNaissance:"",dateNaissance:"",lieuNaissance:"",
           nationalite:"",profession:"",sitMat:"",tel1:"",email1:"",
           memeAdresse:false,adresse:"",pays:"France",cp:"",ville:""};
 }
@@ -2830,7 +2967,9 @@ function blankDossier(){
   return {
     id: "d" + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
     maj: Date.now(),
-    mandat:{num:"",date:"",type:"",resilie:false,resilieDate:"",resilieMotif:""},
+    /* suiteDe : le numéro du mandat dont celui-ci prend la suite, quand le
+       dossier a été ouvert en renouvellement */
+    mandat:{num:"",date:"",type:"",resilie:false,resilieDate:"",resilieMotif:"",suiteDe:""},
     nego:{vendeur:"",acquereur:""},
     /* alertes d'échéance écartées à la main, par « champ|date » */
     alertesOff:{},
@@ -3744,6 +3883,10 @@ function recapValue(key){
   if(key==="@histo"){
     const h = normHisto();
     if(!h.length) return ["Aucun prix enregistré. Le premier prix saisi ouvrira l'historique.", true];
+    const anc = lignesHeritees();
+    if(!lignesDuMandat().length)
+      return [anc.length + " prix repris du mandat n° " + anc[0].ancien +
+        " — aucun prix saisi pour ce mandat.", true];
     const p = h[0], d = h[h.length-1];
     if(h.length === 1)
       return ["Prix fixé au " + fdate(p.date) + " — aucun changement depuis.", false];
@@ -3752,7 +3895,9 @@ function recapValue(key){
     return [h.length - 1 + " changement" + (h.length > 2 ? "s" : "") +
       " — de " + eur(p.fai) + " le " + fdate(p.date) +
       " à " + eur(d.fai) + " le " + fdate(d.date) +
-      (ecart ? "  ·  " + sens + " de " + eur(Math.abs(ecart)) : ""), false];
+      (ecart ? "  ·  " + sens + " de " + eur(Math.abs(ecart)) : "") +
+      (anc.length ? "  ·  dont " + anc.length + " au mandat n° " + anc[0].ancien : ""),
+      false];
   }
   if(key==="@recapBanque"){
     const b = book("banques", D.pret.banque);
@@ -3924,6 +4069,15 @@ function heroDossier(){
       <div class="heroid">
         <h1>${esc(adr || "Bien non renseigné")}</h1>
         ${sous ? `<div class="hsub">${esc(sous)}</div>` : ""}
+        ${(()=>{
+          /* un mandat qui prend la suite d'un autre le dit, et mène à lui :
+             c'est ainsi qu'on retrouve l'historique complet d'une vente */
+          if(!m.suiteDe) return "";
+          const anc = dossierDuNumeroMandat(m.suiteDe);
+          return `<div class="hsuite">À la suite du mandat <b>n° ${esc(m.suiteDe)}</b>${
+            anc ? ` <button type="button" class="lienbtn" data-open="${esc(anc.id)}">ouvrir
+              ce dossier</button>` : " — dossier introuvable"}</div>`;
+        })()}
       </div>
       <div class="herochiffres">
         ${chiffre("Prix FAI", eur0(num(D.prix.fai)))}
@@ -5033,7 +5187,8 @@ function tableauCopro(){
    rien à montrer.
    ===================================================================== */
 function courbePrix(){
-  const pts = normHisto().map(x=> ({iso:x.date, v:num(x.fai), note:x.note || ""}))
+  const pts = normHisto().map(x=> ({iso:x.date, v:num(x.fai), note:x.note || "",
+      ancien: x.ancien || ""}))
     .filter(x=> x.v !== null && isoValide(x.iso));
   if(pts.length < 2)
     return `<p class="muted pxnote">La courbe apparaîtra dès le premier changement de prix.</p>`;
@@ -5061,8 +5216,10 @@ function courbePrix(){
       <path d="${ligne}" fill="none" stroke="var(--accent)" stroke-width="2"
         stroke-linejoin="round" stroke-linecap="round"/>
       ${xy.map((c,i)=>`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${
-        i === 0 || i === xy.length - 1 ? 4 : 3}" fill="#fff" stroke="var(--accent)"
+        i === 0 || i === xy.length - 1 ? 4 : 3}" fill="${pts[i].ancien ? "var(--line-2)" : "#fff"}"
+        stroke="${pts[i].ancien ? "var(--ink-3)" : "var(--accent)"}"
         stroke-width="2"><title>${esc(fdate(pts[i].iso) + " — " + eur(pts[i].v) +
+        (pts[i].ancien ? " · mandat n° " + pts[i].ancien : "") +
         (pts[i].note ? " · " + pts[i].note : ""))}</title></circle>`).join("")}
       <text class="pxv" x="${xy[0][0].toFixed(1)}" y="${Math.max(12, xy[0][1] - 10).toFixed(1)}"
         text-anchor="start">${esc(eurCourt(dep))}</text>
@@ -5077,7 +5234,11 @@ function courbePrix(){
     <p class="pxnote">${pts.length} prix successifs — ${
       ecart ? `<b class="${ecart < 0 ? "bas" : "haut"}">${sens} de ${esc(eur(Math.abs(ecart)))}</b>
       (${(Math.abs(ecart) / dep * 100).toFixed(1).replace(".", ",")} %)` : "<b>prix inchangé</b>"}
-      depuis le ${esc(fdate(pts[0].iso))}.</p>
+      depuis le ${esc(fdate(pts[0].iso))}.${(()=>{
+        const anc = pts.filter(x=> x.ancien);
+        return anc.length ? ` Les ${anc.length} premier${anc.length > 1 ? "s" : ""}
+          (points gris) viennent du mandat n° ${esc(anc[0].ancien)}.` : "";
+      })()}</p>
   </div>`;
 }
 
@@ -5118,6 +5279,13 @@ function majPret(){
 
 /* Le numéro de mandat identifie le dossier : deux dossiers ne peuvent pas le
    partager, sans quoi on ne saurait plus lequel on ouvre. */
+/* le dossier qui porte ce numéro de mandat, s'il existe encore */
+function dossierDuNumeroMandat(num){
+  const n = String(num || "").trim().toLowerCase();
+  if(!n) return null;
+  return dossiersVivants().filter(d=>
+    String((d.mandat && d.mandat.num) || "").trim().toLowerCase() === n)[0] || null;
+}
 function doublonMandat(num, id){
   const n = String(num || "").trim().toLowerCase();
   if(!n) return null;
@@ -5228,15 +5396,26 @@ function normHisto(){
   const p = (D && D.prix) || {};
   if(!Array.isArray(p.histo)) p.histo = [];
   p.histo = p.histo.filter(x=> x && x.date);
-  p.histo.sort((a,b)=> String(a.date).localeCompare(String(b.date)));
+  /* les lignes héritées d'un mandat précédent passent devant, quoi qu'en
+     disent les dates : elles racontent ce qui s'est joué AVANT ce mandat */
+  p.histo.sort((a,b)=> (a.ancien ? 0 : 1) - (b.ancien ? 0 : 1)
+                    || String(a.date).localeCompare(String(b.date)));
   return p.histo;
 }
-function derniereLigne(){ const h = normHisto(); return h.length ? h[h.length-1] : null; }
+/* Les lignes de CE mandat. Celles d'un mandat précédent sont là pour la vue
+   d'ensemble, pas pour donner le prix : un dossier ouvert en renouvellement
+   commence sans prix, et c'est voulu. */
+function lignesDuMandat(){ return normHisto().filter(l=> !l.ancien); }
+function lignesHeritees(){ return normHisto().filter(l=> !!l.ancien); }
+function derniereLigne(){
+  const h = lignesDuMandat();
+  return h.length ? h[h.length-1] : null;
+}
 
 /* dès qu'un prix existe, l'historique s'ouvre à la date du mandat */
 function amorcerHisto(){
-  const h = normHisto();
-  if(h.length || !num(D.prix.fai)) return null;
+  normHisto();
+  if(lignesDuMandat().length || !num(D.prix.fai)) return null;
   const l = {date: D.mandat.date || auj(), fai: D.prix.fai,
              honoraires: D.prix.honoraires || "", note: "Prix au mandat"};
   D.prix.histo.push(l);
@@ -5317,6 +5496,18 @@ function renderHisto(){
       : `${ecart > 0 ? "+" : "−"}${esc(eur(Math.abs(ecart)))}` +
         (pct === null ? "" : ` <small>(${ecart > 0 ? "+" : "−"}` +
           `${Math.abs(pct).toFixed(1).replace(".",",")} %)</small>`);
+    /* une ligne venue d'un mandat précédent se lit, ne se corrige plus : ce
+       n'est pas l'histoire de CE mandat, et la retoucher ici serait récrire
+       le passé d'un autre dossier */
+    if(l.ancien) return `<tr class="hanc">
+      <td>${esc(fdate(l.date))}</td>
+      <td>${esc(eur(l.fai) || "—")}</td>
+      <td>${esc(eur(l.honoraires) || "—")}</td>
+      <td class="hvar ${cls}">${varTxt}</td>
+      <td><span class="hancb">mandat n° ${esc(l.ancien)}</span>${
+        l.note ? " " + esc(l.note) : ""}</td>
+      <td class="cact"><button type="button" class="xbtn mini" data-histodel="${i}"
+             title="Retirer cette ligne héritée">✕</button></td></tr>`;
     return `<tr>
       <td><input type="date" data-histo="${i}:date" value="${esc(l.date || "")}"></td>
       <td><input type="text" inputmode="decimal" data-histo="${i}:fai"
@@ -5326,13 +5517,18 @@ function renderHisto(){
       <td class="hvar ${cls}">${varTxt}</td>
       <td><input type="text" data-histo="${i}:note" value="${esc(l.note || "")}"
             placeholder="motif, remarque…"></td>
-      <td class="cact">${h.length > 1
+      <td class="cact">${lignesDuMandat().length > 1
         ? `<button type="button" class="xbtn mini" data-histodel="${i}"
              title="Supprimer cette ligne">✕</button>` : ""}</td></tr>`;
   }).join("");
+  const herit = lignesHeritees();
   $("#histoCorps").innerHTML = h.length
-    ? `<p class="muted" style="margin:0 0 10px">La ligne la plus récente donne le prix affiché
-         dans la fiche du bien. La première est datée du mandat.</p>
+    ? `<p class="muted" style="margin:0 0 10px">La ligne la plus récente <b>de ce
+         mandat</b> donne le prix affiché dans la fiche du bien. La première est datée du
+         mandat.${herit.length ? ` Les ${herit.length} ligne${herit.length > 1 ? "s" : ""}
+         grisée${herit.length > 1 ? "s" : ""} en tête viennent du <b>mandat
+         n° ${esc(herit[0].ancien)}</b> : elles ne se modifient plus et ne donnent pas le
+         prix, mais elles gardent la vie de la vente sous les yeux.` : ""}</p>
        <div class="tdbscroll"><table class="grid-t histot">
         <tr><th style="width:150px">Date</th><th>Prix FAI (€)</th><th>Honoraires (€)</th>
           <th>Variation</th><th>Note</th><th class="cact"></th></tr>${lignes}</table></div>`
@@ -5572,7 +5768,7 @@ const PF = [
   ["raison","Dénomination","text","wide",estMorale],
   ["@repr","Représentant légal","sep","",estMorale],
   ["civiliteRepr","Qualité / civilité","list:civilite","",estMorale],
-  ["prenom","Prénom","text"],["nom","NOM","text"],
+  ["prenom","Prénom","text"],["prenoms","Autres prénoms","text"],["nom","NOM","text"],
   ["nomNaissance","Nom de naissance","text"],["dateNaissance","Date de naissance","date"],
   ["lieuNaissance","Lieu de naissance","text"],["nationalite","Nationalité","list:nationalite"],
   ["profession","Profession","text"],["sitMat","Situation matrimoniale","list:sitMat"],
@@ -5938,20 +6134,24 @@ function renderDiags(){
     const res = DIAG_RESULTAT.includes(d.nom)
       ? ynControl(`diags.${i}.positif`, DIAG_CHOIX[d.nom])
       : d.nom === "DPE"
-        ? `<div class="dpe">${dpeSelect(i,"dpeEnergie",DPE_ENERGIE,"Énergie")}` +
-          `${dpeSelect(i,"dpeGes",DPE_GES,"GES")}` +
-          /* la loi impose aussi, dans toute annonce, le coût annuel estimé et
-             l'année des prix de référence : ils se lisent sur le DPE */
+        /* On saisit ce que dit le rapport — les consommations, puis le coût
+           annuel qu'impose l'annonce — et les deux étiquettes se posent au
+           bout de la ligne, calculées. Elles restent corrigeables : on les
+           rouvre d'un choix dans le menu, et on rend la main au calcul en
+           les vidant. */
+        ? `<div class="dpe">` +
           `<span class="dpeone"><span class="dpelab">kWh/m²/an</span>` +
-          `${controlRaw(`diags.${i}.dpeKwh`,"nb",d.dpeKwh||"","","data-b")}</span>` +
+          `${controlRaw(`diags.${i}.dpeKwh`,"nb5",d.dpeKwh||"","","data-b")}</span>` +
           `<span class="dpeone"><span class="dpelab">kg CO₂/m²/an</span>` +
-          `${controlRaw(`diags.${i}.dpeCo2`,"nb",d.dpeCo2||"","","data-b")}</span>` +
+          `${controlRaw(`diags.${i}.dpeCo2`,"nb5",d.dpeCo2||"","","data-b")}</span>` +
           `<span class="dpeone"><span class="dpelab">Coût min</span>` +
           `${controlRaw(`diags.${i}.dpeCoutMin`,"money",d.dpeCoutMin||"","","data-b")}</span>` +
           `<span class="dpeone"><span class="dpelab">Coût max</span>` +
           `${controlRaw(`diags.${i}.dpeCoutMax`,"money",d.dpeCoutMax||"","","data-b")}</span>` +
-          `<span class="dpeone"><span class="dpelab">Année prix</span>` +
-          `${controlRaw(`diags.${i}.dpeAnnee`,"annee",d.dpeAnnee||"","","data-b")}</span></div>`
+          `<span class="dpeetiqs">${dpeSelect(i,"dpeEnergie",DPE_ENERGIE,"Énergie")}` +
+          `${dpeSelect(i,"dpeGes",DPE_GES,"GES")}</span>` +
+          (dpeHorsBareme() ? `<span class="dpenote">moins de 40 m² : les seuils sont
+             adaptés, reportez les classes du diagnostic</span>` : "") + `</div>`
         : `<span class="muted">—</span>`;
     const inutile = d.nom === "Gaz" && d.positif === "Non nécessaire";
     const expire = !inutile && perimeLe(i,"fait").etat === "perime";
@@ -6608,6 +6808,9 @@ function texteDossier(d){
   const m = d.mandat || {}, b = d.bien || {}, px = d.prix || {};
   add(m.num); add(m.type); add(fdate(m.date)); add(m.date);
   add(m.resilieMotif);
+  /* le mandat précédent se cherche aussi par son numéro : taper « 1097 »
+     ramène le mandat résilié ET celui qui l'a remplacé */
+  add(m.suiteDe);
   add(stade(d).lib);
   ["adresse","adresse2","residence","cp","ville","pays","type","sitJur","annee"]
     .forEach(k=> add(b[k]));
@@ -6620,8 +6823,9 @@ function texteDossier(d){
     add(String(Math.round(n))); add(Math.round(n).toLocaleString("fr-FR")); } });
   Object.keys(d.dates || {}).forEach(k=>{ add(fdate(d.dates[k])); });
   ["vendeurs","acquereurs"].forEach(k=> (d[k] || []).forEach(p=>{
-    ["civilite","raison","civiliteRepr","prenom","nom","nomNaissance","lieuNaissance",
-     "profession","tel1","email1","adresse","cp","ville","pays"].forEach(f=> add(p[f]));
+    ["civilite","raison","civiliteRepr","prenom","prenoms","nom","nomNaissance",
+     "lieuNaissance","profession","tel1","email1","adresse","cp","ville",
+     "pays"].forEach(f=> add(p[f]));
   }));
   const nt = d.notaire || {};
   ["vendeur","acquereur","vendeurContact","acquereurContact",
@@ -6644,8 +6848,9 @@ function texteDossier(d){
    s'ouvre là où elle se saisit, pas seulement le dossier qui la porte. */
 function textePersonne(p){
   const b = [];
-  ["civilite","raison","civiliteRepr","prenom","nom","nomNaissance","lieuNaissance",
-   "nationalite","profession","sitMat","tel1","email1","adresse","cp","ville","pays"]
+  ["civilite","raison","civiliteRepr","prenom","prenoms","nom","nomNaissance",
+   "lieuNaissance","nationalite","profession","sitMat","tel1","email1","adresse",
+   "cp","ville","pays"]
     .forEach(k=>{ if(p[k]) b.push(String(p[k])); });
   if(p.dateNaissance){ b.push(fdate(p.dateNaissance)); b.push(p.dateNaissance); }
   return fold(b.join(" "));
@@ -10285,7 +10490,7 @@ function blocPersonneFN(p){
   const lines = [];
   if(morale) lines.push("Dénomination : " + nomEntite(p));
   if(!morale || p.nom || p.prenom){
-    let l1 = morale ? nomRepresentant(p) : "Nom : " + nomUsuel(p);
+    let l1 = morale ? nomRepresentant(p) : "Nom : " + nomCivil(p);
     if(p.dateNaissance) l1 += ` ${ne} le ` + fdate(p.dateNaissance);
     if(p.lieuNaissance) l1 += " à " + p.lieuNaissance;
     if(p.nationalite) l1 += " de nationalité " + p.nationalite;
@@ -10303,12 +10508,33 @@ function blocPersonneFN(p){
 function civPersonne(p){
   return estMorale(p) ? (p.civiliteRepr || "") : (p.civilite || "");
 }
-function nomUsuel(p){
+/* ------------------------------------------------ les prénoms, deux cases
+   On ne parle à personne avec trois prénoms. « Frédéric Jean Marie » est ce
+   que demande l'état civil ; « Frédéric » est ce qu'on écrit dans un message,
+   une facture ou un en-tête. Deux cases, donc, plutôt qu'une que l'on
+   découperait au premier espace : « Marie Claire » en deux mots ne se devine
+   pas, et une deuxième case se remplit une fois pour toutes.
+   · p.prenom  — le premier prénom, celui dont on se sert partout ;
+   · p.prenoms — les autres, qui ne sortent que sur les actes. */
+function prenomsEtatCivil(p){
+  return [String((p || {}).prenom || "").trim(),
+          String((p || {}).prenoms || "").trim()].filter(Boolean).join(" ");
+}
+/* Le premier prénom d'une saisie d'un seul tenant : c'est ce qui sert à
+   reprendre les fiches d'avant, et à découper ce qu'un mandat livre en bloc. */
+function couperPrenoms(t){
+  const mots = String(t || "").trim().split(/\s+/).filter(Boolean);
+  return {prenom: mots.shift() || "", prenoms: mots.join(" ")};
+}
+function nomUsuel(p){ return nomDeLaPersonne(p, p.prenom); }
+/* l'identité telle qu'un acte la porte : tous les prénoms */
+function nomCivil(p){ return nomDeLaPersonne(p, prenomsEtatCivil(p)); }
+function nomDeLaPersonne(p, prenoms){
   const nom = (p.nom || "").toUpperCase();
   const naiss = (p.nomNaissance || "").toUpperCase();
   const civ = civPersonne(p);
   const lien = civ === "M." ? "époux" : "épouse";
-  const base = [civ, p.prenom].filter(Boolean).join(" ");
+  const base = [civ, prenoms].filter(Boolean).join(" ");
   if(naiss && nom) return [base, naiss, lien, nom].filter(Boolean).join(" ");
   return [base, nom || naiss].filter(Boolean).join(" ");
 }
@@ -10317,7 +10543,7 @@ function nomEntite(p){
   return estMorale(p) ? [p.civilite, (p.raison||"").trim()].filter(Boolean).join(" ") : "";
 }
 function nomRepresentant(p){
-  const n = nomUsuel(p);
+  const n = nomCivil(p);
   return n ? "Représentée par " + n : "";
 }
 /* l'intitulé court d'une personne, pour les en-têtes de fiches */
@@ -10337,7 +10563,7 @@ function blocPersonneET(p, i, total, mot, gros, petit){
     lines.push(G(esc("NOM : " + nomEntite(p))));
     if(p.nom || p.prenom) lines.push(Pt(esc(nomRepresentant(p))));
   } else {
-    lines.push(G(esc("NOM : " + nomUsuel(p))));
+    lines.push(G(esc("NOM : " + nomCivil(p))));
   }
   if(p.adresse) lines.push(Pt(esc("ADRESSE : " + p.adresse)));
   const cv = [p.cp,p.ville,(p.pays&&p.pays!=="France")?p.pays:""].filter(Boolean).join(" ");
@@ -11848,7 +12074,10 @@ function cartePersonne(p, role, dossier){
                 lotDe(dossier || {}) || ""].filter(Boolean).join(" — ");
   return vcarte({
     nom: morale ? (p.raison || "") : (p.nom || ""),
-    prenom: morale ? "" : (p.prenom || ""),
+    /* la carte porte tous les prénoms — c'est l'état civil —, mais le nom
+       affiché n'en garde que le premier : c'est celui qu'on lit dans un
+       carnet d'adresses et dans un message */
+    prenom: morale ? "" : prenomsEtatCivil(p),
     civilite: morale ? "" : (p.civilite || ""),
     fn: titrePersonne(p) || nomPersonne(p),
     org: morale ? (p.raison || "") : "",
@@ -11972,6 +12201,12 @@ document.addEventListener("input", e=>{
     if(["bien.annee","bien.dateConstruction","bien.sitJur","bien.type","dpeDispense"]
        .includes(t.dataset.b)) renderDiags();
     if(t.dataset.b.startsWith("diags."))    majDiagCalc();
+    /* les consommations saisies posent les deux étiquettes */
+    const mdpe = /^diags\.(\d+)\.dpe(Kwh|Co2)$/.exec(t.dataset.b || "");
+    if(mdpe) majClasseDpe(+mdpe[1], mdpe[2] === "Kwh" ? "E" : "G");
+    /* la surface décide si les seuils ordinaires s'appliquent */
+    if(t.dataset.b === "detail.surface") (D.diags || []).forEach((d,i)=>{
+      if(d.nom === "DPE"){ majClasseDpe(i, "E"); majClasseDpe(i, "G"); } });
     if(t.dataset.b.startsWith("dates.")){ majStade(); majOnglets(); majNotaires(); }
     autosave(); renderPreview();
   }
@@ -12221,10 +12456,18 @@ document.addEventListener("change", e=>{
   }
   if(t.dataset && t.dataset.dpesel !== undefined){
     const [i,champ] = t.dataset.dpesel.split(":");
-    D.diags[+i][champ] = t.value;
+    const d = D.diags[+i];
+    d[champ] = t.value;
+    /* choisir une classe à la main l'emporte sur le calcul ; vider le menu
+       rend la main aux seuils */
+    const drapeau = champ === "dpeEnergie" ? "dpeEManuel" : "dpeGManuel";
+    d[drapeau] = !!t.value;
+    if(!t.value) majClasseDpe(+i, champ === "dpeEnergie" ? "E" : "G");
     const ech = champ === "dpeEnergie" ? DPE_ENERGIE : DPE_GES;
-    t.setAttribute("style", styleDpe(ech.find(x=>x.l === t.value)));
-    autosave(); renderPreview();
+    t.setAttribute("style", styleDpe(ech.filter(x=> x.l === d[champ])[0]));
+    const z = t.closest(".dpeone");
+    if(z) z.classList.toggle("main", !!d[drapeau]);
+    autosave(); renderDiags(); renderPreview();
     return;
   }
 });
@@ -12359,7 +12602,9 @@ document.addEventListener("click", e=>{
   if(t.dataset.neuf){
     const quoi = t.dataset.neuf;
     fermerPopup();
-    if(quoi === "pdf") $("#pdfFile").click(); else nouveauDossierVierge();
+    if(quoi === "pdf")        $("#pdfFile").click();
+    else if(quoi === "suite") ouvrirRenouvellement();
+    else                      nouveauDossierVierge();
     return;
   }
   if(t.dataset.pdib !== undefined){
@@ -13030,9 +13275,22 @@ function mdNombre(s){
   const n = parseFloat(t.replace(",", "."));
   return isFinite(n) ? n : null;
 }
+/* Un mandat date de naissance de deux façons : « 23/10/1974 » et
+   « 5 mai 1965 ». Les deux se lisent. */
+const MD_MOIS = {janvier:1, fevrier:2, "février":2, mars:3, avril:4, mai:5, juin:6,
+  juillet:7, aout:8, "août":8, septembre:9, octobre:10, novembre:11,
+  decembre:12, "décembre":12};
+function mdDeuxChiffres(n){ return String(n).padStart(2, "0"); }
 function mdDateFr(s){
-  const m = /(\d{2})\/(\d{2})\/(\d{4})/.exec(String(s || ""));
-  return m ? m[3] + "-" + m[2] + "-" + m[1] : "";
+  const t = String(s || "");
+  let m = /(\d{1,2})\s*\/\s*(\d{1,2})\s*\/\s*(\d{4})/.exec(t);
+  if(m) return m[3] + "-" + mdDeuxChiffres(m[2]) + "-" + mdDeuxChiffres(m[1]);
+  m = /(\d{1,2})\s*(?:er)?\s+([A-Za-zÀ-ÿ]+)\s+(\d{4})/.exec(t);
+  if(m){
+    const mois = MD_MOIS[m[2].toLowerCase()];
+    if(mois) return m[3] + "-" + mdDeuxChiffres(mois) + "-" + mdDeuxChiffres(m[1]);
+  }
+  return "";
 }
 /* « D:20261001145828Z » → « 2026-10-01 » */
 function mdDatePdf(s){
@@ -13060,6 +13318,23 @@ function mdPrenomNom(bloc){
   if(i === 0) i = Math.max(0, mots.length - 1);
   return {prenom: mots.slice(0, i).join(" "), nom: mots.slice(i).join(" ")};
 }
+/* « Maryse BAUTIAS épouse JULIAN » : l'acte désigne la personne par son nom
+   de naissance, suivi du nom de son conjoint. C'est l'inverse pour « née » :
+   « Anne DUPONT née MARTIN » porte DUPONT et est née MARTIN. On range donc
+   chacun à sa place, et `nomUsuel` réécrit la formule mot pour mot. */
+function mdNomsPersonne(bloc){
+  const t = mdNettoie(bloc);
+  const m = /^(.*?)\s+(épouse|époux|veuve|veuf|née|né)\s+(.+)$/i.exec(t);
+  if(m){
+    const avant = mdPrenomNom(m[1]);
+    const apres = mdSansPonct(m[3]);
+    const lien = m[2].toLowerCase();
+    if(lien === "née" || lien === "né")
+      return {prenom:avant.prenom, nom:avant.nom, nomNaissance:apres};
+    return {prenom:avant.prenom, nom:apres, nomNaissance:avant.nom};
+  }
+  return mdPrenomNom(t);
+}
 function mdIndex(lignes, re, depuis){
   for(let i = depuis || 0; i < lignes.length; i++) if(re.test(lignes[i])) return i;
   return -1;
@@ -13079,31 +13354,65 @@ function mdSituation(txt){
   if(/\bcélibataire\b/i.test(txt))           return "Célibataire";
   return "";
 }
+/* Une date de naissance, dans l'une ou l'autre écriture, suivie ou non du
+   lieu. On capture large et l'on démêle ensuite : c'est plus robuste qu'une
+   expression qui prétendrait tout prévoir. */
+const MD_RE_TETE = /^(Madame|Monsieur|Mademoiselle)\s+(.+?)\s+née?\s+le\s+([^,]+?)\s*(?:,|\s+de\s+nationalité|\s+demeurant)/i;
 function mdPersonne(txt){
   const p = {};
-  const tete = /^(Madame|Monsieur|Mademoiselle)\s+(.+?)\s+née?\s+le\s+(\d{2}\/\d{2}\/\d{4})\s*(?:à\s+([^,]+?))?\s*,/.exec(txt);
+  const tete = MD_RE_TETE.exec(txt);
   if(tete){
     p.civilite = MD_CIV[tete[1]] || "";
-    Object.assign(p, mdPrenomNom(tete[2]));
-    p.dateNaissance = mdDateFr(tete[3]);
-    p.lieuNaissance = mdSansPonct(tete[4] || "");
+    Object.assign(p, mdNomsPersonne(tete[2]));
+    const reste = mdNettoie(tete[3]);
+    const ou = /^(.+?)\s+à\s+(.+)$/.exec(reste);
+    p.dateNaissance = mdDateFr(ou ? ou[1] : reste);
+    p.lieuNaissance = ou ? mdSansPonct(ou[2]) : "";
   } else {
     const t2 = /^(Madame|Monsieur|Mademoiselle)\s+(.+?)\s*,/.exec(txt);
-    if(t2){ p.civilite = MD_CIV[t2[1]] || ""; Object.assign(p, mdPrenomNom(t2[2])); }
+    if(t2){ p.civilite = MD_CIV[t2[1]] || ""; Object.assign(p, mdNomsPersonne(t2[2])); }
   }
+  /* « de nationalité française » : la liste de l'application l'écrit avec
+     une capitale, et un menu déroulant ne retient que ce qu'il contient */
   const nat = /de\s+nationalité\s+([^,]+?)\s*,/i.exec(txt);
-  if(nat) p.nationalite = mdSansPonct(nat[1]);
+  if(nat){
+    const v = mdSansPonct(nat[1]);
+    p.nationalite = v ? v.charAt(0).toUpperCase() + v.slice(1) : "";
+  }
   const pro = /de\s+nationalité\s+[^,]+,\s*([^,]+?)\s*,\s*demeurant/i.exec(txt);
   if(pro) p.profession = mdSansPonct(pro[1]);
+  /* Deux écritures de l'adresse, essayées dans cet ordre :
+     — « demeurant à ARLES (13200) 5 rue Balze » ;
+     — « demeurant 30, Rue Jean Ferrat 34000 MONTPELLIER » — le code postal
+       sépare la rue de la commune, qui est en capitales.
+     On prend la PREMIÈRE : quand un vendeur est représenté, l'adresse du
+     représentant suit la sienne, et ce n'est pas la bonne. */
   const dem = /demeurant\s+à\s+(.+?)\s*\((\d{5})\)\s*(.+?)\s*,\s*(?:Téléphone|Courriel|Déclarant|Ayant|Et\s+déclarant|$)/i.exec(txt);
   if(dem){ p.ville = mdSansPonct(dem[1]); p.cp = dem[2]; p.adresse = mdSansPonct(dem[3]); }
-  const tel = /Téléphone\s*:\s*([0-9+().\s]{8,})/i.exec(txt);
+  else {
+    const d2 = /demeurant\s+(.+?)\s*,?\s*(\d{5})\s+([A-ZÀ-Ÿ][A-ZÀ-Ÿ0-9'’\-\s]*?)\s*(?:,|$)/.exec(txt);
+    if(d2){ p.adresse = mdSansPonct(d2[1]); p.cp = d2[2]; p.ville = mdSansPonct(d2[3]); }
+  }
+  const tel = /(?:Téléphone|Tél\.?|Portable|Mobile)\s*:\s*([0-9+().\s]{8,})/i.exec(txt);
   if(tel) p.tel1 = mdNettoie(tel[1]);
-  const ml = /Courriel\s*:\s*([^\s,;]+@[^\s,;]+)/i.exec(txt);
+  const ml = /(?:Courriel|Adresse\s+électronique|E-?mail|Mail)\s*:\s*([^\s,;]+@[^\s,;]+)/i
+    .exec(txt);
   if(ml) p.email1 = mdNettoie(ml[1]);
+  /* « Non présente ce jour et représentée par Madame Sylvie BAUTIAS » : le
+     téléphone et le courriel qui suivent sont souvent ceux du représentant.
+     On les reprend — c'est ce que dit le mandat — mais on le signale. */
+  const rep = /Non\s+pr[ée]sent[e]?\s+ce\s+jour\s+et\s+repr[ée]sent[ée]e?\s+par\s+(.+?)\s+demeurant/i
+    .exec(txt);
+  if(rep) p.represente = mdSansPonct(rep[1]);
   const sm = /Déclarant\s+être\s+([^.]*?)(?:,\s*ainsi déclaré|,\s*$|\.|$)/i.exec(txt);
   p.sitMat = mdSituation(sm ? sm[1] : txt);
   p.pays = "France";
+  /* Le mandat écrit les prénoms à la file : « Alice Madeleine Anne ». La fiche
+     en tient deux — le premier, puis les autres —, parce qu'on n'écrit jamais
+     que le premier dans un message. Le découpage se fait ici, une fois, et la
+     fenêtre de vérification montre les deux cases. */
+  const pr = couperPrenoms(p.prenom);
+  p.prenom = pr.prenom; p.prenoms = pr.prenoms;
   return p;
 }
 function mdVendeurs(lignes){
@@ -13121,13 +13430,18 @@ function mdVendeurs(lignes){
 }
 
 /* ------------------------------------------------------------ le bien */
+/* L'ordre compte : presque toute maison a un « terrain attenant », et un
+   mas décrit comme tel n'est pas un terrain. On ne reconnaît donc un terrain
+   que s'il est nommé comme l'objet de la vente, ou qu'aucun bâti n'est dit. */
 const MD_TYPES = [
-  [/terrain/i, "Terrain"],
+  [/terrain\s+(?:à\s+b[âa]tir|nu|constructible|de\s+loisir)/i, "Terrain"],
   [/\bappartement\b|\bstudio\b|\bT[1-9]\b/i, "Appartement"],
-  [/\bmaison\b|\bvilla\b|\bmas\b|\bmazet\b|\bbastide\b|\bpavillon\b/i, "Maison"],
+  [/\bmaison\b|\bvilla\b|\bmas\b|\bmazet\b|\bbastide\b|\bpavillon\b|\bmaisonnette\b/i,
+   "Maison"],
   [/\bimmeuble\b/i, "Immeuble"],
   [/\bgarage\b|\bparking\b|\bbox\b/i, "Garage / Parking"],
-  [/\blocal\b|\bcommerce\b|\bbureau\b/i, "Local"]
+  [/\blocal\b|\bcommerce\b|\bbureau\b/i, "Local"],
+  [/terrain/i, "Terrain"]
 ];
 function mdTypeBien(txt){
   for(let k = 0; k < MD_TYPES.length; k++)
@@ -13182,10 +13496,23 @@ function mdBien(lignes){
 /* ------------------------------------------------- prix et honoraires */
 function mdPrix(lignes){
   const t = mdBloc(lignes, 0, -1), r = {};
+  /* Deux prix peuvent figurer : celui auquel le bien est proposé, et le prix
+     « honoraires d'agence inclus ». Quand les honoraires sont à la charge de
+     l'acquéreur, le premier est le NET VENDEUR et le second le prix FAI —
+     prendre le premier pour un prix de vente, c'est se tromper de la
+     commission entière. Le dossier retient le FAI, et la différence donne
+     les honoraires, exacte plutôt que calculée sur un pourcentage. */
   const px = /devront être proposés au prix de .*?\(\s*([\d\s.]+)\s*€\s*\)/i.exec(t);
-  if(px) r.fai = mdNombre(px[1]);
+  const inc = /prix\s*«?\s*honoraires\s+d[’']agence\s+inclus\s*»?\s+de\s+.*?\(\s*([\d\s.]+)\s*€\s*\)/i
+    .exec(t);
+  const propose = px ? mdNombre(px[1]) : null;
+  const avecHono = inc ? mdNombre(inc[1]) : null;
+  if(avecHono !== null){
+    r.fai = avecHono;
+    if(propose !== null && avecHono > propose) r.honoraires = Math.round(avecHono - propose);
+  } else if(propose !== null) r.fai = propose;
   const ho = /nos honoraires seront de\s*:\s*([\d\s.]+)\s*€/i.exec(t);
-  if(ho) r.honoraires = mdNombre(ho[1]);
+  if(r.honoraires == null && ho) r.honoraires = mdNombre(ho[1]);
   if(r.honoraires == null && r.fai != null){
     const pc = /soit\s+([\d,]+)\s*%\s*TTC/i.exec(t);
     if(pc){ r.honoraires = Math.round(r.fai * mdNombre(pc[1]) / 100); r.honoDeduit = true; }
@@ -13197,17 +13524,32 @@ function mdPrix(lignes){
 }
 
 /* ----------------------------------------------------------- le cadre */
-const MD_MANDATS = [[/semi[-\s]?exclusif/i, "Semi-exclusif"], [/exclusif/i, "Exclusif"],
-                    [/délégation/i, "Délégation"], [/simple/i, "Simple"]];
+/* « MANDAT DE VENTE SANS EXCLUSIVITE », c'est un mandat SIMPLE. L'ordre
+   compte : « sans exclusivité » contient « exclusivité ». */
+const MD_MANDATS = [
+  [/sans\s+exclusivit[ée]|non[-\s]?exclusi/i, "Simple"],
+  [/semi[-\s]?exclusi/i, "Semi-exclusif"],
+  [/exclusi/i, "Exclusif"],
+  [/d[ée]l[ée]gation/i, "Délégation"],
+  [/simple/i, "Simple"]
+];
 function mdMandat(lignes, info){
   const t = mdBloc(lignes, 0, 60), m = {};
   const num = /MANDAT\s+[A-ZÉ\-\s]*DE\s+VENTE\s+N°\s*([A-Za-z0-9\/-]+)/i.exec(t) ||
               /Mandat\s+n°\s*([A-Za-z0-9\/-]+)/i.exec(t);
   if(num) m.num = mdNettoie(num[1]);
-  const titre = /MANDAT\s+(EXCLUSIF|SIMPLE|SEMI[-\s]?EXCLUSIF)\s+DE\s+VENTE/i.exec(t);
+  /* le titre du mandat porte sa nature, avant ou après « DE VENTE » */
+  let titre = "";
+  for(let k = 0; k < lignes.length && k < 60; k++)
+    if(/^MANDAT\b/i.test(lignes[k]) && /VENTE/i.test(lignes[k])){ titre = lignes[k]; break; }
+  if(!titre){
+    const m2 = /mandat\s+(SANS\s+EXCLUSIVITE|EXCLUSIF|SIMPLE|SEMI[-\s]?EXCLUSIF)\s+de\s+rechercher/i
+      .exec(t);
+    if(m2) titre = m2[0];
+  }
   if(titre)
     for(let k = 0; k < MD_MANDATS.length; k++)
-      if(MD_MANDATS[k][0].test(titre[1])){ m.type = MD_MANDATS[k][1]; break; }
+      if(MD_MANDATS[k][0].test(titre)){ m.type = MD_MANDATS[k][1]; break; }
   /* la date de signature n'est pas dans le texte du mandat : c'est celle de
      la dernière signature électronique, que le PDF porte en date de
      modification. On la propose, elle se corrige d'un clic. */
@@ -13217,7 +13559,9 @@ function mdMandat(lignes, info){
 }
 function mdNegociateur(lignes){
   const t = mdBloc(lignes, 0, -1);
-  const m = /représenté\(e\)\s+par\s+(.+?)\s*,\s*entrepreneur individuel/i.exec(t);
+  const m = /représenté\(e\)\s+par\s+(.+?)\s*,\s*entrepreneur individuel/i.exec(t) ||
+            /(?:Lui[-\s]même\s+ou\s+elle[-\s]même\s+)?représenté\(e\)\s+par\s+(?:Madame|Monsieur|Mme|M\.)\s+(.+?)\s*,\s*ayant\s+le\s+statut/i
+              .exec(t);
   return m ? mdNettoie(m[1]) : "";
 }
 function lireMandat(lignes, info){
@@ -13237,17 +13581,27 @@ let MD_LU = null;
 
 function mdChamp(cle, lab, val, etat, kind, options){
   const id = "md_" + cle.replace(/[^\w]/g, "_");
-  const puce = `<span class="mdetat ${etat}">${
-    etat === "lu" ? "lu" : etat === "deduit" ? "déduit" : "absent"}</span>`;
+  /* Un champ facultatif — les autres prénoms, quand il n'y en a pas — ne
+     porte pas d'étiquette : « absent » dirait un manque là où il n'y a rien
+     à manquer, et le compte de fin de fenêtre s'en trouverait faussé. */
+  const MD_LIB = {lu:"lu", deduit:"déduit", repris:"repris", saisi:"saisi",
+                  absent:"absent"};
+  const puce = etat === "" ? "" : `<span class="mdetat ${etat}">${
+    MD_LIB[etat] || "absent"}</span>`;
   let inner;
   if(kind === "area")
     inner = `<textarea id="${id}" data-md="${esc(cle)}">${esc(val || "")}</textarea>`;
   else if(kind === "date")
     inner = `<input type="date" id="${id}" data-md="${esc(cle)}" value="${esc(val || "")}">`;
-  else if(options)
+  else if(options){
+    /* Une valeur lue sur le mandat qui ne figure pas dans la liste ne doit
+       pas disparaître du menu : on l'y ajoute, en tête. Sans cela, elle se
+       perdait sans un mot — et c'est précisément ce qu'on vient chercher. */
+    const liste = (val && options.indexOf(val) < 0) ? [val].concat(options) : options;
     inner = `<select id="${id}" data-md="${esc(cle)}"><option value=""></option>` +
-      options.map(o=> `<option${o === val ? " selected" : ""}>${esc(o)}</option>`).join("") +
+      liste.map(o=> `<option${o === val ? " selected" : ""}>${esc(o)}</option>`).join("") +
       `</select>`;
+  }
   else
     inner = `<input type="text" id="${id}" data-md="${esc(cle)}" value="${esc(val || "")}">`;
   return `<div class="mdf${kind === "area" ? " plein" : ""}">
@@ -13257,14 +13611,116 @@ function mdEtat(v, deduit){
   if(v === null || v === undefined || v === "") return "absent";
   return deduit ? "deduit" : "lu";
 }
+
+/* =====================================================================
+   LES FICHES APPROCHANTES — NE PAS CRÉER DEUX FOIS LA MÊME PERSONNE
+   ---------------------------------------------------------------------
+   Un prénom lu de travers, un nom incomplet, un nom d'usage à la place du
+   nom de naissance : il suffit de peu pour que la base porte deux fois la
+   même personne. Et deux fiches valent moins qu'une seule : les pièces
+   jointes, les coordonnées et l'historique se répartissent entre les deux
+   sans qu'on sache plus laquelle fait foi.
+
+   La comparaison porte sur ce qui identifie vraiment quelqu'un : son
+   PREMIER PRÉNOM, son NOM, sa DATE DE NAISSANCE. Deux accords font une
+   proposition, trois une quasi-certitude ; un seul ne dit rien — « BAUTIAS »
+   dans une succession de dix héritiers ne prouve absolument rien, et une
+   fenêtre qui crierait au doublon dix fois de suite ne serait plus lue.
+
+   Rien n'est décidé à votre place : la fenêtre PROPOSE, vous validez ou
+   vous écartez. ===================================================== */
+const DUP_SEUIL = 50;
+function dupMots(s){
+  return fold(String(s || "")).replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+}
+function dupPrenom(p){ return dupMots((p || {}).prenom).split(" ")[0] || ""; }
+/* le nom ET le nom de naissance : une femme mariée figure sous l'un ou l'autre
+   selon le document qu'on avait sous la main ce jour-là */
+function dupNoms(p){
+  return [dupMots((p || {}).nom), dupMots((p || {}).nomNaissance)].filter(Boolean);
+}
+/* distance d'édition, bornée : au-delà de deux écarts ce n'est plus une faute
+   de lecture, c'est quelqu'un d'autre */
+function dupDistance(a, b){
+  if(a === b) return 0;
+  const n = a.length, m = b.length;
+  if(Math.abs(n - m) > 2) return 9;
+  let prec = new Array(m + 1), cour = new Array(m + 1);
+  for(let j = 0; j <= m; j++) prec[j] = j;
+  for(let i = 1; i <= n; i++){
+    cour[0] = i;
+    for(let j = 1; j <= m; j++)
+      cour[j] = Math.min(prec[j] + 1, cour[j-1] + 1,
+                         prec[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    const t = prec; prec = cour; cour = t;
+  }
+  return prec[m];
+}
+function dupProche(a, b){
+  if(!a || !b) return false;
+  if(a === b) return true;
+  /* un nom incomplet : « FILAINE » là où la base porte « FILAINE BUONO » */
+  if(a.length >= 4 && b.length >= 4 && (a.indexOf(b) === 0 || b.indexOf(a) === 0)) return true;
+  return dupDistance(a, b) <= (Math.min(a.length, b.length) >= 6 ? 2 : 1);
+}
+/* le score, et surtout les raisons : c'est en les lisant qu'on tranche */
+function proximitePersonnes(a, b){
+  const rais = [];
+  let pts = 0;
+  const na = dupNoms(a), nb = dupNoms(b);
+  const exact  = na.some(x=> nb.indexOf(x) >= 0);
+  const proche = !exact && na.some(x=> nb.some(y=> dupProche(x, y)));
+  if(exact){ pts += 35; rais.push("même nom"); }
+  else if(proche){ pts += 25; rais.push("nom approchant"); }
+  const pa = dupPrenom(a), pb = dupPrenom(b);
+  if(pa && pb && pa === pb){ pts += 25; rais.push("même prénom"); }
+  else if(pa && pb && dupProche(pa, pb)){ pts += 15; rais.push("prénom approchant"); }
+  const da = String((a || {}).dateNaissance || ""), db = String((b || {}).dateNaissance || "");
+  if(da && db && da === db){ pts += 45; rais.push("même date de naissance"); }
+  return {pts, raisons: rais};
+}
+/* les fiches de la base qui ressemblent à celle-ci, la plus proche d'abord */
+function fichesApprochantes(p, exclureDossier){
+  if(!p || (!dupNoms(p).length && !(p || {}).dateNaissance)) return [];
+  return toutesLesPersonnes()
+    .filter(x=> !exclureDossier || x.d.id !== exclureDossier)
+    .map(x=>{
+      const pr = proximitePersonnes(p, x.p);
+      return {x, pts: pr.pts, raisons: pr.raisons};
+    })
+    .filter(c=> c.pts >= DUP_SEUIL)
+    .sort((a, b)=> b.pts - a.pts)
+    .slice(0, 4);
+}
+function refApprochante(c){ return c.x.d.id + "|" + c.x.kind + "|" + c.x.i; }
+function personneDeRef(ref){
+  const [id, kind, i] = String(ref || "").split("|");
+  const d = dossiersVivants().filter(x=> x.id === id)[0];
+  const p = d && (d[kind] || [])[+i];
+  return p ? {d, kind, i: +i, p} : null;
+}
+/* ce qu'une fiche existante peut compléter : l'état civil et les coordonnées,
+   jamais le nom ni le prénom — ceux-là viennent du mandat, qui est signé */
+const DUP_CHAMPS = ["prenoms","nomNaissance","dateNaissance","lieuNaissance","nationalite",
+                    "profession","sitMat","adresse","cp","ville","pays","tel1","email1",
+                    "tel2","email2"];
 function renderMandatLu(){
   const r = MD_LU;
   if(!r) return;
   const doublon = r.mandat.num ? doublonMandat(r.mandat.num) : null;
   const negoConnu = r.negociateur &&
     (L.negociateurs || []).some(n=> n && fold(n.nom) === fold(r.negociateur));
+  /* trois provenances se distinguent à l'étiquette : ce que le mandat dit, ce
+     qu'une fiche de la base a complété, ce que vous avez corrigé vous-même */
+  const etatDe = (cle, val, deduit)=>
+    (MD_LU.saisi || {})[cle] ? "saisi"
+    : (MD_LU.repris || {})[cle] ? "repris"
+    : mdEtat(val, deduit);
   const ch = (cle, lab, val, deduit, kind, opts)=>
-    mdChamp(cle, lab, val, mdEtat(val, deduit), kind, opts);
+    mdChamp(cle, lab, val, etatDe(cle, val, deduit), kind, opts);
+  /* un champ qu'on n'attend pas forcément : vide, il ne compte pas */
+  const chOpt = (cle, lab, val)=>
+    mdChamp(cle, lab, val, val ? etatDe(cle, val, false) : "");
 
   const cell = (i, k, v)=>
     `<td><input type="text" data-md="p.${i}.${k}" value="${esc(v || "")}"></td>`;
@@ -13327,10 +13783,18 @@ function renderMandatLu(){
       r.vendeurs.length ? "lu" : "absent"}">${r.vendeurs.length}</span></h4>
       ${r.vendeurs.length ? r.vendeurs.map((p,i)=> `<div class="mdpers">
         <h5>Vendeur ${i+1} — ${esc([p.civilite, p.prenom, p.nom].filter(Boolean).join(" ") || "sans nom")}</h5>
+        ${p.represente ? `<p class="mdnote" style="margin:0 0 9px">Absent(e) à la
+          signature, représenté(e) par <b>${esc(p.represente)}</b> : le téléphone et le
+          courriel ci-dessous sont ceux que porte le mandat, et peuvent être ceux du
+          représentant.</p>` : ""}
+        ${mdBlocDoublons(i, p)}
+        <input type="hidden" data-md="v.${i}.pid" value="${esc(p.pid || "")}">
         <div class="mdgrid">
           ${ch("v." + i + ".civilite", "Civilité", p.civilite, false, "", L.qualite || [])}
           ${ch("v." + i + ".prenom", "Prénom", p.prenom)}
+          ${chOpt("v." + i + ".prenoms", "Autres prénoms", p.prenoms)}
           ${ch("v." + i + ".nom", "NOM", p.nom)}
+          ${ch("v." + i + ".nomNaissance", "Nom de naissance", p.nomNaissance)}
           ${ch("v." + i + ".dateNaissance", "Date de naissance", p.dateNaissance, false, "date")}
           ${ch("v." + i + ".lieuNaissance", "Lieu de naissance", p.lieuNaissance)}
           ${ch("v." + i + ".nationalite", "Nationalité", p.nationalite, false, "", L.nationalite || [])}
@@ -13347,10 +13811,110 @@ function renderMandatLu(){
 
     <div class="mdsect"><h4>Références cadastrales</h4>${cadastre}</div>`;
 
-  const n = $$("#mdCorps .mdetat.lu").length, d = $$("#mdCorps .mdetat.deduit").length,
-        a = $$("#mdCorps .mdetat.absent").length;
-  $("#mdBilan").textContent = n + " valeur" + (n > 1 ? "s" : "") + " lue" + (n > 1 ? "s" : "") +
-    ", " + d + " déduite" + (d > 1 ? "s" : "") + ", " + a + " absente" + (a > 1 ? "s" : "");
+  const combien = cls=> $$("#mdCorps .mdetat." + cls).length;
+  const bilan = [];
+  const dire = (n, sing, plur)=>{ if(n) bilan.push(n + " " + (n > 1 ? plur : sing)); };
+  dire(combien("lu"), "valeur lue", "valeurs lues");
+  dire(combien("deduit"), "déduite", "déduites");
+  dire(combien("repris"), "reprise d'une fiche", "reprises d'une fiche");
+  dire(combien("saisi"), "corrigée à la main", "corrigées à la main");
+  dire(combien("absent"), "absente", "absentes");
+  $("#mdBilan").textContent = bilan.join(", ");
+}
+
+/* --------------------------------- les fiches approchantes, dans la fenêtre */
+function mdBlocDoublons(i, p){
+  const dec = p.dup || {};
+  if(dec.repris)
+    return `<p class="mdnote mdrepris"><b>C'est la même personne que
+      ${esc(dec.repris.nom)}</b>${dec.repris.num ? " — mandat n° " + esc(dec.repris.num) : ""}.
+      Ce qui manquait au mandat a été repris de cette fiche, et les pièces jointes de
+      cette personne suivront le nouveau dossier.
+      <button type="button" class="lienbtn" data-mddup="${i}|annuler">Annuler la
+        reprise</button></p>`;
+  const cands = fichesApprochantes(p)
+    .filter(c=> (dec.ecartes || []).indexOf(refApprochante(c)) < 0);
+  if(!cands.length) return "";
+  return `<div class="mdnote mddup"><b>Déjà dans votre base ?</b> ${cands.length > 1
+      ? "Ces fiches ressemblent" : "Cette fiche ressemble"} à ce vendeur. Validez pour
+      n'en faire qu'une seule personne, écartez s'il s'agit de quelqu'un d'autre.
+    ${cands.map(c=>{
+      const q = c.x.p, num = ((c.x.d.mandat || {}).num) || "";
+      const ref = refApprochante(c);
+      const ou = [q.cp, q.ville].filter(Boolean).join(" ");
+      return `<div class="mddupl">
+        <div class="mddupq"><b>${esc(nomUsuel(q) || titrePersonne(q) || "sans nom")}</b>
+          <span>${esc([q.dateNaissance ? "né(e) le " + fdate(q.dateNaissance) : "", ou,
+            num ? "mandat n° " + num : "",
+            c.x.kind === "vendeurs" ? "vendeur" : "acquéreur"]
+            .filter(Boolean).join(" · "))}</span>
+          <em>${esc(c.raisons.join(", "))}${c.pts >= 80 ? " — très probable" : ""}</em></div>
+        <div class="mddupb">
+          <button type="button" class="tbtn mini" data-mddup="${i}|oui|${esc(ref)}">C'est
+            la même</button>
+          <button type="button" class="tbtn light mini" data-mddup="${i}|non|${esc(ref)}">Ce
+            n'est pas elle</button></div></div>`;
+    }).join("")}</div>`;
+}
+/* Ce que la fenêtre porte à l'écran redevient la vérité avant tout
+   redessin : sans cela, valider une fiche approchante effacerait les
+   corrections déjà faites à la main. */
+function mdRecolter(){
+  if(!MD_LU) return;
+  const v = mdValeurs();
+  Object.keys(v).forEach(cle=>{
+    const val = v[cle];
+    let m = /^v\.(\d+)\.(\w+)$/.exec(cle);
+    if(m){ const p = MD_LU.vendeurs[+m[1]]; if(p) p[m[2]] = val; return; }
+    m = /^p\.(\d+)\.(\w+)$/.exec(cle);
+    if(m){ const q = (MD_LU.bien.parcelles || [])[+m[1]]; if(q) q[m[2]] = val; return; }
+    if(cle === "detail.terrain"){ const n = num(val); MD_LU.bien.contenanceM2 = n; return; }
+    if(cle === "nego.vendeur"){ MD_LU.negociateur = val; return; }
+    m = /^(mandat|bien|prix)\.(\w+)$/.exec(cle);
+    if(m) MD_LU[m[1]][m[2]] = val;
+  });
+}
+function mdRedessiner(){ mdRecolter(); renderMandatLu(); }
+/* « C'est la même » : la fiche de la base complète ce que le mandat ne dit
+   pas, et la personne garde son identifiant — donc ses pièces jointes. Le nom
+   et le prénom, eux, restent ceux du mandat : c'est lui qui est signé. */
+function mdValiderDoublon(i, ref){
+  const p = MD_LU && MD_LU.vendeurs[i], t = personneDeRef(ref);
+  if(!p || !t) return;
+  mdRecolter();
+  MD_LU.repris = MD_LU.repris || {};
+  DUP_CHAMPS.forEach(k=>{
+    if(String(p[k] || "").trim() || !String(t.p[k] || "").trim()) return;
+    p[k] = t.p[k];
+    MD_LU.repris["v." + i + "." + k] = true;
+  });
+  p.pid = pidPersonne(t.p);
+  p.dup = {repris:{ref, nom: nomUsuel(t.p) || titrePersonne(t.p),
+                   num: ((t.d.mandat || {}).num) || ""}};
+  renderMandatLu();
+  toast("Fiche reprise — une seule personne");
+}
+function mdEcarterDoublon(i, ref){
+  const p = MD_LU && MD_LU.vendeurs[i];
+  if(!p) return;
+  mdRecolter();
+  p.dup = p.dup || {};
+  p.dup.ecartes = (p.dup.ecartes || []).concat([ref]);
+  renderMandatLu();
+}
+function mdAnnulerReprise(i){
+  const p = MD_LU && MD_LU.vendeurs[i];
+  if(!p) return;
+  mdRecolter();
+  /* on rend à la fiche ce qu'elle avait pris : les champs complétés
+     redeviennent vides, et l'identifiant repartira du nom */
+  Object.keys(MD_LU.repris || {}).forEach(cle=>{
+    const m = new RegExp("^v\\." + i + "\\.(\\w+)$").exec(cle);
+    if(m){ p[m[1]] = ""; delete MD_LU.repris[cle]; }
+  });
+  delete p.pid;
+  p.dup = {ecartes: [((p.dup || {}).repris || {}).ref].filter(Boolean)};
+  renderMandatLu();
 }
 
 function ouvrirMandatLu(r, nomFichier){
@@ -13388,8 +13952,9 @@ function creerDepuisMandat(){
   let i = 0;
   while(v["v." + i + ".nom"] !== undefined){
     const p = blankPerson();
-    ["civilite","prenom","nom","dateNaissance","lieuNaissance","nationalite",
-     "profession","sitMat","adresse","cp","ville","tel1","email1"].forEach(k=>{
+    ["civilite","prenom","prenoms","nom","nomNaissance","dateNaissance","lieuNaissance",
+     "nationalite","profession","sitMat","adresse","cp","ville","tel1",
+     "email1","pid"].forEach(k=>{
       if(v["v." + i + "." + k]) p[k] = v["v." + i + "." + k];
     });
     p.pays = "France";
@@ -13450,6 +14015,28 @@ $("#pdfFile").onchange = e=>{
   e.target.value = "";                      // le même fichier doit pouvoir se relire
   ouvrirFichierMandat(f);
 };
+/* une valeur corrigée à la main ne doit pas se faire passer pour « lu » */
+$("#mdCorps").addEventListener("input", e=>{
+  const el = e.target.closest("[data-md]");
+  if(!el || !MD_LU || el.type === "hidden") return;
+  (MD_LU.saisi = MD_LU.saisi || {})[el.dataset.md] = true;
+  const puce = el.closest(".mdf") && el.closest(".mdf").querySelector(".mdetat");
+  if(puce){ puce.className = "mdetat saisi"; puce.textContent = "saisi"; }
+});
+$("#mdCorps").addEventListener("click", e=>{
+  const b = e.target.closest("[data-mddup]");
+  if(!b) return;
+  /* la référence d'une fiche porte elle-même des « | » : on découpe les deux
+     premiers morceaux, et le reste EST la référence */
+  const v = b.getAttribute("data-mddup");
+  const c1 = v.indexOf("|"), i = v.slice(0, c1), suite = v.slice(c1 + 1);
+  const c2 = suite.indexOf("|");
+  const quoi = c2 < 0 ? suite : suite.slice(0, c2);
+  const ref  = c2 < 0 ? "" : suite.slice(c2 + 1);
+  if(quoi === "oui")      mdValiderDoublon(+i, ref);
+  else if(quoi === "non") mdEcarterDoublon(+i, ref);
+  else                    mdAnnulerReprise(+i);
+});
 $("#mdFermer").onclick = fermerMandatLu;
 $("#mdCreer").onclick = creerDepuisMandat;
 $("#mdBox").addEventListener("click", e=>{
@@ -13486,10 +14073,297 @@ function choisirNouveauDossier(){
           <em>Le mandat de vente en PDF est lu, et ce qu'il contient vous est soumis
             avant de créer le dossier.</em>
         </button>
+        <button type="button" class="choixc" data-neuf="suite">
+          <span class="ic">${IC_SUITE}</span>
+          <b>À la suite d'un mandat</b>
+          <em>Le bien et les vendeurs d'un dossier existant sont repris ; le prix et les
+            honoraires se saisissent à neuf.</em>
+        </button>
       </div>`,
     boutons: [{lib:"Annuler"}]
   });
 }
+/* =====================================================================
+   UN MANDAT QUI PREND LA SUITE D'UN AUTRE
+   ---------------------------------------------------------------------
+   Un mandat arrive à échéance et le vendeur signe le suivant : le bien n'a
+   pas changé, les vendeurs non plus, et tout retaper serait absurde — c'est
+   d'ailleurs ainsi qu'on finit par avoir deux fiches pour une même personne.
+   Le nouveau dossier reprend donc le bien, sa fiche détaillée, ses pièces,
+   ses parcelles, ses diagnostics et ses vendeurs.
+
+   Deux choses ne se reprennent PAS : le prix et les honoraires. Un mandat
+   qui se renouvelle se renégocie, et reprendre l'ancien prix serait la
+   meilleure façon de le laisser par mégarde. Son HISTORIQUE, en revanche,
+   suit le dossier — marqué comme venant de l'ancien mandat : c'est lui qui
+   raconte la vie de la vente, et sans lui on oublie que le bien est au même
+   prix depuis dix-huit mois.
+   ===================================================================== */
+const IC_SUITE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5"/>
+  <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg>`;
+let REN = null;
+function ouvrirRenouvellement(){
+  REN = {ancien:"", num:"", type:"", date: auj(), q:"", docs:{}, resilier:true};
+  renderRenouv();
+  $("#renBox").hidden = false;
+  setTimeout(()=>{ const i = $("#renQ"); if(i) i.focus(); }, 40);
+}
+function fermerRenouvellement(){ $("#renBox").hidden = true; REN = null; }
+/* les dossiers où un mandat peut avoir une suite : tous, sauf celui qu'on
+   est en train de créer. Le plus récent d'abord, c'est presque toujours lui. */
+function renCandidats(){
+  return chercherDossiers(REN.q || "").slice(0, 25);
+}
+function renAncien(){
+  return dossiersVivants().filter(d=> d.id === REN.ancien)[0] || null;
+}
+/* les pièces de l'ancien dossier, groupées comme elles le sont dans le Drive */
+function renGroupesPieces(src){
+  if(!src) return [];
+  const g = [];
+  (RUBRIQUES.dossier || []).forEach(rub=>{
+    const l = piecesDe("dossier:" + src.id, rub);
+    if(l.length) g.push({titre: "Affaire — " + rub, pieces: l});
+  });
+  const bien = piecesDe("bien:" + src.id);
+  if(bien.length) g.push({titre:"Le bien — photos et diagnostics", pieces: bien});
+  return g;
+}
+function renderRenouv(){
+  const src = renAncien();
+  const doublon = REN.num ? doublonMandat(REN.num, "") : null;
+  const lignes = src ? (((src.prix || {}).histo) || []).filter(l=> l && l.date).length : 0;
+  const groupes = renGroupesPieces(src);
+  const total = groupes.reduce((n, g)=> n + g.pieces.length, 0);
+  const choisis = Object.keys(REN.docs).filter(id=> REN.docs[id]).length;
+
+  const choix = !src
+    ? `<div class="mdsect"><h4>Le mandat précédent</h4>
+        <input type="text" id="renQ" class="renq" value="${esc(REN.q || "")}"
+          placeholder="Numéro de mandat, adresse, nom du vendeur, ville…">
+        <div class="renlist">${renCandidats().map(d=>{
+          const b = d.bien || {}, s = stade(d);
+          const gens = (d.vendeurs || []).map(titrePersonne).filter(Boolean).join(", ");
+          const px = num((d.prix || {}).fai);
+          return `<button type="button" class="renl" data-renanc="${esc(d.id)}">
+            <span class="rennum">n° ${esc(d.mandat.num || "—")}</span>
+            <span class="renou">${esc([b.adresse, b.cp, b.ville].filter(Boolean).join(" ")
+              || "adresse non renseignée")}
+              <em>${esc([gens, b.type || "", px !== null ? eur(px) : ""]
+                .filter(Boolean).join("  ·  "))}</em></span>
+            <span class="pastille ${s.cls}">${esc(s.lib)}</span></button>`;
+        }).join("") || `<p class="muted" style="margin:6px 2px">Aucun dossier ne
+          correspond.</p>`}</div></div>`
+    : `<div class="mdsect"><h4>Le mandat précédent</h4>
+        <div class="renchoisi"><div><b>n° ${esc(src.mandat.num || "—")}</b>
+          <span>${esc(bienDe(src))}</span>
+          <em>${esc((src.vendeurs || []).map(titrePersonne).filter(Boolean).join(", ")
+            || "aucun vendeur")}</em></div>
+          <button type="button" class="tbtn light mini" data-renanc="">Changer</button>
+        </div></div>`;
+
+  $("#renCorps").innerHTML = choix + (!src ? "" : `
+    <div class="mdsect"><h4>Le nouveau mandat</h4><div class="mdgrid">
+      <div class="mdf"><label for="renNum">Numéro de mandat</label>
+        <input type="text" id="renNum" data-ren="num" value="${esc(REN.num)}"></div>
+      <div class="mdf"><label for="renType">Type de mandat</label>
+        <select id="renType" data-ren="type"><option value=""></option>${
+          (L.mandat || []).map(o=> `<option${o === REN.type ? " selected" : ""}>${
+            esc(o)}</option>`).join("")}</select></div>
+      <div class="mdf"><label for="renDate">Date de signature</label>
+        <input type="date" id="renDate" data-ren="date" value="${esc(REN.date)}"></div>
+    </div>${doublon ? `<p class="mdnote mdalerte" style="margin:10px 0 0"><b>Attention :</b>
+      le mandat n° ${esc(REN.num)} existe déjà — ${esc(bienDe(doublon))}.</p>` : ""}</div>
+
+    <div class="mdsect"><h4>Ce que le nouveau dossier reprend</h4>
+      <p class="mdnote" style="margin:0">L'adresse et la description du bien, sa
+        <b>fiche détaillée</b>, le détail des <b>pièces</b>, les <b>parcelles
+        cadastrales</b>, les <b>diagnostics</b>, le questionnaire, l'argumentaire, le
+        mobilier, le <b>négociateur</b> et le notaire du vendeur, et les
+        <b>${esc(String((src.vendeurs || []).filter(p=> p && !personneVide(p)).length))}
+        vendeur(s)</b> avec leur état civil.<br>
+        <b>Ni le prix, ni les honoraires :</b> ils se saisissent à neuf dans le nouveau
+        dossier.${lignes ? ` En revanche, les <b>${lignes} ligne${lignes > 1 ? "s" : ""}
+        d'historique du prix</b> de l'ancien mandat suivent, marquées « mandat
+        n° ${esc(src.mandat.num || "précédent")} » : la vie de la vente reste lisible
+        d'un seul coup d'œil.` : ""}</p></div>
+
+    <div class="mdsect"><h4>Les documents à reprendre ${total
+      ? `<span class="mdetat lu">${choisis} / ${total}</span>` : ""}</h4>
+      ${total ? `<p class="muted" style="margin:0 0 9px">Ils seront <b>copiés</b> dans le
+        nouveau dossier, au même rangement — l'ancien dossier garde les siens. Un document
+        rattaché à une <b>personne</b> ou à un <b>immeuble</b> n'a pas à être copié : il
+        suit déjà la personne et l'immeuble.</p>
+        <div class="renpied"><button type="button" class="lienbtn"
+          data-rendocs="tous">Tout cocher</button><button type="button" class="lienbtn"
+          data-rendocs="aucun">Tout décocher</button></div>
+        ${groupes.map(g=> `<div class="rengr"><h5>${esc(g.titre)}</h5>${
+          g.pieces.map(p=> `<label class="rendoc"><input type="checkbox"
+            data-rendoc="${esc(p.id)}"${REN.docs[p.id] ? " checked" : ""}>
+            <span>${esc(p.nom)}<em>${esc([poids(p.taille),
+              p.date ? fdate(p.date.slice(0, 10)) : "",
+              p.photo ? "photo" : ""].filter(Boolean).join(" · "))}</em></span></label>`)
+          .join("")}</div>`).join("")}`
+        : `<p class="muted" style="margin:0">Aucun document n'est rattaché à l'ancien
+           dossier.</p>`}</div>
+
+    <div class="mdsect"><h4>Et l'ancien mandat ?</h4>
+      <label class="rendoc"><input type="checkbox" data-ren="resilier"${
+        REN.resilier ? " checked" : ""}>
+        <span>Clore le mandat n° ${esc(src.mandat.num || "—")} — motif
+          « Fin du mandat », au ${esc(fdate(REN.date) || "jour du nouveau mandat")}
+          <em>Le dossier reste dans vos archives et dans vos statistiques : un mandat
+            rentré l'a été. Il n'encombre plus les dossiers en vente.</em></span></label>
+    </div>`);
+
+  $("#renBilan").textContent = !src ? "Choisissez le mandat précédent"
+    : !String(REN.num || "").trim() ? "Le numéro du nouveau mandat est à saisir"
+    : choisis + " document" + (choisis > 1 ? "s" : "") + " à copier";
+  $("#renCreer").disabled = !src || !String(REN.num || "").trim();
+}
+async function creerDepuisRenouvellement(){
+  const src = renAncien();
+  if(!src) return;
+  const num = String(REN.num || "").trim();
+  if(!num) return;
+  const autre = doublonMandat(num, "");
+  if(autre && !confirm("Le mandat n° " + num + " existe déjà. Créer quand même un second "
+    + "dossier ?")) return;
+  persist(true);
+  const copie = JSON.parse(JSON.stringify(src));
+  const d = blankDossier();
+  /* tout ce qui décrit le BIEN et les VENDEURS, et rien de ce qui décrit la
+     vente précédente — ni ses dates, ni son acquéreur, ni sa facture */
+  ["bien","detail","quest","argu","mobilier"].forEach(k=>{
+    if(copie[k] && typeof copie[k] === "object") d[k] = copie[k];
+  });
+  ["pieces","parcelles","diags","vendeurs"].forEach(k=>{
+    if(Array.isArray(copie[k])) d[k] = copie[k];
+  });
+  d.dpeDispense = copie.dpeDispense || "";
+  d.diagPar = copie.diagPar || "";
+  d.divers = copie.divers || "";
+  d.nego.vendeur = (copie.nego || {}).vendeur || "";
+  d.notaire.vendeur = (copie.notaire || {}).vendeur || "";
+  d.notaire.vendeurContact = (copie.notaire || {}).vendeurContact || "";
+  d.notaire.vendeurContactEmail = (copie.notaire || {}).vendeurContactEmail || "";
+  d.prix.charge = (copie.prix || {}).charge || "Vendeur";
+  /* l'historique de l'ancien mandat, marqué de son numéro : il se lit, il ne
+     se corrige plus, et il ne donne JAMAIS le prix du nouveau mandat */
+  d.prix.histo = (((copie.prix || {}).histo) || []).filter(l=> l && l.date)
+    .map(l=> Object.assign({}, l, {ancien: src.mandat.num || "précédent"}));
+  d.mandat.num = num;
+  d.mandat.type = REN.type || "";
+  d.mandat.date = REN.date || "";
+  d.mandat.suiteDe = src.mandat.num || "";
+  const neuf = migrate(d);
+
+  /* l'ancien mandat se clôt, si on l'a demandé — c'est ce que dit un
+     renouvellement : le précédent a pris fin */
+  if(REN.resilier){
+    const tous = allDossiers();
+    const a = tous[src.id];
+    if(a){
+      a.mandat = a.mandat || {};
+      a.mandat.resilie = true;
+      a.mandat.resilieDate = REN.date || auj();
+      if(!a.mandat.resilieMotif) a.mandat.resilieMotif = "Fin du mandat";
+      a.maj = Date.now();
+      tous[src.id] = a;
+      try{ localStorage.setItem(LS_DOSS, JSON.stringify(tous)); }catch(e){}
+    }
+  }
+  const ids = Object.keys(REN.docs).filter(id=> REN.docs[id] && PIECES[id]);
+  D = neuf;
+  fermerRenouvellement();
+  renderAll(); activerOnglet("general"); persist(true);
+  toast("Dossier créé à la suite du mandat n° " + (src.mandat.num || "précédent"));
+  if(ids.length){
+    const {ok, rate} = await copierLesPieces(ids, src.id, neuf.id);
+    renderAll();
+    toast(ok + " document" + (ok > 1 ? "s" : "") + " copié" + (ok > 1 ? "s" : "")
+      + (rate ? " — " + rate + " illisible(s) sur cet appareil" : ""));
+  }
+  if(typeof syncDiffere === "function") syncDiffere();
+}
+/* La copie d'un document : un nouvel exemplaire, au même rangement, qui
+   repartira vers le Drive du nouveau dossier. L'original ne bouge pas. Un
+   fichier absent de l'appareil est redescendu du Drive au passage ; s'il n'y
+   est pas non plus, il est compté et signalé plutôt que perdu en silence. */
+async function copierLesPieces(ids, ancienId, neufId){
+  let ok = 0, rate = 0;
+  for(const id of ids){
+    const p = PIECES[id];
+    if(!p){ rate++; continue; }
+    let blob = null, vig = null;
+    try{
+      blob = await blobDeLaPiece(p, false);
+      if(p.photo) vig = await blobDeLaPiece(p, true);
+    }catch(e){ blob = null; }
+    if(!blob){ rate++; continue; }
+    const nid = pjId();
+    const q = Object.assign({}, p, {
+      id: nid, sujet: sujetType(p.sujet) + ":" + neufId,
+      drive:"", driveVig:"", maj: Date.now()});
+    delete q.supprime;
+    await pjPoser(nid, blob);
+    if(vig) await pjPoser("v" + nid, vig);
+    PIECES[nid] = q;
+    ok++;
+  }
+  if(ok){ ecrirePieces(); filePieces(); }
+  return {ok, rate};
+}
+$("#renFermer").onclick = fermerRenouvellement;
+$("#renBox").addEventListener("click", e=>{
+  if(e.target.id === "renBox" || e.target.closest("[data-renfermer]")){
+    fermerRenouvellement(); return;
+  }
+  const a = e.target.closest("[data-renanc]");
+  if(a){
+    REN.ancien = a.getAttribute("data-renanc");
+    REN.docs = {};
+    if(REN.ancien){
+      const src = renAncien();
+      renGroupesPieces(src).forEach(g=> g.pieces.forEach(p=>{ REN.docs[p.id] = true; }));
+      if(!REN.type) REN.type = (src && src.mandat && src.mandat.type) || "";
+    }
+    renderRenouv(); return;
+  }
+  const t = e.target.closest("[data-rendocs]");
+  if(t){
+    const on = t.getAttribute("data-rendocs") === "tous";
+    renGroupesPieces(renAncien()).forEach(g=> g.pieces.forEach(p=>{ REN.docs[p.id] = on; }));
+    renderRenouv(); return;
+  }
+});
+$("#renCorps").addEventListener("input", e=>{
+  const el = e.target;
+  if(!REN) return;
+  if(el.id === "renQ"){ REN.q = el.value; renderRenouv();
+    const i = $("#renQ"); if(i){ i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+    return; }
+  const d = el.getAttribute && el.getAttribute("data-rendoc");
+  if(d){ REN.docs[d] = el.checked; renderRenouv(); return; }
+  const k = el.getAttribute && el.getAttribute("data-ren");
+  if(!k) return;
+  REN[k] = el.type === "checkbox" ? el.checked : el.value;
+  /* on ne redessine pas sous les doigts : seuls le bilan et l'alerte bougent */
+  if(k === "num" || k === "date"){
+    $("#renBilan").textContent = String(REN.num || "").trim()
+      ? Object.keys(REN.docs).filter(x=> REN.docs[x]).length + " document(s) à copier"
+      : "Le numéro du nouveau mandat est à saisir";
+    $("#renCreer").disabled = !String(REN.num || "").trim();
+  }
+});
+$("#renCorps").addEventListener("change", e=>{
+  if(REN && e.target.getAttribute && e.target.getAttribute("data-ren") === "type")
+    REN.type = e.target.value;
+});
+$("#renCreer").onclick = creerDepuisRenouvellement;
+
 $("#btnNew").onclick = choisirNouveauDossier;
 $("#btnDup").onclick = ()=>{
   persist(true);
@@ -15484,6 +16358,10 @@ function migrate(d){
   if(!out.mandat.num && d.ref) out.mandat.num = d.ref;   // ancienne référence libre
   delete out.ref;
   out.mandat.resilie = !!out.mandat.resilie;
+  if(out.mandat.resilieMotif === "Fin du mandat sans renouvellement")
+    out.mandat.resilieMotif = "Fin du mandat";
+  /* le mandat dont celui-ci prend la suite : son numéro, et rien de plus */
+  if(out.mandat.suiteDe === undefined) out.mandat.suiteDe = "";
   out.inter = Object.assign(base.inter, d.inter||{});
   out.nego  = Object.assign(base.nego, d.nego||{});
   out.notaire = Object.assign(base.notaire, d.notaire||{});
@@ -15558,7 +16436,12 @@ function migrate(d){
             /* renouvellement demandé, en attente du nouveau diagnostic */
             demande:!!a.demande,
             dpeEnergie:a.dpeEnergie||"", dpeGes:a.dpeGes||"",
-            /* dépenses annuelles estimées et année des prix, exigées en annonce */
+            /* les deux étiquettes se calculent sur les consommations ; ces
+               drapeaux disent qu'on les a choisies soi-même */
+            dpeEManuel:!!a.dpeEManuel, dpeGManuel:!!a.dpeGManuel,
+            /* dépenses annuelles estimées, exigées en annonce. L'année des
+               prix de référence (dpeAnnee) n'est plus saisie ni publiée ;
+               la valeur des anciens dossiers est conservée, sans usage. */
             dpeCoutMin:a.dpeCoutMin||"", dpeCoutMax:a.dpeCoutMax||"",
             dpeAnnee:a.dpeAnnee||"", dpeKwh:a.dpeKwh||"", dpeCo2:a.dpeCo2||"",
             manuel:!!a.manuel, masque:!!a.masque};
@@ -15573,6 +16456,16 @@ function migrate(d){
     const cote = k==="vendeurs" ? "vendeur" : "acquereur";
     out[k] = out[k].map(p=>{ const q = Object.assign(blankPerson(),p);
       if(!q.pays) q.pays = "France";
+      /* une seule case portait tous les prénoms : le premier reste dans
+         « Prénom », les suivants passent dans « Autres prénoms ». Le découpage
+         se fait au premier espace, ce qui est juste neuf fois sur dix et se
+         corrige en une seconde la dixième — « Marie Claire » se recolle à la
+         main. L'opération ne se fait qu'une fois : la case des autres prénoms
+         existe ensuite, même vide. */
+      if(p && p.prenoms === undefined){
+        const c = couperPrenoms(q.prenom);
+        q.prenom = c.prenom; q.prenoms = c.prenoms;
+      }
       if(!q.civilite && anciennesQual[cote]) q.civilite = anciennesQual[cote];
       /* identifiant stable : il survit à un changement de nom, ce que la clé
          par le nom ne faisait pas (voir pidDepuis) */
@@ -15610,6 +16503,50 @@ const AIDE = [
   "La lecture est calée sur le modèle de mandat de l'agence (Modelo). Un mandat "+
   "<b>scanné</b> n'est qu'une image : il ne contient aucun texte et ne peut pas être lu — "+
   "l'application le dit plutôt que de remplir n'importe quoi."],
+ ["Ce que la lecture du mandat sait reconnaître",
+  "La lecture a été calée sur plusieurs mandats réels, dont une succession à dix vendeurs. "+
+  "Elle sait désormais lire : "+
+  "<b>le type de mandat sous son nom d'origine</b> — un mandat « SANS EXCLUSIVITÉ » devient "+
+  "un <b>mandat simple</b>, « semi-exclusif » reste semi-exclusif, une « délégation » est "+
+  "reprise comme telle ; "+
+  "<b>chaque vendeur séparément</b>, même quand ils sont dix, avec sa propre adresse, son "+
+  "propre téléphone et son propre courriel — et non ceux du premier de la liste ; "+
+  "<b>l'adresse après « Demeurant »</b>, le code postal étant le nombre qui précède la "+
+  "commune en majuscules, y compris quand celle-ci tient en deux mots (SAINT GILLES) ; "+
+  "<b>les dates de naissance écrites en toutes lettres</b> (« 5 mai 1965 ») aussi bien "+
+  "qu'en chiffres ; "+
+  "<b>les noms d'usage</b> : « BAUTIAS épouse JULIAN » donne JULIAN en nom et BAUTIAS en nom "+
+  "de naissance, tandis qu'un nom composé sans « épouse » (FILAINE BUONO) reste d'un bloc ; "+
+  "<b>un vendeur absent le jour de la signature</b> — la fenêtre de vérification le signale "+
+  "et lui garde son adresse personnelle, pas celle de son mandataire ; "+
+  "<b>les libellés qui varient</b> : « Adresse électronique » vaut « Courriel », "+
+  "« Portable » vaut « Téléphone » ; "+
+  "<b>le prix honoraires d'agence inclus</b>, retenu comme prix FAI du dossier, les "+
+  "honoraires étant alors la différence exacte avec le prix proposé par le vendeur — jamais "+
+  "un pourcentage recalculé ; "+
+  "et <b>le type de bien malgré la rédaction</b> : un mas avec terrain attenant est une "+
+  "maison, pas un terrain. "+
+  "Toute valeur lue est reprise dans la fenêtre de vérification même si elle sort des choix "+
+  "habituels de l'application : rien de ce que dit le mandat ne disparaît en silence."],
+ ["Le mandat lu : les fiches qui ressemblent déjà à ce vendeur",
+  "Avant de créer le dossier, chaque vendeur lu est comparé à <b>toutes les personnes de "+
+  "vos dossiers</b>. Quand une fiche ressemble à ce que le mandat dit, la fenêtre la montre "+
+  "et vous laisse trancher : <b>« C'est la même »</b> ou <b>« Ce n'est pas elle »</b>. Rien "+
+  "n'est décidé à votre place. "+
+  "La ressemblance se mesure sur ce qui identifie vraiment quelqu'un : le <b>premier "+
+  "prénom</b>, le <b>nom</b> — nom d'usage et nom de naissance comptent autant l'un que "+
+  "l'autre — et la <b>date de naissance</b>. Il en faut <b>deux qui concordent</b> pour "+
+  "qu'une fiche soit proposée : un nom seul ne dit rien, et dans une succession de dix "+
+  "héritiers du même nom, une fenêtre qui crierait au doublon dix fois de suite ne serait "+
+  "plus lue. Un nom <b>mal lu</b> (BAUTAIS pour BAUTIAS) ou <b>incomplet</b> (FILAINE pour "+
+  "FILAINE BUONO) est rattrapé : c'est justement ce qui crée les doublons. "+
+  "En validant, la fiche de votre base <b>complète ce que le mandat ne dit pas</b> — "+
+  "profession, nationalité, téléphone, courriel, adresse —, les champs ainsi remplis portent "+
+  "l'étiquette <b>repris</b>, et la personne <b>garde son identifiant</b> : ses pièces "+
+  "jointes et son historique suivent le nouveau dossier. Le nom et le prénom, eux, restent "+
+  "ceux du mandat : c'est lui qui est signé. « Annuler la reprise » revient en arrière. "+
+  "Une valeur que vous corrigez vous-même dans la fenêtre est marquée <b>saisi</b> : elle "+
+  "ne se fait pas passer pour une valeur lue."],
  ["Le mandat identifie le dossier",
   "Numéro, type et date de signature se saisissent dans la barre du haut, une seule fois. Le "+
   "numéro sert de référence partout : titre des documents, nom des fichiers Word, liste "+
@@ -15667,6 +16604,18 @@ const AIDE = [
  ["Vendeurs et acquéreurs",
   "Une fiche par personne, autant que nécessaire. Le premier champ, « Qualité / civilité », "+
   "propose M., Mme, M. et Mme, indivision, SCI, succession, société."],
+ ["Deux cases pour les prénoms",
+  "La fiche porte <b>« Prénom »</b> — le premier, celui dont on se sert — et <b>« Autres "+
+  "prénoms »</b>, qui n'existent que pour l'état civil. On n'écrit à personne avec trois "+
+  "prénoms : partout où il s'agit de parler du vendeur ou de lui écrire — les listes, les "+
+  "alertes, la facture, l'intitulé, le répertoire, un message —, c'est le <b>premier "+
+  "prénom seul</b> qui sort. La <b>fiche notaire</b> et l'<b>en-tête du dossier</b>, eux, "+
+  "sont des actes : ils portent tous les prénoms, dans l'ordre. "+
+  "Vos dossiers d'avant n'avaient qu'une case : les prénoms y sont coupés au premier espace, "+
+  "« Alice Madeleine Anne » devenant « Alice » puis « Madeleine Anne ». C'est juste presque "+
+  "toujours ; un prénom composé écrit sans trait d'union — « Marie Claire » — se recolle à "+
+  "la main une fois pour toutes. La lecture d'un mandat fait la même séparation, et la "+
+  "fenêtre de vérification montre les deux cases."],
  ["Notaires",
   "Le logo de l'agence est imprimé sur 6 cm de large sur les deux documents. Sur la fiche "+
   "notaire, les questions restées sans réponse ne sont pas imprimées, et le syndic de "+
@@ -15691,6 +16640,27 @@ const AIDE = [
   "À partir du deuxième vendeur ou acquéreur, la case « Même adresse que le précédent » recopie "+
   "l'adresse de la fiche du dessus et la maintient à jour. Les champs concernés se verrouillent "+
   "tant que la case est cochée."],
+ ["Le DPE : les deux étiquettes se calculent",
+  "Sur la ligne du DPE, vous saisissez ce que dit le rapport — les "+
+  "<b>kWh/m²/an</b> et les <b>kg CO₂/m²/an</b> — et les deux classes se posent d'elles-"+
+  "mêmes au bout de la ligne, d'après les seuils de l'arrêté du 31 mars 2021. Elles "+
+  "portent la mention « calculée ». Vous pouvez toujours en choisir une à la main : elle "+
+  "passe alors en « à la main » et la saisie ne la rattrape plus. Pour revenir au calcul, "+
+  "videz simplement le menu. Attention aux bornes : <b>70 kWh/m²/an est un B</b>, pas un A, "+
+  "et <b>6 kg de CO₂ est un B</b> également."],
+ ["DPE : les logements de moins de 40 m²",
+  "Depuis le 1<sup>er</sup> juillet 2024, les logements d'une surface de référence "+
+  "inférieure à 40 m² ont des seuils <b>adaptés</b>, qui changent mètre carré par mètre "+
+  "carré ; les logements situés au-dessus de 800 m d'altitude ont également les leurs. "+
+  "L'application ne les devine pas : sous 40 m², elle ne remplit rien, le signale sur la "+
+  "ligne, et vous reportez les classes telles qu'elles figurent sur le diagnostic."],
+ ["DPE : l\'année des prix de référence, retirée",
+  "L'<b>année de référence des prix de l'énergie</b> ne se saisit plus et ne figure plus "+
+  "dans le texte des annonces. À savoir : pour une annonce de vente d'un logement, le code "+
+  "de la construction impose d'indiquer le montant estimé des dépenses annuelles d'énergie "+
+  "<b>et</b> l'année de référence des prix utilisés pour cette estimation. Le montant est "+
+  "toujours là ; l'année, non. Si un portail ou un contrôle vous la réclame, dites-le-moi : "+
+  "elle se remet en une ligne."],
  ["Diagnostics : la liste s'adapte au bien",
   "L'année de construction, saisie dans l'onglet Général, commande la liste. Moins de quinze "+
   "ans : DPE, termites et ERP seulement. Quinze ans et plus : gaz et électricité s'ajoutent. "+
@@ -15724,6 +16694,33 @@ const AIDE = [
   "colonne Variation montre l'écart avec la ligne précédente, en euros et en pourcentage. Si "+
   "vous modifiez le prix directement dans la fiche, l'application vous demande s'il s'agit "+
   "d'un changement à dater d'aujourd'hui ou d'une correction de la dernière ligne."],
+ ["Un mandat qui prend la suite d'un autre",
+  "Le mandat arrive à échéance, le vendeur signe le suivant : le bien n'a pas changé, les "+
+  "vendeurs non plus, et tout retaper serait absurde — c'est d'ailleurs ainsi qu'on finit "+
+  "par avoir deux fiches pour une même personne. Le bouton <b>Nouveau</b> propose donc une "+
+  "troisième voie : <b>« À la suite d'un mandat »</b>. "+
+  "Vous choisissez le mandat précédent dans la liste de vos dossiers, puis vous saisissez le "+
+  "<b>numéro</b>, le <b>type</b> et la <b>date de signature</b> du nouveau — le type du "+
+  "précédent est proposé par défaut. Le nouveau dossier reprend l'adresse et la description "+
+  "du bien, sa <b>fiche détaillée</b>, le détail des <b>pièces</b>, les <b>parcelles</b>, "+
+  "les <b>diagnostics</b>, le questionnaire, l'argumentaire, le mobilier, le "+
+  "<b>négociateur</b>, le notaire du vendeur et les <b>vendeurs</b> avec leur état civil. "+
+  "Ce qui appartenait à la vente précédente — l'acquéreur, ses dates, son notaire, la "+
+  "facture, les annonces — ne suit pas. "+
+  "<b>Ni le prix, ni les honoraires :</b> un mandat qui se renouvelle se renégocie, et "+
+  "reprendre l'ancien prix serait la meilleure façon de le laisser par mégarde. Son "+
+  "<b>historique</b>, en revanche, suit : les anciennes lignes apparaissent <b>grisées</b> "+
+  "en tête du tableau, marquées « mandat n° … », et sur la courbe du prix en <b>points "+
+  "gris</b>. Elles ne se modifient plus et ne donnent jamais le prix du nouveau mandat — "+
+  "elles sont là pour qu'on n'oublie pas que le bien est au même prix depuis dix-huit mois. "+
+  "Vous choisissez enfin les <b>documents</b> à reprendre : ils sont <b>copiés</b> au même "+
+  "rangement, l'ancien dossier gardant les siens. Un document rattaché à une "+
+  "<b>personne</b> ou à un <b>immeuble</b> n'a pas à être copié : il suit déjà la personne "+
+  "et l'immeuble. Une dernière case clôt le mandat précédent, motif <b>« Fin du mandat »</b>, "+
+  "à la date du nouveau : il reste dans vos archives et dans vos statistiques — un mandat "+
+  "rentré l'a été — sans encombrer les dossiers en vente. "+
+  "L'en-tête du nouveau dossier dit « à la suite du mandat n° … » et mène au précédent d'un "+
+  "clic ; chercher l'ancien numéro ramène les deux."],
  ["Contrôles à la saisie",
   "Le numéro de mandat identifie le dossier : s'il est déjà pris, une fenêtre vous le signale "+
   "en donnant l'adresse du dossier concerné, et propose soit de corriger le numéro, soit "+
@@ -18143,7 +19140,7 @@ function donneesPubli(){
     dispense: motifDispenseDpe(),
     dpeE: dpe.dpeEnergie || "", dpeG: dpe.dpeGes || "",
     coutMin: num(dpe.dpeCoutMin), coutMax: num(dpe.dpeCoutMax),
-    anneeRef: String(dpe.dpeAnnee || "").trim(),
+
     lots: num(r.nbLots), lotsHab: num(r.nbLotsPrinc),
     ascenseur: r.ascenseur === "OUI",
     piscine: r.piscine === "OUI",
@@ -18201,7 +19198,6 @@ function manquePubli(){
     if(!o.dpeG) m.push("la classe climat du DPE");
     if(o.coutMin === null || o.coutMax === null)
       m.push("les dépenses annuelles d'énergie estimées (onglet Diagnostics, ligne DPE)");
-    if(!o.anneeRef) m.push("l'année des prix de référence du DPE");
   }
   if(o.copro){
     if(o.lots === null) m.push("le nombre de lots de la copropriété (fiche de l'immeuble)");
@@ -18239,8 +19235,7 @@ function mentionsPubli(){
     L2.push("Classe énergie " + (o.dpeE || "…") + " — Classe climat " + (o.dpeG || "…") + ".");
     L2.push("Montant estimé des dépenses annuelles d'énergie pour un usage standard : "
       + (o.coutMin === null ? "…" : eur(o.coutMin)) + " à "
-      + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an"
-      + (o.anneeRef ? " (prix moyens indexés au 1er janvier " + o.anneeRef + ")" : "") + ".");
+      + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an.");
   } else {
     /* le dire franchement vaut mieux qu'un silence : le lecteur croirait
        que l'agent a oublié la mention */
@@ -19548,8 +20543,7 @@ function legalesCourtes(){
   if(o.dpeDu){
     l.push("Dépenses annuelles d'énergie estimées entre "
       + (o.coutMin === null ? "…" : eur(o.coutMin)) + " et "
-      + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an"
-      + (o.anneeRef ? " (prix " + o.anneeRef + ", abonnement compris)" : ""));
+      + (o.coutMax === null ? "…" : eur(o.coutMax)) + " par an");
     if(/^[FG]$/.test(o.dpeE))
       l.push("Logement à consommation énergétique excessive : classe " + o.dpeE);
     else
