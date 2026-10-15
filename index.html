@@ -475,6 +475,23 @@ table.grid-t input{padding:5px 7px}
 .ynb.oui{background:#e2f5e9;border-color:#8fcfa8;color:#14663d}
 .ynb.non{background:#fde9e9;border-color:#eda9a9;color:#9c1c1c}
 .ynb.vide{font-weight:600}
+.pdib{display:inline-flex;align-items:center;justify-content:center;min-width:104px;
+  padding:5px 12px;border-radius:7px;border:1px solid var(--line);background:#fff;
+  cursor:pointer;font-size:12.5px;font-family:inherit;color:var(--ink-2)}
+.pdib:hover{border-color:var(--accent)}
+.pdib.rien{color:var(--ink-3)}
+.pdib.ideal{background:#fef6e7;border-color:#f0cf96;color:#8a5a06;font-weight:600}
+.pdib.imperatif{background:#fde9e9;border-color:#eda9a9;color:#9c1c1c;font-weight:700}
+.pdib[disabled]{opacity:.5;cursor:default}
+
+/* les personnes d'une fiche prospect, en blocs ajoutables */
+.ppers{border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 0 10px;
+  margin-bottom:12px}
+.ppers > header{display:flex;align-items:center;gap:10px;padding:8px 12px;
+  background:var(--accent-soft);border-bottom:1px solid var(--line);
+  border-radius:10px 10px 0 0}
+.ppers > header .who{font-weight:600;color:var(--bandeau);flex:1;min-width:0}
+.ppers > .pgrid{padding:10px 12px 0}
 table.grid-t td .ynb{min-width:48px;padding:3px 9px;font-size:11.5px}
 .yn label{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--field-line);
   border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12px;background:#fff;
@@ -585,6 +602,24 @@ table.envois tr.repondu td.emode b{color:#166534}
 .rapacq > h4 em{font-style:normal;font-weight:400;font-size:11.5px;color:var(--ink-2)}
 .rapneuf{background:#0284c7;color:#fff;border-radius:999px;padding:1px 8px;
   font-size:10.5px;font-weight:700;letter-spacing:.3px}
+.patt{text-align:center}
+.rapsous{margin:14px 0 8px;font-size:11.5px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+.rapsous:first-child{margin-top:0}
+.averif{margin:0 0 12px;padding:8px 11px;border:1px dashed #cbd5e1;border-radius:8px;
+  background:#f8fafc;font-size:12.5px;color:var(--ink-2)}
+.ricone{display:inline-flex;align-items:center;justify-content:center;width:28px;
+  height:28px;border-radius:7px;border:1px solid var(--line);background:#fff;
+  cursor:pointer;color:var(--ink-2);padding:0}
+.ricone:hover{border-color:var(--accent)}
+.ricone.oui:hover{background:#dcfce7;border-color:#86efac;color:#14532d}
+.ricone.sup:hover{background:#fdecec;border-color:#eda9a9;color:#9c1c1c}
+.repok{background:#dcfce7;color:#14532d;border-radius:999px;padding:1px 8px;
+  font-size:10.5px;font-weight:700}
+.repnon{background:#f1f5f9;color:#64748b;border-radius:999px;padding:1px 8px;
+  font-size:10.5px;font-weight:700}
+.raprow.refuse{opacity:.6}
+.raprow.suivi{box-shadow:inset 3px 0 0 #16a34a}
 .raprow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.9fr) auto minmax(0,1.3fr) auto;
   gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;background:#fff;
   padding:7px 10px;margin-bottom:6px;font-size:13px}
@@ -825,7 +860,7 @@ table.tdb.statuts tr.stat td.cpart,table.tdb.statuts tr.tot td.cpart{font-weight
   padding:6px 0 2px}
 .dbien .xbtn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .dbien .dres{font-size:12.5px;color:var(--ink-2);line-height:1.35}
-.modalbox.detailbox{max-width:1120px;width:min(96vw,1120px);display:flex;
+.modalbox.detailbox{max-width:1320px;width:min(97vw,1320px);display:flex;
   flex-direction:column;overflow:hidden}
 .detailbox h3{flex:0 0 auto}
 .detailbox .modalbody{flex:1 1 auto;overflow:auto;min-height:0}
@@ -853,6 +888,17 @@ table.tdb.statuts tr.stat td.cpart,table.tdb.statuts tr.tot td.cpart{font-weight
 .annx.on{background:#fff;border-color:var(--line)}
 .annx .al{font-size:11.5px;font-weight:600;color:var(--ink-2)}
 .annx .ynb{min-width:58px;padding:4px 10px;font-size:11.5px}
+/* Le tableau des pièces porte sept colonnes : on resserre ce qui peut l'être,
+   et la loupe d'une liste n'a rien à y faire — on cherche une pièce des yeux. */
+table.piecest td,table.piecest th{padding:4px 6px}
+table.piecest select{min-width:86px}
+table.piecest .withadd{gap:3px}
+table.piecest .addinline[data-search]{display:none}
+table.piecest input[type=checkbox]{margin:0}
+table.piecetot{margin-top:8px}
+table.piecetot td:nth-child(2),table.piecetot td:nth-child(3),
+table.piecetot th:nth-child(2),table.piecetot th:nth-child(3){text-align:right}
+table.piecetot tr.tot td{font-weight:700}
 .annx .as{width:100%;display:block}
 .annx .as i{display:block;font-style:normal;font-size:10.5px;color:var(--ink-3);
   margin-bottom:2px}
@@ -1790,7 +1836,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 14 octobre 2026, 22 h 20">Dossiers de vente</div>
+  <div class="brand" title="Version du 15 octobre 2026, 7 h 57">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2001,7 +2047,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>14 octobre 2026, 22 h 20</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>15 octobre 2026, 7 h 57</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2205,6 +2251,13 @@ const LISTS_DEFAULT = {
                "Traversant","Plusieurs expositions"],
   etatBien:   ["Neuf","Refait à neuf","Bon état","À rafraîchir","À rénover",
                "Gros travaux à prévoir"],
+  /* Les niveaux d'une pièce. Les demi-étages comptent : une maison à
+     demi-niveaux ne se décrit pas autrement, et c'est le rez-de-chaussée
+     seul qui répond à la question du plain-pied. La liste se complète
+     depuis l'onglet Listes, et l'ordre de saisie est celui des totaux. */
+  niveauPiece:["Sous-sol","Rez-de-jardin","Rez-de-chaussée","Rez-de-chaussée + ½",
+               "1er étage","1er étage + ½","2e étage","2e étage + ½","3e étage",
+               "3e étage + ½","4e étage","Combles"],
   /* les noms de pièces : une liste pour saisir vite et nommer pareil d'un
      dossier à l'autre, modifiable comme toutes les autres. C'est sur ces
      noms que la fiche compte les chambres, les salles d'eau, les annexes —
@@ -2244,8 +2297,28 @@ const LISTS_DEFAULT = {
                "Je réponds à vos questions, sans engagement."],
   residences: [],
   syndics: [],
-  /* les lettres du DPE, pour le seuil que se fixe un acquéreur */
+  /* les lettres du DPE, pour le seuil que se fixe un prospect */
   classeDpe: ["A","B","C","D","E","F","G"],
+  /* ------------------------------------------- la fiche découverte prospect
+     Les intitulés sont ceux de la fiche papier de l'agence : on la remplit en
+     rendez-vous, on la recopie ici, et les mots doivent être les mêmes. */
+  objectifAchat: ["Résidence principale","Résidence secondaire",
+                  "Investissement locatif"],
+  typeLocation: ["Plutôt location à l'année","Plutôt location saisonnière"],
+  delaiDebut:   ["- de 1 mois","de 1 à 6 mois","+ de 6 mois"],
+  delaiAchat:   ["- de 3 mois","de 3 à 6 mois","+ de 6 mois"],
+  /* l'époque de construction : c'est l'année du bien qui y répond */
+  styleBien:    ["Ancien (avant 1950)","Après-guerre (1950 - 1975)",
+                 "Contemporain (1975 - 1990)","Récent (1990 à ce jour)",
+                 "Caractère","Moderne","Atypique"],
+  niveauTravaux:["Décoration seule","Second œuvre","Gros travaux"],
+  etageApt:     ["R.D.C.","R.D.J.","Dernier étage"],
+  modeFinancement:["Prêt total","Prêt partiel","Prêt relais","Vente d'un bien",
+                   "Aucun financement"],
+  reponseBanque:["OUI","NON","Rendez-vous pris"],
+  reponseAccord:["OUI","NON","En attente"],
+  reponseVente: ["OUI","NON","En cours"],
+  reponseRdv:   ["OUI","NON","RDV en attente"],
   prospects: [],
   notaires: [{prenom:"Clémence", patronyme:"TORTEL",
               nom:"Maître Clémence TORTEL", adresse:"26-28, avenue Sixte Quenin",
@@ -2290,6 +2363,7 @@ const LIST_LABELS = {
   modeEquip:"Chauffage / refroidissement — nature", modeEcs:"Eau chaude — nature",
   energie:"Énergies", fonctionNot:"Fonctions dans une étude",
   exposition:"Expositions", etatBien:"États du bien", piecesNoms:"Noms de pièces",
+  niveauPiece:"Niveaux des pièces",
   condSusp:"Financement", motifResil:"Motifs de résiliation d'un mandat",
   appelsClip:"Messages de la carte de contact (clips)"
 };
@@ -2374,30 +2448,73 @@ const BOOKS = {
      mots dans le même fichier n'auraient pas manqué de se confondre. La
      reprise est faite à la lecture, sans perte. */
   prospects:{title:"Prospects", mode:"card", label:"Prospect",
-    dep:{etageMax:"ascenseurNon"}, idStable:true, defauts:{actif:true}, cols:[
-    ["nom","Nom","text"],["prenom","Prénom","text"],
-    ["tel","Téléphone","text"],["email","Email","text","wide"],
-    ["nego","Négociateur qui le suit","book:negociateurs","wide"],
-    ["@quoi","Ce qu'il ou elle cherche","sep"],
-    ["budget","Budget maximum (FAI)","money"],
-    ["types","Types de biens","multi:typeBien","wide"],
-    ["cps","Codes postaux recherchés","cps","wide"],
-    ["surfaceMin","Surface minimum (m²)","nb"],
-    ["terrainMin","Terrain minimum (m²)","nb"],
-    ["chambresMin","Chambres au minimum","nb"],
-    ["piecesMin","Pièces au minimum","nb"],
-    ["@conf","Ce qui compte aussi","sep"],
-    ["exterieur","Extérieur exigé (terrasse, balcon ou jardin)","check"],
-    ["stationnement","Garage ou parking exigé","check"],
-    ["ascenseurOui","Ascenseur obligatoire","check"],
-    ["ascenseurNon","Limiter l'étage sans ascenseur","check"],
-    ["etageMax","Étage maximum sans ascenseur","nb"],
-    ["travauxNon","Pas de travaux lourds","check"],
-    ["dpeMin","Classe DPE au minimum","list:classeDpe"],
-    ["@suivi","Suivi","sep"],
+    dep:{etageMax:"ascenseurNon"},
+    /* une dépendance qui regarde la VALEUR et non la simple présence */
+    depVal:{travauxNiveau:["travaux","OUI"],
+            locatifType:["objectif","Investissement locatif"]},
+    idStable:true, defauts:{actif:true}, cols:[
+    /* --- volet 1 : coordonnées. Les personnes elles-mêmes sont saisies à
+       part, en blocs ajoutables, comme les vendeurs d'un dossier. */
+    ["rdv","Date du rendez-vous","date"],
+    ["nego","Négociateur qui le suit","book:negociateurs"],
+    ["ac3","Saisie AC3","yn"],
     ["actif","Recherche en cours","check"],
     ["contact","Dernier contact","date"],
-    ["note","Notes","area","wide"]]},
+    /* --- volet 2 : la recherche */
+    ["types","Types de biens","multi:typeBien","wide"],
+    ["cps","Codes postaux recherchés","cps","wide"],
+    ["quartiersOui","Secteurs / quartiers recherchés","text","wide"],
+    ["quartiersNon","Secteurs / quartiers refusés","text","wide"],
+    ["@surf","Surfaces et pièces","sep"],
+    ["surfaceMin","Surface minimum (m²)","nb5"],
+    ["surfaceMax","Surface maximum (m²)","nb5"],
+    ["chambresMin","Chambres au minimum","nb"],
+    ["chambresIdeal","Chambres dans l'idéal","nb"],
+    ["piecesMin","Pièces au minimum","nb"],
+    ["@conf","Ce qui compte aussi","sep"],
+    ["plainPiedChambre","Au moins une chambre de plain-pied","pdi"],
+    ["plainPiedCommod","Commodités de plain-pied","pdi"],
+    ["parkingPdi","Parking","pdi"],
+    ["garagePdi","Garage","pdi"],
+    ["terrassePdi","Terrasse ou balcon","pdi"],
+    ["ascenseurPdi","Ascenseur","pdi"],
+    ["ascenseurNon","Limiter l'étage sans ascenseur","check"],
+    ["etageMax","Étage maximum sans ascenseur","nb"],
+    ["etagesApt","Si appartement : étages recherchés","multi:etageApt","wide"],
+    ["@maison","Si maison","sep"],
+    ["terrainMin","Terrain minimum (m²)","nb5"],
+    ["terrainMax","Terrain maximum (m²)","nb5"],
+    ["piscinePdi","Piscine","pdi"],
+    ["@style","Style et état","sep"],
+    ["styles","Style recherché","multi:styleBien","wide"],
+    ["travaux","Travaux acceptés","yn"],
+    ["travauxNiveau","Quel niveau de travaux","list:niveauTravaux"],
+    ["dpeMin","Classe DPE au minimum","list:classeDpe"],
+    ["@prio","Classement prioritaire des critères","sep"],
+    ["prio1","1 —","text","wide"],
+    ["prio2","2 —","text","wide"],
+    ["prio3","3 —","text","wide"],
+    /* --- volet 3 : objectif et financement */
+    ["objectif","Objectif du projet","list:objectifAchat"],
+    ["locatifType","Et dans ce cas","list:typeLocation"],
+    ["debutRecherche","Date de début de recherche","list:delaiDebut"],
+    ["delaiAchat","Délai de votre achat immobilier","list:delaiAchat"],
+    ["@budget","Budget maximum, hors frais de notaire","sep"],
+    ["budgetTravaux","Bien avec travaux","money"],
+    ["budgetSansTravaux","Bien sans travaux","money"],
+    ["budgetCoup","Bien « coup de cœur »","money"],
+    ["@fin","Financement","sep"],
+    ["financement","Financement par","multi:modeFinancement","wide"],
+    ["banqueVue","Avez-vous rencontré votre banque","list:reponseBanque"],
+    ["accordPrincipe","Avez-vous eu un accord de principe","list:reponseAccord"],
+    ["@vente","Si vente d'un bien","sep"],
+    ["venteFaite","La mise en vente du bien est réalisée","list:reponseVente"],
+    ["venteCompromis","Le bien est sous compromis de vente","list:reponseRdv"],
+    ["venteVendu","Le bien est déjà vendu à ce jour","list:reponseRdv"],
+    ["note","Observations diverses","area","wide"],
+    /* --- gardés pour la reprise des fiches d'avant, jamais affichés */
+    ["nom","Nom","text"],["prenom","Prénom","text"],
+    ["tel","Téléphone","text"],["email","Email","text"]]},
   banques:{title:"Banques / organismes", mode:"card", label:"Banque", cols:[
     ["nom","Banque","text","wide"],["adresse","Adresse","text","wide"],
     ["interlocuteur","Interlocuteur","text"],["tel","Téléphone","text"],
@@ -2408,11 +2525,21 @@ const BOOKS = {
    de saisie : il porte les biens suivis, qui se cueillent ailleurs. */
 const PAGES_PROSPECT = [
   {cle:"coord",   lib:"Coordonnées",
-   champs:["nom","prenom","tel","email","nego","@suivi","actif","contact","note"]},
+   champs:["rdv","nego","ac3","actif","contact"]},
   {cle:"recherche", lib:"Sa recherche",
-   champs:["budget","types","cps","surfaceMin","terrainMin","chambresMin","piecesMin",
-           "@conf","exterieur","stationnement","ascenseurOui","ascenseurNon","etageMax",
-           "travauxNon","dpeMin"]},
+   champs:["types","cps","quartiersOui","quartiersNon",
+           "@surf","surfaceMin","surfaceMax","chambresMin","chambresIdeal","piecesMin",
+           "@conf","plainPiedChambre","plainPiedCommod","parkingPdi","garagePdi",
+           "terrassePdi","ascenseurPdi","ascenseurNon","etageMax","etagesApt",
+           "@maison","terrainMin","terrainMax","piscinePdi",
+           "@style","styles","travaux","travauxNiveau","dpeMin",
+           "@prio","prio1","prio2","prio3"]},
+  {cle:"projet",  lib:"Objectif et financement",
+   champs:["objectif","locatifType","debutRecherche","delaiAchat",
+           "@budget","budgetTravaux","budgetSansTravaux","budgetCoup",
+           "@fin","financement","banqueVue","accordPrincipe",
+           "@vente","venteFaite","venteCompromis","venteVendu","note"]},
+  {cle:"rappro",  lib:"Biens à rapprocher", champs:[]},
   {cle:"suivis",  lib:"Biens suivis", champs:[]}
 ];
 
@@ -2506,6 +2633,27 @@ function loadListesDepuis(v){
     }
     delete x.communes;
     if(!Array.isArray(x.suivis)) x.suivis = [];
+    if(!Array.isArray(x.refus))  x.refus  = [];
+    /* Une fiche portait une seule personne ; elle en porte plusieurs, comme
+       les vendeurs d'un dossier. Les quatre anciens champs deviennent la
+       première. Ils restent dans la fiche — la fusion avec un appareil resté
+       en arrière les lui rendrait sinon. */
+    if(!Array.isArray(x.personnes) || !x.personnes.length){
+      x.personnes = [];
+      if(x.nom || x.prenom || x.tel || x.email)
+        x.personnes.push({civilite:"", nom:x.nom || "", prenom:x.prenom || "",
+                          tel:x.tel || "", email:x.email || ""});
+    }
+    if(!x.personnes.length) x.personnes.push(personneProspect());
+    /* le budget unique devient les trois montants de la fiche découverte */
+    if(x.budget && !x.budgetSansTravaux) x.budgetSansTravaux = x.budget;
+    delete x.budget;
+    /* les cases d'avant deviennent des critères à trois niveaux */
+    if(x.exterieur === true && !x.terrassePdi) x.terrassePdi = "imperatif";
+    if(x.stationnement === true && !x.parkingPdi) x.parkingPdi = "imperatif";
+    if(x.ascenseurOui === true && !x.ascenseurPdi) x.ascenseurPdi = "imperatif";
+    if(x.travauxNon === true && !x.travaux) x.travaux = "NON";
+    ["exterieur","stationnement","ascenseurOui","travauxNon"].forEach(k=> delete x[k]);
     /* la date de dernière mise à jour : à défaut, celle d'aujourd'hui —
        une fiche qui existe a bien été écrite un jour */
     if(!x.maj) x.maj = Date.now();
@@ -3001,7 +3149,21 @@ function majEnteteCarnet(champ, k, i){
 }
 /* « Prénom NOM » pour un acquéreur, qui se saisit en deux champs comme un
    notaire ; le nom seul partout ailleurs. */
+function nomPersonneProspect(p){
+  return [String((p || {}).prenom || "").trim(),
+          String((p || {}).nom || "").trim()].filter(Boolean).join(" ");
+}
+/* les personnes réellement saisies d'une fiche */
+function personnesProspect(r){
+  const l = Array.isArray((r || {}).personnes) ? r.personnes : [];
+  return l.filter(p=> p && (p.nom || p.prenom || p.tel || p.email));
+}
+/* Un couple cherche à deux : la fiche porte les deux noms. On les joint par
+   « et », et le premier suffit là où la place manque. */
 function libelleAcquereur(r){
+  const l = personnesProspect(r).map(nomPersonneProspect).filter(Boolean);
+  if(l.length) return l.join(" et ");
+  /* une fiche d'avant, pas encore relue par loadListesDepuis */
   return [String((r || {}).prenom || "").trim(),
           String((r || {}).nom || "").trim()].filter(Boolean).join(" ");
 }
@@ -3171,8 +3333,14 @@ function optionsFor(kind, path){
   return [];
 }
 /* listes fermées : pas de bouton + (la charge des honoraires n'a que deux valeurs) */
+/* Listes fermées : pas de bouton « + ». Soit la liste n'a que deux valeurs,
+   soit elle recopie une rubrique de la fiche découverte papier — en allonger
+   une ici ne ferait que décoller l'écran du document. */
 const SANS_AJOUT = ["list:chargeHono","list:baseHono","list:coteHono",
-                    "list:classeDpe"];
+                    "list:classeDpe","list:objectifAchat","list:typeLocation",
+                    "list:delaiDebut","list:delaiAchat","list:niveauTravaux",
+                    "list:reponseBanque","list:reponseAccord","list:reponseVente",
+                    "list:reponseRdv"];
 
 /* grp relie pays / cp / ville d'une même adresse */
 function control(path,kind,grp){
@@ -3184,6 +3352,20 @@ function control(path,kind,grp){
    NON — et porte sa réponse en clair, verte ou rouge pâle. Le troisième état
    reste nécessaire : une réponse qu'on n'a pas encore doit pouvoir se dire. */
 const YN_CYCLE = ["", "OUI", "NON"];
+/* ---------------------------------- peu importe / dans l'idéal / impératif
+   La fiche découverte ne pose pas ses questions par oui ou par non : elle
+   demande à quel point cela compte. Trois réponses, donc, et la première —
+   « peu importe » — est celle d'un critère qu'on n'a pas saisi. C'est ce qui
+   garantit qu'une case oubliée n'écarte jamais un bien. */
+const PDI_CYCLE = ["", "ideal", "imperatif"];
+const PDI_LIB = {"":"peu importe", "ideal":"dans l'idéal", "imperatif":"impératif"};
+function pdiBascule(path, v, attr){
+  const val = PDI_CYCLE.indexOf(v) > 0 ? v : "";
+  return `<button type="button" class="pdib ${val || "rien"}" data-pdib="${esc(path)}"
+    data-pdiattr="${attr}" data-pdiv="${val}"
+    title="Cliquer pour changer : peu importe, dans l'idéal, impératif">${
+    esc(PDI_LIB[val])}</button>`;
+}
 function ynBascule(path, v, attr){
   const val = v === "OUI" || v === "NON" ? v : "";
   const cls = val === "OUI" ? "oui" : val === "NON" ? "non" : "vide";
@@ -3311,6 +3493,7 @@ function controlBase(path,kind,v,grp,attr){
   if(kind==="yn" && attr !== "data-modal"){
     return ynBascule(path, v, attr === "data-book" ? "bookyn" : "yn");
   }
+  if(kind==="pdi")   return pdiBascule(path, v, attr);
   if(kind==="date")  return `<input type="date" ${a} value="${esc(v)}">`;
   /* une date d'échéance porte une pastille qui se réchauffe à son approche */
   if(kind==="echeance") return `<input type="date" ${a} value="${esc(v)}">` +
@@ -3325,6 +3508,10 @@ function controlBase(path,kind,v,grp,attr){
       maxlength="3" class="pct" placeholder="0">`;
   if(kind==="pct")   return `<input type="text" inputmode="decimal" ${a} value="${esc(v)}"
       class="pct" placeholder="0" maxlength="6">`;
+  /* une surface ou un terrain : quatre chiffres ne suffisent pas pour un
+     terrain de 12 000 m² */
+  if(kind==="nb5")   return `<input type="text" ${a} value="${esc(v)}" inputmode="numeric"
+      maxlength="6" class="pct" placeholder="0">`;
   /* case à cocher nue, pour une cellule de tableau */
   if(kind==="checkmini")
     return `<input type="checkbox" data-chk="${path}"${v?" checked":""}>`;
@@ -4204,13 +4391,64 @@ const PIECE_CH     = /chambre/i;
 const PIECE_SDB    = /salle de bains?|\bsdb\b/i;
 const PIECE_SDE    = /salle d['’]eau|\bsde\b/i;
 const PIECE_WC     = /\bwc\b|toilette/i;
+/* une commodité, au sens de la fiche découverte : de quoi se laver ou
+   se soulager sans monter un étage */
+const PIECE_COMMOD = /\bwc\b|toilette|salle de bains?|\bsdb\b|salle d['’]eau|\bsde\b/i;
+/* Plain-pied veut dire rez-de-chaussée, et rien d'autre : ni le rez-de-jardin,
+   ni le demi-niveau qui le surplombe. Un « + ½ » suffit à disqualifier. */
+function niveauRdc(v){
+  const t = String(v || "").trim();
+  if(!t || /[+½]/.test(t)) return false;
+  return /rez.?de.?chauss|^rdc\b/i.test(t);
+}
+/* La surface habitable d'une pièce : celle du sol, sauf si on l'exclut
+   (un garage) ou qu'on en retient moins (une pièce mansardée). */
+function habPiece(p){
+  if(!p || p.horsHab) return 0;
+  const h = num(p.hab);
+  return h !== null ? h : (num(p.surface) || 0);
+}
+function solPiece(p){ return num((p || {}).surface) || 0; }
+/* Les totaux, par niveau puis pour l'ensemble. L'ordre des niveaux est celui
+   de la liste ; ce qui n'a pas de niveau vient à la fin, dit comme tel. */
+function totauxPieces(d){
+  const l = ((d || D).pieces || []).filter(p=> String(p.nom || "").trim());
+  const ordre = (L.niveauPiece || []).slice();
+  const par = {};
+  l.forEach(p=>{
+    const n = String(p.niveau || "").trim() || "";
+    if(!par[n]) par[n] = {niveau:n, sol:0, hab:0, n:0};
+    par[n].sol += solPiece(p);
+    par[n].hab += habPiece(p);
+    par[n].n++;
+  });
+  const lignes = Object.keys(par).sort((a,b)=>{
+    const ia = a ? ordre.indexOf(a) : 9999, ib = b ? ordre.indexOf(b) : 9999;
+    return (ia < 0 ? 9998 : ia) - (ib < 0 ? 9998 : ib) || triFr(a, b);
+  }).map(k=> par[k]);
+  return {lignes:lignes,
+          sol: lignes.reduce((t,x)=> t + x.sol, 0),
+          hab: lignes.reduce((t,x)=> t + x.hab, 0)};
+}
+/* Une chambre, ou une commodité, au rez-de-chaussée ? Trois réponses : oui,
+   non, et « on ne sait pas » — quand les niveaux ne sont pas renseignés. */
+function plainPiedDe(d, re){
+  const l = ((d || D).pieces || []).filter(p=> String(p.nom || "").trim());
+  if(!l.length) return null;
+  if(!l.some(p=> String(p.niveau || "").trim())) return null;
+  const vises = l.filter(p=> re.test(String(p.nom || "")));
+  if(!vises.length) return false;
+  if(vises.some(p=> niveauRdc(p.niveau))) return true;
+  /* toutes repérées et situées, aucune au rez-de-chaussée : c'est non */
+  return vises.every(p=> String(p.niveau || "").trim()) ? false : null;
+}
 function depouillePieces(){
   const l = (D.pieces || []).filter(p=> String(p.nom || "").trim());
   if(!l.length) return null;
   const r = {surface:0, pieces:0, chambres:0, sdb:0, sdEau:0, wc:0};
   l.forEach(p=>{
     const n = String(p.nom || "");
-    if(!PIECE_ANNEXE.test(n)) r.surface += num(p.surface) || 0;
+    r.surface += habPiece(p);
     if(PIECE_PRINC.test(n) && !PIECE_ANNEXE.test(n)) r.pieces++;
     if(PIECE_CH.test(n))  r.chambres++;
     if(PIECE_SDB.test(n)) r.sdb++;
@@ -4298,14 +4536,22 @@ function renderDetail(){
 
   /* le détail pièce par pièce */
   const lignes = (D.pieces || []).map((p,i)=>
-    `<tr><td>${controlRaw(`${i}:nom`, "list:piecesNoms", p.nom || "", "", "data-piece")}</td>
+    `<tr><td>${controlBase(`${i}:niveau`, "list:niveauPiece", p.niveau || "", "",
+        "data-piece")}</td>
+      <td>${controlRaw(`${i}:nom`, "list:piecesNoms", p.nom || "", "", "data-piece")}</td>
       <td><input type="text" inputmode="decimal" data-piece="${i}:surface"
         value="${esc(p.surface||"")}" placeholder="0"></td>
+      <td class="cact"><input type="checkbox" data-piecechk="${i}:horsHab"${
+        p.horsHab ? " checked" : ""} title="Exclure cette surface de la surface
+        habitable (garage, cave…)"></td>
+      <td><input type="text" inputmode="decimal" data-piece="${i}:hab"
+        value="${esc(p.hab||"")}" placeholder="${esc(p.horsHab ? "—"
+          : (num(p.surface) === null ? "0" : String(num(p.surface)).replace(".", ",")))}"${
+        p.horsHab ? " disabled" : ""}></td>
       <td><input type="text" data-piece="${i}:note" value="${esc(p.note||"")}"
         placeholder="remarque"></td>
       <td class="cact"><button type="button" class="xbtn mini" data-piecedel="${i}"
         title="Retirer cette pièce">✕</button></td></tr>`).join("");
-  const tot = (D.pieces || []).reduce((t,p)=> t + (num(p.surface) || 0), 0);
 
   /* les parcelles cadastrales : un bien en compte souvent plusieurs */
   const parc = (D.parcelles || []).map((p,i)=>
@@ -4340,19 +4586,26 @@ function renderDetail(){
     <div class="dcol">
       <div class="dsec"><h4>Les pièces</h4>
         <div class="tdbscroll"><table class="grid-t piecest">
-          <tr><th>Pièce</th><th style="width:104px">Surface (m²)</th><th>Remarque</th>
+          <tr><th style="width:124px">Niveau</th><th style="width:184px">Pièce</th>
+            <th style="width:88px">Au sol (m²)</th>
+            <th class="cact" title="Exclure de la surface habitable">hors</th>
+            <th style="width:92px">Habitable (m²)</th><th>Remarque</th>
             <th class="cact"></th></tr>
-          ${lignes || `<tr><td colspan="4" class="muted">Aucune pièce détaillée.</td></tr>`}
-          ${tot ? `<tr class="tot"><td>Total</td><td>${
-            esc(tot.toLocaleString("fr-FR"))}</td><td colspan="2"></td></tr>` : ""}
+          ${lignes || `<tr><td colspan="7" class="muted">Aucune pièce détaillée.</td></tr>`}
         </table></div>
+        <div id="piecesTot">${blocTotauxPieces()}</div>
         <div class="dact"><button type="button" class="addbtn"
           id="pieceAjout">+ Ajouter une pièce</button></div>
         <p class="dnote">Choisissez le nom dans la liste — le <b>+</b> en ajoute un
           qui manquerait, pour tous vos dossiers. La colonne de gauche s'en déduit, et
           deux pièces du même nom se numérotent toutes seules : une deuxième chambre
-          fait « Chambre 1 » et « Chambre 2 ». Les annexes (cave, garage, terrasse…) ne
-          comptent pas dans la surface habitable.</p>
+          fait « Chambre 1 » et « Chambre 2 ».<br>
+          La <b>surface au sol</b> se recopie d'elle-même en <b>habitable</b> : il n'y a
+          rien à saisir deux fois. La case <b>hors</b> en exclut la pièce — elle se coche
+          toute seule pour une cave, un garage, une terrasse — et la colonne habitable
+          accepte une valeur moindre pour une pièce mansardée. Le <b>niveau</b> sert aux
+          totaux par étage, et dit si une chambre ou des commodités sont de plain-pied :
+          c'est ce que demandent les fiches découverte des prospects.</p>
       </div>
       ${DETAIL_D.map(bloc).join("")}
       <div class="dsec"><h4>Observations</h4>
@@ -4362,10 +4615,14 @@ function renderDetail(){
 
   const b = $("#pieceAjout");
   if(b) b.onclick = ()=>{
-    D.pieces.push({nom:"", surface:"", note:""});
+    /* la pièce neuve hérite du niveau de la précédente : on décrit un étage
+       d'un bout à l'autre avant de monter */
+    const der = (D.pieces || [])[D.pieces.length - 1] || {};
+    D.pieces.push({nom:"", niveau:der.niveau || "", surface:"", hab:"",
+                   horsHab:false, note:""});
     autosave(); renderDetail(); majDetail();
-    const der = $$("#detailCorps [data-piece$=':nom']").pop();
-    if(der) der.focus();
+    const dernier = $$("#detailCorps [data-piece$=':nom']").pop();
+    if(dernier) dernier.focus();
   };
   const bp = $("#parcAjout");
   if(bp) bp.onclick = ()=>{
@@ -4479,9 +4736,29 @@ function rafraichirDepuisPieces(){
   }
   box.querySelectorAll("[data-dcalc]").forEach(el=>
     el.textContent = D.detail[el.dataset.dcalc] || "—");
-  const t = (D.pieces || []).reduce((n,p)=> n + (num(p.surface) || 0), 0);
-  const tr = box.querySelector("table.piecest tr.tot td:nth-child(2)");
-  if(tr) tr.textContent = t.toLocaleString("fr-FR");
+  majTotauxPieces();
+}
+/* Les totaux, sous le tableau : une ligne par niveau, puis l'ensemble. La
+   surface du bien, elle, reprend le total habitable. */
+function blocTotauxPieces(){
+  const t = totauxPieces(D);
+  if(!t.lignes.length) return "";
+  const m2 = v=> v ? v.toLocaleString("fr-FR") : "—";
+  const seul = t.lignes.length === 1;
+  return `<table class="grid-t piecetot">
+    <tr><th>${seul ? "Total" : "Par niveau"}</th>
+      <th style="width:92px">Au sol</th><th style="width:92px">Habitable</th></tr>
+    ${seul ? "" : t.lignes.map(x=>`<tr><td>${esc(x.niveau || "sans niveau")}
+      <span class="cnt">${x.n}</span></td>
+      <td>${esc(m2(x.sol))}</td><td>${esc(m2(x.hab))}</td></tr>`).join("")}
+    <tr class="tot"><td>Total${seul ? " — " + esc(t.lignes[0].niveau ||
+        "sans niveau") : ""}</td>
+      <td>${esc(m2(t.sol))} m²</td><td>${esc(m2(t.hab))} m²</td></tr>
+  </table>`;
+}
+function majTotauxPieces(){
+  const z = document.getElementById("piecesTot");
+  if(z) z.innerHTML = blocTotauxPieces();
 }
 function majTotalParcelles(){
   const box = $("#detailCorps");
@@ -5339,6 +5616,11 @@ function empreinte(s){
   return ("00000" + h.toString(36)).slice(-6);
 }
 function pidDepuis(nom){ return nom ? "pe" + empreinte(nom) : ""; }
+/* une personne d'une fiche prospect : ce que demande la fiche découverte,
+   et rien de plus — l'état civil complet se saisit au compromis, pas ici */
+function personneProspect(){
+  return {civilite:"", nom:"", prenom:"", tel:"", email:""};
+}
 /* identifiant d'une fiche de carnet : l'horloge et un grain de hasard, pour
    que deux appareils qui ajoutent une fiche en même temps n'en fassent pas une */
 function idCarnet(){
@@ -5358,6 +5640,15 @@ function noterMajFiche(k, i, avant, apres){
   r.maj = Date.now();
   majEnteteProspect();
   return true;
+}
+/* l'intitulé d'un bloc de personne suit la frappe, comme celui d'un carnet */
+function majEntetePersonne(champ, i, k){
+  const h = document.getElementById("pp_" + i + "_" + k);
+  const w = h ? h.querySelector(".who") : null;
+  const p = ((L.prospects[+i] || {}).personnes || [])[+k];
+  if(w && p) w.textContent = nomPersonneProspect(p) || ("Prospect " + (+k + 1));
+  const t = document.querySelector(".prospshell .drref");
+  if(t) t.textContent = libelleAcquereur(L.prospects[+i]) || BOOKS.prospects.label;
 }
 /* la fiche ouverte affiche sa date : elle doit suivre la frappe */
 function majEnteteProspect(){
@@ -5839,6 +6130,14 @@ function chargerEntete(file){
 }
 
 const chevron = plie => `<span class="chev${plie?"":" ouvert"}">▸</span>`;
+/* Un champ sans objet se grise plutôt que de disparaître : on voit qu'il
+   existe, et ce qui l'ouvrirait. `dep` regarde si l'autre champ est rempli,
+   `depVal` s'il vaut exactement telle réponse. */
+function champOff(b, r, f){
+  if(b.dep && b.dep[f] && !r[b.dep[f]]) return true;
+  if(b.depVal && b.depVal[f] && r[b.depVal[f][0]] !== b.depVal[f][1]) return true;
+  return false;
+}
 
 /* Une fiche de carnet. `apres` permet d'accrocher quelque chose sous les
    champs — la liste des dossiers, sur la page Immeubles. */
@@ -5848,9 +6147,9 @@ function ficheCarnet(k, r, i, apres, sansEntete){
     if(kd === "sep") return `<div class="pfsep">${esc(lab)}</div>`;
     let h = controlRaw(`${k}:${i}:${f}`, kd, r[f]||"",
                        `${k.slice(0,2)}${i}${gs||""}`, "data-book");
-    /* champ conditionné par une case à cocher de la même fiche */
-    const off = b.dep && b.dep[f] && !r[b.dep[f]];
-    if(off) h = h.replace(/<(input|select|textarea)\b/g, "$& disabled");
+    /* champ conditionné par une autre réponse de la même fiche */
+    const off = champOff(b, r, f);
+    if(off) h = h.replace(/<(input|select|textarea|button)\b/g, "$& disabled");
     return `<div class="pf${w==="wide"?" wide":""}${off?" off":""}">` +
            `<label>${esc(lab)}</label>${h}</div>`;
   }).join("");
@@ -6358,6 +6657,8 @@ function texteFiche(carnet, r){
     const v = r[f];
     if(v !== undefined && v !== null && v !== "") b.push(String(v));
   });
+  if(carnet === "prospects") personnesProspect(r).forEach(p=>
+    ["civilite","nom","prenom","tel","email"].forEach(k=>{ if(p[k]) b.push(p[k]); }));
   b.push(BOOKS[carnet].label); b.push(BOOKS[carnet].title);
   return fold(b.join(" "));
 }
@@ -8160,7 +8461,6 @@ function carteIncident(e){
    exception, le registre des rapprochements déjà vus, qui ne sert qu'à poser
    la pastille « nouveau » et reste sur ce poste.
    ===================================================================== */
-const LS_RAPPRO = "mi_rappro_v1";
 const RAPPRO_SEUIL = 80;            /* au-delà, ce n'est plus « presque » */
 const DPE_RANG = {A:1, B:2, C:3, D:4, E:5, F:6, G:7};
 const DPE_LETTRE = ["", "A", "B", "C", "D", "E", "F", "G"];
@@ -8218,40 +8518,96 @@ function critBien(d){
     etage: etageNombre(det.etage),
     ascenseur: ouNon([r.ascenseur]),
     exterieur: ouNon([det.terrasse, det.balcon, det.jardin]),
+    terrasse:  ouNon([det.terrasse, det.balcon]),
+    garage:    ouNon([det.garage]),
+    piscine:   ouNon([r.piscine]),
     /* le parking collectif de l'immeuble ne peut que CONFIRMER : une maison
        n'a pas d'immeuble, et son silence ne doit pas rendre la réponse floue */
     stationnement: r.parkingColl === "OUI" ? true
                  : ouNon([det.garage, det.parking]),
+    /* l'année sert aux époques de construction ; la date exacte du permis
+       la donne quand elle est saisie */
+    annee: num(b.annee) !== null ? num(b.annee)
+         : (isoValide(b.dateConstruction) ? num(b.dateConstruction.slice(0,4)) : null),
+    quartier: String(r.quartier || "").trim(),
+    /* le détail des pièces répond désormais à la question du plain-pied */
+    chambreRdc:   plainPiedDe(d, PIECE_CH),
+    commoditeRdc: plainPiedDe(d, PIECE_COMMOD),
     etat: det.etat || "",
     dpe: String(dpe.dpeEnergie || "").trim().toUpperCase()
   };
 }
 /* ------------------------------------------- ce qu'un acquéreur demande --- */
+/* les époques de la fiche découverte, traduites en années */
+const EPOQUES = {
+  "Ancien (avant 1950)":         [0, 1949],
+  "Après-guerre (1950 - 1975)":  [1950, 1975],
+  "Contemporain (1975 - 1990)":  [1975, 1990],
+  "Récent (1990 à ce jour)":     [1990, 9999]
+};
+/* du plus léger au plus lourd : ce que demande un bien, ce qu'accepte un
+   prospect. Un « bon état » ne demande rien, donc 0. */
+const ETAT_RANG   = {"À rafraîchir":1, "À rénover":2, "Gros travaux à prévoir":3};
+const NIVEAU_RANG = {"Décoration seule":1, "Second œuvre":2, "Gros travaux":3};
 function critAcq(r){
   const a = r || {};
+  /* Trois montants : avec travaux, sans travaux, coup de cœur. Le plafond est
+     le plus haut — au-delà, ce n'est plus son budget ; le socle est le plus
+     bas — entre les deux, on le dit sans écarter. */
+  const sous = [num(a.budgetTravaux), num(a.budgetSansTravaux), num(a.budgetCoup)]
+    .filter(x=> x !== null && x > 0);
   return {
-    budget: num(a.budget),
+    budgetSocle:   sous.length ? Math.min.apply(null, sous) : null,
+    budgetPlafond: sous.length ? Math.max.apply(null, sous) : null,
     types: listeMulti(a.types),
     cps: listeMulti(a.cps),
+    quartiersNon: listeMulti(a.quartiersNon),
+    quartiersOui: listeMulti(a.quartiersOui),
     surfaceMin: num(a.surfaceMin),
+    surfaceMax: num(a.surfaceMax),
     terrainMin: num(a.terrainMin),
+    terrainMax: num(a.terrainMax),
     chambresMin: num(a.chambresMin),
+    chambresIdeal: num(a.chambresIdeal),
     piecesMin: num(a.piecesMin),
-    exterieur: !!a.exterieur,
-    stationnement: !!a.stationnement,
-    ascenseurOui: !!a.ascenseurOui,
+    plainPiedChambre: a.plainPiedChambre || "",
+    plainPiedCommod: a.plainPiedCommod || "",
+    parkingPdi: a.parkingPdi || "",
+    garagePdi: a.garagePdi || "",
+    terrassePdi: a.terrassePdi || "",
+    ascenseurPdi: a.ascenseurPdi || "",
+    piscinePdi: a.piscinePdi || "",
     /* l'étage maximum n'a de sens que si l'on a dit vouloir le limiter */
     etageMax: a.ascenseurNon ? num(a.etageMax) : null,
-    travauxNon: !!a.travauxNon,
+    styles: listeMulti(a.styles),
+    travaux: a.travaux || "",
+    travauxNiveau: a.travauxNiveau || "",
     dpeMin: DPE_RANG[String(a.dpeMin || "").trim().toUpperCase()] || null
   };
+}
+/* Les critères que le rapprochement ne peut pas trancher sur un bien donné :
+   ceux dont la fiche ne dit rien. On ne les oppose à personne — on les
+   rappelle, nommés, pour la visite. */
+function critaresAVerifier(r, o){
+  if(!o) return [];
+  const c = critAcq(r), hs = [];
+  if(c.plainPiedChambre && o.chambreRdc === null)
+    hs.push("une chambre de plain-pied (" + PDI_LIB[c.plainPiedChambre] + ")");
+  if(c.plainPiedCommod && o.commoditeRdc === null)
+    hs.push("des commodités de plain-pied (" + PDI_LIB[c.plainPiedCommod] + ")");
+  return hs;
 }
 /* Une fiche sans critère ne se rapproche de rien : on ne va pas proposer tout
    le portefeuille à qui n'a rien dit de ce qu'il cherche. */
 function rechercheRenseignee(c){
-  return c.budget !== null || c.types.length > 0 || c.cps.length > 0 ||
-         c.surfaceMin !== null || c.terrainMin !== null ||
-         c.chambresMin !== null || c.piecesMin !== null;
+  return c.budgetPlafond !== null || c.types.length > 0 || c.cps.length > 0 ||
+         c.surfaceMin !== null || c.surfaceMax !== null ||
+         c.terrainMin !== null || c.terrainMax !== null ||
+         c.chambresMin !== null || c.piecesMin !== null ||
+         !!c.parkingPdi || !!c.garagePdi || !!c.terrassePdi ||
+         !!c.ascenseurPdi || !!c.piscinePdi ||
+         !!c.plainPiedChambre || !!c.plainPiedCommod ||
+         c.styles.length > 0 || !!c.travaux || c.dpeMin !== null;
 }
 /* ----------------------------------------------------- la comparaison -----
    Retourne {pts, ecarts} si le bien est retenu, {rejet:"la raison"} sinon.
@@ -8278,12 +8634,21 @@ function comparerAcqBien(c, o){
     return rejet("code postal non demandé (" + o.cp +
                  (o.ville ? " " + o.ville : "") + ")");
 
-  /* 2. le budget */
-  if(c.budget !== null && c.budget > 0 && o.fai !== null && o.fai > c.budget){
-    const d = o.fai - c.budget, part = d / c.budget;
-    const dit = "dépasse le budget de " + eur(d) + " (" + Math.round(part * 100) + " %)";
-    if(part > 0.15) return rejet(dit);
-    ecart(part > 0.07 ? 45 : 25, dit);
+  /* 1 bis. un quartier dont on ne veut pas */
+  if(c.quartiersNon.length && o.quartier &&
+     c.quartiersNon.some(q=> fold(o.quartier).includes(fold(q))))
+    ecart(45, "quartier refusé (" + o.quartier + ")");
+
+  /* 2. le budget, en deux temps : le socle, puis le plafond */
+  if(c.budgetPlafond !== null && o.fai !== null){
+    if(o.fai > c.budgetPlafond){
+      const d = o.fai - c.budgetPlafond, part = d / c.budgetPlafond;
+      const dit = "dépasse le budget de " + eur(d) + " (" + Math.round(part * 100) + " %)";
+      if(part > 0.15) return rejet(dit);
+      ecart(part > 0.07 ? 45 : 25, dit);
+    } else if(c.budgetSocle !== null && o.fai > c.budgetSocle){
+      ecart(15, "au-dessus du budget courant, dans l'enveloppe coup de cœur");
+    }
   }
   /* 3. les surfaces */
   if(c.surfaceMin !== null && c.surfaceMin > 0 &&
@@ -8293,6 +8658,13 @@ function comparerAcqBien(c, o){
     if(part > 0.20) return rejet(dit);
     ecart(part > 0.10 ? 40 : 20, dit);
   }
+  if(c.surfaceMax !== null && c.surfaceMax > 0 &&
+     o.surface !== null && o.surface > c.surfaceMax){
+    const d = o.surface - c.surfaceMax, part = d / c.surfaceMax;
+    const dit = m2txt(d) + " de plus que la surface maximum";
+    if(part > 0.20) return rejet(dit);
+    ecart(part > 0.10 ? 30 : 15, dit);
+  }
   if(c.terrainMin !== null && c.terrainMin > 0 &&
      o.terrain !== null && o.terrain < c.terrainMin){
     const d = c.terrainMin - o.terrain, part = d / c.terrainMin;
@@ -8300,30 +8672,48 @@ function comparerAcqBien(c, o){
     if(part > 0.25) return rejet(dit);
     ecart(part > 0.12 ? 40 : 20, dit);
   }
+  if(c.terrainMax !== null && c.terrainMax > 0 &&
+     o.terrain !== null && o.terrain > c.terrainMax){
+    const d = o.terrain - c.terrainMax, part = d / c.terrainMax;
+    const dit = m2txt(d) + " de terrain de plus que le maximum";
+    if(part > 0.25) return rejet(dit);
+    ecart(part > 0.12 ? 30 : 15, dit);
+  }
   /* 4. les comptes de pièces : une de moins se discute, deux non */
   if(c.chambresMin !== null && o.chambres !== null && o.chambres < c.chambresMin){
     const d = c.chambresMin - o.chambres;
     if(d > 1) return rejet(d + " chambres de moins");
     ecart(30, "une chambre de moins");
   }
+  /* l'idéal n'est pas le minimum : en être loin se dit, et ne coûte presque rien */
+  if(c.chambresIdeal !== null && o.chambres !== null && o.chambres < c.chambresIdeal &&
+     (c.chambresMin === null || o.chambres >= c.chambresMin)){
+    const d = c.chambresIdeal - o.chambres;
+    ecart(10, d + " chambre" + (d > 1 ? "s" : "") + " de moins que l'idéal");
+  }
   if(c.piecesMin !== null && o.pieces !== null && o.pieces < c.piecesMin){
     const d = c.piecesMin - o.pieces;
     if(d > 1) return rejet(d + " pièces de moins");
     ecart(25, "une pièce de moins");
   }
-  /* 5. le confort — et c'est ici que « non renseigné » se distingue de « non » */
-  if(c.exterieur){
-    if(o.exterieur === false) ecart(35, "ni terrasse, ni balcon, ni jardin");
-    else if(o.exterieur === null) flou("extérieur non renseigné");
-  }
-  if(c.stationnement){
-    if(o.stationnement === false) ecart(30, "pas de garage ni de parking");
-    else if(o.stationnement === null) flou("stationnement non renseigné");
-  }
-  if(c.ascenseurOui){
-    if(o.ascenseur === false) ecart(45, "pas d'ascenseur");
-    else if(o.ascenseur === null) flou("ascenseur non renseigné");
-  }
+  /* 5. le confort — à trois niveaux, et « non renseigné » n'est pas « non ».
+     « Peu importe » ne produit rien du tout : un critère qu'on n'a pas saisi
+     ne peut pas écarter un bien. */
+  const pdi = (niveau, valeur, manque, sujet)=>{
+    if(!niveau || valeur === true) return;
+    if(valeur === null){ flou(sujet + " non renseigné"); return; }
+    if(niveau === "imperatif") ecart(60, manque + " — impératif");
+    else ecart(15, manque + " — souhaité");
+  };
+  pdi(c.plainPiedChambre, o.chambreRdc,   "pas de chambre de plain-pied",
+      "chambre de plain-pied");
+  pdi(c.plainPiedCommod,  o.commoditeRdc, "pas de commodités de plain-pied",
+      "commodités de plain-pied");
+  pdi(c.parkingPdi,   o.stationnement, "pas de stationnement", "stationnement");
+  pdi(c.garagePdi,    o.garage,        "pas de garage",        "garage");
+  pdi(c.terrassePdi,  o.terrasse,      "ni terrasse ni balcon","terrasse ou balcon");
+  pdi(c.ascenseurPdi, o.ascenseur,     "pas d'ascenseur",      "ascenseur");
+  pdi(c.piscinePdi,   o.piscine,       "pas de piscine",       "piscine");
   if(c.etageMax !== null && o.etage !== null && o.etage > c.etageMax){
     if(o.ascenseur === null) flou(etageMot(o.etage) + ", ascenseur non renseigné");
     else if(o.ascenseur === false){
@@ -8333,10 +8723,27 @@ function comparerAcqBien(c, o){
     }
     /* avec ascenseur, l'étage ne pose plus de question */
   }
-  if(c.travauxNon){
+  /* 5 bis. l'époque de construction */
+  const epoques = c.styles.filter(x=> EPOQUES[x]);
+  if(epoques.length){
+    if(o.annee === null) flou("année de construction non renseignée");
+    else if(!epoques.some(x=> o.annee >= EPOQUES[x][0] && o.annee <= EPOQUES[x][1]))
+      ecart(20, "construit en " + o.annee + ", hors des époques demandées");
+  }
+  /* 5 ter. les travaux — refusés, ou acceptés jusqu'à un certain point */
+  if(c.travaux === "NON"){
     if(o.etat === ETAT_GROS) return rejet("gros travaux à prévoir");
     if(o.etat === ETAT_RAFRAICHIR) ecart(35, "à rénover");
     if(!o.etat) flou("état du bien non renseigné");
+  } else if(c.travaux === "OUI" && c.travauxNiveau){
+    const accepte = NIVEAU_RANG[c.travauxNiveau] || 3;
+    if(!o.etat) flou("état du bien non renseigné");
+    else {
+      const demande = ETAT_RANG[o.etat] || 0;
+      if(demande > accepte) ecart(demande - accepte > 1 ? 45 : 30,
+        o.etat.charAt(0).toLowerCase() + o.etat.slice(1) +
+        " — au-delà du niveau de travaux accepté");
+    }
   }
   /* 6. le DPE */
   if(c.dpeMin !== null){
@@ -8375,20 +8782,26 @@ function rapprochementsDe(r){
   hors.sort((a,b)=> triFr(a.o.mandat, b.o.mandat));
   return {vide:false, biens:out, ecartes:hors};
 }
-/* ------------------------------------- le registre des rapprochements vus -
-   Il ne sert qu'à la pastille « nouveau ». Il reste sur ce poste : ce que
-   l'on a vu sur la tablette n'a pas à être tenu pour vu sur l'ordinateur. */
-function rapproVus(){
-  try{ return JSON.parse(localStorage.getItem(LS_RAPPRO) || "{}") || {}; }
-  catch(e){ return {}; }
+/* ------------------------------------------- répondre à un rapprochement ---
+   Un bien proposé attend une réponse : on le met au SUIVI du prospect, ou on
+   le REFUSE. Tant qu'on n'a rien dit, il est « sans réponse », et c'est ce
+   compte que la liste des prospects affiche — bien plus utile qu'une pastille
+   « nouveau » qui s'éteignait d'un regard. La réponse, elle, voyage avec la
+   fiche : elle vaut sur tous vos appareils. */
+function suivisDe(r){ return Array.isArray((r || {}).suivis) ? r.suivis.slice() : []; }
+function refusDe(r){  return Array.isArray((r || {}).refus)  ? r.refus.slice()  : []; }
+function etatRappro(r, id){
+  if(suivisDe(r).indexOf(id) >= 0) return "suivi";
+  if(refusDe(r).indexOf(id) >= 0)  return "refuse";
+  return "";
 }
-function cleRappro(r, d){
-  return ((r || {}).id || libelleAcquereur(r)) + "|" + ((d || {}).id || "");
-}
-function noterRapproVus(cles){
-  const v = rapproVus();
-  cles.forEach(k=> v[k] = 1);
-  try{ localStorage.setItem(LS_RAPPRO, JSON.stringify(v)); }catch(e){}
+/* les biens proposés qui n'ont pas encore reçu de réponse */
+function biensSansReponse(r){
+  let res;
+  try{ res = rapprochementsDe(r); }
+  catch(e){ return []; }
+  if(res.vide) return [];
+  return res.biens.filter(b=> !etatRappro(r, b.d.id));
 }
 /* une recherche close ne remonte plus : la case « Recherche en cours » est
    ce qui met une fiche en sommeil sans l'effacer */
@@ -8397,35 +8810,49 @@ function acquereursActifs(){
     .filter(x=> x.r && libelleAcquereur(x.r) &&
                 (x.r.actif === undefined || !!x.r.actif));
 }
+/* Pour la carte d'Aujourd'hui : seules les recherches qui attendent une
+   réponse. Ce qui est déjà suivi ou refusé n'a plus rien à y faire. */
 function tousLesRapprochements(){
-  const vus = rapproVus();
   const out = [];
   acquereursActifs().forEach(x=>{
-    const res = rapprochementsDe(x.r);
-    if(!res.biens.length) return;
-    res.biens.forEach(b=> b.neuf = !vus[cleRappro(x.r, b.d)]);
-    out.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), biens:res.biens,
-              neufs:res.biens.filter(b=> b.neuf).length});
+    const attente = biensSansReponse(x.r);
+    if(!attente.length) return;
+    out.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), biens:attente,
+              attente:attente.length});
   });
-  /* les recherches qui ont du nouveau passent devant */
-  out.sort((a,b)=> b.neufs - a.neufs || triFr(a.nom, b.nom));
+  out.sort((a,b)=> b.attente - a.attente || triFr(a.nom, b.nom));
   return out;
 }
 /* ------------------------------------------------------- mise en mots ----- */
+/* le mot d'un critère à trois niveaux, quand il y a quelque chose à dire */
+function motPdi(niveau, lib){
+  if(!niveau) return "";
+  return lib + (niveau === "imperatif" ? " (impératif)" : " (souhaité)");
+}
 function resumeRecherche(r){
   const c = critAcq(r), b = [];
   if(c.types.length) b.push(c.types.join(", "));
   if(c.cps.length) b.push(communesCourtes(c.cps.join(", ")));
-  if(c.budget !== null) b.push("jusqu'à " + eur(c.budget));
-  if(c.surfaceMin !== null) b.push("à partir de " + m2txt(c.surfaceMin));
+  if(c.budgetPlafond !== null) b.push("jusqu'à " + eur(c.budgetPlafond));
+  if(c.surfaceMin !== null || c.surfaceMax !== null)
+    b.push(c.surfaceMin !== null && c.surfaceMax !== null
+      ? "de " + c.surfaceMin + " à " + m2txt(c.surfaceMax)
+      : c.surfaceMin !== null ? "à partir de " + m2txt(c.surfaceMin)
+                              : "jusqu'à " + m2txt(c.surfaceMax));
   if(c.terrainMin !== null) b.push("terrain " + m2txt(c.terrainMin) + " et plus");
   if(c.piecesMin !== null) b.push(c.piecesMin + " pièce" + (c.piecesMin > 1 ? "s" : "") + " et plus");
   if(c.chambresMin !== null) b.push(c.chambresMin + " chambre" + (c.chambresMin > 1 ? "s" : "") + " et plus");
-  if(c.exterieur) b.push("extérieur");
-  if(c.stationnement) b.push("stationnement");
-  if(c.ascenseurOui) b.push("ascenseur");
+  [[c.plainPiedChambre,"chambre de plain-pied"],
+   [c.plainPiedCommod,"commodités de plain-pied"],
+   [c.parkingPdi,"stationnement"], [c.garagePdi,"garage"],
+   [c.terrassePdi,"terrasse ou balcon"], [c.ascenseurPdi,"ascenseur"],
+   [c.piscinePdi,"piscine"]].forEach(([n, lib])=>{
+    const m = motPdi(n, lib); if(m) b.push(m); });
   if(c.etageMax !== null) b.push("étage " + c.etageMax + " maximum sans ascenseur");
-  if(c.travauxNon) b.push("sans travaux lourds");
+  if(c.styles.length) b.push(c.styles.join(", "));
+  if(c.travaux === "NON") b.push("sans travaux");
+  else if(c.travaux === "OUI" && c.travauxNiveau)
+    b.push("travaux jusqu'à « " + c.travauxNiveau.toLowerCase() + " »");
   if(c.dpeMin !== null) b.push("DPE " + DPE_LETTRE[c.dpeMin] + " au mieux");
   return b.join("  ·  ");
 }
@@ -8450,33 +8877,80 @@ function pastillesEcarts(x, sien){
   return ec.map(t=>`<span class="rapgap">${esc(t)}</span>`).join("") +
          fl.map(t=>`<span class="rapmanque">${esc(t)}</span>`).join("");
 }
-function ligneRapproBien(b){
+/* les deux icônes de réponse : prendre au suivi, ou refuser */
+const IC_OK = `<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M3 8.4l3.3 3.3L13 5"/></svg>`;
+const IC_NON = `<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+  <path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg>`;
+const IC_REPROP = `<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M3.4 8a4.6 4.6 0 1 0 1.5-3.4"/>
+  <path d="M2.6 2.9v3h3"/></svg>`;
+function boutonsReponse(i, id, etat){
+  if(etat === "suivi")
+    return `<span class="repok">suivi</span>
+      <button type="button" class="ricone sup" data-suividel="${i}|${esc(id)}"
+        title="Retirer du suivi">${IC_NON}</button>`;
+  if(etat === "refuse")
+    return `<span class="repnon">refusé</span>
+      <button type="button" class="ricone" data-reproposer="${i}|${esc(id)}"
+        title="Reproposer ce bien">${IC_REPROP}</button>`;
+  return `<button type="button" class="ricone oui" data-suivre="${i}|${esc(id)}"
+      title="Mettre au suivi de ce prospect">${IC_OK}</button>
+    <button type="button" class="ricone sup" data-refuser="${i}|${esc(id)}"
+      title="Refuser ce bien">${IC_NON}</button>`;
+}
+function ligneRapproBien(b, i, etat){
   const o = b.o;
-  return `<div class="raprow${b.neuf ? " neuf" : ""}">
+  return `<div class="raprow${etat ? " " + etat : ""}">
     <span class="rapqui">${esc([o.type, o.ville].filter(Boolean).join(" — ") || "Bien")}
       <em>mandat n° ${esc(o.mandat || "—")}${
         o.adresse ? " · " + esc(o.adresse) : ""}</em></span>
     <span class="rapquoi">${esc(resumeBien(o)) || "—"}</span>
     <span class="rapprix">${o.fai === null ? "—" : esc(eur(o.fai))}</span>
     <span class="rapec">${pastillesEcarts(b)}</span>
-    <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></div>`;
+    <span class="rapfin">${i === undefined || i === null ? ""
+      : boutonsReponse(i, o.id, etat || "")}
+      <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></span></div>`;
 }
+/* -------------------------------------------- le volet « Biens à rapprocher »
+   Trois temps : ce qui attend une réponse, ce qu'on a déjà pris au suivi, ce
+   qu'on a refusé — et, replié, pourquoi les autres ne sortent pas. */
 function blocRapproAcq(r, i){
   let res;
   try{ res = rapprochementsDe(r); }
   catch(e){ if(window.console) console.error(e); return ""; }
-  if(res.vide) return `<p class="muted" style="margin:10px 0 0">Aucun critère saisi :
-    renseignez au moins le budget, le type de bien ou la commune pour que le
-    rapprochement se fasse.</p>`;
-  /* zéro bien retenu est précisément le moment où il faut dire pourquoi */
-  if(!res.biens.length) return `<p class="muted" style="margin:10px 0 0">Aucun bien du
+  if(res.vide) return `<p class="muted" style="margin:0">Aucun critère saisi :
+    renseignez au moins le budget, le type de bien ou le code postal, sur le volet
+    <b>Sa recherche</b>, pour que le rapprochement se fasse.</p>`;
+  /* ce que les fiches des biens retenus ne disent pas, et qu'il faudra voir
+     sur place — niveau des pièces non saisi, le plus souvent */
+  const manques = {};
+  (res.biens || []).forEach(b=> critaresAVerifier(r, b.o).forEach(x=> manques[x] = 1));
+  const verifs = Object.keys(manques);
+  const rappel = verifs.length ? `<p class="averif"><b>À vérifier à la visite :</b> ${
+    esc(verifs.join("  ·  "))} — les fiches de ces biens ne le disent pas. Renseignez le
+    <b>niveau</b> de chaque pièce, sur la fiche détaillée du bien, et le rapprochement
+    saura répondre.</p>` : "";
+  if(!res.biens.length) return rappel + `<p class="muted" style="margin:0">Aucun bien du
     portefeuille ne correspond à cette recherche.</p>` + blocEcartes(res.ecartes);
-  const vus = rapproVus();
-  res.biens.forEach(b=> b.neuf = !vus[cleRappro(r, b.d)]);
-  return `<div class="rapacq nue"><h4>Biens qui correspondent
-    <span class="cnt">${res.biens.length}</span></h4>
-    ${res.biens.map(ligneRapproBien).join("")}
-    ${blocEcartes(res.ecartes)}</div>`;
+  const attente = res.biens.filter(b=> !etatRappro(r, b.d.id));
+  const pris    = res.biens.filter(b=> etatRappro(r, b.d.id) === "suivi");
+  const refu    = res.biens.filter(b=> etatRappro(r, b.d.id) === "refuse");
+  const titre = (lib, n)=>`<h4 class="rapsous">${esc(lib)}
+    <span class="cnt">${n}</span></h4>`;
+  return rappel +
+    titre("Sans réponse", attente.length) +
+    (attente.length ? attente.map(b=> ligneRapproBien(b, i, "")).join("")
+      : `<p class="muted" style="margin:0 0 10px">Tous les biens proposés ont reçu une
+         réponse.</p>`) +
+    (pris.length ? titre("Déjà au suivi", pris.length) +
+      pris.map(b=> ligneRapproBien(b, i, "suivi")).join("") : "") +
+    (refu.length ? titre("Refusés", refu.length) +
+      refu.map(b=> ligneRapproBien(b, i, "refuse")).join("") : "") +
+    blocEcartes(res.ecartes);
 }
 /* Pourquoi les autres ne sortent pas. Replié, il ne gêne personne ; ouvert, il
    répond à la seule question qui vient quand une liste paraît trop courte. */
@@ -8546,7 +9020,9 @@ function acquereursPourBien(d){
 }
 function ligneAcqPourBien(x){
   const r = x.r;
-  const co = [r.tel, r.email].filter(Boolean).join("  ·  ");
+  /* les coordonnées de tout le monde : un couple a deux téléphones */
+  const co = personnesProspect(r).map(p=>
+    [p.tel, p.email].filter(Boolean).join(" · ")).filter(Boolean).join("  ·  ");
   return `<div class="raprow">
     <span class="rapqui">${esc(x.nom)}
       <em>${esc(co || "aucune coordonnée saisie")}</em></span>
@@ -8574,34 +9050,23 @@ function carteRapprochements(){
   try{ tout = tousLesRapprochements(); }
   catch(e){ if(window.console) console.error(e); return ""; }
   if(!tout.length) return "";
-  const neufs = tout.reduce((n,x)=> n + x.neufs, 0);
-  /* s'il y a du nouveau, la carte s'ouvre d'elle-même la première fois */
-  if(neufs && PLIS["auj_rappro"] === undefined) PLIS["auj_rappro"] = false;
+  const n = tout.reduce((t,x)=> t + x.attente, 0);
+  /* la carte s'ouvre d'elle-même : elle ne s'affiche que s'il y a à répondre */
+  if(PLIS["auj_rappro"] === undefined) PLIS["auj_rappro"] = false;
   const plie = estPlie("auj_rappro", false);
   return `<div class="card" id="carteRappro">
     <h2 class="pliable" data-pli="auj_rappro">${chevron(plie)}Prospects et biens en vente
-      <span class="cnt">${tout.length}</span>${neufs
-        ? ` <span class="rapneuf">${neufs} nouveau${neufs > 1 ? "x" : ""}</span>` : ""}</h2>
+      <span class="cnt">${tout.length}</span>
+      <span class="rapneuf">${n} sans réponse</span></h2>
     <div class="body plibody"${plie ? ' style="display:none"' : ''}>
       ${tout.map(x=>`<div class="rapacq">
-        <h4>${esc(x.nom)} <span class="cnt">${x.biens.length}</span>${x.neufs
-          ? ` <span class="rapneuf">${x.neufs} nouveau${x.neufs > 1 ? "x" : ""}</span>` : ""}
+        <h4>${esc(x.nom)} <span class="cnt">${x.attente}</span>
           <em>${esc(resumeRecherche(x.r))}</em></h4>
-        ${x.biens.map(ligneRapproBien).join("")}</div>`).join("")}
+        ${x.biens.map(b=> ligneRapproBien(b, x.i, "")).join("")}</div>`).join("")}
       <div class="fbtns" style="margin-top:10px">
-        ${neufs ? `<button type="button" class="tbtn light" id="btnRapproVus"
-          >Marquer ces rapprochements comme vus</button>` : ""}
         <button type="button" class="tbtn light" id="btnRapproRep"
           >Ouvrir le fichier des prospects</button></div>
     </div></div>`;
-}
-function marquerRapproVus(){
-  const cles = [];
-  tousLesRapprochements().forEach(x=>
-    x.biens.forEach(b=> cles.push(cleRappro(x.r, b.d))));
-  noterRapproVus(cles);
-  renderAujourdhui();
-  toast("Rapprochements marqués comme vus");
 }
 
 /* =====================================================================
@@ -8755,6 +9220,7 @@ function renderProspects(){
 const COLS_PROSP = [
   {cle:"maj",    lib:"Mise à jour", genre:"date"},
   {cle:"nom",    lib:"Nom"},
+  {cle:"attente",lib:"Sans réponse", genre:"nombre"},
   {cle:"nego",   lib:"Négociateur",
    choix:()=> (L.negociateurs || []).map(n=> n.nom).filter(Boolean).sort(triFr)},
   {cle:"types",  lib:"Types de biens", choix:()=> (L.typeBien || []).slice().sort(triFr)},
@@ -8766,10 +9232,11 @@ const COLS_PROSP = [
 function valeurProsp(r, cle){
   if(cle === "maj")    return r.maj || 0;
   if(cle === "nom")    return libelleAcquereur(r);
+  if(cle === "attente") return biensSansReponse(r).length;
   if(cle === "nego")   return r.nego || "";
   if(cle === "types")  return r.types || "";
   if(cle === "cps")    return communesCourtes(r.cps);
-  if(cle === "budget") return num(r.budget);
+  if(cle === "budget") return critAcq(r).budgetPlafond;
   if(cle === "crit")   return resumeCriteres(r);
   return "";
 }
@@ -8778,14 +9245,20 @@ function valeurProsp(r, cle){
 function resumeCriteres(r){
   const c = critAcq(r), b = [];
   if(c.surfaceMin !== null) b.push("≥ " + m2txt(c.surfaceMin));
+  if(c.surfaceMax !== null) b.push("≤ " + m2txt(c.surfaceMax));
   if(c.terrainMin !== null) b.push("terrain ≥ " + m2txt(c.terrainMin));
   if(c.piecesMin !== null) b.push("≥ " + c.piecesMin + " p.");
   if(c.chambresMin !== null) b.push("≥ " + c.chambresMin + " ch.");
-  if(c.exterieur) b.push("extérieur");
-  if(c.stationnement) b.push("stationnement");
-  if(c.ascenseurOui) b.push("ascenseur");
+  if(c.chambresIdeal !== null) b.push("idéal " + c.chambresIdeal + " ch.");
+  [[c.plainPiedChambre,"chambre de plain-pied"],
+   [c.plainPiedCommod,"commodités de plain-pied"],
+   [c.parkingPdi,"stationnement"], [c.garagePdi,"garage"],
+   [c.terrassePdi,"terrasse"], [c.ascenseurPdi,"ascenseur"],
+   [c.piscinePdi,"piscine"]].forEach(([n, lib])=>{
+    if(n) b.push(lib + (n === "imperatif" ? " !" : " ?")); });
   if(c.etageMax !== null) b.push("étage ≤ " + c.etageMax);
-  if(c.travauxNon) b.push("sans travaux");
+  if(c.travaux === "NON") b.push("sans travaux");
+  else if(c.travaux === "OUI" && c.travauxNiveau) b.push(c.travauxNiveau.toLowerCase());
   if(c.dpeMin !== null) b.push("DPE ≥ " + DPE_LETTRE[c.dpeMin]);
   return b.join("  ·  ");
 }
@@ -8798,7 +9271,7 @@ function prospPasse(r){
     const q = String((PROSP.f || {})[col.cle] || "").trim();
     if(!q) return true;
     const v = col.cle === "cps" ? texteCps(r.cps) : valeurProsp(r, col.cle);
-    if(col.cle === "budget"){
+    if(col.cle === "budget" || col.cle === "attente"){
       const seuil = num(q);
       return seuil === null || (v !== null && v >= seuil);
     }
@@ -8841,6 +9314,8 @@ function vueProspListe(){
       title="Mis à jour depuis cette date"></th>`;
     if(c.cle === "budget") return `<th><input type="text" inputmode="numeric"
       data-pfiltre="budget" value="${v}" placeholder="≥ €"></th>`;
+    if(c.cle === "attente") return `<th><input type="text" inputmode="numeric"
+      data-pfiltre="attente" value="${v}" placeholder="≥"></th>`;
     return `<th><input type="text" data-pfiltre="${c.cle}" value="${v}"
       placeholder="filtrer"></th>`;
   }).join("");
@@ -8849,10 +9324,13 @@ function vueProspListe(){
     return `<tr data-prosp="${esc(r.id)}"${clos ? ' class="pclos"' : ""}>
       <td class="pdate">${esc(fdate(jourDe(r.maj)))}</td>
       <td class="pnom">${esc(libelleAcquereur(r) || "(sans nom)")}</td>
+      <td class="patt">${valeurProsp(r, "attente")
+        ? `<span class="rapneuf">${valeurProsp(r, "attente")}</span>` : "—"}</td>
       <td>${esc(r.nego || "—")}</td>
       <td>${esc(r.types || "—")}</td>
       <td>${esc(valeurProsp(r, "cps") || "—")}</td>
-      <td class="pbud">${num(r.budget) === null ? "—" : esc(eur(num(r.budget)))}</td>
+      <td class="pbud">${valeurProsp(r, "budget") === null ? "—"
+        : esc(eur(valeurProsp(r, "budget")))}</td>
       <td class="pcrit">${esc(resumeCriteres(r)) || "—"}</td></tr>`;
   }).join("") : `<tr><td colspan="${COLS_PROSP.length}" class="muted"
       style="padding:16px">${tout.length
@@ -8878,6 +9356,35 @@ function vueProspListe(){
 }
 
 /* -------------------------------------------------------------- la fiche */
+/* -------------------------------------- les personnes d'une fiche prospect
+   Même présentation que les vendeurs d'un dossier : un bloc par personne,
+   un bouton pour en ajouter. La fiche découverte en prévoit deux ; rien
+   n'empêche d'en mettre trois. */
+function champPersonneProspect(i, k, cle, lab, kind, large){
+  const p = ((L.prospects[i] || {}).personnes || [])[k] || {};
+  const chemin = `${i}:${k}:${cle}`;
+  const h = kind === "list:civilite"
+    ? controlBase(chemin, kind, p[cle] || "", `pp${i}${k}`, "data-pper")
+    : controlRaw(chemin, kind, p[cle] || "", `pp${i}${k}`, "data-pper");
+  return `<div class="pf${large ? " wide" : ""}"><label>${esc(lab)}</label>${h}</div>`;
+}
+function blocsPersonnesProspect(i){
+  const r = L.prospects[i] || {};
+  const l = Array.isArray(r.personnes) ? r.personnes : [];
+  return l.map((p, k)=>`<div class="ppers" id="pp_${i}_${k}">
+      <header><span class="who">${esc(nomPersonneProspect(p) ||
+        "Prospect " + (k + 1))}</span>
+        ${l.length > 1 ? `<button type="button" class="xbtn sup"
+          data-ppdel="${i}:${k}">Supprimer</button>` : ""}</header>
+      <div class="pgrid">
+        ${champPersonneProspect(i, k, "civilite", "Civilité", "list:civilite")}
+        ${champPersonneProspect(i, k, "nom", "Nom", "text")}
+        ${champPersonneProspect(i, k, "prenom", "Prénom", "text")}
+        ${champPersonneProspect(i, k, "tel", "Téléphone", "text")}
+        ${champPersonneProspect(i, k, "email", "Email", "text", true)}
+      </div></div>`).join("") +
+    `<button class="addbtn" data-ppadd="${i}">+ Ajouter une personne</button>`;
+}
 function champsProspect(i, champs){
   const r = (L.prospects || [])[i] || {}, b = BOOKS.prospects;
   const parCle = {};
@@ -8888,8 +9395,8 @@ function champsProspect(i, champs){
     const [cle, lab, kd, w] = c;
     if(kd === "sep") return `<div class="pfsep">${esc(lab)}</div>`;
     let h = controlRaw(`prospects:${i}:${cle}`, kd, r[cle] || "", `pr${i}`, "data-book");
-    const off = b.dep && b.dep[cle] && !r[b.dep[cle]];
-    if(off) h = h.replace(/<(input|select|textarea)\b/g, "$& disabled");
+    const off = champOff(b, r, cle);
+    if(off) h = h.replace(/<(input|select|textarea|button)\b/g, "$& disabled");
     return `<div class="pf${w === "wide" ? " wide" : ""}${off ? " off" : ""}">` +
            `<label>${esc(lab)}</label>${h}</div>`;
   }).join("") + `</div>`;
@@ -8902,14 +9409,12 @@ function vueProspFiche(){
   const nSuivis = (Array.isArray(r.suivis) ? r.suivis : []).length;
   const page = PAGES_PROSPECT.filter(p=> p.cle === PROSP.page)[0] || PAGES_PROSPECT[0];
   let corps;
-  if(page.cle === "suivis") corps = pageBiensSuivis(i);
-  else {
-    corps = champsProspect(i, page.champs);
-    /* la recherche se juge à ce qu'elle fait sortir : le rapprochement est
-       sous les critères, et se refait à chaque frappe */
-    if(page.cle === "recherche")
-      corps += `<div class="rapzone">${blocRapproAcq(r, i)}</div>`;
-  }
+  if(page.cle === "suivis")      corps = pageBiensSuivis(i);
+  else if(page.cle === "rappro") corps = `<div class="rapzone">${blocRapproAcq(r, i)}</div>`;
+  else if(page.cle === "coord")  corps = blocsPersonnesProspect(i) +
+    `<div class="fsep" style="margin:14px 0 10px"></div>` +
+    champsProspect(i, page.champs);
+  else corps = champsProspect(i, page.champs);
   return `<div class="pbarre">
       <button type="button" class="tbtn light" data-prospretour>‹ Tous les prospects</button>
       <div class="grow"></div>
@@ -8925,9 +9430,12 @@ function vueProspFiche(){
           <span class="drsub">mis à jour le <b id="prospMaj">${
             esc(fdate(jourDe(r.maj)))}</b></span>
         </div>
-        ${PAGES_PROSPECT.map(p=>`<button class="mitem${
-          p.cle === page.cle ? " on" : ""}" data-pgo="${p.cle}">${esc(p.lib)}${
-          p.cle === "suivis" && nSuivis ? ` <b>${nSuivis}</b>` : ""}</button>`).join("")}
+        ${PAGES_PROSPECT.map(p=>{
+          const n = p.cle === "suivis" ? nSuivis
+                  : p.cle === "rappro" ? biensSansReponse(r).length : 0;
+          return `<button class="mitem${p.cle === page.cle ? " on" : ""}"
+            data-pgo="${p.cle}">${esc(p.lib)}${n ? ` <b>${n}</b>` : ""}</button>`;
+        }).join("")}
       </nav>
       <div class="prospcorps" id="prospCorps">
         <div class="card"><h2>${esc(page.lib)}</h2>
@@ -8937,13 +9445,23 @@ function vueProspFiche(){
 }
 
 /* ---------------------------------------------------------- biens suivis */
-function suivisDe(r){ return Array.isArray(r.suivis) ? r.suivis.slice() : []; }
 function poserSuivis(i, ids){
   const r = (L.prospects || [])[i];
   if(!r) return;
   const propres = ids.filter((x,k,t)=> x && t.indexOf(x) === k);
   noterMajFiche("prospects", i, suivisDe(r).join(","), propres.join(","));
   r.suivis = propres;
+  /* prendre un bien au suivi lève le refus qu'on en avait fait */
+  r.refus = refusDe(r).filter(x=> propres.indexOf(x) < 0);
+  saveLists();
+}
+function poserRefus(i, ids){
+  const r = (L.prospects || [])[i];
+  if(!r) return;
+  const propres = ids.filter((x,k,t)=> x && t.indexOf(x) === k);
+  noterMajFiche("prospects", i, refusDe(r).join(","), propres.join(","));
+  r.refus = propres;
+  r.suivis = suivisDe(r).filter(x=> propres.indexOf(x) < 0);
   saveLists();
 }
 function ligneBienSuivi(d, i, suivi){
@@ -8971,12 +9489,6 @@ function pageBiensSuivis(i){
   if(D && D.id) all[D.id] = D;
   const vus = ids.map(id=> all[id]).filter(Boolean);
   const perdus = ids.length - vus.length;
-  /* ce que le rapprochement propose et qui n'est pas déjà suivi */
-  let proposes = [];
-  try{
-    const res = rapprochementsDe(r);
-    proposes = (res.biens || []).filter(b=> ids.indexOf(b.d.id) < 0);
-  }catch(e){ if(window.console) console.error(e); }
   return `<div class="pbarre" style="margin:0 0 10px">
       <button class="addbtn" data-suivicherche="${i}">Chercher un bien ${LOUPE}</button>
       <div class="grow"></div>
@@ -8985,17 +9497,10 @@ function pageBiensSuivis(i){
     </div>
     ${vus.length ? vus.map(d=> ligneBienSuivi(d, i, true)).join("")
       : `<p class="muted" style="margin:0">Aucun bien suivi pour l'instant. Cherchez-en un,
-         ou prenez-en un dans les propositions ci-dessous.</p>`}
+         ou prenez-en un au volet <b>Biens à rapprocher</b>.</p>`}
     ${perdus ? `<p class="muted" style="margin:8px 0 0">${perdus} bien${
       perdus > 1 ? "s" : ""} suivi${perdus > 1 ? "s ont" : " a"} été supprimé${
-      perdus > 1 ? "s" : ""} de la base.</p>` : ""}
-    <div class="fsep" style="margin:16px 0 10px"></div>
-    <h3 style="margin:0 0 8px;font-size:12px;letter-spacing:.4px;text-transform:uppercase;
-      color:var(--ink-3)">Proposés par le rapprochement</h3>
-    ${proposes.length
-      ? proposes.map(b=> ligneBienSuivi(b.d, i, false)).join("")
-      : `<p class="muted" style="margin:0">Rien de neuf à proposer : soit la recherche
-         n'est pas renseignée, soit tout ce qui correspond est déjà suivi.</p>`}`;
+      perdus > 1 ? "s" : ""} de la base.</p>` : ""}`;
 }
 /* la loupe : n'importe quel dossier, pas seulement ceux du rapprochement —
    on suit parfois un bien qui ne coche pas les cases */
@@ -9026,6 +9531,14 @@ function ouvrirChercheSuivi(i){
   SUIVI_REDESSIN = dessiner;
 }
 let SUIVI_REDESSIN = null;
+/* Une réponse se donne depuis trois endroits : la fiche, la carte
+   d'Aujourd'hui, la fenêtre de recherche d'un bien. On redessine celui qui
+   est à l'écran, et lui seul. */
+function renderApresReponse(){
+  if(pageActive() === "prospects") renderProspects();
+  if(pageActive() === "aujourdhui") renderAujourdhui();
+  if(SUIVI_REDESSIN) SUIVI_REDESSIN();
+}
 
 function renderAujourdhui(){
   try{ construireAujourdhui(); }
@@ -9154,8 +9667,6 @@ function construireAujourdhui(){
     `<div id="aujGrille" class="${AUJ_DUO ? "duo" : "uni"}">` +
     (carteDatesDouteuses() ? rang(carteDatesDouteuses(), true) : "") +
     `${corps}</div>`;
-  const bv = $("#btnRapproVus");
-  if(bv) bv.onclick = marquerRapproVus;
   const br = $("#btnRapproRep");
   if(br) br.onclick = ()=>{ PROSP.ouvert = ""; activerOnglet("prospects"); };
   majTiroirAuj();
@@ -11315,9 +11826,14 @@ function carteDuCarnet(k, r){
       tels:[{num:r.tel}], emails:[r.email]});
   }
   if(k === "prospects"){
-    return vcarte({nom:r.nom, prenom:r.prenom, fn:libelleAcquereur(r),
-      titre:"Prospect", adr, tels:[{num:r.tel, genre:"CELL"}], emails:[r.email],
-      note:resumeRecherche(r)});
+    /* deux personnes sur une fiche font deux cartes dans le même fichier :
+       c'est ce que le format vCard permet, et ce que Google Contacts attend */
+    const gens = personnesProspect(r);
+    const note = resumeRecherche(r);
+    if(!gens.length) return "";
+    return gens.map(p=> vcarte({nom:p.nom, prenom:p.prenom,
+      civilite:p.civilite, fn:nomPersonneProspect(p), titre:"Prospect",
+      tels:[{num:p.tel, genre:"CELL"}], emails:[p.email], note})).join("");
   }
   return vcarte({nom:r.nom, fn:r.nom, adr, tels:[{num:r.tel}], emails:[r.email]});
 }
@@ -11496,6 +12012,18 @@ document.addEventListener("input", e=>{
     if(neuf){ neuf.focus(); try{ neuf.setSelectionRange(pos, pos); }catch(e){} }
     return;
   }
+  /* une personne d'une fiche prospect */
+  if(t.dataset.pper !== undefined){
+    const [i,k,f] = t.dataset.pper.split(":");
+    const p = ((L.prospects[+i] || {}).personnes || [])[+k];
+    if(p){
+      noterMajFiche("prospects", i, p[f], t.value);
+      p[f] = t.value; saveLists();
+      majEntetePersonne(t, i, k);
+      majEnteteProspect();
+    }
+    return;
+  }
   if(t.dataset.book !== undefined){
     const [k,i,f] = t.dataset.book.split(":");
     noterMajFiche(k, i, L[k][+i][f], t.value);
@@ -11522,6 +12050,25 @@ document.addEventListener("input", e=>{
          Un nom tapé lettre à lettre ne l'est pas — on attend la sortie du
          champ, sinon « Chambre » deviendrait « Chambre 2 » dès le « C ». */
       if(champ === "nom" && t.tagName === "SELECT") numeroterPieces(+i);
+      /* une cave, un garage, une terrasse ne comptent pas dans l'habitable :
+         la case se coche d'elle-même — tant qu'on ne l'a pas touchée soi-même */
+      if(champ === "nom" && !p.horsHabManuel){
+        const veut = PIECE_ANNEXE.test(String(p.nom || ""));
+        if(!!p.horsHab !== veut){
+          p.horsHab = veut;
+          const c = document.querySelector(`[data-piecechk="${i}:horsHab"]`);
+          if(c) c.checked = veut;
+          const h = document.querySelector(`[data-piece="${i}:hab"]`);
+          if(h) h.disabled = veut;
+        }
+      }
+      /* la surface au sol se recopie en habitable : on le montre tout de
+         suite, en filigrane, sans l'écrire — une valeur saisie reste */
+      if(champ === "surface"){
+        const h = document.querySelector(`[data-piece="${i}:hab"]`);
+        if(h) h.placeholder = p.horsHab ? "—"
+          : (num(p.surface) === null ? "0" : String(num(p.surface)).replace(".", ","));
+      }
       autosave(); rafraichirDepuisPieces(); majDetail();
     }
   }
@@ -11596,6 +12143,17 @@ document.addEventListener("focusout", e=>{
           || (bouts[0]==="vendeurs"?"Vendeur ":"Acquéreur ") + (+bouts[1]+1); }
     }
     autosave(); renderPreview();
+    return;
+  }
+  /* une personne d'une fiche prospect : même mise en forme que partout */
+  if(t.dataset.pper !== undefined){
+    const [i,k,f] = t.dataset.pper.split(":");
+    const p = ((L.prospects[+i] || {}).personnes || [])[+k];
+    if(!p) return;
+    const v = formatChamp(f, t.value, "France");
+    if(v === null || v === t.value) return;
+    t.value = v; p[f] = v; saveLists();
+    majEntetePersonne(t, i, k);
     return;
   }
   /* carnets d'adresses */
@@ -11674,6 +12232,22 @@ document.addEventListener("change", e=>{
 document.addEventListener("change", e=>{
   const t = e.target;
   /* un groupe de cases écrit une seule valeur : on relit tout le groupe */
+  if(t.dataset && t.dataset.piecechk !== undefined){
+    const [i,champ] = t.dataset.piecechk.split(":");
+    const p = (D.pieces || [])[+i];
+    if(p){
+      p[champ] = t.checked;
+      p.horsHabManuel = true;            // la main l'emporte sur la règle
+      const h = document.querySelector(`[data-piece="${i}:hab"]`);
+      if(h){
+        h.disabled = t.checked;
+        h.placeholder = t.checked ? "—"
+          : (num(p.surface) === null ? "0" : String(num(p.surface)).replace(".", ","));
+      }
+      autosave(); rafraichirDepuisPieces(); majDetail();
+    }
+    return;
+  }
   if(t.dataset && t.dataset.bmulti !== undefined){
     const [k,i,f] = t.dataset.bmulti.split(":");
     if(L[k] && L[k][+i]){
@@ -11763,7 +12337,8 @@ document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
-    "[data-suivicherche],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+    "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
+    "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   /* Un trombone peut vivre DANS un titre repliable — c'est le cas sur la page
@@ -11785,6 +12360,38 @@ document.addEventListener("click", e=>{
     const quoi = t.dataset.neuf;
     fermerPopup();
     if(quoi === "pdf") $("#pdfFile").click(); else nouveauDossierVierge();
+    return;
+  }
+  if(t.dataset.pdib !== undefined){
+    const val = PDI_CYCLE[(PDI_CYCLE.indexOf(t.dataset.pdiv || "") + 1) % PDI_CYCLE.length];
+    t.dataset.pdiv = val;
+    t.textContent = PDI_LIB[val];
+    t.className = "pdib " + (val || "rien");
+    const [k,i,f] = t.dataset.pdib.split(":");
+    if(L[k] && L[k][+i]){
+      noterMajFiche(k, i, L[k][+i][f], val);
+      L[k][+i][f] = val; saveLists();
+      majRapproFiche(k, i);
+    }
+    return;
+  }
+  if(t.dataset.ppadd !== undefined){
+    const i = +t.dataset.ppadd;
+    const r = L.prospects[i];
+    if(!r) return;
+    if(!Array.isArray(r.personnes)) r.personnes = [];
+    r.personnes.push(personneProspect());
+    r.maj = Date.now();
+    saveLists(); renderProspects();
+    return;
+  }
+  if(t.dataset.ppdel !== undefined){
+    const [i,k] = t.dataset.ppdel.split(":");
+    const r = L.prospects[+i];
+    if(!r || !Array.isArray(r.personnes) || r.personnes.length < 2) return;
+    r.personnes.splice(+k, 1);
+    r.maj = Date.now();
+    saveLists(); renderProspects();
     return;
   }
   if(t.dataset.ynb !== undefined){
@@ -11899,8 +12506,10 @@ document.addEventListener("click", e=>{
     Object.assign(row, BOOKS.prospects.defauts || {});
     /* le négociateur de celui qui saisit, modifiable comme le reste */
     row.nego = monNegociateur();
-    row.suivis = [];
+    row.personnes = [personneProspect()];
+    row.suivis = []; row.refus = [];
     row.maj = Date.now();
+    row.rdv = auj();
     (L.prospects = L.prospects || []).push(row);
     saveLists();
     ouvrirProspect(row.id, "coord");
@@ -11925,14 +12534,24 @@ document.addEventListener("click", e=>{
   if(t.dataset.suivre){
     const [i, id] = t.dataset.suivre.split("|");
     poserSuivis(+i, suivisDe(L.prospects[+i] || {}).concat([id]));
-    renderProspects();
-    if(SUIVI_REDESSIN) SUIVI_REDESSIN();
+    renderApresReponse();
     toast("Bien ajouté au suivi");
     return; }
   if(t.dataset.suividel){
     const [i, id] = t.dataset.suividel.split("|");
     poserSuivis(+i, suivisDe(L.prospects[+i] || {}).filter(x=> x !== id));
-    renderProspects();
+    renderApresReponse();
+    return; }
+  if(t.dataset.refuser){
+    const [i, id] = t.dataset.refuser.split("|");
+    poserRefus(+i, refusDe(L.prospects[+i] || {}).concat([id]));
+    renderApresReponse();
+    toast("Bien refusé");
+    return; }
+  if(t.dataset.reproposer){
+    const [i, id] = t.dataset.reproposer.split("|");
+    poserRefus(+i, refusDe(L.prospects[+i] || {}).filter(x=> x !== id));
+    renderApresReponse();
     return; }
   if(t.dataset.plan !== undefined){ ouvrirPlanImmeuble(t.dataset.plan); return; }
   if(t.dataset.planz){
@@ -14886,7 +15505,15 @@ function migrate(d){
   fondreEquipement(out.detail);
   delete out.detail.vue;                 // la liste « Vue » n'avait pas d'usage
   out.pieces = (Array.isArray(d.pieces) ? d.pieces : []).filter(Boolean)
-    .map(x=> ({nom: x.nom || "", surface: x.surface || "", note: x.note || ""}));
+    .map(x=> ({nom: x.nom || "", niveau: x.niveau || "", surface: x.surface || "",
+               /* une pièce d'avant n'avait pas de case : les annexes étaient
+                  écartées de la surface habitable par leur nom. On garde la
+                  même réponse, mais elle devient visible et corrigeable. */
+               hab: x.hab || "",
+               horsHab: x.horsHab === undefined
+                 ? PIECE_ANNEXE.test(String(x.nom || "")) : !!x.horsHab,
+               horsHabManuel: !!x.horsHabManuel,
+               note: x.note || ""}));
   out.parcelles = (Array.isArray(d.parcelles) ? d.parcelles : []).filter(Boolean)
     .map(x=> ({prefixe: x.prefixe || "", section: x.section || "", numero: x.numero || "",
                lieudit: x.lieudit || "", contenance: x.contenance || ""}));
@@ -15191,6 +15818,28 @@ const AIDE = [
   "parking s'affichent sans faire d'alerte : leur absence se dit, elle ne se reproche pas. "+
   "Le lien « Ouvrir la fiche » mène à l'immeuble, « ses dossiers » ouvre la liste de tout ce "+
   "que l'agence y a traité."],
+ ["Les pièces : niveau, surface au sol, surface habitable",
+  "Le détail des pièces porte quatre colonnes qui comptent. Le <b>niveau</b> — du sous-sol "+
+  "aux combles, <b>demi-étages compris</b> — se choisit dans une liste que vous pouvez "+
+  "compléter dans l'onglet Listes. La <b>surface au sol</b> est celle qu'on mesure ; elle "+
+  "<b>se recopie d'elle-même</b> dans la colonne habitable, en filigrane : il n'y a rien à "+
+  "saisir deux fois. La case <b>hors</b> exclut la pièce de la surface habitable — elle se "+
+  "coche toute seule sur une cave, un garage, une terrasse, et se décoche à la main si vous "+
+  "n'êtes pas d'accord ; une fois décochée, elle ne se recochera plus. Enfin, la colonne "+
+  "<b>habitable</b> accepte une valeur <b>inférieure</b> au sol, pour une pièce mansardée."],
+ ["Les totaux par niveau",
+  "Sous le tableau, une ligne par niveau — au sol et habitable — puis le total général, "+
+  "dans l'ordre de la liste des niveaux. Les pièces sans niveau sont regroupées à la fin et "+
+  "le disent. C'est le <b>total habitable</b> qui devient la <b>surface du bien</b>, reprise "+
+  "partout : la fiche, les documents, les annonces et le rapprochement."],
+ ["Plain-pied : ce que le niveau permet de dire",
+  "<b>Plain-pied veut dire rez-de-chaussée</b>, et rien d'autre : ni le rez-de-jardin, ni le "+
+  "demi-niveau qui le surplombe. Dès que vous renseignez les niveaux, l'application sait "+
+  "répondre aux deux questions des fiches découverte : y a-t-il une <b>chambre</b> de "+
+  "plain-pied, et y a-t-il des <b>commodités</b> de plain-pied — on entend par là un WC, "+
+  "une salle d'eau ou une salle de bain, une seule suffit. Tant que les niveaux ne sont pas "+
+  "saisis, l'application ne tranche pas : elle le dit, et le volet « Biens à rapprocher » "+
+  "du prospect vous indique quoi vérifier à la visite."],
  ["La fiche détaillée du bien",
   "Un bouton en forme de maison, dans l'en-tête du dossier, ouvre la <b>fiche détaillée</b>. "+
   "Elle se lit en <b>deux colonnes</b>. "+
@@ -15478,15 +16127,43 @@ const AIDE = [
   "minimum, la date comme « depuis », le reste se cherche sans casse ni accent. Les trois "+
   "boutons du haut passent des recherches en cours aux recherches closes, ou aux deux. "+
   "Un clic sur une ligne ouvre la fiche."],
- ["La fiche d'un prospect",
-  "Elle a sa colonne de gauche, comme la fiche d'un bien, avec trois volets. "+
-  "<b>Coordonnées</b> : nom, téléphone, courriel, le <b>négociateur qui le suit</b>, la "+
-  "case <b>Recherche en cours</b> — qui met la fiche en sommeil sans l'effacer —, la date "+
-  "du dernier contact et vos notes. <b>Sa recherche</b> : budget maximum, types de biens "+
-  "(des cases, pas du texte libre), codes postaux, surfaces et nombres de pièces minimum, "+
-  "puis extérieur, stationnement, ascenseur, étage maximum sans ascenseur, travaux et "+
-  "classe de DPE — avec, dessous, les biens qui correspondent. <b>Biens suivis</b> : voir "+
-  "l'entrée suivante."],
+ ["La fiche d'un prospect : cinq volets",
+  "Elle reprend la <b>fiche découverte</b> de l'agence, et se parcourt par une colonne de "+
+  "gauche comme la fiche d'un bien. <b>Coordonnées</b> : la date du rendez-vous, le "+
+  "négociateur, la saisie AC3, le suivi — et les personnes, en <b>blocs ajoutables</b> "+
+  "comme les vendeurs d'un dossier, puisqu'on achète souvent à deux. <b>Sa recherche</b> : "+
+  "types, codes postaux, secteurs recherchés et refusés, surfaces et pièces (minimum et "+
+  "idéal), les critères de confort, le style, les travaux, le DPE, et le classement "+
+  "prioritaire des trois critères qui comptent le plus. <b>Objectif et financement</b> : "+
+  "résidence principale ou investissement, délais, les trois budgets, le mode de "+
+  "financement, la banque, la vente d'un bien, et vos observations. <b>Biens à "+
+  "rapprocher</b> et <b>Biens suivis</b> : voir plus bas."],
+ ["Peu importe, dans l'idéal, impératif",
+  "La fiche découverte ne demande pas si l'on veut un ascenseur, mais <b>à quel point cela "+
+  "compte</b>. Les critères de confort — chambre et commodités de plain-pied, parking, "+
+  "garage, terrasse ou balcon, ascenseur, piscine — sont donc des boutons à trois "+
+  "positions, qui tournent d'un clic. <b>Peu importe</b> est la position de départ : un "+
+  "critère que vous n'avez pas saisi <b>n'écarte jamais un bien</b>. <b>Dans l'idéal</b> "+
+  "pose un écart léger, <b>impératif</b> un écart lourd — mais même là, le bien reste "+
+  "proposé avec son étiquette rouge : c'est à vous de trancher, pas à un filtre. "+
+  "La chambre et les commodités de plain-pied se comparent elles aussi, dès que le "+
+  "<b>niveau des pièces</b> est renseigné sur la fiche détaillée du bien. Tant qu'il ne "+
+  "l'est pas, le volet « Biens à rapprocher » le rappelle, à vérifier à la visite."],
+ ["Les trois budgets",
+  "La fiche découverte demande trois montants, <b>hors frais de notaire</b> : bien avec "+
+  "travaux, bien sans travaux, bien « coup de cœur ». Le rapprochement prend le plus haut "+
+  "comme plafond — au-delà, le bien sort — et le plus bas comme référence : entre les deux, "+
+  "le bien est proposé avec la mention « <i>au-dessus du budget courant, dans l'enveloppe "+
+  "coup de cœur</i> ». Un seul montant saisi suffit."],
+ ["Répondre à un bien rapproché",
+  "Le volet <b>Biens à rapprocher</b> range les biens en trois : <b>sans réponse</b>, "+
+  "<b>déjà au suivi</b>, <b>refusés</b>. Deux icônes sur chaque ligne : la coche le met au "+
+  "<b>suivi du prospect</b>, la croix le <b>refuse</b>. Un bien refusé se reproposera d'un "+
+  "clic sur la flèche. La réponse est inscrite dans la fiche : elle vous suit sur tous vos "+
+  "appareils, contrairement à l'ancienne pastille « nouveau », qui s'éteignait d'un simple "+
+  "regard et n'existe plus. Les mêmes icônes figurent sur la carte d'<b>Aujourd'hui</b>, "+
+  "pour répondre sans ouvrir la fiche. Et la colonne <b>Sans réponse</b> de la liste des "+
+  "prospects compte, pour chacun, ce qui attend encore votre avis."],
  ["Le négociateur et la date de mise à jour",
   "Une fiche neuve est <b>rattachée au négociateur connecté</b> — ou, s'il n'y a pas de "+
   "comptes, au seul négociateur de l'agence. Le champ reste modifiable. La <b>date de mise "+
@@ -15505,12 +16182,12 @@ const AIDE = [
   "Le troisième volet de la fiche tient la liste des biens que cette personne suit. Deux "+
   "façons d'en ajouter : le bouton <b>Chercher un bien</b>, qui ouvre une loupe sur "+
   "l'ensemble de vos dossiers — y compris ceux qui ne correspondent pas à sa recherche —, "+
-  "et le bouton <b>Suivre</b> sur chacun des biens <b>proposés par le rapprochement</b>, "+
-  "listés juste en dessous. <b>Retirer</b> les enlève. Le compteur du menu latéral suit."],
+  "et la <b>coche verte</b> sur chacun des biens du volet <b>Biens à rapprocher</b>. "+
+  "<b>Retirer</b> les enlève. Le compteur du menu latéral suit."],
  ["Le rapprochement avec le portefeuille",
   "Dès qu'une fiche porte un critère, l'application la compare à <b>tous les mandats en "+
-  "vente</b> et affiche les biens qui correspondent, sur le volet <b>Sa recherche</b> de "+
-  "la fiche et sur <b>Aujourd'hui</b>. "+
+  "vente</b> et affiche les biens qui correspondent, sur le volet <b>Biens à rapprocher</b> "+
+  "de la fiche et sur <b>Aujourd'hui</b>. "+
   "Elle ne se contente pas du oui ou non : un bien qui dépasse le budget de 8 000 € ou qui "+
   "n'a qu'une chambre de moins reste proposé, avec l'écart dit en clair — "+
   "« <i>dépasse le budget de 8 000 € (3 %)</i> », « <i>une chambre de moins</i> ». Les biens "+
