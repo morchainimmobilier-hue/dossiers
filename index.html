@@ -1073,6 +1073,23 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .mddupq span{display:block;font-size:11.5px;color:var(--ink-3)}
 .mddupq em{font-style:normal;font-size:11px;font-weight:700;color:#8a5a08}
 .mddupb{display:flex;gap:7px;flex-wrap:wrap}
+/* le bandeau d'une recherche de prospect */
+.rechbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;
+  padding:9px 12px;background:var(--accent-soft);border-radius:10px}
+.rechbar.dort{background:var(--line-2);opacity:.95}
+.rechnav{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.rechnav b{font-size:13px;color:var(--navy);min-width:66px;text-align:center}
+.rechnav .xbtn{padding:1px 9px;font-size:16px;line-height:1.35}
+.rechnav .xbtn[disabled]{opacity:.35;cursor:default}
+.rechnom{flex:1;min-width:190px;background:#fff;border:1px solid var(--field-line);
+  border-radius:8px;padding:6px 10px;font:inherit;font-size:13px}
+.rechnom:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.rechactif{white-space:nowrap}
+.rechbar .tbtn.light.mini,.rechbar .xbtn{align-self:center}
+/* une liste de cases qui n'a encore rien à proposer */
+.multibox.vide{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.listcard .qville{display:block;margin:9px 0 3px;font-size:11.5px;font-weight:700;
+  letter-spacing:.4px;text-transform:uppercase;color:var(--ink-3)}
 .mdcad{width:100%;border-collapse:collapse;font-size:12.5px}
 .mdcad th,.mdcad td{border:1px solid var(--line-2);padding:5px 9px;text-align:left}
 .mdcad th{background:var(--accent-soft);color:var(--navy);font-size:11px;font-weight:600}
@@ -1905,7 +1922,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 15 octobre 2026, 13 h 05">Dossiers de vente</div>
+  <div class="brand" title="Version du 15 octobre 2026, 14 h 11">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2116,7 +2133,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>15 octobre 2026, 13 h 05</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>15 octobre 2026, 14 h 11</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2324,6 +2341,12 @@ const INDICATIFS = {
 const LISTS_DEFAULT = {
   mandat:     ["Simple","Semi-exclusif","Exclusif","Délégation"],
   typeBien:   ["Maison","Appartement","Immeuble","Terrain","Local","Garage / Parking","Autre"],
+  /* Les quartiers, par commune. Un quartier n'existe que dans SA ville —
+     « Trinquetaille » ne veut rien dire à Saint-Martin-de-Crau —, d'où un
+     couple {ville, nom} et non une liste de mots. Elle part VIDE et se
+     remplit au fil des biens : c'est votre connaissance du terrain, pas un
+     découpage administratif qu'on vous imposerait. */
+  quartiers:  [],
   sitJur:     ["Monopropriété","Copropriété","ASL","Lotissement","Autre"],
   civilite:   ["M.","Mme"],
   qualite:    ["M.","Mme","M. et Mme","Indivision","SCI","SARL","SAS","Société","Succession"],
@@ -2550,8 +2573,8 @@ const BOOKS = {
     /* --- volet 2 : la recherche */
     ["types","Types de biens","multi:typeBien","wide"],
     ["cps","Codes postaux recherchés","cps","wide"],
-    ["quartiersOui","Secteurs / quartiers recherchés","text","wide"],
-    ["quartiersNon","Secteurs / quartiers refusés","text","wide"],
+    ["quartiersOui","Quartiers recherchés","quartiers","wide"],
+    ["quartiersNon","Quartiers refusés","quartiers","wide"],
     ["@surf","Surfaces et pièces","sep"],
     ["surfaceMin","Surface minimum (m²)","nb5"],
     ["surfaceMax","Surface maximum (m²)","nb5"],
@@ -2630,6 +2653,60 @@ const PAGES_PROSPECT = [
   {cle:"suivis",  lib:"Biens suivis", champs:[]}
 ];
 
+/* =====================================================================
+   PLUSIEURS RECHERCHES PAR PROSPECT
+   ---------------------------------------------------------------------
+   Un même client cherche souvent deux choses à la fois : une maison à Arles
+   pour y vivre, et un studio à louer. Mettre les deux dans une seule fiche
+   donnait une recherche qui ne ressemblait à rien — un budget de maison, une
+   surface de studio — et ne rapprochait rien de bon.
+
+   Les critères du volet « Sa recherche » appartiennent donc à une RECHERCHE,
+   et une fiche en porte autant qu'il en faut. Le reste — les coordonnées, le
+   négociateur, l'objectif, le budget, le financement — reste la fiche : le
+   budget est celui du client, pas celui d'une recherche.
+
+   Chaque recherche porte sa case ACTIVE. La décocher ne l'efface pas : elle
+   cesse simplement de rapprocher, et les biens qu'elle proposait sortent de
+   la liste. On la réactive d'un clic. */
+const CHAMPS_RECHERCHE = (PAGES_PROSPECT.filter(p=> p.cle === "recherche")[0].champs)
+  .filter(c=> c.charAt(0) !== "@");
+function rechercheNeuve(){
+  const r = {id:"rc" + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+             actif:true, nom:""};
+  const parCle = {};
+  (BOOKS.prospects.cols || []).forEach(c=> parCle[c[0]] = c);
+  CHAMPS_RECHERCHE.forEach(f=>{
+    const c = parCle[f];
+    r[f] = c && c[2] === "check" ? false : "";
+  });
+  return r;
+}
+function recherchesDe(r){
+  const l = Array.isArray((r || {}).recherches) ? r.recherches.filter(Boolean) : [];
+  if(l.length) return l;
+  /* Une fiche qui n'a pas encore été reprise — celle qui arrive d'un appareil
+     resté en arrière, par exemple : ses critères à plat FONT sa première
+     recherche. Sans cela, elle paraîtrait vide et ne rapprocherait plus rien. */
+  const r0 = rechercheNeuve();
+  CHAMPS_RECHERCHE.forEach(f=>{
+    if(r && r[f] !== undefined && r[f] !== "") r0[f] = r[f]; });
+  return [r0];
+}
+/* La même chose, mais écrite dans la fiche : on ne saisit pas dans un objet
+   de passage. À appeler avant d'ouvrir la fiche à la modification. */
+function assurerRecherches(r){
+  if(!r) return [];
+  if(!Array.isArray(r.recherches) || !r.recherches.length){
+    r.recherches = recherchesDe(r);
+    saveLists();
+  }
+  return r.recherches;
+}
+function recherchesActives(r){
+  return recherchesDe(r).filter(x=> x.actif === undefined || !!x.actif);
+}
+
 let L = loadLists();
 
 /* état plié / déplié des listes, mémorisé d'une session à l'autre */
@@ -2679,6 +2756,13 @@ function loadListesDepuis(v){
   (out.diagnostiqueurs||[]).forEach(x=>{ ["adresse","pays","cp","ville"]
     .forEach(k=>{ if(x[k]===undefined) x[k]=""; }); if(!x.pays) x.pays="France"; });
   out.condSusp = (out.condSusp||[]).map(v=> v === "Aucune" ? "Aucun" : v);
+  /* les quartiers : un couple {ville, nom}, sans doublon ni ligne vide */
+  if(!Array.isArray(out.quartiers)) out.quartiers = [];
+  const vusQ = {};
+  out.quartiers = out.quartiers.filter(q=> q && String(q.nom || "").trim())
+    .map(q=> ({ville: String(q.ville || "").trim(), nom: String(q.nom).trim()}))
+    .filter(q=>{ const c = fold(q.ville) + "|" + fold(q.nom);
+                 if(vusQ[c]) return false; vusQ[c] = true; return true; });
   /* « Fin du mandat sans renouvellement » disait trop : un mandat prend fin,
      qu'on le renouvelle ou non — et le renouvellement se lit désormais dans
      le dossier qui le reprend. La liste enregistrée suit le nouveau libellé,
@@ -2748,6 +2832,22 @@ function loadListesDepuis(v){
     if(x.ascenseurOui === true && !x.ascenseurPdi) x.ascenseurPdi = "imperatif";
     if(x.travauxNon === true && !x.travaux) x.travaux = "NON";
     ["exterieur","stationnement","ascenseurOui","travauxNon"].forEach(k=> delete x[k]);
+    /* Les critères de recherche, autrefois à plat sur la fiche, deviennent
+       une PREMIÈRE RECHERCHE. Les champs d'origine restent en place : une
+       fusion avec un appareil resté en arrière les lui rendrait sinon. */
+    if(!Array.isArray(x.recherches) || !x.recherches.length){
+      const r0 = rechercheNeuve();
+      CHAMPS_RECHERCHE.forEach(f=>{ if(x[f] !== undefined && x[f] !== "") r0[f] = x[f]; });
+      r0.actif = true;
+      x.recherches = [r0];
+    }
+    x.recherches = x.recherches.filter(Boolean).map(rc=>{
+      const neuf = rechercheNeuve();
+      const out = Object.assign(neuf, rc);
+      out.actif = rc.actif === undefined ? true : !!rc.actif;
+      if(!out.id) out.id = neuf.id;
+      return out;
+    });
     /* la date de dernière mise à jour : à défaut, celle d'aujourd'hui —
        une fiche qui existe a bien été écrite un jour */
     if(!x.maj) x.maj = Date.now();
@@ -2984,7 +3084,8 @@ function blankDossier(){
     alertesOff:{},
     /* intermédiaire extérieur rémunéré sur les honoraires de l'agence */
     inter:{nom:"",montant:"",base:"HT",cote:"Les deux"},
-    bien:{residence:"",adresse:"",adresse2:"",pays:"France",cp:"",ville:"",type:"",typeAutre:"",
+    bien:{residence:"",adresse:"",adresse2:"",pays:"France",cp:"",ville:"",quartier:"",
+          type:"",typeAutre:"",
           sitJur:"",sitJurAutre:"",annee:"",dateConstruction:""},
     notaire:{meme:false,vendeur:"",acquereur:"",vendeurContact:"",vendeurContactEmail:"",
              acquereurContact:"",acquereurContactEmail:""},
@@ -3458,6 +3559,22 @@ function communesDesCps(v){
 }
 /* pendant la frappe : les communes se mettent à jour, et le dernier code
    commencé reçoit ses propositions */
+/* ------------------------------------------------- où écrit un champ ?
+   « prospects:3:nego » écrit dans la fiche ; « prospects:3:r1:surfaceMin »
+   écrit dans sa DEUXIÈME recherche. Un prospect peut en mener plusieurs —
+   une maison à Arles pour y vivre, un studio à louer —, et mélanger leurs
+   critères ne rapprocherait rien de bon. */
+function cibleBook(path){
+  const p = String(path || "").split(":");
+  const k = p[0], i = +p[1];
+  const fiche = (L[k] || [])[i];
+  if(!fiche) return null;
+  if(p.length >= 4 && /^r\d+$/.test(p[2])){
+    const rec = (fiche.recherches || [])[+p[2].slice(1)];
+    return rec ? {k:k, i:i, fiche:fiche, obj:rec, f:p[3], rech:+p[2].slice(1)} : null;
+  }
+  return {k:k, i:i, fiche:fiche, obj:fiche, f:p[2], rech:-1};
+}
 function majCpsVu(champ){
   const zone = champ.parentElement
     ? champ.parentElement.querySelector(`[data-cpsvu="${champ.dataset.book}"]`) : null;
@@ -3472,6 +3589,49 @@ function majCpsVu(champ){
         esc(c + " — " + (villesPour("France", c) || []).slice(0,2).join(", "))}</option>`)
       .join("");
   }
+}
+/* =====================================================================
+   LES QUARTIERS, PAR COMMUNE
+   ---------------------------------------------------------------------
+   Un quartier n'a de sens que dans sa ville : « Trinquetaille » est à Arles
+   et nulle part ailleurs. La liste est donc un couple {ville, nom}, et ce
+   qu'un champ propose dépend de la commune où l'on se trouve — celle du
+   bien, ou celles des codes postaux de la recherche.
+
+   Elle démarre VIDE et se remplit au fur et à mesure, d'un bouton « + » :
+   c'est votre découpage du terrain, celui dont vous parlez avec vos clients,
+   et aucune nomenclature toute faite ne vaudrait mieux.
+   ===================================================================== */
+function quartiersDeVilles(villes){
+  const vs = (villes || []).map(v=> fold(String(v || "").trim())).filter(Boolean);
+  return (L.quartiers || [])
+    .filter(q=> q && q.nom && (!vs.length || vs.indexOf(fold(q.ville)) >= 0))
+    .map(q=> q.nom)
+    .filter((n,i,t2)=> t2.indexOf(n) === i)
+    .sort(triFr);
+}
+/* les communes que désignent des codes postaux saisis à la file */
+function villesDesCps(v){
+  const out = [];
+  listeMulti(v).forEach(cp=> (villesPour("France", cp) || []).forEach(x=>{
+    if(out.indexOf(x) < 0) out.push(x); }));
+  return out;
+}
+function ajouterQuartier(ville, nom){
+  const n = String(nom || "").trim(), vi = String(ville || "").trim();
+  if(!n) return false;
+  if(!Array.isArray(L.quartiers)) L.quartiers = [];
+  const vu = L.quartiers.some(q=> q && fold(q.ville) === fold(vi) && fold(q.nom) === fold(n));
+  if(!vu){ L.quartiers.push({ville: vi, nom: n}); saveLists(); }
+  return !vu;
+}
+/* Où sommes-nous ? Le champ dit sa commune : celle du bien ouvert, ou celles
+   des codes postaux de la recherche à laquelle il appartient. */
+function villesDuContexte(path, attr){
+  if(attr === "data-b") return [String((D.bien || {}).ville || "").trim()].filter(Boolean);
+  const c = cibleBook(path);
+  if(!c) return [];
+  return villesDesCps((c.obj || {}).cps);
 }
 function optionsFor(kind, path){
   if(kind.startsWith("list:")) return (L[kind.slice(5)]||[]).slice().sort(triFr);
@@ -3529,9 +3689,16 @@ function majBoutonYn(b, val){
 /* ce que déclenche une réponse, selon l'endroit où elle est saisie */
 function appliquerYn(path, val, carnet){
   if(carnet){
-    const [k,i,f] = path.split(":");
-    if(L[k] && L[k][+i]) L[k][+i][f] = val;
-    saveLists(); renderGeneral(); renderPreview();
+    const cb = cibleBook(path);
+    if(cb){
+      noterMajFiche(cb.k, String(cb.i), cb.obj[cb.f], val);
+      cb.obj[cb.f] = val;
+    }
+    saveLists();
+    if(cb && cb.k === "prospects" && pageActive() === "prospects"){
+      renderProspects(); return;
+    }
+    renderGeneral(); renderPreview();
     return;
   }
   if(path.startsWith("detail.")){
@@ -3702,6 +3869,37 @@ function controlBase(path,kind,v,grp,attr){
      DE CRAU » — et aucune ne se compare à l'autre. Un code postal, si. On les
      saisit donc séparés par des virgules, et l'application répond aussitôt
      par les communes qu'ils désignent : c'est la vérification. */
+  /* ------------------------------------------------------- un quartier ---
+     Une liste déroulante qui ne propose QUE les quartiers de la commune, et
+     un « + » pour en ajouter un sans quitter la saisie. */
+  if(kind==="quartier"){
+    const villes = villesDuContexte(path, attr);
+    const choix = quartiersDeVilles(villes);
+    const liste = (v && choix.indexOf(v) < 0) ? [v].concat(choix) : choix;
+    return `<span class="withadd"><select ${a}><option value=""></option>` +
+      liste.map(o=>`<option${o===v?" selected":""}>${esc(o)}</option>`).join("") +
+      `</select><button type="button" class="addinline" data-addq="${esc(path)}"
+        data-attr="${attr}" title="Ajouter un quartier à cette commune">+</button></span>`;
+  }
+  /* --------------------------------------------- plusieurs quartiers -----
+     Recherchés ou refusés : des cases, prises dans la liste de la commune —
+     tapés à la main, deux orthographes ne se rapprocheraient de rien. */
+  if(kind==="quartiers"){
+    const villes = villesDuContexte(path, attr);
+    const choix = quartiersDeVilles(villes);
+    const pris = listeMulti(v);
+    /* une valeur déjà choisie reste cochable même si la commune a changé */
+    pris.forEach(x=>{ if(choix.indexOf(x) < 0) choix.unshift(x); });
+    const plus = `<button type="button" class="lienbtn" data-addq="${esc(path)}"
+      data-attr="${attr}">+ ajouter un quartier</button>`;
+    if(!choix.length) return `<div class="multibox vide"><span class="muted">${
+      villes.length ? "Aucun quartier connu pour " + esc(villes.slice(0,3).join(", "))
+                    : "Saisissez d'abord les codes postaux"}.</span>${plus}</div>`;
+    return `<div class="multibox">` + choix.map(o=>
+      `<label class="chkline"><input type="checkbox" data-bmulti="${esc(path)}"` +
+      ` value="${esc(o)}"${pris.indexOf(o) >= 0 ? " checked" : ""}>` +
+      `<span>${esc(o)}</span></label>`).join("") + `</div>` + plus;
+  }
   if(kind==="cps"){
     return `<input type="text" ${a} value="${esc(v)}" inputmode="numeric"
       placeholder="13200, 13310" autocomplete="off" list="dl-cps-${esc(path)}">
@@ -3771,6 +3969,7 @@ const SCHEMA_GENERAL = [
    ["bien.adresse2","Complément d'adresse","text"],
    ["bien.cp","Code postal","cp","","bien"],
    ["bien.ville","Ville","ville","","bien"],
+   ["bien.quartier","Quartier","quartier"],
    ["bien.pays","Pays","pays","","bien"],
    ["bien.type","Type de bien","list:typeBien"],
    ["bien.sitJur","Situation juridique","list:sitJur"],
@@ -6737,6 +6936,34 @@ function renderCarnets(){
   if(pageActive() === "repertoire") renderRepertoire();
 }
 
+/* ------------------------------------------- les quartiers, dans Listes
+   Une zone de saisie par commune : on y corrige une faute de frappe, on en
+   retire un, on en ajoute plusieurs d'un coup. Les communes présentes sont
+   celles qui ont déjà un quartier — le « + » des fiches crée les autres. */
+function villesDesQuartiers(){
+  const out = [];
+  (L.quartiers || []).forEach(q=>{
+    const v = String((q || {}).ville || "").trim();
+    if(out.every(x=> fold(x) !== fold(v))) out.push(v);
+  });
+  return out.sort(triFr);
+}
+function carteQuartiers(){
+  const villes = villesDesQuartiers();
+  const plie = estPlie("l_quartiers", false);
+  return `<div class="listcard">
+    <h3 class="pliable" data-pli="l_quartiers">${chevron(plie)}Quartiers, par commune
+      <span class="cnt">${(L.quartiers || []).length}</span></h3>
+    <div class="plibody"${plie ? ' style="display:none"' : ''}>
+      <p class="muted" style="margin:0 0 8px">Un quartier par ligne, sous sa commune. Ils ne
+        sont proposés que sur les biens et les recherches de cette commune. Pour une commune
+        qui n'est pas encore là, passez par le <b>+</b> du champ « Quartier » d'un bien.</p>
+      ${villes.length ? villes.map(v=> `<label class="qville">${esc(v)}</label>
+        <textarea data-quartiers="${esc(v)}">${
+          esc(quartiersDeVilles([v]).join("\n"))}</textarea>`).join("")
+        : `<p class="muted" style="margin:0">Aucun quartier pour l'instant.</p>`}
+    </div></div>`;
+}
 function renderListes(){
   const chev = chevron;
   /* la carte des comptes n'est montrée qu'à qui peut s'en servir */
@@ -6750,7 +6977,7 @@ function renderListes(){
         <span class="cnt">${(L[k]||[]).length}</span></h3>
       <div class="plibody"${plie?' style="display:none"':''}>
         <textarea data-list="${k}">${esc((L[k]||[]).join("\n"))}</textarea></div></div>`;
-  }).join("");
+  }).join("") + carteQuartiers();
 
   const a = L.agence;
   $("#agenceBox").innerHTML =
@@ -8743,7 +8970,9 @@ function critBien(d){
        la donne quand elle est saisie */
     annee: num(b.annee) !== null ? num(b.annee)
          : (isoValide(b.dateConstruction) ? num(b.dateConstruction.slice(0,4)) : null),
-    quartier: String(r.quartier || "").trim(),
+    /* le quartier NOMMÉ du bien — celui de la liste. La phrase de l'immeuble
+       (« quartier calme, proche des écoles ») décrit, elle ne classe pas. */
+    quartier: String(b.quartier || "").trim(),
     /* le détail des pièces répond désormais à la question du plain-pied */
     chambreRdc:   plainPiedDe(d, PIECE_CH),
     commoditeRdc: plainPiedDe(d, PIECE_COMMOD),
@@ -8763,13 +8992,40 @@ const EPOQUES = {
    prospect. Un « bon état » ne demande rien, donc 0. */
 const ETAT_RANG   = {"À rafraîchir":1, "À rénover":2, "Gros travaux à prévoir":3};
 const NIVEAU_RANG = {"Décoration seule":1, "Second œuvre":2, "Gros travaux":3};
-function critAcq(r){
-  const a = r || {};
-  /* Trois montants : avec travaux, sans travaux, coup de cœur. Le plafond est
-     le plus haut — au-delà, ce n'est plus son budget ; le socle est le plus
-     bas — entre les deux, on le dit sans écarter. */
-  const sous = [num(a.budgetTravaux), num(a.budgetSansTravaux), num(a.budgetCoup)]
+/* ---------------------------------- des critères qui tiennent à un type ---
+   L'ascenseur et l'étage ne veulent rien dire pour une maison ; le terrain et
+   la piscine ne veulent rien dire pour un appartement. Un critère hors sujet
+   ne doit NI s'afficher, NI écarter un bien : il resterait sinon à traîner
+   d'une recherche à l'autre et écarterait des biens pour une raison que la
+   fiche ne montre même plus.
+
+   Tant qu'aucun type n'est choisi, tout s'affiche : on ne sait pas encore. */
+const CHAMPS_TYPE = {
+  ascenseurPdi: ["Appartement","Local"],
+  ascenseurNon: ["Appartement","Local"],
+  etageMax:     ["Appartement","Local"],
+  etagesApt:    ["Appartement"],
+  terrainMin:   ["Maison","Terrain","Immeuble"],
+  terrainMax:   ["Maison","Terrain","Immeuble"],
+  piscinePdi:   ["Maison","Immeuble"]
+};
+function champSelonType(cle, types){
+  const bons = CHAMPS_TYPE[cle];
+  if(!bons) return true;
+  const l = listeMulti(types);
+  if(!l.length) return true;
+  return l.some(x=> bons.some(b=> fold(b) === fold(x)));
+}
+function critAcq(r, rech){
+  const a = rech || recherchesDe(r)[0] || {};
+  const fiche = r || {};
+  /* Trois montants : avec travaux, sans travaux, coup de cœur. Ils sont ceux
+     du CLIENT, pas d'une recherche : ils restent sur la fiche. */
+  const sous = [num(fiche.budgetTravaux), num(fiche.budgetSansTravaux),
+                num(fiche.budgetCoup)]
     .filter(x=> x !== null && x > 0);
+  /* un critère qui ne vaut pas pour les types demandés est tenu pour non saisi */
+  const selonType = (cle, v)=> champSelonType(cle, a.types) ? v : "";
   return {
     budgetSocle:   sous.length ? Math.min.apply(null, sous) : null,
     budgetPlafond: sous.length ? Math.max.apply(null, sous) : null,
@@ -8779,8 +9035,8 @@ function critAcq(r){
     quartiersOui: listeMulti(a.quartiersOui),
     surfaceMin: num(a.surfaceMin),
     surfaceMax: num(a.surfaceMax),
-    terrainMin: num(a.terrainMin),
-    terrainMax: num(a.terrainMax),
+    terrainMin: num(selonType("terrainMin", a.terrainMin)),
+    terrainMax: num(selonType("terrainMax", a.terrainMax)),
     chambresMin: num(a.chambresMin),
     chambresIdeal: num(a.chambresIdeal),
     piecesMin: num(a.piecesMin),
@@ -8789,10 +9045,12 @@ function critAcq(r){
     parkingPdi: a.parkingPdi || "",
     garagePdi: a.garagePdi || "",
     terrassePdi: a.terrassePdi || "",
-    ascenseurPdi: a.ascenseurPdi || "",
-    piscinePdi: a.piscinePdi || "",
-    /* l'étage maximum n'a de sens que si l'on a dit vouloir le limiter */
-    etageMax: a.ascenseurNon ? num(a.etageMax) : null,
+    ascenseurPdi: selonType("ascenseurPdi", a.ascenseurPdi || ""),
+    piscinePdi: selonType("piscinePdi", a.piscinePdi || ""),
+    /* l'étage maximum n'a de sens que si l'on a dit vouloir le limiter — et
+       que si l'on cherche un bien qui a des étages */
+    etageMax: (a.ascenseurNon && champSelonType("etageMax", a.types))
+      ? num(a.etageMax) : null,
     styles: listeMulti(a.styles),
     travaux: a.travaux || "",
     travauxNiveau: a.travauxNiveau || "",
@@ -8804,17 +9062,21 @@ function critAcq(r){
    rappelle, nommés, pour la visite. */
 function critaresAVerifier(r, o){
   if(!o) return [];
-  const c = critAcq(r), hs = [];
-  if(c.plainPiedChambre && o.chambreRdc === null)
-    hs.push("une chambre de plain-pied (" + PDI_LIB[c.plainPiedChambre] + ")");
-  if(c.plainPiedCommod && o.commoditeRdc === null)
-    hs.push("des commodités de plain-pied (" + PDI_LIB[c.plainPiedCommod] + ")");
-  return hs;
+  const hs = [];
+  recherchesActives(r).forEach(rc=>{
+    const c = critAcq(r, rc);
+    if(c.plainPiedChambre && o.chambreRdc === null)
+      hs.push("une chambre de plain-pied (" + PDI_LIB[c.plainPiedChambre] + ")");
+    if(c.plainPiedCommod && o.commoditeRdc === null)
+      hs.push("des commodités de plain-pied (" + PDI_LIB[c.plainPiedCommod] + ")");
+  });
+  return hs.filter((x,i,l)=> l.indexOf(x) === i);
 }
 /* Une fiche sans critère ne se rapproche de rien : on ne va pas proposer tout
    le portefeuille à qui n'a rien dit de ce qu'il cherche. */
 function rechercheRenseignee(c){
   return c.budgetPlafond !== null || c.types.length > 0 || c.cps.length > 0 ||
+         c.quartiersOui.length > 0 || c.quartiersNon.length > 0 ||
          c.surfaceMin !== null || c.surfaceMax !== null ||
          c.terrainMin !== null || c.terrainMax !== null ||
          c.chambresMin !== null || c.piecesMin !== null ||
@@ -8848,10 +9110,21 @@ function comparerAcqBien(c, o){
     return rejet("code postal non demandé (" + o.cp +
                  (o.ville ? " " + o.ville : "") + ")");
 
-  /* 1 bis. un quartier dont on ne veut pas */
+  /* 1 bis. LE QUARTIER, qui tranche autant que la commune.
+     Un quartier refusé écarte le bien, sans discussion : c'est le sens même
+     du mot « refusé », et proposer malgré tout ferait perdre la confiance
+     qu'on a dans la liste. Une liste de quartiers recherchés vaut, elle,
+     comme une liste de communes — hors de la liste, hors de la recherche.
+     Un bien dont le quartier n'est pas renseigné n'est jamais écarté pour
+     autant : on le signale, et il reste à voir. */
   if(c.quartiersNon.length && o.quartier &&
-     c.quartiersNon.some(q=> fold(o.quartier).includes(fold(q))))
-    ecart(45, "quartier refusé (" + o.quartier + ")");
+     c.quartiersNon.some(q=> fold(q) === fold(o.quartier)))
+    return rejet("quartier refusé (" + o.quartier + ")");
+  if(c.quartiersOui.length){
+    if(!o.quartier) flou("quartier du bien non renseigné");
+    else if(!c.quartiersOui.some(q=> fold(q) === fold(o.quartier)))
+      return rejet("quartier non demandé (" + o.quartier + ")");
+  }
 
   /* 2. le budget, en deux temps : le socle, puis le plafond */
   if(c.budgetPlafond !== null && o.fai !== null){
@@ -8980,15 +9253,32 @@ function portefeuilleRappro(){
   return dossiersVivants().filter(d=>
     d && d.mandat && d.mandat.num && stade(d).cls === "vente");
 }
+/* Toutes les recherches ACTIVES d'une fiche, mises bout à bout. Un bien qui
+   répond à deux recherches ne se compte qu'une fois : on garde la meilleure
+   des deux, et l'on dit laquelle quand il y en a plusieurs. Un bien écarté ne
+   l'est que s'il est écarté par TOUTES — il suffit d'une recherche pour
+   qu'un bien intéresse. */
 function rapprochementsDe(r){
-  const c = critAcq(r);
-  if(!rechercheRenseignee(c)) return {vide:true, biens:[], ecartes:[]};
-  const out = [], hors = [];
+  const actives = recherchesActives(r)
+    .map(rc=> ({rc:rc, c:critAcq(r, rc)}))
+    .filter(x=> rechercheRenseignee(x.c));
+  if(!actives.length) return {vide:true, biens:[], ecartes:[]};
+  const plusieurs = recherchesDe(r).length > 1;
+  const out = [], hors = [], pris = {};
   portefeuilleRappro().forEach(d=>{
     const o = critBien(d);
-    const v = comparerAcqBien(c, o);
-    if(v.rejet){ hors.push({d:d, o:o, motif:v.rejet}); return; }
-    out.push({d:d, o:o, pts:v.pts, ecarts:v.ecarts, flous:v.flous});
+    let meilleur = null, motif = "";
+    actives.forEach((x, n)=>{
+      const v = comparerAcqBien(x.c, o);
+      if(v.rejet){ if(!motif) motif = v.rejet; return; }
+      if(!meilleur || v.pts < meilleur.pts)
+        meilleur = {d:d, o:o, pts:v.pts, ecarts:v.ecarts, flous:v.flous,
+                    rang:n + 1, titre: plusieurs ? titreRecherche(r, x.rc) : ""};
+    });
+    if(!meilleur){ hors.push({d:d, o:o, motif:motif || "écarté"}); return; }
+    if(pris[d.id]) return;
+    pris[d.id] = true;
+    out.push(meilleur);
   });
   /* du plus proche au plus loin ; à écarts égaux, le moins cher d'abord */
   out.sort((a,b)=> a.pts - b.pts ||
@@ -9043,8 +9333,32 @@ function motPdi(niveau, lib){
   if(!niveau) return "";
   return lib + (niveau === "imperatif" ? " (impératif)" : " (souhaité)");
 }
-function resumeRecherche(r){
-  const c = critAcq(r), b = [];
+/* le rang et le nom d'une recherche : « Recherche 2 », ou le nom qu'on lui a
+   donné — « la maison », « le studio à louer » */
+function rangRecherche(r, rc){
+  const l = recherchesDe(r);
+  for(let i = 0; i < l.length; i++) if(l[i] === rc || (rc && l[i].id === rc.id)) return i + 1;
+  return 1;
+}
+function titreRecherche(r, rc){
+  const nom = String((rc || {}).nom || "").trim();
+  return nom || ("Recherche " + rangRecherche(r, rc));
+}
+/* Le résumé : d'UNE recherche si on la nomme, sinon de toutes celles qui sont
+   actives — et chacune se présente alors sous son titre, car « maison 250 000
+   €, studio 90 000 € » mis bout à bout ne voudrait rien dire. */
+function resumeRecherche(r, rc){
+  if(rc) return resumeUneRecherche(r, rc);
+  const l = recherchesActives(r);
+  if(!l.length) return "";
+  if(l.length === 1) return resumeUneRecherche(r, l[0]);
+  return l.map(x=> titreRecherche(r, x) + " : " + resumeUneRecherche(r, x))
+    .join("   —   ");
+}
+function resumeUneRecherche(r, rc){
+  const c = critAcq(r, rc), b = [];
+  if(c.quartiersOui.length) b.push("quartiers : " + c.quartiersOui.join(", "));
+  if(c.quartiersNon.length) b.push("sauf " + c.quartiersNon.join(", "));
   if(c.types.length) b.push(c.types.join(", "));
   if(c.cps.length) b.push(communesCourtes(c.cps.join(", ")));
   if(c.budgetPlafond !== null) b.push("jusqu'à " + eur(c.budgetPlafond));
@@ -9220,12 +9534,24 @@ function acquereursPourBien(d){
   catch(e){ if(window.console) console.error(e); return []; }
   const out = [], hors = [];
   acquereursActifs().forEach(x=>{
-    const c = critAcq(x.r);
-    if(!rechercheRenseignee(c)) return;
-    const v = comparerAcqBien(c, o);
-    if(v.rejet){ hors.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), motif:v.rejet}); return; }
-    out.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), pts:v.pts, ecarts:v.ecarts,
-              flous:v.flous});
+    /* une fiche peut mener plusieurs recherches : on retient la meilleure,
+       et l'on ne nomme le prospect qu'une fois */
+    let meilleur = null, motif = "", vue = false;
+    const plusieurs = recherchesDe(x.r).length > 1;
+    recherchesActives(x.r).forEach((rc, n)=>{
+      const c = critAcq(x.r, rc);
+      if(!rechercheRenseignee(c)) return;
+      vue = true;
+      const v = comparerAcqBien(c, o);
+      if(v.rejet){ if(!motif) motif = v.rejet; return; }
+      if(!meilleur || v.pts < meilleur.pts)
+        meilleur = {r:x.r, i:x.i, nom:libelleAcquereur(x.r), pts:v.pts,
+                    ecarts:v.ecarts, flous:v.flous,
+                    titre: plusieurs ? titreRecherche(x.r, rc) : ""};
+    });
+    if(!vue) return;
+    if(meilleur) out.push(meilleur);
+    else hors.push({r:x.r, i:x.i, nom:libelleAcquereur(x.r), motif:motif || "écarté"});
   });
   out.sort((a,b)=> a.pts - b.pts || triFr(a.nom, b.nom));
   hors.sort((a,b)=> triFr(a.nom, b.nom));
@@ -9404,7 +9730,7 @@ function ouvrirPlanImmeuble(nom){
    Rien n'est enregistré à part les fiches elles-mêmes : le tri, les filtres
    et le volet ouvert valent pour la séance.
    ===================================================================== */
-let PROSP = {ouvert:"", page:"coord", tri:"maj", sens:-1, etat:"", f:{}};
+let PROSP = {ouvert:"", page:"coord", rech:0, tri:"maj", sens:-1, etat:"", f:{}};
 
 function indexProspect(id){
   const l = L.prospects || [];
@@ -9443,21 +9769,41 @@ const COLS_PROSP = [
   {cle:"crit",   lib:"Critères principaux"}
 ];
 /* ce que porte chaque colonne, pour l'affichage comme pour le tri */
+/* Ce qu'une colonne montre quand la fiche mène plusieurs recherches : la
+   réunion de ce qu'elles demandent. Les recherches en sommeil n'y sont pas —
+   sauf si elles sont toutes en sommeil, auquel cas la colonne dirait le vide
+   là où la fiche a bien quelque chose. */
+function uneValeurDesRecherches(r, cle){
+  const l = recherchesActives(r).length ? recherchesActives(r) : recherchesDe(r);
+  const out = [];
+  l.forEach(rc=> listeMulti(rc[cle]).forEach(v=>{ if(out.indexOf(v) < 0) out.push(v); }));
+  return out.join(", ");
+}
 function valeurProsp(r, cle){
   if(cle === "maj")    return r.maj || 0;
   if(cle === "nom")    return libelleAcquereur(r);
   if(cle === "attente") return biensSansReponse(r).length;
   if(cle === "nego")   return r.nego || "";
-  if(cle === "types")  return r.types || "";
-  if(cle === "cps")    return communesCourtes(r.cps);
+  if(cle === "rech")   return recherchesActives(r).length;
+  if(cle === "types")  return uneValeurDesRecherches(r, "types");
+  if(cle === "cps")    return communesCourtes(uneValeurDesRecherches(r, "cps"));
   if(cle === "budget") return critAcq(r).budgetPlafond;
   if(cle === "crit")   return resumeCriteres(r);
   return "";
 }
 /* Le résumé de la colonne « critères » : tout ce que les autres colonnes ne
    disent pas déjà — les tailles, les comptes, les exigences de confort. */
-function resumeCriteres(r){
-  const c = critAcq(r), b = [];
+function resumeCriteres(r, rc){
+  if(!rc){
+    const l = recherchesActives(r);
+    if(l.length > 1)
+      return l.map(x=> titreRecherche(r, x) + " : " + resumeCriteres(r, x))
+        .filter(x=> !/: $/.test(x)).join("   —   ");
+    return resumeCriteres(r, l[0] || recherchesDe(r)[0]);
+  }
+  const c = critAcq(r, rc), b = [];
+  if(c.quartiersOui.length) b.push(c.quartiersOui.join(", "));
+  if(c.quartiersNon.length) b.push("sauf " + c.quartiersNon.join(", "));
   if(c.surfaceMin !== null) b.push("≥ " + m2txt(c.surfaceMin));
   if(c.surfaceMax !== null) b.push("≤ " + m2txt(c.surfaceMax));
   if(c.terrainMin !== null) b.push("terrain ≥ " + m2txt(c.terrainMin));
@@ -9484,8 +9830,9 @@ function prospPasse(r){
   return COLS_PROSP.every(col=>{
     const q = String((PROSP.f || {})[col.cle] || "").trim();
     if(!q) return true;
-    const v = col.cle === "cps" ? texteCps(r.cps) : valeurProsp(r, col.cle);
-    if(col.cle === "budget" || col.cle === "attente"){
+    const v = col.cle === "cps" ? texteCps(uneValeurDesRecherches(r, "cps"))
+                                : valeurProsp(r, col.cle);
+    if(col.cle === "budget" || col.cle === "attente" || col.cle === "rech"){
       const seuil = num(q);
       return seuil === null || (v !== null && v >= seuil);
     }
@@ -9599,21 +9946,71 @@ function blocsPersonnesProspect(i){
       </div></div>`).join("") +
     `<button class="addbtn" data-ppadd="${i}">+ Ajouter une personne</button>`;
 }
-function champsProspect(i, champs){
+function champsProspect(i, champs, k){
   const r = (L.prospects || [])[i] || {}, b = BOOKS.prospects;
+  /* k : le rang d'une recherche. Les champs écrivent alors dans ELLE, par un
+     chemin à quatre morceaux — « prospects:3:r1:surfaceMin ». */
+  const dans = k === undefined ? r : (recherchesDe(r)[k] || r);
+  const prefixe = k === undefined ? `prospects:${i}` : `prospects:${i}:r${k}`;
   const parCle = {};
   (b.cols || []).forEach(c=> parCle[c[0]] = c);
-  return `<div class="pgrid">` + champs.map(f=>{
+  const vus = [];
+  champs.forEach(f=>{
     const c = parCle[f];
-    if(!c) return "";
+    if(!c) return;
     const [cle, lab, kd, w] = c;
-    if(kd === "sep") return `<div class="pfsep">${esc(lab)}</div>`;
-    let h = controlRaw(`prospects:${i}:${cle}`, kd, r[cle] || "", `pr${i}`, "data-book");
-    const off = champOff(b, r, cle);
+    /* un critère hors sujet pour les types demandés ne s'affiche pas : il
+       n'écarte rien non plus (voir critAcq), les deux vont ensemble */
+    if(k !== undefined && kd !== "sep" && !champSelonType(cle, dans.types)) return;
+    if(kd === "sep"){ vus.push({sep:true, lab:lab}); return; }
+    let h = controlRaw(`${prefixe}:${cle}`, kd, dans[cle] || "",
+                       `pr${i}${k === undefined ? "" : "r" + k}`, "data-book");
+    const off = champOff(b, dans, cle);
     if(off) h = h.replace(/<(input|select|textarea|button)\b/g, "$& disabled");
-    return `<div class="pf${w === "wide" ? " wide" : ""}${off ? " off" : ""}">` +
-           `<label>${esc(lab)}</label>${h}</div>`;
-  }).join("") + `</div>`;
+    vus.push({html:`<div class="pf${w === "wide" ? " wide" : ""}${off ? " off" : ""}">` +
+      `<label>${esc(lab)}</label>${h}</div>`});
+  });
+  /* un intertitre dont tous les champs ont disparu n'a plus rien à annoncer */
+  const sortie = vus.filter((x, n)=>{
+    if(!x.sep) return true;
+    const suivant = vus[n + 1];
+    return !!suivant && !suivant.sep;
+  });
+  return `<div class="pgrid">` +
+    sortie.map(x=> x.sep ? `<div class="pfsep">${esc(x.lab)}</div>` : x.html).join("") +
+    `</div>`;
+}
+/* ------------------------------------------- le bandeau d'une recherche
+   « Recherche 2 sur 3 », deux flèches qui tournent en rond, le nom qu'on
+   peut lui donner, sa case ACTIVE, et de quoi en ajouter ou en retirer une.
+   Le tout tient sur une ligne : c'est une barre de navigation, pas un
+   formulaire de plus. */
+function barreRecherche(i, k){
+  const r = (L.prospects || [])[i] || {};
+  const l = recherchesDe(r);
+  const rc = l[k] || l[0];
+  const n = l.length;
+  const actif = rc.actif === undefined || !!rc.actif;
+  return `<div class="rechbar${actif ? "" : " dort"}">
+    <div class="rechnav">
+      <button type="button" class="xbtn" data-rechgo="-1"${n < 2 ? " disabled" : ""}
+        title="Recherche précédente" aria-label="Recherche précédente">‹</button>
+      <b>${k + 1} sur ${n}</b>
+      <button type="button" class="xbtn" data-rechgo="1"${n < 2 ? " disabled" : ""}
+        title="Recherche suivante" aria-label="Recherche suivante">›</button>
+    </div>
+    <input type="text" class="rechnom" data-book="prospects:${i}:r${k}:nom"
+      value="${esc(rc.nom || "")}" placeholder="${esc("Recherche " + (k + 1))} — nommez-la
+      si vous voulez : « la maison », « le studio à louer »">
+    <label class="chkline rechactif"><input type="checkbox"
+      data-bookchk="prospects:${i}:r${k}:actif"${actif ? " checked" : ""}>
+      <span>${actif ? "active" : "en sommeil"}</span></label>
+    <button type="button" class="tbtn light mini" data-rechadd="1">+ Une recherche</button>
+    ${n > 1 ? `<button type="button" class="xbtn sup" data-rechdel="${k}"
+      >Supprimer</button>` : ""}
+  </div>${actif ? "" : `<p class="mdnote" style="margin:0 0 12px">Cette recherche est
+    <b>en sommeil</b> : elle ne rapproche plus rien, et les biens qu'elle proposait ont
+    quitté la liste. Ses critères sont gardés — recochez la case et tout revient.</p>`}`;
 }
 function vueProspFiche(){
   const i = indexProspect(PROSP.ouvert);
@@ -9622,12 +10019,17 @@ function vueProspFiche(){
   const lib = libelleAcquereur(r) || BOOKS.prospects.label;
   const nSuivis = (Array.isArray(r.suivis) ? r.suivis : []).length;
   const page = PAGES_PROSPECT.filter(p=> p.cle === PROSP.page)[0] || PAGES_PROSPECT[0];
+  const nRech = assurerRecherches(r).length;
+  if(PROSP.rech >= nRech) PROSP.rech = 0;
+  if(PROSP.rech < 0) PROSP.rech = 0;
   let corps;
   if(page.cle === "suivis")      corps = pageBiensSuivis(i);
   else if(page.cle === "rappro") corps = `<div class="rapzone">${blocRapproAcq(r, i)}</div>`;
   else if(page.cle === "coord")  corps = blocsPersonnesProspect(i) +
     `<div class="fsep" style="margin:14px 0 10px"></div>` +
     champsProspect(i, page.champs);
+  else if(page.cle === "recherche")
+    corps = barreRecherche(i, PROSP.rech) + champsProspect(i, page.champs, PROSP.rech);
   else corps = champsProspect(i, page.champs);
   return `<div class="pbarre">
       <button type="button" class="tbtn light" data-prospretour>‹ Tous les prospects</button>
@@ -9645,8 +10047,11 @@ function vueProspFiche(){
             esc(fdate(jourDe(r.maj)))}</b></span>
         </div>
         ${PAGES_PROSPECT.map(p=>{
+          /* le chiffre du menu : les recherches ACTIVES, les biens qui
+             attendent une réponse, les biens suivis */
           const n = p.cle === "suivis" ? nSuivis
-                  : p.cle === "rappro" ? biensSansReponse(r).length : 0;
+                  : p.cle === "rappro" ? biensSansReponse(r).length
+                  : p.cle === "recherche" ? recherchesActives(r).length : 0;
           return `<button class="mitem${p.cle === page.cle ? " on" : ""}"
             data-pgo="${p.cle}">${esc(p.lib)}${n ? ` <b>${n}</b>` : ""}</button>`;
         }).join("")}
@@ -12246,6 +12651,16 @@ document.addEventListener("input", e=>{
     t.style.height="auto"; t.style.height = Math.max(120,t.scrollHeight+4)+"px";
     renderPreview();
   }
+  if(t.dataset.quartiers !== undefined){
+    /* la commune se réécrit d'un bloc : ce qui n'y figure plus en est sorti */
+    const ville = t.dataset.quartiers;
+    const apres = t.value.split("\n").map(s=> s.trim()).filter(Boolean);
+    L.quartiers = (L.quartiers || []).filter(q=> fold((q || {}).ville) !== fold(ville));
+    apres.forEach(n=>{ if(n) L.quartiers.push({ville: ville, nom: n}); });
+    saveLists();
+    t.style.height = "auto"; t.style.height = Math.max(90, t.scrollHeight + 4) + "px";
+    return;
+  }
   if(t.dataset.pfiltre !== undefined){
     PROSP.f = PROSP.f || {};
     PROSP.f[t.dataset.pfiltre] = t.value;
@@ -12269,9 +12684,11 @@ document.addEventListener("input", e=>{
     return;
   }
   if(t.dataset.book !== undefined){
-    const [k,i,f] = t.dataset.book.split(":");
-    noterMajFiche(k, i, L[k][+i][f], t.value);
-    L[k][+i][f] = t.value; saveLists();
+    const cb = cibleBook(t.dataset.book);
+    if(!cb) return;
+    const k = cb.k, i = String(cb.i), f = cb.f;
+    noterMajFiche(k, i, cb.obj[f], t.value);
+    cb.obj[f] = t.value; saveLists();
     if(t.list && String(t.list.id).startsWith("dl-cps-")) majCpsVu(t);
     /* la date exacte du permis donne l'année de construction */
     if(f === "dateConstruction" && t.value){
@@ -12402,11 +12819,13 @@ document.addEventListener("focusout", e=>{
   }
   /* carnets d'adresses */
   if(t.dataset.book !== undefined){
-    const [k,i,f] = t.dataset.book.split(":");
+    const cb = cibleBook(t.dataset.book);
+    if(!cb) return;
+    const k = cb.k, i = String(cb.i), f = cb.f;
     if(casseLibre(k, f)) return;                 // saisi tel quel
     const v = formatChamp(f, t.value, (L[k][+i]||{}).pays);
     if(v === null || v === t.value) return;
-    t.value = v; L[k][+i][f] = v; saveLists();
+    t.value = v; cb.obj[f] = v; saveLists();
     if(k === "notaires" && (f === "prenom" || f === "patronyme")) majLibelleNotaire(+i);
     majEnteteCarnet(t, k, i);
     rebuildSelects(); refreshCalcs(); renderPreview();
@@ -12501,12 +12920,13 @@ document.addEventListener("change", e=>{
     return;
   }
   if(t.dataset && t.dataset.bmulti !== undefined){
-    const [k,i,f] = t.dataset.bmulti.split(":");
-    if(L[k] && L[k][+i]){
+    const cb = cibleBook(t.dataset.bmulti);
+    if(cb){
+      const k = cb.k, i = String(cb.i), f = cb.f;
       const pris = Array.from(document.querySelectorAll(
         `[data-bmulti="${t.dataset.bmulti}"]`)).filter(x=> x.checked).map(x=> x.value);
-      noterMajFiche(k, i, L[k][+i][f], pris.join(", "));
-      L[k][+i][f] = pris.join(", ");
+      noterMajFiche(k, i, cb.obj[f], pris.join(", "));
+      cb.obj[f] = pris.join(", ");
       saveLists();
       /* pas de redessin : les cases sont déjà dans l'état voulu, et la fiche
          est souvent longue — on y perdrait sa place */
@@ -12515,14 +12935,19 @@ document.addEventListener("change", e=>{
     return;
   }
   if(t.dataset && t.dataset.bookchk !== undefined){
-    const [k,i,f] = t.dataset.bookchk.split(":");
-    noterMajFiche(k, i, !!L[k][+i][f], !!t.checked);
-    L[k][+i][f] = t.checked;
+    const cb = cibleBook(t.dataset.bookchk);
+    if(!cb) return;
+    const k = cb.k, i = String(cb.i), f = cb.f;
+    noterMajFiche(k, i, !!cb.obj[f], !!t.checked);
+    cb.obj[f] = t.checked;
     /* décocher l'appartenance efface le pourcentage devenu sans objet */
     const dep = BOOKS[k] && BOOKS[k].dep;
     if(dep && !t.checked)
-      Object.keys(dep).forEach(c=>{ if(dep[c] === f) L[k][+i][c] = ""; });
-    saveLists(); renderCarnets(); autosize();
+      Object.keys(dep).forEach(c=>{ if(dep[c] === f) cb.obj[c] = ""; });
+    saveLists();
+    /* une case de la fiche d'un prospect redessine SA page, pas les carnets */
+    if(k === "prospects" && pageActive() === "prospects") renderProspects();
+    else { renderCarnets(); autosize(); }
     return;
   }
   if(t.dataset && t.dataset.chk !== undefined){
@@ -12573,12 +12998,7 @@ document.addEventListener("change", e=>{
     autosave(); renderDetail(); majDetail();
     return;
   }
-  if(carnet){
-    const [k,i,f] = path.split(":");
-    if(L[k] && L[k][+i]) L[k][+i][f] = val;
-    saveLists(); renderGeneral(); renderPreview();
-    return;
-  }
+  if(carnet){ appliquerYn(path, val, true); return; }
   set(D, path, val);
   if(path.startsWith("diags.")) renderDiags();
   if(path === "quest.resPrincipale" || path === "quest.bienLoue") renderQuest();
@@ -12586,8 +13006,8 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour],[data-rechgo],[data-rechadd],[data-rechdel]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -12621,11 +13041,11 @@ document.addEventListener("click", e=>{
     t.dataset.pdiv = val;
     t.textContent = PDI_LIB[val];
     t.className = "pdib " + (val || "rien");
-    const [k,i,f] = t.dataset.pdib.split(":");
-    if(L[k] && L[k][+i]){
-      noterMajFiche(k, i, L[k][+i][f], val);
-      L[k][+i][f] = val; saveLists();
-      majRapproFiche(k, i);
+    const cb = cibleBook(t.dataset.pdib);
+    if(cb){
+      noterMajFiche(cb.k, String(cb.i), cb.obj[cb.f], val);
+      cb.obj[cb.f] = val; saveLists();
+      majRapproFiche(cb.k, String(cb.i));
     }
     return;
   }
@@ -12716,6 +13136,7 @@ document.addEventListener("click", e=>{
     return;
   }
   if(t.dataset.addlist){ openAdd(t.dataset.addlist, t.dataset.target, t.dataset.attr); return; }
+  if(t.dataset.addq !== undefined){ ouvrirAjoutQuartier(t.dataset.addq, t.dataset.attr); return; }
   if(t.dataset.search){ openSearch(t.dataset.search, t.dataset.target, t.dataset.attr); return; }
   if(t.dataset.pick !== undefined){
     const {target, attr} = modalCtx;
@@ -12746,6 +13167,47 @@ document.addEventListener("click", e=>{
   if(t.dataset.prospretour !== undefined){
     PROSP.ouvert = ""; renderProspects(); return; }
   if(t.dataset.pgo){ PROSP.page = t.dataset.pgo; renderProspects(); return; }
+  /* ------------------------------------- d'une recherche à la suivante */
+  if(t.dataset.rechgo){
+    const i = indexProspect(PROSP.ouvert);
+    const n = i < 0 ? 1 : recherchesDe(L.prospects[i]).length;
+    /* en boucle : reculer depuis la première mène à la dernière */
+    PROSP.rech = ((PROSP.rech + (+t.dataset.rechgo)) % n + n) % n;
+    renderProspects(); return;
+  }
+  if(t.dataset.rechadd !== undefined){
+    const i = indexProspect(PROSP.ouvert);
+    const r = i < 0 ? null : L.prospects[i];
+    if(!r) return;
+    if(!Array.isArray(r.recherches) || !r.recherches.length) r.recherches = recherchesDe(r);
+    r.recherches.push(rechercheNeuve());
+    PROSP.rech = r.recherches.length - 1;
+    r.maj = Date.now();
+    saveLists(); renderProspects();
+    toast("Nouvelle recherche");
+    return;
+  }
+  if(t.dataset.rechdel !== undefined){
+    const i = indexProspect(PROSP.ouvert);
+    const r = i < 0 ? null : L.prospects[i];
+    if(!r) return;
+    const k = +t.dataset.rechdel;
+    const l = recherchesDe(r);
+    if(l.length < 2) return;
+    popup({titre:"Supprimer cette recherche",
+      corps:`<p style="margin:0">« ${esc(titreRecherche(r, l[k]))} » et tous ses critères
+        seront effacés. Les autres recherches de ${esc(libelleAcquereur(r) || "ce prospect")}
+        ne bougent pas.<br><br>Pour la mettre seulement de côté, décochez plutôt
+        <b>active</b> : elle cesse de rapprocher et se garde.</p>`,
+      boutons:[{lib:"Annuler"}, {lib:"Supprimer", action:()=>{
+        r.recherches = l.filter((x,n)=> n !== k);
+        if(PROSP.rech >= r.recherches.length) PROSP.rech = r.recherches.length - 1;
+        r.maj = Date.now();
+        saveLists(); renderProspects();
+        toast("Recherche supprimée");
+      }}]});
+    return;
+  }
   if(t.dataset.ptri){
     if(PROSP.tri === t.dataset.ptri) PROSP.sens = -PROSP.sens;
     else { PROSP.tri = t.dataset.ptri;
@@ -12761,6 +13223,7 @@ document.addEventListener("click", e=>{
     /* le négociateur de celui qui saisit, modifiable comme le reste */
     row.nego = monNegociateur();
     row.personnes = [personneProspect()];
+    row.recherches = [rechercheNeuve()];
     row.suivis = []; row.refus = [];
     row.maj = Date.now();
     row.rdv = auj();
@@ -12865,6 +13328,56 @@ function lireModal(){
 function ecrireModal(v){
   $$("#modalBody [data-modal]").forEach(el=>{ if(v[el.dataset.modal] !== undefined)
     el.value = v[el.dataset.modal]; });
+}
+/* ------------------------------------------- ajouter un quartier en place
+   Le « + » d'un champ quartier : on nomme la commune et le quartier, et il
+   rejoint la liste — puis le champ d'où l'on vient. Rien à préparer à
+   l'avance : la liste se construit en travaillant. */
+function ouvrirAjoutQuartier(path, attr){
+  const villes = villesDuContexte(path, attr);
+  const choixVille = villes.length > 1
+    ? `<select id="qzVille">${villes.map(v=> `<option>${esc(v)}</option>`).join("")}</select>`
+    : `<input type="text" id="qzVille" value="${esc(villes[0] || "")}"
+         placeholder="ARLES">`;
+  popup({
+    titre:"Ajouter un quartier",
+    corps:`<div class="pgrid">
+      <div class="pf"><label for="qzVille">Commune</label>${choixVille}</div>
+      <div class="pf"><label for="qzNom">Quartier</label>
+        <input type="text" id="qzNom" placeholder="Trinquetaille"></div></div>
+      <p class="muted" style="margin:11px 0 0">Il ne sera proposé que sur les biens et les
+        recherches de cette commune : un quartier ne déborde pas sur la ville voisine.</p>`,
+    boutons:[{lib:"Annuler"}, {lib:"Ajouter", primaire:true, action:()=>{
+      const v = ($("#qzVille") || {}).value || "";
+      const n = ($("#qzNom") || {}).value || "";
+      if(!String(n).trim()){ toast("Nommez le quartier"); return; }
+      ajouterQuartier(v, n);
+      poserQuartier(path, attr, String(n).trim());
+    }}]
+  });
+  setTimeout(()=>{ const e = $("#qzNom"); if(e) e.focus(); }, 40);
+}
+/* le quartier tout juste créé se pose dans le champ d'où venait le « + » */
+function poserQuartier(path, attr, nom){
+  if(attr === "data-b"){
+    set(D, path, nom);
+    autosave(); renderGeneral(); majSectionOuverte(); renderPreview();
+    return;
+  }
+  const cb = cibleBook(path);
+  if(!cb) return;
+  if(/^quartiers/.test(cb.f)){
+    const pris = listeMulti(cb.obj[cb.f]);
+    if(pris.indexOf(nom) < 0) pris.push(nom);
+    noterMajFiche(cb.k, String(cb.i), cb.obj[cb.f], pris.join(", "));
+    cb.obj[cb.f] = pris.join(", ");
+  } else {
+    noterMajFiche(cb.k, String(cb.i), cb.obj[cb.f], nom);
+    cb.obj[cb.f] = nom;
+  }
+  saveLists();
+  if(cb.k === "prospects" && pageActive() === "prospects") renderProspects();
+  else renderCarnets();
 }
 function appliquerValeur(attr, path, val){
   const el = document.querySelector(`[${attr}="${path}"]`);
@@ -17232,6 +17745,60 @@ const AIDE = [
   "résidence principale ou investissement, délais, les trois budgets, le mode de "+
   "financement, la banque, la vente d'un bien, et vos observations. <b>Biens à "+
   "rapprocher</b> et <b>Biens suivis</b> : voir plus bas."],
+ ["Un prospect, plusieurs recherches",
+  "Un même client cherche souvent deux choses à la fois : une maison pour y vivre, et un "+
+  "studio à louer. Les mettre dans une seule fiche donnait une recherche qui ne "+
+  "ressemblait à rien — un budget de maison et une surface de studio — et ne rapprochait "+
+  "rien de bon. Le volet <b>Sa recherche</b> en porte donc autant qu'il en faut. "+
+  "En haut du volet, un bandeau : <b>« 1 sur 3 »</b>, deux flèches <b>‹</b> et <b>›</b> qui "+
+  "passent d'une recherche à l'autre <b>en boucle</b> — reculer depuis la première mène à "+
+  "la dernière —, un champ pour la <b>nommer</b> (« la maison », « le studio à louer »), la "+
+  "case <b>active</b>, et de quoi en <b>ajouter</b> ou en <b>supprimer</b> une. Le chiffre "+
+  "du menu de gauche, à côté de « Sa recherche », est le nombre de recherches "+
+  "<b>actives</b>. "+
+  "Ce qui appartient à la recherche : les types, les communes, les quartiers, les surfaces, "+
+  "les pièces, le confort, le style, les travaux, le DPE, les priorités. Ce qui reste au "+
+  "<b>client</b> et vaut pour toutes : les coordonnées, le négociateur, l'objectif, les "+
+  "<b>trois budgets</b> et le financement — un budget est celui d'une personne, pas d'une "+
+  "recherche. "+
+  "Le volet <b>Biens à rapprocher</b> réunit ce que toutes les recherches actives "+
+  "rapportent : un bien qui répond à deux recherches n'apparaît qu'une fois, sous la "+
+  "meilleure des deux, et chaque ligne dit de quelle recherche elle vient quand il y en a "+
+  "plusieurs. "+
+  "<b>Décocher « active »</b> n'efface rien : la recherche cesse de rapprocher, les biens "+
+  "qu'elle proposait quittent aussitôt la liste, et ses critères sont gardés — recochez, et "+
+  "tout revient. C'est ce qu'il faut faire quand un projet est en pause ; la "+
+  "<b>suppression</b>, elle, est définitive et vous le dit avant."],
+ ["Les quartiers, commune par commune",
+  "Un quartier n'a de sens que dans sa ville : « Trinquetaille » est à Arles et nulle part "+
+  "ailleurs. La liste est donc tenue <b>par commune</b>, et un champ ne propose que les "+
+  "quartiers de la sienne — celle du bien, ou celles des codes postaux de la recherche. "+
+  "Elle <b>part vide</b> et se remplit en travaillant : le <b>+</b> à côté du champ "+
+  "« Quartier » d'un bien, ou le lien <b>« + ajouter un quartier »</b> sous les quartiers "+
+  "d'une recherche, demandent la commune et le nom, et le posent aussitôt dans le champ "+
+  "d'où vous venez. L'onglet <b>Listes</b> en tient la carte « Quartiers, par commune » : "+
+  "une zone de saisie par commune, un quartier par ligne, pour corriger une faute de frappe "+
+  "ou en retirer un. "+
+  "Dans le rapprochement, le quartier <b>tranche autant que la commune</b> : un quartier "+
+  "<b>refusé écarte le bien</b>, et une liste de quartiers recherchés exclut tout ce qui "+
+  "n'y figure pas. Un bien dont le quartier n'est <b>pas renseigné</b> n'est jamais écarté "+
+  "pour autant : il reste proposé, avec la réserve écrite en gris — renseignez le quartier "+
+  "dans la fiche du bien, et la réponse devient franche. "+
+  "Ne confondez pas avec « Le quartier en une phrase » de la fiche d'un immeuble : celle-là "+
+  "<b>décrit</b> pour les annonces, celui-ci <b>classe</b> pour le rapprochement."],
+ ["Les critères qui ne valent que pour certains types",
+  "L'ascenseur et l'étage ne veulent rien dire pour une maison ; le terrain et la piscine "+
+  "ne veulent rien dire pour un appartement. Dans <b>Sa recherche</b>, ces critères "+
+  "n'apparaissent donc que si le <b>type de bien</b> correspondant est coché : "+
+  "<b>ascenseur, étage maximum et étages recherchés</b> pour un appartement ou un local ; "+
+  "<b>terrain et piscine</b> pour une maison, un terrain ou un immeuble. L'intertitre d'un "+
+  "groupe entièrement masqué disparaît avec lui. "+
+  "Tant qu'<b>aucun type</b> n'est coché, tout s'affiche : on ne sait pas encore ce qu'on "+
+  "cherche. "+
+  "Un critère caché ne discrimine pas non plus : s'il a été saisi du temps où la recherche "+
+  "portait sur un appartement, il cesse d'écarter des biens dès que la recherche passe à la "+
+  "maison. Les deux vont ensemble — on n'écarte pas un bien pour une raison que la fiche "+
+  "ne montre même plus."],
  ["Peu importe, dans l'idéal, impératif",
   "La fiche découverte ne demande pas si l'on veut un ascenseur, mais <b>à quel point cela "+
   "compte</b>. Les critères de confort — chambre et commodités de plain-pied, parking, "+
