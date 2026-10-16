@@ -1101,6 +1101,35 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .chkline.fige input{margin-top:2px}
 .chkline.fige em{flex:1 0 100%;font-style:normal;font-size:11.5px;color:var(--ink-3);
   line-height:1.35}
+/* le répertoire des personnes : la liste, les pastilles de rôle */
+.perslist{display:flex;flex-direction:column;border:1px solid var(--line-2);
+  border-radius:10px;overflow:hidden}
+.persrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:#fff;border:0;border-bottom:1px solid var(--line-2);padding:9px 12px;
+  cursor:pointer;font:inherit}
+.persrow:last-child{border-bottom:0}
+.persrow:hover{background:var(--accent-soft)}
+.persqui{flex:1;min-width:0;font-size:13.5px;line-height:1.35;color:var(--navy);
+  font-weight:600}
+.persqui em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);
+  font-weight:400}
+.persrol{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.persact{flex:0 0 34px;text-align:right;font-size:11.5px;color:var(--ink-3)}
+.rolp{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.3px;
+  text-transform:uppercase;border-radius:999px;padding:2px 9px;white-space:nowrap;
+  background:var(--line-2);color:var(--ink-3);opacity:.75}
+.rolp.on{opacity:1}
+.rolp.rvend.on{background:#dcfce7;color:#15803d}
+.rolp.racq.on{background:#dbeafe;color:#1d4ed8}
+.rolp.rdem.on{background:#fef3c7;color:#92400e}
+.rolvide{font-size:11.5px;color:var(--ink-3);font-style:italic}
+.drsub .rolp{margin-right:4px}
+.seczone .szg.clos{background:var(--line-2)}
+.histbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.histbar select,.histbar input{background:var(--field);border:1px solid var(--field-line);
+  border-radius:8px;padding:6px 10px;font:inherit;font-size:13px}
+.histbar input{flex:1;min-width:160px}
+.jbien{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3)}
 /* le secteur sur la carte */
 .sectbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 10px}
 .sectcarte{height:440px;border:1px solid var(--line);border-radius:10px;overflow:hidden;
@@ -1969,7 +1998,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 16 octobre 2026, 8 h 38">Dossiers de vente</div>
+  <div class="brand" title="Version du 16 octobre 2026, 10 h 03">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2005,7 +2034,7 @@ table.tdb .puce.resilie{background:#64748b}
   <div class="tab glob" data-p="aujourdhui">Aujourd'hui</div>
   <div class="tab glob" data-p="tdb">Tableau de bord</div>
   <div class="tab glob" data-p="dossiers">Mes dossiers</div>
-  <div class="tab glob" data-p="prospects">Prospects</div>
+  <div class="tab glob" data-p="prospects">Demandeurs</div>
   <div class="tab glob" data-p="immeubles">Immeubles</div>
   <div class="tab glob" data-p="repertoire">Répertoire</div>
   <!-- à droite, les réglages et l'aide -->
@@ -2180,7 +2209,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>16 octobre 2026, 8 h 38</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>16 octobre 2026, 10 h 03</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2229,7 +2258,7 @@ table.tdb .puce.resilie{background:#64748b}
 <div class="modal" id="nvBox" hidden>
   <div class="modalbox secbox mdbox">
     <div class="sh">
-      <div><h3>Nouveau prospect</h3>
+      <div><h3>Nouveau demandeur</h3>
         <p>Le nom d'abord : s'il est déjà quelque part, autant reprendre sa fiche.</p></div>
       <button type="button" class="sfermer" id="nvFermer" aria-label="Fermer">×</button>
     </div>
@@ -2410,6 +2439,14 @@ const LISTS_DEFAULT = {
      remplit au fil des biens : c'est votre connaissance du terrain, pas un
      découpage administratif qu'on vous imposerait. */
   quartiers:  [],
+  /* LE RÉPERTOIRE GÉNÉRAL DES PERSONNES — voir « Une personne, une fiche » */
+  personnes:  [],
+  /* LE JOURNAL DES ACTIONS — voir « Les actions, un seul journal » */
+  actions:    [],
+  /* ce qu'on peut avoir fait : la liste se complète dans cet onglet */
+  genreAction:["Appel téléphonique","Appel manqué","Courriel","Message WhatsApp","SMS",
+               "Courrier","Visite du bien","Rendez-vous","Estimation","Publication",
+               "Note"],
   /* les vitesses moyennes qui convertissent « 5 minutes » en distance, pour
      le secteur de recherche d'un prospect. Ce ne sont pas des temps de
      trajet réels : voir « Le secteur sur la carte ». */
@@ -2546,7 +2583,8 @@ const LIST_LABELS = {
   exposition:"Expositions", etatBien:"États du bien", piecesNoms:"Noms de pièces",
   niveauPiece:"Niveaux des pièces",
   condSusp:"Financement", motifResil:"Motifs de résiliation d'un mandat",
-  motifEcart:"Motifs d'écart d'un bien (prospects)",
+  genreAction:"Genres d'action (historiques)",
+  motifEcart:"Motifs d'écart d'un bien (demandeurs)",
   appelsClip:"Messages de la carte de contact (clips)"
 };
 
@@ -2629,7 +2667,7 @@ const BOOKS = {
      dossier, `acquereurs` désigne déjà les acheteurs de CE bien, et les deux
      mots dans le même fichier n'auraient pas manqué de se confondre. La
      reprise est faite à la lecture, sans perte. */
-  prospects:{title:"Prospects", mode:"card", label:"Prospect",
+  prospects:{title:"Demandeurs", mode:"card", label:"Demandeur",
     dep:{etageMax:"ascenseurNon"},
     /* une dépendance qui regarde la VALEUR et non la simple présence */
     depVal:{travauxNiveau:["travaux","OUI"],
@@ -2796,44 +2834,96 @@ function majActifProspect(r){
 }
 
 /* =====================================================================
-   L'HISTORIQUE D'UN PROSPECT
+   LES ACTIONS — UN SEUL JOURNAL, POUR TOUTE L'APPLICATION
    ---------------------------------------------------------------------
-   Qui a fait quoi, et quand. Un fichier de prospects se travaille à
-   plusieurs et sur des mois : « pourquoi ce bien a-t-il été écarté ? »,
-   « qui l'a appelé en mars ? » sont des questions qui se posent pour de
-   bon, et la réponse ne doit pas dépendre d'une mémoire.
+   Une ACTION est quelque chose qu'on a FAIT : un appel, un courriel, un
+   message, une visite, une publication, un bien proposé, un bien écarté.
+   Elles étaient jusqu'ici éparpillées — un journal dans la fiche du
+   demandeur, un autre dans les demandes d'avis, et rien du tout ailleurs.
+   Il n'y en a plus qu'un.
+
+   Chaque action dit : QUAND, QUI l'a faite, SUR QUI elle porte (le `pid`
+   d'une fiche du répertoire), À QUEL TITRE (vendeur, acquéreur, demandeur),
+   et DE QUEL BIEN il s'agit. C'est ce qui permet à une fiche de personne de
+   montrer un historique PAR RÔLE, chacun avec la référence du bien.
+
+   Elles ne sont jamais purgées : un historique qui s'efface ne sert à rien.
+   Elles se filtrent et se cherchent, ce qui revient au même sans rien
+   perdre.
 
    Le nom retenu est celui du compte connecté ; à défaut, le négociateur de
    l'appareil. Les saisies au fil de l'eau sont REGROUPÉES — une ligne par
-   personne et par demi-heure, avec les champs touchés — sans quoi
-   l'historique serait un journal de frappe illisible.
+   personne et par demi-heure — sans quoi l'historique serait un journal de
+   frappe illisible.
    ===================================================================== */
 const JOURNAL_FUSION = 30 * 60 * 1000;      /* une demi-heure */
 function quiSuisJe(){
   const p = (SEANCE && SEANCE.profil) || {};
   return String(p.nom || "").trim() || monNegociateur() || "—";
 }
-function journalDe(r){
-  return Array.isArray((r || {}).journal) ? r.journal.filter(Boolean) : [];
+function idAction(){
+  return "ac" + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
 }
-function noterJournal(r, quoi, det, groupe){
-  if(!r) return;
-  if(!Array.isArray(r.journal)) r.journal = [];
-  const qui = quiSuisJe(), t = Date.now();
-  const dernier = r.journal[r.journal.length - 1];
-  /* une suite de saisies par la même personne ne fait qu'une ligne */
-  if(groupe && dernier && dernier.groupe === groupe && dernier.qui === qui &&
+/* Poser une action. `o` : {pid, role, genre, texte, dossier, recherche,
+   groupe}. Tout est facultatif sauf le genre — ce qu'on a fait. */
+function noterAction(o){
+  const a = o || {};
+  if(!Array.isArray(L.actions)) L.actions = [];
+  const qui = a.auteur || quiSuisJe(), t = Date.now();
+  const dernier = L.actions[L.actions.length - 1];
+  if(a.groupe && dernier && dernier.groupe === a.groupe && dernier.qui === qui &&
+     dernier.pid === (a.pid || "") && dernier.recherche === (a.recherche || "") &&
      t - (dernier.t || 0) < JOURNAL_FUSION){
-    const vus = String(dernier.det || "").split(", ").filter(Boolean);
-    if(det && vus.indexOf(det) < 0) vus.push(det);
-    dernier.det = vus.join(", ");
+    const vus = String(dernier.texte || "").split(", ").filter(Boolean);
+    if(a.texte && vus.indexOf(a.texte) < 0) vus.push(a.texte);
+    dernier.texte = vus.join(", ");
     dernier.t = t;
-    return;
+    return dernier;
   }
-  r.journal.push({t:t, qui:qui, quoi:quoi, det:det || "", groupe:groupe || ""});
-  /* on ne garde pas tout jusqu'à la fin des temps : les 300 dernières lignes
-     couvrent largement la vie d'une fiche, et la base reste légère */
-  if(r.journal.length > 300) r.journal = r.journal.slice(-300);
+  const act = {id:idAction(), t:t, qui:qui, pid:a.pid || "", role:a.role || "",
+               genre:a.genre || "Note", texte:a.texte || "",
+               dossier:a.dossier || "", recherche:a.recherche || "",
+               groupe:a.groupe || ""};
+  L.actions.push(act);
+  return act;
+}
+/* toutes les actions, de la plus récente à la plus ancienne */
+function actionsDe(filtre){
+  const f = filtre || {};
+  return (L.actions || []).filter(a=>{
+    if(!a) return false;
+    if(f.pid && a.pid !== f.pid) return false;
+    if(f.role && a.role !== f.role) return false;
+    if(f.dossier && a.dossier !== f.dossier) return false;
+    if(f.recherche && a.recherche !== f.recherche) return false;
+    return true;
+  }).sort((x, y)=> (y.t || 0) - (x.t || 0));
+}
+/* le libellé du bien d'une action : c'est la référence qu'on cherche */
+function bienDeAction(a){
+  if(!a || !a.dossier) return "";
+  const d = dossiersVivants().filter(x=> x.id === a.dossier)[0];
+  return d ? "n° " + ((d.mandat || {}).num || "—") + " · " + bienDe(d) : "";
+}
+/* ------------------------------------------- l'historique d'un demandeur
+   Les lignes d'une fiche de recherche sont des actions comme les autres :
+   elles portent son identifiant, et le `pid` de la personne qu'elle suit. */
+function premierPidProspect(r){
+  const p = personnesProspect(r)[0];
+  return p ? (p.pid || pidPersonne(Object.assign(blankPerson(),
+    {nom:p.nom, prenom:p.prenom, civilite:p.civilite}))) : "";
+}
+function journalDe(r){
+  if(!r) return [];
+  return actionsDe({recherche: r.id})
+    .map(a=> ({t:a.t, qui:a.qui, quoi:a.genre, det:a.texte, groupe:a.groupe}))
+    .sort((x, y)=> (x.t || 0) - (y.t || 0));
+}
+function noterJournal(r, quoi, det, groupe, dossier){
+  if(!r) return;
+  noterAction({pid: premierPidProspect(r), role:"demandeur", recherche: r.id,
+               genre: quoi, texte: det || "", groupe: groupe || "",
+               dossier: dossier || ""});
 }
 
 let L = loadLists();
@@ -2885,6 +2975,16 @@ function loadListesDepuis(v){
   (out.diagnostiqueurs||[]).forEach(x=>{ ["adresse","pays","cp","ville"]
     .forEach(k=>{ if(x[k]===undefined) x[k]=""; }); if(!x.pays) x.pays="France"; });
   out.condSusp = (out.condSusp||[]).map(v=> v === "Aucune" ? "Aucun" : v);
+  /* le journal des actions : jamais purgé, seulement filtré */
+  if(!Array.isArray(out.actions)) out.actions = [];
+  out.actions = out.actions.filter(Boolean);
+  /* le répertoire des personnes : un tableau, chaque fiche avec son identifiant */
+  if(!Array.isArray(out.personnes)) out.personnes = [];
+  out.personnes = out.personnes.filter(Boolean).map(f=>{
+    const q = Object.assign(fichePersonneVide(), f);
+    if(!q.pid) q.pid = pidDepuis(nomPersonne(q)) || idFichePersonne();
+    return q;
+  });
   /* les vitesses du secteur : trois nombres, repris de l'origine s'ils manquent */
   out.vitesses = Object.assign({}, LISTS_DEFAULT.vitesses, (v && v.vitesses) || {});
   /* les quartiers : un couple {ville, nom}, sans doublon ni ligne vide */
@@ -3220,6 +3320,150 @@ function blankPerson(){
   return {civilite:"",raison:"",civiliteRepr:"",prenom:"",prenoms:"",nom:"",nomNaissance:"",dateNaissance:"",lieuNaissance:"",
           nationalite:"",profession:"",sitMat:"",tel1:"",email1:"",
           memeAdresse:false,adresse:"",pays:"France",cp:"",ville:""};
+}
+/* =====================================================================
+   UNE PERSONNE, UNE FICHE — LE RÉPERTOIRE GÉNÉRAL
+   ---------------------------------------------------------------------
+   La même personne était écrite à plusieurs endroits : vendeur dans un
+   dossier, acquéreur dans un autre, demandeur dans le fichier des
+   recherches. Trois saisies, trois vérités, et aucune ne savait ce que les
+   autres racontaient — « a-t-on déjà appelé ce monsieur ? » n'avait pas de
+   réponse.
+
+   Il y a donc désormais UN répertoire. Chaque fiche porte l'état civil au
+   complet — celui des vendeurs, le plus exigeant, puisqu'il va jusqu'à
+   l'acte — et un identifiant stable, le `pid`, que les pièces jointes
+   utilisaient déjà.
+
+   CE QUE LE DOSSIER GARDE. Il continue de porter ses personnes en toutes
+   lettres : c'est ce que lisent les documents, la recherche et la base
+   partagée, et il n'était pas raisonnable de récrire cela d'un bloc. Mais
+   ce n'est plus la vérité : c'est une COPIE RAFRAÎCHIE. À chaque ouverture
+   d'un dossier, `migrate` recopie l'état civil depuis la fiche du
+   répertoire ; à chaque saisie dans un dossier, la fiche du répertoire est
+   mise à jour. Corriger un nom au répertoire le corrige partout, y compris
+   sur un dossier vieux de deux ans qu'on réimprimerait.
+   ===================================================================== */
+function fichePersonneVide(){
+  return Object.assign(blankPerson(), {
+    pid:"", fonction:"", note:"", maj:0, cree:0,
+    tel2:"", email2:""
+  });
+}
+function idFichePersonne(){
+  return "pe" + Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2,4);
+}
+/* les champs que le répertoire détient : l'état civil et les coordonnées.
+   Tout le reste — « même adresse que le précédent » par exemple — regarde
+   le dossier, pas la personne. */
+const CHAMPS_FICHE = ["civilite","raison","civiliteRepr","prenom","prenoms","nom",
+  "nomNaissance","dateNaissance","lieuNaissance","nationalite","profession","sitMat",
+  "tel1","tel2","email1","email2","adresse","pays","cp","ville"];
+function fichePersonne(pid){
+  if(!pid) return null;
+  return (L.personnes || []).filter(f=> f && f.pid === pid)[0] || null;
+}
+/* La fiche d'une personne telle qu'un dossier la porte : on la retrouve par
+   son identifiant, ou on la crée. C'est le seul endroit qui inscrit. */
+function inscrireAuRepertoire(p){
+  if(!p || personneVide(p)) return "";
+  if(!Array.isArray(L.personnes)) L.personnes = [];
+  let pid = p.pid || pidPersonne(p);
+  let f = fichePersonne(pid);
+  if(!f){
+    f = fichePersonneVide();
+    f.pid = pid || idFichePersonne();
+    f.cree = Date.now();
+    L.personnes.push(f);
+  }
+  let change = false;
+  CHAMPS_FICHE.forEach(k=>{
+    const v = String(p[k] === undefined || p[k] === null ? "" : p[k]).trim();
+    /* on ne vide jamais la fiche avec un blanc : un dossier qui ne sait pas
+       le lieu de naissance ne doit pas l'effacer pour tout le monde */
+    if(v && v !== String(f[k] || "")){ f[k] = p[k]; change = true; }
+  });
+  if(change) f.maj = Date.now();
+  return f.pid;
+}
+/* l'inverse : la fiche du répertoire recopiée dans la personne d'un dossier */
+function rafraichirDepuisRepertoire(p){
+  const f = fichePersonne(p && p.pid);
+  if(!f) return p;
+  CHAMPS_FICHE.forEach(k=>{
+    if(String(f[k] || "").trim()) p[k] = f[k];
+  });
+  return p;
+}
+/* Une correction au répertoire se répand : les dossiers qui portent cette
+   personne en gardent une copie, et cette copie doit suivre. Le dossier
+   ouvert est traité à part — il n'est pas encore écrit. */
+function repandreFichePersonne(f){
+  if(!f || !f.pid) return;
+  const tous = allDossiers();
+  let bouge = false;
+  Object.keys(tous).forEach(id=>{
+    ["vendeurs","acquereurs"].forEach(k=>{
+      (tous[id][k] || []).forEach(p=>{
+        if(!p || p.pid !== f.pid) return;
+        CHAMPS_FICHE.forEach(c=>{ if(String(f[c] || "").trim() !== String(p[c] || "")){
+          p[c] = f[c]; bouge = true; } });
+      });
+    });
+  });
+  if(bouge){ try{ localStorage.setItem(LS_DOSS, JSON.stringify(tous)); }catch(e){} }
+  if(D){
+    ["vendeurs","acquereurs"].forEach(k=> (D[k] || []).forEach(p=>{
+      if(p && p.pid === f.pid) rafraichirDepuisRepertoire(p); }));
+    if(pageActive() === "general"){ renderPeople("vendeurs"); renderPeople("acquereurs");
+                                    renderPreview(); }
+  }
+  if(typeof syncDiffere === "function") syncDiffere();
+}
+/* Le grand recensement : il ne tourne qu'une fois, au démarrage, et il est
+   idempotent — une personne déjà inscrite ne l'est pas deux fois. Il écrit
+   l'identifiant dans les dossiers pour que le lien tienne ensuite. */
+function enrolerLesPersonnes(){
+  const tous = allDossiers();
+  let bouge = false;
+  Object.keys(tous).forEach(id=>{
+    const d = tous[id];
+    ["vendeurs","acquereurs"].forEach(k=>{
+      (d[k] || []).forEach(p=>{
+        if(!p || personneVide(p)) return;
+        const pid = inscrireAuRepertoire(p);
+        if(pid && p.pid !== pid){ p.pid = pid; bouge = true; }
+      });
+    });
+  });
+  if(bouge){
+    try{ localStorage.setItem(LS_DOSS, JSON.stringify(tous)); }catch(e){}
+  }
+  /* les demandeurs : leurs personnes entrent aussi au répertoire, avec le
+     peu qu'une fiche découverte en dit */
+  (L.prospects || []).forEach(r=>{
+    (r.personnes || []).forEach(p=>{
+      if(!p || !(p.nom || p.prenom)) return;
+      const brut = Object.assign(blankPerson(), {civilite:p.civilite, nom:p.nom,
+        prenom:p.prenom, tel1:p.tel, email1:p.email, pid:p.pid});
+      const pid = inscrireAuRepertoire(brut);
+      if(pid) p.pid = pid;
+    });
+    /* le journal propre à la fiche rejoint le journal commun : une ligne
+       d'historique est une action comme une autre, et il n'y a plus qu'un
+       seul endroit où la chercher */
+    if(Array.isArray(r.journal) && r.journal.length){
+      const pid = premierPidProspect(r);
+      r.journal.forEach(x=>{
+        if(!x) return;
+        (L.actions = L.actions || []).push({id:idAction(), t:x.t || Date.now(),
+          qui:x.qui || "—", pid:pid, role:"demandeur", genre:x.quoi || "Note",
+          texte:x.det || "", dossier:"", recherche:r.id, groupe:x.groupe || ""});
+      });
+      delete r.journal;
+    }
+  });
+  saveLists();
 }
 function blankDossier(){
   return {
@@ -3941,14 +4185,53 @@ function lienMail(bouton){
         (D.bien && D.bien.adresse ? " — " + D.bien.adresse : "")) : "";
   return {url:"mailto:" + a + sujet};
 }
+/* ------------------------------------------- écrire, c'est une action
+   Le bouton est posé à côté d'un champ : c'est ce champ qui dit à QUI l'on
+   écrit, et à quel titre. On en tire de quoi inscrire l'action au bon
+   historique, sans rien demander de plus à personne. */
+function contexteDuBouton(bouton){
+  const zone = bouton && bouton.parentElement;
+  const champ = zone ? zone.querySelector("[data-b],[data-book],[data-pper]") : null;
+  if(!champ) return {};
+  const b = champ.dataset.b || "";
+  let m = /^(vendeurs|acquereurs)\.(\d+)\./.exec(b);
+  if(m){
+    const q = (D[m[1]] || [])[+m[2]];
+    return {pid: q ? pidPersonne(q) : "", dossier: D ? D.id : "",
+            role: m[1] === "vendeurs" ? "vendeur" : "acquereur"};
+  }
+  const pp = champ.dataset.pper || "";
+  m = /^(\d+):(\d+):/.exec(pp);
+  if(m){
+    const r = (L.prospects || [])[+m[1]];
+    const q = r ? (r.personnes || [])[+m[2]] : null;
+    return {pid: q ? (q.pid || "") : "", role:"demandeur",
+            recherche: r ? r.id : ""};
+  }
+  const bk = champ.dataset.book || "";
+  m = /^personnes:(\d+):/.exec(bk);
+  if(m){
+    const f = (L.personnes || [])[+m[1]];
+    return {pid: f ? f.pid : "", role: f ? (Object.keys(rolesActifs(f.pid))[0] || "") : ""};
+  }
+  return {};
+}
+function noterEcrit(bouton, genre, vers){
+  const c = contexteDuBouton(bouton);
+  if(!c.pid && !c.dossier) return;
+  noterAction(Object.assign({genre: genre, texte: vers ? "vers " + vers : ""}, c));
+  saveLists();
+}
 function ouvrirWhatsApp(bouton){
   const r = lienWhatsApp(bouton);
   if(r.erreur){ toast(r.erreur); return; }
+  noterEcrit(bouton, "Message WhatsApp", valeurVoisine(bouton));
   window.open(r.url, "_blank", "noopener");
 }
 function ouvrirMail(bouton){
   const r = lienMail(bouton);
   if(r.erreur){ toast(r.erreur); return; }
+  noterEcrit(bouton, "Courriel", valeurVoisine(bouton));
   window.location.href = r.url;
 }
 function controlBase(path,kind,v,grp,attr){
@@ -4171,7 +4454,7 @@ const SCHEMA_GENERAL = [
  ]},
  /* qui, dans le fichier des acquéreurs, cherche ce bien-là — le
     rapprochement pris par l'autre bout */
- {col:1,t:"Prospects pour ce bien",n:"",id:"cardAcqs",cle:"acqs",f:[
+ {col:1,t:"Demandeurs pour ce bien",n:"",id:"cardAcqs",cle:"acqs",f:[
    ["@acqs","","acqs"]
  ]},
  {col:1,t:"Mobilier",n:"6",cle:"mobilier",f:[
@@ -4420,6 +4703,8 @@ function heroDossier(){
     trombone(sujetBien(D), "Photos"),
     String(b.residence || "").trim() ? trombone(sujetImmeuble(b.residence), "Documents immeubles") : "",
     String(b.residence || "").trim() ? boutonImmeuble(b.residence, "Dossiers de l'immeuble") : "",
+    `<button type="button" class="xbtn" data-actadd="bien:${esc(D.id)}">${
+      IC_ACTION}<span>Créer une action</span></button>`,
     venteEnCours() ? `<button type="button" class="xbtn" data-annul="1">Annuler la vente</button>` : ""
   ]).filter(Boolean).join("");
   return `<div class="hero">
@@ -4456,7 +4741,7 @@ const TUILES_GENERAL = [
   {cle:"dates",    titre:"Dates clés"},
   {cle:"suivi",    titre:"Suivi du dossier"},
   {cle:"copro",    titre:"Infos sur copropriété", si:coproRenseigne},
-  {cle:"acqs",     titre:"Prospects pour ce bien",
+  {cle:"acqs",     titre:"Demandeurs pour ce bien",
    si:()=> acquereursPourBien().length > 0},
   {cle:"mobilier", titre:"Mobilier"},
   {cle:"annulees", titre:"Ventes annulées", si:()=> (D.annulations || []).length > 0}
@@ -4629,7 +4914,7 @@ const SOUS_SECTION = {
   copro:"Repris de la fiche de l'immeuble, dans l'onglet Immeubles.",
   mobilier:"Repris tel quel sur le dossier de vente.",
   annulees:"Chaque processus interrompu garde ses dates, son client et sa note.",
-  acqs:"Les recherches en cours de votre fichier de prospects qui portent sur ce bien, " +
+  acqs:"Les recherches en cours de votre fichier de demandeurs qui portent sur ce bien, " +
        "avec ce qui ne colle pas tout à fait."
 };
 function ouvrirSection(cle){
@@ -6209,7 +6494,7 @@ function majEntetePersonne(champ, i, k){
   const h = document.getElementById("pp_" + i + "_" + k);
   const w = h ? h.querySelector(".who") : null;
   const p = ((L.prospects[+i] || {}).personnes || [])[+k];
-  if(w && p) w.textContent = nomPersonneProspect(p) || ("Prospect " + (+k + 1));
+  if(w && p) w.textContent = nomPersonneProspect(p) || ("Demandeur " + (+k + 1));
   const t = document.querySelector(".prospshell .drref");
   if(t) t.textContent = libelleAcquereur(L.prospects[+i]) || BOOKS.prospects.label;
 }
@@ -7049,10 +7334,337 @@ function renderImmeubles(){
 const CARNETS_REP = ["notaires","clercs","syndics","negociateurs",
                      "diagnostiqueurs","banques"];
 let REP_Q = "";
+/* =====================================================================
+   LES RÔLES D'UNE PERSONNE, ET SES HISTORIQUES
+   ---------------------------------------------------------------------
+   La même personne est souvent plusieurs choses à la fois : elle vend un
+   appartement, elle en cherche un autre, elle a acheté l'an dernier. Les
+   rôles ne se saisissent donc pas — ils se CONSTATENT, et seulement tant
+   qu'il y a une activité en cours : un vendeur dont le dossier est vendu
+   ou résilié n'est plus vendeur, sa pastille s'éteint, et son historique
+   de vendeur reste.
+   ===================================================================== */
+const ROLES_PERS = [
+  {cle:"vendeur",   lib:"Vendeur",   court:"V", cl:"rvend"},
+  {cle:"acquereur", lib:"Acquéreur", court:"A", cl:"racq"},
+  {cle:"demandeur", lib:"Demandeur", court:"D", cl:"rdem"}
+];
+function libRolePers(cle){
+  const r = ROLES_PERS.filter(x=> x.cle === cle)[0];
+  return r ? r.lib : cle;
+}
+function dossierEnCours(d){
+  return ["vente","offre","compromis"].indexOf(stade(d).cls) >= 0;
+}
+/* les dossiers où cette personne figure, et à quel titre */
+function dossiersDeLaPersonne(pid){
+  const out = [];
+  if(!pid) return out;
+  dossiersVivants().forEach(d=>{
+    ["vendeurs","acquereurs"].forEach(k=>{
+      (d[k] || []).forEach(p=>{
+        if(!p || personneVide(p) || pidPersonne(p) !== pid) return;
+        out.push({d:d, role: k === "vendeurs" ? "vendeur" : "acquereur",
+                  encours: dossierEnCours(d)});
+      });
+    });
+  });
+  return out;
+}
+function recherchesDeLaPersonne(pid){
+  if(!pid) return [];
+  return (L.prospects || []).map((r,i)=> ({r:r, i:i}))
+    .filter(x=> personnesProspect(x.r).some(p=> (p.pid || "") === pid ||
+      pidPersonne(Object.assign(blankPerson(), {nom:p.nom, prenom:p.prenom,
+        civilite:p.civilite})) === pid));
+}
+/* les rôles EN ACTIVITÉ : ceux dont la pastille s'allume */
+function rolesActifs(pid){
+  const out = {};
+  dossiersDeLaPersonne(pid).forEach(x=>{ if(x.encours) out[x.role] = true; });
+  recherchesDeLaPersonne(pid).forEach(x=>{ if(prospectActif(x.r)) out.demandeur = true; });
+  return out;
+}
+/* les rôles CONNUS : ceux qui ont une histoire, même terminée */
+function rolesConnus(pid){
+  const vus = Object.assign({}, rolesActifs(pid));
+  dossiersDeLaPersonne(pid).forEach(x=>{ vus[x.role] = vus[x.role] || false; });
+  if(recherchesDeLaPersonne(pid).length) vus.demandeur = vus.demandeur || false;
+  actionsDe({pid:pid}).forEach(a=>{ if(a.role) vus[a.role] = vus[a.role] || false; });
+  return ROLES_PERS.map(r=> r.cle).filter(c=> c in vus);
+}
+function pastillesRoles(pid){
+  const actifs = rolesActifs(pid);
+  const connus = rolesConnus(pid);
+  if(!connus.length) return `<span class="rolvide">aucun rôle en cours</span>`;
+  return connus.map(c=>{
+    const r = ROLES_PERS.filter(x=> x.cle === c)[0];
+    const on = !!actifs[c];
+    return `<span class="rolp ${r.cl}${on ? " on" : ""}" title="${esc(r.lib +
+      (on ? " — activité en cours" : " — plus d'activité en cours"))}">${
+      esc(r.lib)}</span>`;
+  }).join("");
+}
+
+/* =====================================================================
+   LE RÉPERTOIRE DES PERSONNES
+   ===================================================================== */
+let PERS = {ouvert:"", onglet:"ident", q:"", fg:"", fq:""};
+function personnesTriees(){
+  const mots = fold(PERS.q).split(/\s+/).filter(Boolean);
+  return (L.personnes || []).filter(f=>{
+    if(!f || personneVide(f)) return false;
+    if(!mots.length) return true;
+    const texte = fold(CHAMPS_FICHE.map(k=> f[k]).filter(Boolean).join(" "));
+    return mots.every(m=> texte.includes(m));
+  }).sort((a,b)=> triFr(nomPersonne(a), nomPersonne(b)));
+}
+function vuePersonnesListe(){
+  const l = personnesTriees();
+  const tout = (L.personnes || []).filter(f=> f && !personneVide(f)).length;
+  return `<div class="card">
+    <h2>Les personnes <span class="cnt">${l.length}</span></h2>
+    <div class="body">
+      <div class="pbarre">
+        <button class="addbtn" data-persadd>+ Ajouter une personne</button>
+        <input type="text" class="filtrebox" data-persq value="${esc(PERS.q)}"
+          placeholder="Chercher un nom, une ville, un téléphone…">
+        <div class="grow"></div>
+        <span class="muted" style="font-size:12px">${l.length} sur ${tout}</span>
+      </div>
+      ${l.length ? `<div class="perslist">${l.map(f=> `<button type="button"
+        class="persrow" data-pers="${esc(f.pid)}">
+        <span class="persqui">${esc(nomUsuel(f) || titrePersonne(f) || "(sans nom)")}
+          <em>${esc([f.tel1, f.email1, [f.cp, f.ville].filter(Boolean).join(" ")]
+            .filter(Boolean).join("  ·  ") || "aucune coordonnée")}</em></span>
+        <span class="persrol">${pastillesRoles(f.pid)}</span>
+        <span class="persact">${actionsDe({pid:f.pid}).length || ""}</span>
+        </button>`).join("")}</div>`
+        : `<p class="muted" style="margin:0">${PERS.q
+            ? "Personne ne répond à cette recherche."
+            : "Le répertoire est vide : il se remplit tout seul à mesure que vous "
+              + "saisissez des vendeurs, des acquéreurs et des demandeurs."}</p>`}
+    </div></div>`;
+}
+function ongletsPersonne(pid){
+  const l = [{cle:"ident", lib:"Identité"}];
+  const connus = rolesConnus(pid);
+  connus.forEach(c=> l.push({cle:"h:" + c, lib:"Historique " + libRolePers(c)}));
+  if(!connus.length) l.push({cle:"h:", lib:"Historique"});
+  return l;
+}
+function vuePersonneFiche(){
+  const f = fichePersonne(PERS.ouvert);
+  if(!f) return vuePersonnesListe();
+  const onglets = ongletsPersonne(f.pid);
+  if(!onglets.some(o=> o.cle === PERS.onglet)) PERS.onglet = "ident";
+  const corps = PERS.onglet === "ident" ? champsFichePersonne(f)
+              : blocHistorique({pid:f.pid, role:PERS.onglet.slice(2)});
+  return `<div class="pbarre">
+      <button type="button" class="tbtn light" data-persretour>‹ Tout le répertoire</button>
+      <div class="grow"></div>
+      <button type="button" class="tbtn light" data-actadd="pers:${esc(f.pid)}"
+        >+ Créer une action</button>
+      ${boutonCarte("fiche:" + f.pid, nomPersonne(f))}
+      ${trombone("personne:" + f.pid, "Pièces")}
+    </div>
+    <div class="prospshell">
+      <nav class="dossrail dedans" aria-label="Volets de la personne">
+        <div class="drhead">
+          <span class="drlab">Personne</span>
+          <span class="drref">${esc(nomUsuel(f) || "(sans nom)")}</span>
+          <span class="drsub">${pastillesRoles(f.pid)}</span>
+        </div>
+        ${onglets.map(o=>{
+          const n = o.cle === "ident" ? 0
+            : actionsDe({pid:f.pid, role:o.cle.slice(2)}).length;
+          return `<button class="mitem${o.cle === PERS.onglet ? " on" : ""}"
+            data-pgopers="${esc(o.cle)}">${esc(o.lib)}${n ? ` <b>${n}</b>` : ""}</button>`;
+        }).join("")}
+      </nav>
+      <div class="prospcorps">
+        <div class="card"><h2>${esc((onglets.filter(o=> o.cle === PERS.onglet)[0]
+          || onglets[0]).lib)}</h2>
+          <div class="body">${corps}</div></div>
+      </div>
+    </div>`;
+}
+/* la fiche elle-même : les champs des vendeurs, les plus complets */
+function champsFichePersonne(f){
+  const i = (L.personnes || []).indexOf(f);
+  const unChamp = (k, lab, kd, w)=>{
+    const h = controlRaw(`personnes:${i}:${k}`, kd, f[k] || "", `fp${i}`, "data-book");
+    return `<div class="pf${w === "wide" ? " wide" : ""}">` +
+           `<label>${esc(lab)}</label>${h}</div>`;
+  };
+  /* la fiche du répertoire garde une ligne de plus que celle d'un dossier :
+     un second téléphone et une seconde adresse électronique, parce qu'une
+     personne qu'on retrouve d'une vente à l'autre en a souvent deux */
+  const champs = PF.map(([k, lab, kd, w, cond])=>{
+    if(cond && !cond(f)) return "";
+    if(kd === "sep") return `<div class="pfsep">${esc(lab)}</div>`;
+    let h = unChamp(k, lab, kd, w);
+    if(k === "tel1") h += unChamp("tel2", "Autre téléphone", "text");
+    if(k === "email1") h += unChamp("email2", "Autre email", "text");
+    return h;
+  }).join("");
+  const dos = dossiersDeLaPersonne(f.pid), rec = recherchesDeLaPersonne(f.pid);
+  return `<div class="pgrid">${champs}
+      <div class="pf wide"><label>Observations</label>
+        ${controlRaw(`personnes:${i}:note`, "area", f.note || "", `fp${i}`, "data-book")}
+      </div></div>
+    <div class="mdsect" style="margin-top:16px"><h4>Où elle intervient</h4>
+      ${dos.length || rec.length ? `<div class="seczones">
+        ${dos.map(x=> `<div class="seczone">
+          <span class="szg ${x.encours ? "" : "clos"}"></span>
+          <span><b>${esc(libRolePers(x.role))}</b> — n° ${esc((x.d.mandat || {}).num
+            || "—")} · ${esc(bienDe(x.d))}
+            <em>${esc(stade(x.d).lib.toLowerCase())}</em></span>
+          <span class="grow"></span>
+          <button type="button" class="xbtn" data-open="${esc(x.d.id)}">Ouvrir</button>
+          </div>`).join("")}
+        ${rec.map(x=> `<div class="seczone">
+          <span class="szg ${prospectActif(x.r) ? "" : "clos"}"></span>
+          <span><b>Demandeur</b> — ${esc(resumeRecherche(x.r) || "aucun critère")}</span>
+          <span class="grow"></span>
+          <button type="button" class="xbtn" data-prosp="${esc(x.r.id)}">Ouvrir</button>
+          </div>`).join("")}</div>`
+      : `<p class="muted" style="margin:0">Aucun dossier ni recherche à son nom.</p>`}
+    </div>`;
+}
+
+/* ------------------------------------------------------- un historique
+   Toujours le même bloc, quel que soit le rôle : une barre de filtres, et
+   la liste. Rien n'est purgé — on cherche, on ne jette pas. */
+function blocHistorique(filtre){
+  const l = actionsDe(filtre).filter(a=>{
+    if(PERS.fg && a.genre !== PERS.fg) return false;
+    if(PERS.fq){
+      const mots = fold(PERS.fq).split(/\s+/).filter(Boolean);
+      const texte = fold([a.genre, a.texte, a.qui, bienDeAction(a)].join(" "));
+      if(!mots.every(m=> texte.includes(m))) return false;
+    }
+    return true;
+  });
+  const genres = (L.actions || []).filter(a=> !filtre.pid || a.pid === filtre.pid)
+    .map(a=> a.genre).filter((g,i,t2)=> g && t2.indexOf(g) === i).sort(triFr);
+  return `<div class="histbar">
+      <select data-fgenre><option value="">Tous les genres</option>${genres.map(g=>
+        `<option${g === PERS.fg ? " selected" : ""}>${esc(g)}</option>`).join("")}</select>
+      <input type="text" data-fq value="${esc(PERS.fq)}"
+        placeholder="Chercher dans l'historique…">
+      ${PERS.fg || PERS.fq ? `<button type="button" class="lienbtn" data-fraz
+        >Effacer</button>` : ""}
+      <div class="grow"></div>
+      <span class="muted" style="font-size:12px">${l.length} action${
+        l.length > 1 ? "s" : ""}</span>
+    </div>` +
+    (l.length ? `<div class="jtable">${l.map(a=>{
+      const d = new Date(a.t || 0);
+      const heure = isNaN(d.getTime()) ? "" :
+        ("0" + d.getHours()).slice(-2) + " h " + ("0" + d.getMinutes()).slice(-2);
+      const bien = bienDeAction(a);
+      return `<div class="jrow${a.genre === "Note" ? " note" : ""}">
+        <span class="jquand">${esc(fdate(jourDe(a.t)))}<em>${esc(heure)}</em></span>
+        <span class="jqui">${esc(a.qui || "—")}</span>
+        <span class="jquoi"><b>${esc(a.genre || "")}</b>${
+          a.texte ? " " + esc(a.texte) : ""}${
+          bien ? ` <em class="jbien">${esc(bien)}</em>` : ""}</span></div>`;
+    }).join("")}</div>`
+      : `<p class="muted" style="margin:0">${PERS.fg || PERS.fq
+          ? "Aucune action ne répond à ces filtres."
+          : "Aucune action pour l'instant. Le bouton « Créer une action » en ajoute "
+            + "une à la main — un appel, une visite, un courrier."}</p>`);
+}
+
+/* ---------------------------------------------------- créer une action
+   Tout ce que l'application déclenche elle-même s'inscrit tout seul. Le
+   reste — un appel, une visite, un mot échangé sur le pas de la porte —
+   se note ici, en trois champs. */
+function ouvrirCreerAction(cible){
+  const [quoi, cle] = String(cible || "").split(":");
+  const pid = quoi === "pers" ? cle : "";
+  const dossierId = quoi === "bien" ? cle : "";
+  const f = pid ? fichePersonne(pid) : null;
+  const d = dossierId ? (dossiersVivants().filter(x=> x.id === dossierId)[0] || null)
+                      : null;
+  const dossiers = pid ? dossiersDeLaPersonne(pid) : [];
+  const gens = d ? ["vendeurs","acquereurs"].reduce((o, k)=>
+    o.concat((d[k] || []).filter(x=> x && !personneVide(x))
+      .map(x=> ({pid:pidPersonne(x), nom:titrePersonne(x),
+                 role: k === "vendeurs" ? "vendeur" : "acquereur"}))), []) : [];
+  popup({
+    titre:"Créer une action",
+    corps:`<p class="muted" style="margin:0 0 12px">${f
+        ? "Pour <b>" + esc(nomUsuel(f)) + "</b>."
+        : d ? "Sur le bien <b>n° " + esc((d.mandat || {}).num || "—") + "</b>."
+            : ""} Elle rejoindra l'historique, datée et signée
+        <b>${esc(quiSuisJe())}</b>.</p>
+      <div class="pgrid" style="padding:0">
+        <div class="pf"><label for="acGenre">Genre</label>
+          <span class="withadd"><select id="acGenre">${(L.genreAction || []).map(g=>
+            `<option>${esc(g)}</option>`).join("")}</select>
+          <button type="button" class="addinline" data-addlist="list:genreAction"
+            data-target="acGenre" data-attr="data-acgenre" title="Ajouter un genre"
+            >+</button></span></div>
+        <div class="pf"><label for="acDate">Date</label>
+          <input type="date" id="acDate" value="${esc(auj())}"></div>
+        ${gens.length ? `<div class="pf"><label for="acQui">Qui</label>
+          <select id="acQui"><option value="">—</option>${gens.map(g=>
+            `<option value="${esc(g.pid + "|" + g.role)}">${esc(g.nom)} (${
+              esc(libRolePers(g.role))})</option>`).join("")}</select></div>` : ""}
+        ${dossiers.length ? `<div class="pf"><label for="acBien">Bien concerné</label>
+          <select id="acBien"><option value="">—</option>${dossiers.map(x=>
+            `<option value="${esc(x.d.id + "|" + x.role)}">n° ${esc((x.d.mandat
+              || {}).num || "—")} · ${esc(bienDe(x.d))}</option>`).join("")}</select>
+          </div>` : ""}
+        <div class="pf plein"><label for="acTexte">Ce qui s'est passé</label>
+          <input type="text" id="acTexte"
+            placeholder="rappelée, elle visite samedi"></div>
+      </div>`,
+    boutons:[{lib:"Annuler"}, {lib:"Enregistrer", primaire:true, action:()=>{
+      const genre = (($("#acGenre") || {}).value) || "Note";
+      const texte = String((($("#acTexte") || {}).value) || "").trim();
+      const date = (($("#acDate") || {}).value) || auj();
+      let quiPid = pid, role = "";
+      const selQui = ($("#acQui") || {}).value || "";
+      if(selQui){ quiPid = selQui.split("|")[0]; role = selQui.split("|")[1]; }
+      let dos = dossierId;
+      const selBien = ($("#acBien") || {}).value || "";
+      if(selBien){ dos = selBien.split("|")[0]; role = role || selBien.split("|")[1]; }
+      if(!role && quiPid){
+        const actifs = rolesActifs(quiPid);
+        role = Object.keys(actifs)[0] || "";
+      }
+      const a = noterAction({pid:quiPid, role:role, genre:genre, texte:texte,
+                             dossier:dos});
+      /* la date se règle à la main : on recale l'horodatage sur le jour dit */
+      if(a && date && date !== auj()){
+        const h = new Date(date + "T12:00:00");
+        if(!isNaN(h.getTime())) a.t = h.getTime();
+      }
+      saveLists();
+      renderCarnets();
+      if(pageActive() === "general") renderGeneral();
+      toast("Action enregistrée");
+    }}]
+  });
+  setTimeout(()=>{ const e = $("#acTexte"); if(e) e.focus(); }, 40);
+}
+
 function renderRepertoire(){
+  /* la fiche d'une personne prend toute la page : on vient la lire, pas
+     la chercher au milieu des carnets */
+  if(PERS.ouvert && fichePersonne(PERS.ouvert)){
+    $("#repParties").innerHTML = vuePersonneFiche();
+    $("#repBody").innerHTML = "";
+    if(typeof appliquerDroits === "function") appliquerDroits();
+    return;
+  }
+  PERS.ouvert = "";
   /* les parties des dossiers, qui n'ont pas de fiche au carnet */
   const trouves = REP_Q.trim() ? chercherPersonnes(REP_Q) : [];
-  $("#repParties").innerHTML = !REP_Q.trim() ? "" : `<div class="card">
+  $("#repParties").innerHTML = vuePersonnesListe() + (!REP_Q.trim() ? "" : `<div class="card">
     <h2>Vendeurs et acquéreurs des dossiers <span class="cnt">${trouves.length}</span></h2>
     <div class="body">${trouves.length ? trouves.map(x=>{
       const co = [x.p.tel1, x.p.email1,
@@ -7069,7 +7681,7 @@ function renderRepertoire(){
         <button type="button" class="xbtn" data-opers="${esc(x.d.id)}:${x.kind}:${x.i}"
           >Voir</button></div>`;
     }).join("") : `<p class="muted" style="margin:0">Aucune partie de dossier ne correspond.</p>`}
-    </div></div>`;
+    </div></div>`);
   /* puis les carnets, filtrés par la même recherche */
   const mots = fold(REP_Q).split(/\s+/).filter(Boolean);
   $("#repBody").innerHTML = CARNETS_REP.map(k=>{
@@ -9643,7 +10255,7 @@ function boutonsReponse(i, id, etat){
       <button type="button" class="ricone" data-reproposer="${i}|${esc(id)}"
         title="Reproposer ce bien">${IC_REPROP}</button>`;
   return `<button type="button" class="ricone oui" data-suivre="${i}|${esc(id)}"
-      title="Mettre au suivi de ce prospect">${IC_OK}</button>
+      title="Mettre au suivi de ce demandeur">${IC_OK}</button>
     <button type="button" class="ricone sup" data-refuser="${i}|${esc(id)}"
       title="Refuser ce bien">${IC_NON}</button>`;
 }
@@ -9872,6 +10484,9 @@ function urlPlan(adr, z, t){
 function urlPlanGrand(adr){
   return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(adr);
 }
+const IC_ACTION = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M8 3.4v9.2M3.4 8h9.2"/></svg>`;
 const IC_PLAN = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
   fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
   <path d="M8 1.9c2.1 0 3.8 1.7 3.8 3.8 0 2.7-3.8 7-3.8 7s-3.8-4.3-3.8-7c0-2.1 1.7-3.8 3.8-3.8Z"/>
@@ -10328,13 +10943,13 @@ function vueProspListe(){
       <td class="pcrit">${esc(resumeCriteres(r)) || "—"}</td></tr>`;
   }).join("") : `<tr><td colspan="${COLS_PROSP.length}" class="muted"
       style="padding:16px">${tout.length
-        ? "Aucun prospect ne répond à ces filtres."
-        : "Aucun prospect pour l'instant. Le bouton ci-dessus en crée un."}</td></tr>`;
+        ? "Aucun demandeur ne répond à ces filtres."
+        : "Aucun demandeur pour l'instant. Le bouton ci-dessus en crée un."}</td></tr>`;
   return `<div class="card">
-    <h2>Prospects <span class="cnt">${vus.length}</span></h2>
+    <h2>Demandeurs <span class="cnt">${vus.length}</span></h2>
     <div class="body">
       <div class="pbarre">
-        <button class="addbtn" data-prospadd>+ Ajouter un prospect</button>
+        <button class="addbtn" data-prospadd>+ Ajouter un demandeur</button>
         <div class="seg">${seg("actifs","Recherches en cours")}${
           seg("closes","Closes")}${seg("","Toutes")}</div>
         <div class="grow"></div>
@@ -10367,7 +10982,7 @@ function blocsPersonnesProspect(i){
   const l = Array.isArray(r.personnes) ? r.personnes : [];
   return l.map((p, k)=>`<div class="ppers" id="pp_${i}_${k}">
       <header><span class="who">${esc(nomPersonneProspect(p) ||
-        "Prospect " + (k + 1))}</span>
+        "Demandeur " + (k + 1))}</span>
         ${l.length > 1 ? `<button type="button" class="xbtn sup"
           data-ppdel="${i}:${k}">Supprimer</button>` : ""}</header>
       <div class="pgrid">
@@ -10482,16 +11097,16 @@ function vueProspFiche(){
     corps = barreRecherche(i, PROSP.rech) + champsProspect(i, page.champs, PROSP.rech);
   else corps = champsProspect(i, page.champs);
   return `<div class="pbarre">
-      <button type="button" class="tbtn light" data-prospretour>‹ Tous les prospects</button>
+      <button type="button" class="tbtn light" data-prospretour>‹ Tous les demandeurs</button>
       <div class="grow"></div>
       ${lib ? boutonCarte("carnet:prospects:" + i, lib) : ""}
       ${lib ? trombone(sujetPersonne(r), "Pièces") : ""}
       <button type="button" class="xbtn sup" data-prospdel="${esc(r.id)}">Supprimer</button>
     </div>
     <div class="prospshell">
-      <nav class="dossrail dedans" aria-label="Volets du prospect">
+      <nav class="dossrail dedans" aria-label="Volets du demandeur">
         <div class="drhead">
-          <span class="drlab">Prospect</span>
+          <span class="drlab">Demandeur</span>
           <span class="drref">${esc(lib)}</span>
           <span class="drsub">mis à jour le <b id="prospMaj">${
             esc(fdate(jourDe(r.maj)))}</b></span>
@@ -10661,7 +11276,7 @@ function creerLeProspect(depuis){
   saveLists();
   fermerNouveauProspect();
   ouvrirProspect(row.id, "coord");
-  toast("Prospect créé");
+  toast("Demandeur créé");
 }
 /* « C'est elle » : un prospect s'ouvre, une personne d'un dossier donne ses
    coordonnées à la fiche qu'on crée — être vendeur n'empêche pas de chercher. */
@@ -11100,7 +11715,7 @@ function ouvrirEcartBien(i, id){
   popup({
     titre:"Écarter ce bien",
     corps:`<p class="muted" style="margin:0 0 12px">${esc(nomCourtBien(id))} — pour
-       ${esc(libelleAcquereur(r) || "ce prospect")}.</p>
+       ${esc(libelleAcquereur(r) || "ce demandeur")}.</p>
       <div class="pgrid" style="padding:0">
         <div class="pf"><label for="ecDate">Date</label>
           <input type="date" id="ecDate" value="${esc(auj())}"></div>
@@ -11117,7 +11732,8 @@ function ouvrirEcartBien(i, id){
       const dit = [motif, note].filter(Boolean).join(" — ");
       poserRefus(i, refusFiches(r).concat([{id:id, date:date,
         motif:dit, qui:quiSuisJe()}]));
-      noterJournal(r, "Bien écarté", nomCourtBien(id) + (dit ? " · " + dit : ""));
+      noterJournal(r, "Bien écarté", nomCourtBien(id) + (dit ? " · " + dit : ""),
+                   "", id);
       saveLists();
       renderApresReponse();
       toast("Bien écarté" + (motif ? " — " + motif : ""));
@@ -13128,6 +13744,12 @@ function noterEnvoiAvis(mode){
     reponse: ""
   });
   /* un envoi est un fait, pas une frappe au clavier : on l'écrit tout de suite */
+  const gens = (D[cote === "vendeur" ? "vendeurs" : "acquereurs"] || [])
+    .filter(x=> x && !personneVide(x));
+  gens.forEach(q=> noterAction({pid: pidPersonne(q), role: cote,
+    dossier: D.id, genre: mode === "whatsapp" ? "Message WhatsApp" : "Courriel",
+    texte: "demande d'avis"}));
+  saveLists();
   persist(true); syncDiffere(); renderAvis();
 }
 function retirerEnvoiAvis(id){
@@ -13522,7 +14144,7 @@ function carteDuCarnet(k, r){
     const note = resumeRecherche(r);
     if(!gens.length) return "";
     return gens.map(p=> vcarte({nom:p.nom, prenom:p.prenom,
-      civilite:p.civilite, fn:nomPersonneProspect(p), titre:"Prospect",
+      civilite:p.civilite, fn:nomPersonneProspect(p), titre:"Demandeur",
       tels:[{num:p.tel, genre:"CELL"}], emails:[p.email], note})).join("");
   }
   return vcarte({nom:r.nom, fn:r.nom, adr, tels:[{num:r.tel}], emails:[r.email]});
@@ -13637,6 +14259,14 @@ document.addEventListener("input", e=>{
       majAdressesLiees(t.dataset.b.split(".")[0]);
     if(/^(vendeurs|acquereurs)\./.test(t.dataset.b)){
       const [kind,i] = t.dataset.b.split(".");
+      /* la saisie va aussi au répertoire : la fiche de la personne est la
+         vérité, le dossier n'en garde qu'une copie */
+      const pers = (D[kind] || [])[+i];
+      if(pers){
+        const pid = inscrireAuRepertoire(pers);
+        if(pid && pers.pid !== pid) pers.pid = pid;
+        saveLists();
+      }
       const card = t.closest(".person");
       if(card){ const p = D[kind][+i];
         card.querySelector(".who").textContent = titrePersonne(p)
@@ -13701,6 +14331,20 @@ document.addEventListener("input", e=>{
     t.style.height="auto"; t.style.height = Math.max(120,t.scrollHeight+4)+"px";
     renderPreview();
   }
+  if(t.dataset.persq !== undefined){
+    PERS.q = t.value;
+    renderRepertoire();
+    const c = $("[data-persq]");
+    if(c){ c.focus(); c.setSelectionRange(c.value.length, c.value.length); }
+    return;
+  }
+  if(t.dataset.fq !== undefined){
+    PERS.fq = t.value;
+    renderRepertoire();
+    const c = $("[data-fq]");
+    if(c){ c.focus(); c.setSelectionRange(c.value.length, c.value.length); }
+    return;
+  }
   if(t.dataset.vitesse !== undefined){
     L.vitesses = Object.assign({}, L.vitesses || {});
     L.vitesses[t.dataset.vitesse] = t.value;
@@ -13744,7 +14388,9 @@ document.addEventListener("input", e=>{
     if(!cb) return;
     const k = cb.k, i = String(cb.i), f = cb.f;
     noterMajFiche(k, i, cb.obj[f], t.value, libelleChampProspect(f));
-    cb.obj[f] = t.value; saveLists();
+    cb.obj[f] = t.value;
+    if(k === "personnes"){ cb.obj.maj = Date.now(); repandreFichePersonne(cb.obj); }
+    saveLists();
     if(t.list && String(t.list.id).startsWith("dl-cps-")) majCpsVu(t);
     /* la date exacte du permis donne l'année de construction */
     if(f === "dateConstruction" && t.value){
@@ -14061,6 +14707,9 @@ $("#memeNotaire").addEventListener("change", e=>{
 });
 
 document.addEventListener("change", e=>{
+  if(e.target && e.target.dataset && e.target.dataset.fgenre !== undefined){
+    PERS.fg = e.target.value; renderRepertoire(); return;
+  }
   const t = e.target;
   const carnet = t.dataset.bookyn !== undefined;
   const path = carnet ? t.dataset.bookyn : t.dataset.yn;
@@ -14085,7 +14734,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour],[data-rechgo],[data-rechadd],[data-rechdel],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour],[data-rechgo],[data-rechadd],[data-rechdel],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-pgopers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -14255,6 +14904,27 @@ document.addEventListener("click", e=>{
     renderProspects(); return;
   }
   if(t.dataset.jadd !== undefined){ ouvrirNoteJournal(+t.dataset.jadd); return; }
+  /* ------------------------------------------------ le répertoire des personnes */
+  if(t.dataset.pers){ PERS.ouvert = t.dataset.pers; PERS.onglet = "ident";
+    PERS.fg = ""; PERS.fq = ""; activerOnglet("repertoire"); renderRepertoire();
+    window.scrollTo(0, 0); return; }
+  if(t.dataset.persretour !== undefined){ PERS.ouvert = ""; renderRepertoire(); return; }
+  if(t.dataset.pgopers){ PERS.onglet = t.dataset.pgopers; PERS.fg = ""; PERS.fq = "";
+    renderRepertoire(); return; }
+  if(t.dataset.persadd !== undefined){
+    const f = fichePersonneVide();
+    f.pid = idFichePersonne(); f.cree = Date.now(); f.maj = Date.now();
+    (L.personnes = L.personnes || []).push(f);
+    saveLists();
+    PERS.ouvert = f.pid; PERS.onglet = "ident";
+    renderRepertoire();
+    const prem = $("#repParties .pgrid input");
+    if(prem) setTimeout(()=> prem.focus(), 40);
+    toast("Fiche créée");
+    return;
+  }
+  if(t.dataset.fraz !== undefined){ PERS.fg = ""; PERS.fq = ""; renderRepertoire(); return; }
+  if(t.dataset.actadd){ ouvrirCreerAction(t.dataset.actadd); return; }
   /* ------------------------------------------------- le secteur sur la carte */
   if(t.dataset.sectmode){
     SECT.mode = SECT.mode === t.dataset.sectmode ? "" : t.dataset.sectmode;
@@ -14324,7 +14994,7 @@ document.addEventListener("click", e=>{
     if(l.length < 2) return;
     popup({titre:"Supprimer cette recherche",
       corps:`<p style="margin:0">« ${esc(titreRecherche(r, l[k]))} » et tous ses critères
-        seront effacés. Les autres recherches de ${esc(libelleAcquereur(r) || "ce prospect")}
+        seront effacés. Les autres recherches de ${esc(libelleAcquereur(r) || "ce demandeur")}
         ne bougent pas.<br><br>Pour la mettre seulement de côté, décochez plutôt
         <b>active</b> : elle cesse de rapprocher et se garde.</p>`,
       boutons:[{lib:"Annuler"}, {lib:"Supprimer", action:()=>{
@@ -14351,14 +15021,14 @@ document.addEventListener("click", e=>{
     const i = indexProspect(t.dataset.prospdel);
     if(i < 0) return;
     const r = L.prospects[i];
-    popup({titre:"Supprimer ce prospect ?", genre:"erreur",
+    popup({titre:"Supprimer ce demandeur ?", genre:"erreur",
       corps:`<p style="margin:0">La fiche de <b>${esc(libelleAcquereur(r) ||
-        "ce prospect")}</b> sera retirée du fichier, ici et sur vos autres appareils.</p>`,
+        "ce demandeur")}</b> sera retirée du fichier, ici et sur vos autres appareils.</p>`,
       boutons:[{lib:"Annuler"}, {lib:"Supprimer", primaire:true, action:()=>{
         noterRetraitListe("prospects", L.prospects[i]);
         L.prospects.splice(i, 1);
         saveLists(); PROSP.ouvert = ""; renderProspects();
-        toast("Prospect supprimé");
+        toast("Demandeur supprimé");
       }}]});
     return; }
   if(t.dataset.suivicherche !== undefined){
@@ -14366,7 +15036,7 @@ document.addEventListener("click", e=>{
   if(t.dataset.suivre){
     const [i, id] = t.dataset.suivre.split("|");
     poserSuivis(+i, suivisDe(L.prospects[+i] || {}).concat([id]));
-    noterJournal(L.prospects[+i], "Bien mis au suivi", nomCourtBien(id));
+    noterJournal(L.prospects[+i], "Bien mis au suivi", nomCourtBien(id), "", id);
     saveLists();
     renderApresReponse();
     toast("Bien ajouté au suivi");
@@ -14374,7 +15044,7 @@ document.addEventListener("click", e=>{
   if(t.dataset.suividel){
     const [i, id] = t.dataset.suividel.split("|");
     poserSuivis(+i, suivisDe(L.prospects[+i] || {}).filter(x=> x !== id));
-    noterJournal(L.prospects[+i], "Bien retiré du suivi", nomCourtBien(id));
+    noterJournal(L.prospects[+i], "Bien retiré du suivi", nomCourtBien(id), "", id);
     saveLists();
     renderApresReponse();
     return; }
@@ -14385,7 +15055,7 @@ document.addEventListener("click", e=>{
   if(t.dataset.reproposer){
     const [i, id] = t.dataset.reproposer.split("|");
     poserRefus(+i, refusFiches(L.prospects[+i] || {}).filter(x=> x.id !== id));
-    noterJournal(L.prospects[+i], "Bien reproposé", nomCourtBien(id));
+    noterJournal(L.prospects[+i], "Bien reproposé", nomCourtBien(id), "", id);
     saveLists();
     renderApresReponse();
     return; }
@@ -18219,6 +18889,8 @@ function migrate(d){
       /* identifiant stable : il survit à un changement de nom, ce que la clé
          par le nom ne faisait pas (voir pidDepuis) */
       if(!q.pid && nomPersonne(q)) q.pid = pidDepuis(nomPersonne(q));
+      /* la fiche du répertoire fait foi : on en recopie l'état civil */
+      rafraichirDepuisRepertoire(q);
       return q; });
   });
   return out;
@@ -18593,7 +19265,7 @@ const AIDE = [
   "plain-pied, et y a-t-il des <b>commodités</b> de plain-pied — on entend par là un WC, "+
   "une salle d'eau ou une salle de bain, une seule suffit. Tant que les niveaux ne sont pas "+
   "saisis, l'application ne tranche pas : elle le dit, et le volet « Biens à rapprocher » "+
-  "du prospect vous indique quoi vérifier à la visite."],
+  "du demandeur vous indique quoi vérifier à la visite."],
  ["La fiche détaillée du bien",
   "Un bouton en forme de maison, dans l'en-tête du dossier, ouvre la <b>fiche détaillée</b>. "+
   "Elle se lit en <b>deux colonnes</b>. "+
@@ -18779,12 +19451,62 @@ const AIDE = [
   "C'est ici que l'on crée et que l'on modifie un immeuble : "+
   "il a quitté les Listes, un immeuble n'étant pas une liste de référence mais un sujet."],
  ["Répertoire",
-  "Tous vos contacts au même endroit : notaires, personnes en charge chez un notaire, syndics, "+
-  "négociateurs, diagnostiqueurs, banques. Chaque carnet se déplie et ses fiches se modifient "+
-  "sur place. La recherche en haut cherche dans <b>tout</b> — nom, étude, adresse, ville, "+
+  "Tous vos contacts au même endroit. En haut de la page, <b>Les personnes</b> : une fiche "+
+  "par personne, quel que soit le rôle qu'elle tient chez vous. En dessous, les carnets "+
+  "métier : notaires, personnes en charge chez un notaire, syndics, négociateurs, "+
+  "diagnostiqueurs, banques. Chaque carnet se déplie et ses fiches se modifient sur place. "+
+  "La recherche en haut cherche dans <b>tout</b> — nom, étude, adresse, ville, "+
   "téléphone, courriel — et ramène en plus les <b>vendeurs et acquéreurs saisis dans les "+
   "dossiers</b>, chacun avec le mandat d'où il vient et un bouton pour y aller : une personne "+
   "se retrouve sans qu'il faille se rappeler où on l'a d'abord écrite."],
+ ["Les personnes : une seule fiche, où qu'elle apparaisse",
+  "<b>Le principe.</b> Une personne n'est plus écrite à trois endroits différents. Elle a "+
+  "<b>une fiche</b>, au Répertoire, et les dossiers y renvoient. Vendeur d'un bien, acquéreur "+
+  "d'un autre, demandeur d'un troisième : c'est la même fiche, la même adresse, le même "+
+  "téléphone. "+
+  "<b>Le recensement s'est fait tout seul.</b> À la première ouverture, toutes les personnes "+
+  "déjà saisies — vendeurs, acquéreurs, demandeurs — sont entrées au répertoire sans que rien "+
+  "ne soit à ressaisir. Deux dossiers qui portaient le même nom n'ont donné qu'une fiche. "+
+  "<b>La fiche est celle des vendeurs</b>, la plus complète : civilité, prénom et autres "+
+  "prénoms, nom, nom de naissance, date et lieu de naissance, nationalité, profession, "+
+  "situation matrimoniale, deux téléphones, deux adresses électroniques, l'adresse postale, "+
+  "et un champ d'observations. Une société a en plus sa dénomination et son représentant. "+
+  "<b>Corriger une fois corrige partout.</b> Un nom mal lu sur un mandat, un déménagement, un "+
+  "numéro qui change : vous le reprenez sur la fiche, et tous les dossiers où la personne "+
+  "intervient suivent, documents compris. L'inverse est vrai aussi : ce que vous corrigez dans "+
+  "un dossier remonte à la fiche. "+
+  "<b>Où elle intervient.</b> Au bas de la fiche, la liste de ses dossiers et de ses "+
+  "recherches, chacun avec son état — en vente, vendu, en cours — et un bouton pour y aller. "+
+  "Une pastille pleine signale ce qui est vivant, une pastille grise ce qui est clos."],
+ ["Les rôles : vendeur, acquéreur, demandeur",
+  "<b>Un rôle ne se saisit pas, il se constate.</b> Les trois pastilles en haut de la fiche — "+
+  "<b>Vendeur</b>, <b>Acquéreur</b>, <b>Demandeur</b> — s'allument toutes seules, d'après ce "+
+  "que la personne fait réellement dans l'application. "+
+  "Elle est vendeur tant qu'un de ses mandats est en vente, sous offre ou sous compromis ; "+
+  "acquéreur tant qu'une acquisition est en cours ; demandeur tant qu'une de ses recherches "+
+  "est active. "+
+  "<b>Un rôle s'éteint quand l'affaire se termine.</b> La vente signée, la pastille Vendeur "+
+  "s'éteint — mais elle reste <i>connue</i> : l'onglet « Historique Vendeur » demeure, et ce "+
+  "qui a été fait pour cette vente ne disparaît pas. Un même homme peut donc être vendeur "+
+  "éteint, acquéreur éteint et demandeur allumé le même jour, ce qui est exactement sa "+
+  "situation. "+
+  "<b>Rien à entretenir.</b> Il n'y a aucune case à cocher : clôturez vos dossiers comme vous "+
+  "le faites déjà, les pastilles suivent."],
+ ["Les actions : ce qui a été fait, et par qui",
+  "<b>Une action, c'est quelque chose de déclenché</b> : un courriel parti, un message envoyé, "+
+  "une publication passée sur les réseaux, une fiche créée, un bien écarté d'un rapprochement. "+
+  "L'application les inscrit elle-même, datées et signées du nom de la personne connectée. "+
+  "<b>Le bouton « Créer une action »</b>, en haut de chaque fiche de personne et de chaque "+
+  "dossier, sert à tout le reste : un appel téléphonique, une visite, un mot échangé sur le pas "+
+  "de la porte. Vous choisissez le genre dans une liste — <b>modifiable</b> par le « + » à "+
+  "côté —, la date, le bien concerné s'il y en a un, et une ligne de texte. "+
+  "<b>Un historique par rôle.</b> La fiche d'une personne ouvre autant d'onglets d'historique "+
+  "qu'elle a de rôles connus : « Historique Vendeur », « Historique Acquéreur », « Historique "+
+  "Demandeur ». Chaque ligne porte le jour, l'heure, qui a agi, ce qui a été fait et <b>la "+
+  "référence du bien</b> — n° de mandat et adresse — quand l'action en concerne un. "+
+  "<b>Rien n'est purgé.</b> Les historiques sont conservés en entier. On ne jette pas : on "+
+  "<b>filtre</b> par genre d'action, et on <b>cherche</b> en toutes lettres dans la barre du "+
+  "haut — un nom, une adresse, un mot de la note. « Effacer » remet tout."],
  ["Le clip et TikTok : la durée qui se raccourcissait",
   "<b>Le symptôme.</b> Un clip déposé sur TikTok en ressortait plus court qu'il n'était. "+
   "<b>La cause, mesurée :</b> un MP4 enregistré par un navigateur s'écrit au fil de la "+
@@ -18871,8 +19593,8 @@ const AIDE = [
   "<b>Une étude</b> saisie à la place d'une personne — SCP, SELARL, Office, Étude — reste "+
   "d'un bloc dans le champ Nom et <b>ne reçoit pas de « Maître »</b> : on n'écrit pas "+
   "« Maître SCP DUPONT »."],
- ["L'onglet Prospects",
-  "L'onglet <b>Prospects</b>, juste après <b>Mes dossiers</b>, tient le fichier de toutes "+
+ ["L'onglet Demandeurs",
+  "L'onglet <b>Demandeurs</b>, juste après <b>Mes dossiers</b>, tient le fichier de toutes "+
   "les personnes qui cherchent — <b>tous négociateurs confondus</b>. La liste donne, en "+
   "colonnes : la date de dernière mise à jour (la plus récente en tête), le nom, le "+
   "négociateur, les types de biens, les communes, le budget et un résumé des critères. "+
@@ -18881,7 +19603,7 @@ const AIDE = [
   "minimum, la date comme « depuis », le reste se cherche sans casse ni accent. Les trois "+
   "boutons du haut passent des recherches en cours aux recherches closes, ou aux deux. "+
   "Un clic sur une ligne ouvre la fiche."],
- ["La fiche d'un prospect : cinq volets",
+ ["La fiche d'un demandeur : les volets",
   "Elle reprend la <b>fiche découverte</b> de l'agence, et se parcourt par une colonne de "+
   "gauche comme la fiche d'un bien. <b>Coordonnées</b> : la date du rendez-vous, le "+
   "négociateur, la saisie AC3, le suivi — et les personnes, en <b>blocs ajoutables</b> "+
@@ -18892,30 +19614,30 @@ const AIDE = [
   "résidence principale ou investissement, délais, les trois budgets, le mode de "+
   "financement, la banque, la vente d'un bien, et vos observations. <b>Biens à "+
   "rapprocher</b> et <b>Biens suivis</b> : voir plus bas."],
- ["Créer un prospect sans en créer deux",
-  "Le bouton <b>+ Ajouter un prospect</b> n'ouvre plus une fiche vide : il demande "+
+ ["Créer un demandeur sans en créer deux",
+  "Le bouton <b>+ Ajouter un demandeur</b> n'ouvre plus une fiche vide : il demande "+
   "d'abord <b>le nom</b>, le prénom, le téléphone et le courriel. Pendant que vous tapez, "+
-  "l'application cherche ce qui ressemble dans <b>toutes vos bases</b> — les prospects, et "+
+  "l'application cherche ce qui ressemble dans <b>toutes vos bases</b> — les demandeurs, et "+
   "les <b>personnes de vos dossiers</b>, vendeurs comme acquéreurs. "+
   "La ressemblance tient d'abord au <b>nom</b> et au <b>premier prénom</b>, y compris "+
   "approchants — DURAN pour DURAND, une lettre de travers suffit à créer un doublon —, et "+
   "le <b>téléphone</b> ou le <b>courriel</b> identiques emportent la décision : deux "+
   "clients n'ont pas le même numéro. "+
   "Chaque proposition se tranche : <b>« C'est elle »</b> ouvre la fiche existante quand "+
-  "c'est un prospect — vous reprenez son historique et ses recherches au lieu de repartir "+
+  "c'est un demandeur — vous reprenez son historique et ses recherches au lieu de repartir "+
   "de zéro — ou <b>reprend ses coordonnées</b> quand c'est une personne d'un dossier : "+
   "être vendeur n'empêche pas de chercher. <b>« Ce n'est pas elle »</b> écarte la "+
   "proposition. Rien n'est créé tant que vous n'avez pas cliqué sur « Créer la fiche »."],
  ["« Recherche en cours » se coche toute seule",
-  "Elle ne se coche plus à la main : un prospect est <b>en recherche dès qu'une de ses "+
+  "Elle ne se coche plus à la main : un demandeur est <b>en recherche dès qu'une de ses "+
   "recherches est active</b>, et il ne l'est plus quand elles dorment toutes. La case du "+
   "volet Coordonnées montre l'état et reste figée — deux cases à tenir d'accord, celle de "+
   "la fiche et celles des recherches, finissaient toujours par se contredire, et c'est la "+
   "liste qui mentait. "+
-  "Une fiche sans recherche active <b>sort de la liste</b> des prospects en recherche, "+
+  "Une fiche sans recherche active <b>sort de la liste</b> des demandeurs en recherche, "+
   "mais elle <b>n'est pas effacée</b> : on la retrouve sous « Closes » ou « Toutes », avec "+
   "tout son contenu, et il suffit de réveiller une recherche pour qu'elle revienne."],
- ["Un prospect, plusieurs recherches",
+ ["Un demandeur, plusieurs recherches",
   "Un même client cherche souvent deux choses à la fois : une maison pour y vivre, et un "+
   "studio à louer. Les mettre dans une seule fiche donnait une recherche qui ne "+
   "ressemblait à rien — un budget de maison et une surface de studio — et ne rapprochait "+
@@ -18942,7 +19664,7 @@ const AIDE = [
  ["Le secteur sur la carte",
   "Un acquéreur ne cherche pas « dans le 13200 ». Il cherche <b>à dix minutes à pied du "+
   "centre</b>, <b>entre la gare et les arènes</b>, <b>pas de l'autre côté du Rhône</b>. "+
-  "Le volet <b>Son secteur</b>, dans la fiche du prospect, porte une carte où cela se "+
+  "Le volet <b>Son secteur</b>, dans la fiche du demandeur, porte une carte où cela se "+
   "dessine. "+
   "<b>Trois façons de poser une zone.</b> <b>« Dessiner un secteur »</b> : cliquez les "+
   "sommets, double-cliquez — ou « Terminer le tracé » — pour fermer. <b>« Poser un "+
@@ -18982,7 +19704,7 @@ const AIDE = [
   "Sous la carte, choisissez un quartier sans contour et cliquez <b>« Dessiner son "+
   "contour »</b> : vous le tracez comme un secteur, et il est gardé dans la liste des "+
   "quartiers de sa commune. Il devient alors une <b>case à cocher</b> pour tous les "+
-  "prospects — « il cherche à Trinquetaille » se règle d'un clic. "+
+  "demandeurs — « il cherche à Trinquetaille » se règle d'un clic. "+
   "C'est <b>votre</b> découpage, pas un découpage administratif : l'application n'invente "+
   "aucune frontière qu'elle ne connaît pas. Décocher la case retire la zone de la "+
   "recherche sans effacer le contour."],
@@ -19033,7 +19755,7 @@ const AIDE = [
   "comme plafond — au-delà, le bien sort — et le plus bas comme référence : entre les deux, "+
   "le bien est proposé avec la mention « <i>au-dessus du budget courant, dans l'enveloppe "+
   "coup de cœur</i> ». Un seul montant saisi suffit."],
- ["L'historique du prospect",
+ ["L'historique du demandeur",
   "Un sixième volet, <b>Historique</b>, garde ce qui a été fait sur la fiche et "+
   "<b>par qui</b> — le nom du compte connecté, à défaut le négociateur de l'appareil. "+
   "S'y inscrivent la création de la fiche, les modifications, les recherches ajoutées, "+
@@ -19046,7 +19768,7 @@ const AIDE = [
  ["Répondre à un bien rapproché",
   "Le volet <b>Biens à rapprocher</b> range les biens en trois : <b>sans réponse</b>, "+
   "<b>déjà au suivi</b>, <b>refusés</b>. Deux icônes sur chaque ligne : la coche le met au "+
-  "<b>suivi du prospect</b>, la croix l'<b>écarte</b>. "+
+  "<b>suivi du demandeur</b>, la croix l'<b>écarte</b>. "+
   "Écarter ouvre une petite fenêtre : la <b>date</b> — celle du jour, modifiable, car on "+
   "saisit souvent le lendemain — et le <b>motif</b>, pris dans une liste que vous "+
   "complétez (onglet Listes) ou précisé à la main. Six mois plus tard, c'est ce qui permet "+
@@ -19059,7 +19781,7 @@ const AIDE = [
   "appareils, contrairement à l'ancienne pastille « nouveau », qui s'éteignait d'un simple "+
   "regard et n'existe plus. Les mêmes icônes figurent sur la carte d'<b>Aujourd'hui</b>, "+
   "pour répondre sans ouvrir la fiche. Et la colonne <b>Sans réponse</b> de la liste des "+
-  "prospects compte, pour chacun, ce qui attend encore votre avis."],
+  "demandeurs compte, pour chacun, ce qui attend encore votre avis."],
  ["Le négociateur et la date de mise à jour",
   "Une fiche neuve est <b>rattachée au négociateur connecté</b> — ou, s'il n'y a pas de "+
   "comptes, au seul négociateur de l'agence. Le champ reste modifiable. La <b>date de mise "+
@@ -19074,7 +19796,7 @@ const AIDE = [
   "c'est la vérification. Un code inconnu s'affiche en rouge. Un code qui couvre plusieurs "+
   "communes les annonce toutes — 13150 en couvre trois, dont Tarascon. Le rapprochement "+
   "compare alors le code postal du bien, et non son nom de commune."],
- ["Les biens suivis d'un prospect",
+ ["Les biens suivis d'un demandeur",
   "Le troisième volet de la fiche tient la liste des biens que cette personne suit. Deux "+
   "façons d'en ajouter : le bouton <b>Chercher un bien</b>, qui ouvre une loupe sur "+
   "l'ensemble de vos dossiers — y compris ceux qui ne correspondent pas à sa recherche —, "+
@@ -23896,6 +24618,8 @@ document.addEventListener("focusout", e=>{
 
 (function init(){
   chargerSeance();
+  /* le recensement des personnes : une fois, au démarrage */
+  try{ enrolerLesPersonnes(); }catch(e){ if(window.console) console.error(e); }
   /* avant de charger le dossier courant : un notaire renommé ailleurs ne doit
      pas laisser ici des dossiers orphelins de leur étude */
   recalerNotairesDossiers();
