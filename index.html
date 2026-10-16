@@ -1998,7 +1998,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 16 octobre 2026, 10 h 03">Dossiers de vente</div>
+  <div class="brand" title="Version du 16 octobre 2026, 14 h 55">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2034,7 +2034,7 @@ table.tdb .puce.resilie{background:#64748b}
   <div class="tab glob" data-p="aujourdhui">Aujourd'hui</div>
   <div class="tab glob" data-p="tdb">Tableau de bord</div>
   <div class="tab glob" data-p="dossiers">Mes dossiers</div>
-  <div class="tab glob" data-p="prospects">Demandeurs</div>
+  <div class="tab glob" data-p="prospects">Recherches</div>
   <div class="tab glob" data-p="immeubles">Immeubles</div>
   <div class="tab glob" data-p="repertoire">Répertoire</div>
   <!-- à droite, les réglages et l'aide -->
@@ -2209,7 +2209,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>16 octobre 2026, 10 h 03</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>16 octobre 2026, 14 h 55</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2258,14 +2258,15 @@ table.tdb .puce.resilie{background:#64748b}
 <div class="modal" id="nvBox" hidden>
   <div class="modalbox secbox mdbox">
     <div class="sh">
-      <div><h3>Nouveau demandeur</h3>
-        <p>Le nom d'abord : s'il est déjà quelque part, autant reprendre sa fiche.</p></div>
+      <div><h3 id="nvTitre">Nouvelle recherche</h3>
+        <p id="nvSous">Le nom d'abord : si la personne est déjà quelque part, autant
+          reprendre sa fiche.</p></div>
       <button type="button" class="sfermer" id="nvFermer" aria-label="Fermer">×</button>
     </div>
     <div class="scorps" id="nvCorps"></div>
     <div class="spieds"><span class="grow"></span>
       <button type="button" class="tbtn light" data-nvfermer>Annuler</button>
-      <button type="button" class="addbtn" id="nvCreer">Créer la fiche</button>
+      <button type="button" class="addbtn" id="nvCreer">Créer</button>
     </div>
   </div>
 </div>
@@ -2667,16 +2668,17 @@ const BOOKS = {
      dossier, `acquereurs` désigne déjà les acheteurs de CE bien, et les deux
      mots dans le même fichier n'auraient pas manqué de se confondre. La
      reprise est faite à la lecture, sans perte. */
-  prospects:{title:"Demandeurs", mode:"card", label:"Demandeur",
+  prospects:{title:"Recherches", mode:"card", label:"Recherche",
     dep:{etageMax:"ascenseurNon"},
     /* une dépendance qui regarde la VALEUR et non la simple présence */
     depVal:{travauxNiveau:["travaux","OUI"],
             locatifType:["objectif","Investissement locatif"]},
     idStable:true, defauts:{actif:true}, cols:[
-    /* --- volet 1 : coordonnées. Les personnes elles-mêmes sont saisies à
-       part, en blocs ajoutables, comme les vendeurs d'un dossier. */
+    /* --- le suivi de la recherche. Les personnes qui la portent sont au
+       répertoire : la recherche ne fait que les nommer. */
+    ["@suivi","Le suivi de cette recherche","sep"],
     ["rdv","Date du rendez-vous","date"],
-    ["nego","Négociateur qui le suit","book:negociateurs"],
+    ["nego","Négociateur qui la suit","book:negociateurs"],
     ["ac3","Saisie AC3","yn"],
     ["actif","Recherche en cours","check"],
     ["contact","Dernier contact","date"],
@@ -2741,9 +2743,7 @@ const BOOKS = {
 /* Les trois volets de la fiche d'un prospect. Le troisième n'a pas de champ
    de saisie : il porte les biens suivis, qui se cueillent ailleurs. */
 const PAGES_PROSPECT = [
-  {cle:"coord",   lib:"Coordonnées",
-   champs:["rdv","nego","ac3","actif","contact"]},
-  {cle:"recherche", lib:"Sa recherche",
+  {cle:"recherche", lib:"La recherche",
    champs:["types","cps","quartiersOui","quartiersNon",
            "@surf","surfaceMin","surfaceMax","chambresMin","chambresIdeal","piecesMin",
            "@conf","plainPiedChambre","plainPiedCommod","parkingPdi","garagePdi",
@@ -2751,14 +2751,14 @@ const PAGES_PROSPECT = [
            "@terrain","terrainMin","terrainMax","piscinePdi",
            "@style","travaux","travauxNiveau","dpeMin",
            "@obs","note"]},
+  {cle:"secteur", lib:"Le secteur", champs:[]},
   {cle:"projet",  lib:"Objectif et financement",
    champs:["objectif","locatifType","debutRecherche","delaiAchat",
            "@budget","budgetTravaux","budgetSansTravaux","budgetCoup",
            "@fin","financement","banqueVue","accordPrincipe",
-           "@vente","venteFaite","venteCompromis","venteVendu"]},
-  {cle:"secteur", lib:"Son secteur", champs:[]},
+           "@vente","venteFaite","venteCompromis","venteVendu",
+           "@suivi","rdv","nego","ac3","contact"]},
   {cle:"rappro",  lib:"Biens à rapprocher", champs:[]},
-  {cle:"suivis",  lib:"Biens suivis", champs:[]},
   {cle:"journal", lib:"Historique", champs:[]}
 ];
 
@@ -2791,30 +2791,14 @@ function rechercheNeuve(){
   });
   return r;
 }
-function recherchesDe(r){
-  const l = Array.isArray((r || {}).recherches) ? r.recherches.filter(Boolean) : [];
-  if(l.length) return l;
-  /* Une fiche qui n'a pas encore été reprise — celle qui arrive d'un appareil
-     resté en arrière, par exemple : ses critères à plat FONT sa première
-     recherche. Sans cela, elle paraîtrait vide et ne rapprocherait plus rien. */
-  const r0 = rechercheNeuve();
-  CHAMPS_RECHERCHE.forEach(f=>{
-    if(r && r[f] !== undefined && r[f] !== "") r0[f] = r[f]; });
-  r0.actif = (r || {}).actif === undefined ? true : !!r.actif;
-  return [r0];
-}
-/* La même chose, mais écrite dans la fiche : on ne saisit pas dans un objet
-   de passage. À appeler avant d'ouvrir la fiche à la modification. */
-function assurerRecherches(r){
-  if(!r) return [];
-  if(!Array.isArray(r.recherches) || !r.recherches.length){
-    r.recherches = recherchesDe(r);
-    saveLists();
-  }
-  return r.recherches;
-}
+/* Depuis que chaque recherche est une ligne à elle, ces trois fonctions ne
+   disent plus grand-chose — mais elles sont appelées de partout, et tout le
+   rapprochement est écrit en « la fiche et sa recherche ». On les garde, et
+   la recherche d'une ligne, c'est la ligne. */
+function recherchesDe(r){ return r ? [r] : []; }
+function assurerRecherches(r){ return recherchesDe(r); }
 function recherchesActives(r){
-  return recherchesDe(r).filter(x=> x.actif === undefined || !!x.actif);
+  return r && (r.actif === undefined || !!r.actif) ? [r] : [];
 }
 /* ------------------------------------------------- « Recherche en cours »
    Elle ne se coche plus à la main : un prospect est en recherche DÈS QU'il a
@@ -3094,9 +3078,8 @@ function loadListesDepuis(v){
       .map(e=> typeof e === "string" ? {id:e, date:"", motif:"", qui:""} : e)
       .filter(e=> e.id);
     if(!Array.isArray(x.journal)) x.journal = [];
-    /* « Recherche en cours » se déduit des recherches : on remet la fiche
-       d'accord avec elle-même au chargement */
-    x.actif = recherchesDe(x).some(rc=> rc.actif === undefined || !!rc.actif);
+    if(x.nomRech === undefined) x.nomRech = "";
+    if(!Array.isArray(x.zones)) x.zones = [];
     /* la date de dernière mise à jour : à défaut, celle d'aujourd'hui —
        une fiche qui existe a bien été écrite un jour */
     if(!x.maj) x.maj = Date.now();
@@ -3105,6 +3088,49 @@ function loadListesDepuis(v){
       if(x[c[0]] === undefined) x[c[0]] = c[2] === "check" ? false : "";
     });
   });
+  /* ------------------------------------------------------------------
+     UNE LIGNE = UNE RECHERCHE
+     Les recherches étaient rangées DANS la fiche d'un demandeur ; le
+     secteur et le budget, eux, restaient sur la fiche. Deux recherches
+     se partageaient donc un seul budget et un seul périmètre, ce qui ne
+     voulait rien dire : « la maison à Arles » et « le studio à louer »
+     n'ont ni le même prix ni le même quartier.
+
+     Une recherche devient donc une ligne à elle, avec SES critères, SON
+     secteur, SON budget, SES biens suivis et écartés — et le nom de la
+     ou des personnes qui la portent. Une fiche qui en contenait trois
+     donne trois lignes.
+
+     L'identifiant d'une ligne née ici est DÉDUIT — « <fiche>~<recherche> »
+     — et non tiré au sort : deux appareils qui font la bascule chacun de
+     leur côté arrivent au même identifiant, et la fusion n'en fait pas
+     six lignes.
+     ------------------------------------------------------------------ */
+  const plat = [];
+  out.prospects.forEach(x=>{
+    if(!x) return;
+    const l = Array.isArray(x.recherches) ? x.recherches.filter(Boolean) : [];
+    if(!l.length){ delete x.recherches; plat.push(x); return; }
+    /* le modèle des copies est pris AVANT de servir la première recherche :
+       sans quoi la deuxième hériterait du nom de la première */
+    const socle = l.length > 1 ? JSON.parse(JSON.stringify(x)) : null;
+    l.forEach((rc, k)=>{
+      const ligne = k === 0 ? x : JSON.parse(JSON.stringify(socle));
+      if(k > 0){
+        ligne.id = x.id + "~" + (rc.id || ("r" + k));
+        ligne.suivis = []; ligne.refus = []; ligne.journal = [];
+      }
+      CHAMPS_RECHERCHE.forEach(f=>{ if(rc[f] !== undefined) ligne[f] = rc[f]; });
+      ligne.zones = Array.isArray(rc.zones) ? rc.zones : [];
+      /* le nom d'une recherche a sa clé à lui : `nom` sert encore de nom de
+         famille sur les bases restées en arrière, on ne le lui prend pas */
+      ligne.nomRech = rc.nom || String(ligne.nomRech || "");
+      ligne.actif = rc.actif === undefined ? true : !!rc.actif;
+      delete ligne.recherches;
+      plat.push(ligne);
+    });
+  });
+  out.prospects = plat;
   /* les lettres du DPE ne se modifient pas : une base ancienne les reçoit,
      une base qui les aurait perdues les retrouve */
   if(!Array.isArray(out.classeDpe) || out.classeDpe.length !== 7)
@@ -3412,6 +3438,24 @@ function repandreFichePersonne(f){
     });
   });
   if(bouge){ try{ localStorage.setItem(LS_DOSS, JSON.stringify(tous)); }catch(e){} }
+  /* les recherches nomment leurs demandeurs : la correction les suit aussi */
+  let bougeL = false;
+  (L.prospects || []).forEach(r=>{
+    (r.personnes || []).forEach(p=>{
+      if(!p || p.pid !== f.pid) return;
+      const avant = [p.civilite, p.nom, p.prenom, p.tel, p.email].join("|");
+      if(f.civilite) p.civilite = f.civilite;
+      if(f.nom)      p.nom      = f.nom;
+      if(f.prenom)   p.prenom   = f.prenom;
+      if(f.tel1)     p.tel      = f.tel1;
+      if(f.email1)   p.email    = f.email1;
+      if([p.civilite, p.nom, p.prenom, p.tel, p.email].join("|") !== avant) bougeL = true;
+    });
+  });
+  if(bougeL){
+    saveLists();
+    if(pageActive() === "prospects") renderProspects();
+  }
   if(D){
     ["vendeurs","acquereurs"].forEach(k=> (D[k] || []).forEach(p=>{
       if(p && p.pid === f.pid) rafraichirDepuisRepertoire(p); }));
@@ -7448,10 +7492,49 @@ function vuePersonnesListe(){
 }
 function ongletsPersonne(pid){
   const l = [{cle:"ident", lib:"Identité"}];
+  /* une personne qui cherche a l'histoire de ses recherches, les closes
+     comprises : « ce qu'elle a cherché » est une question qu'on pose */
+  if(recherchesDeLaPersonne(pid).length) l.push({cle:"rech", lib:"Ses recherches"});
   const connus = rolesConnus(pid);
   connus.forEach(c=> l.push({cle:"h:" + c, lib:"Historique " + libRolePers(c)}));
   if(!connus.length) l.push({cle:"h:", lib:"Historique"});
   return l;
+}
+/* ------------------------------------------- l'histoire de ses recherches
+   Celles qui tournent en haut, celles qui dorment en dessous : on vient
+   chercher « ce qu'elle cherche », et accessoirement « ce qu'elle a déjà
+   cherché ». Chacune s'ouvre, et le retour ramène ici. */
+function blocRecherchesPersonne(pid){
+  const l = recherchesDeLaPersonne(pid);
+  const ligne = x=>{
+    const r = x.r, vive = prospectActif(r);
+    const att = biensSansReponse(r).length;
+    return `<div class="seczone">
+      <span class="szg ${vive ? "" : "clos"}"></span>
+      <span><b>${esc(titreRecherche(r))}</b> — ${esc(resumeRecherche(r)
+        || "aucun critère saisi")}
+        <em>${vive ? "en cours" : "en sommeil"}${att ? " · " + att
+          + " bien" + (att > 1 ? "s" : "") + " sans réponse" : ""}${
+          suivisDe(r).length ? " · " + suivisDe(r).length + " suivi"
+            + (suivisDe(r).length > 1 ? "s" : "") : ""}</em></span>
+      <span class="grow"></span>
+      <button type="button" class="xbtn" data-prosp="${esc(r.id)}">Ouvrir</button>
+      </div>`;
+  };
+  const vives = l.filter(x=> prospectActif(x.r));
+  const mortes = l.filter(x=> !prospectActif(x.r));
+  return `<div class="fbtns" style="margin:0 0 12px">
+      <button type="button" class="addbtn" data-rechpers="${esc(pid)}"
+        >+ Une recherche</button>
+      <span class="muted" style="font-size:12.5px">Chaque recherche a ses critères, son
+        secteur et son budget : deux projets différents font deux recherches.</span></div>
+    ${vives.length ? `<div class="mdsect"><h4>En cours <span class="cnt">${
+        vives.length}</span></h4><div class="seczones">${vives.map(ligne).join("")}</div>
+      </div>` : ""}
+    ${mortes.length ? `<div class="mdsect" style="margin-top:16px"><h4>En sommeil
+      <span class="cnt">${mortes.length}</span></h4>
+      <div class="seczones">${mortes.map(ligne).join("")}</div></div>` : ""}
+    ${l.length ? "" : `<p class="muted" style="margin:0">Aucune recherche à son nom.</p>`}`;
 }
 function vuePersonneFiche(){
   const f = fichePersonne(PERS.ouvert);
@@ -7459,9 +7542,10 @@ function vuePersonneFiche(){
   const onglets = ongletsPersonne(f.pid);
   if(!onglets.some(o=> o.cle === PERS.onglet)) PERS.onglet = "ident";
   const corps = PERS.onglet === "ident" ? champsFichePersonne(f)
+              : PERS.onglet === "rech"  ? blocRecherchesPersonne(f.pid)
               : blocHistorique({pid:f.pid, role:PERS.onglet.slice(2)});
   return `<div class="pbarre">
-      <button type="button" class="tbtn light" data-persretour>‹ Tout le répertoire</button>
+      ${boutonRetour("‹ Tout le répertoire")}
       <div class="grow"></div>
       <button type="button" class="tbtn light" data-actadd="pers:${esc(f.pid)}"
         >+ Créer une action</button>
@@ -7477,6 +7561,7 @@ function vuePersonneFiche(){
         </div>
         ${onglets.map(o=>{
           const n = o.cle === "ident" ? 0
+            : o.cle === "rech" ? recherchesDeLaPersonne(f.pid).length
             : actionsDe({pid:f.pid, role:o.cle.slice(2)}).length;
           return `<button class="mitem${o.cle === PERS.onglet ? " on" : ""}"
             data-pgopers="${esc(o.cle)}">${esc(o.lib)}${n ? ` <b>${n}</b>` : ""}</button>`;
@@ -7536,6 +7621,12 @@ function champsFichePersonne(f){
 /* ------------------------------------------------------- un historique
    Toujours le même bloc, quel que soit le rôle : une barre de filtres, et
    la liste. Rien n'est purgé — on cherche, on ne jette pas. */
+/* Le même bloc sert au répertoire et à la fiche d'une recherche : le filtre
+   et la recherche redessinent celle des deux qui est à l'écran. */
+function redessinerHistorique(){
+  if(pageActive() === "prospects") renderProspects();
+  else renderRepertoire();
+}
 function blocHistorique(filtre){
   const l = actionsDe(filtre).filter(a=>{
     if(PERS.fg && a.genre !== PERS.fg) return false;
@@ -7583,7 +7674,11 @@ function blocHistorique(filtre){
    se note ici, en trois champs. */
 function ouvrirCreerAction(cible){
   const [quoi, cle] = String(cible || "").split(":");
-  const pid = quoi === "pers" ? cle : "";
+  /* trois points de départ : une personne, un bien, une recherche. Depuis
+     une recherche, l'action porte sur le demandeur qui la mène. */
+  const rech = quoi === "rech" ? ((L.prospects || [])
+    .filter(x=> x && x.id === cle)[0] || null) : null;
+  const pid = quoi === "pers" ? cle : (rech ? premierPidProspect(rech) : "");
   const dossierId = quoi === "bien" ? cle : "";
   const f = pid ? fichePersonne(pid) : null;
   const d = dossierId ? (dossiersVivants().filter(x=> x.id === dossierId)[0] || null)
@@ -7632,12 +7727,15 @@ function ouvrirCreerAction(cible){
       let dos = dossierId;
       const selBien = ($("#acBien") || {}).value || "";
       if(selBien){ dos = selBien.split("|")[0]; role = role || selBien.split("|")[1]; }
+      /* depuis une recherche, c'est le demandeur qui agit : son rôle de
+         vendeur dans un autre dossier n'a rien à voir ici */
+      if(!role && rech) role = "demandeur";
       if(!role && quiPid){
         const actifs = rolesActifs(quiPid);
         role = Object.keys(actifs)[0] || "";
       }
       const a = noterAction({pid:quiPid, role:role, genre:genre, texte:texte,
-                             dossier:dos});
+                             dossier:dos, recherche: rech ? rech.id : ""});
       /* la date se règle à la main : on recale l'horodatage sur le jour dit */
       if(a && date && date !== auj()){
         const h = new Date(date + "T12:00:00");
@@ -7645,6 +7743,7 @@ function ouvrirCreerAction(cible){
       }
       saveLists();
       renderCarnets();
+      if(pageActive() === "prospects") renderProspects();
       if(pageActive() === "general") renderGeneral();
       toast("Action enregistrée");
     }}]
@@ -10085,7 +10184,7 @@ function rapprochementsDe(r){
       if(v.rejet){ if(!motif) motif = v.rejet; return; }
       if(!meilleur || v.pts < meilleur.pts)
         meilleur = {d:d, o:o, pts:v.pts, ecarts:v.ecarts, flous:v.flous,
-                    rang:n + 1, titre: plusieurs ? titreRecherche(r, x.rc) : ""};
+                    rang:n + 1, titre: plusieurs ? titreRecherche(r) : ""};
     });
     if(!meilleur){ hors.push({d:d, o:o, motif:motif || "écarté"}); return; }
     if(pris[d.id]) return;
@@ -10104,7 +10203,17 @@ function rapprochementsDe(r){
    compte que la liste des prospects affiche — bien plus utile qu'une pastille
    « nouveau » qui s'éteignait d'un regard. La réponse, elle, voyage avec la
    fiche : elle vaut sur tous vos appareils. */
-function suivisDe(r){ return Array.isArray((r || {}).suivis) ? r.suivis.slice() : []; }
+/* Un bien suivi porte, comme un bien écarté, la DATE à laquelle il est
+   entré au suivi et le nom de qui l'y a mis : « suivi depuis le 3 mars »
+   se dit au client, « suivi » tout court ne se dit pas. Les anciennes
+   listes d'identifiants sont reprises telles quelles, sans date. */
+function suivisFiches(r){
+  return (Array.isArray((r || {}).suivis) ? r.suivis : []).filter(Boolean)
+    .map(x=> typeof x === "string" ? {id:x, date:"", qui:""} : x)
+    .filter(x=> x.id);
+}
+function suivisDe(r){ return suivisFiches(r).map(x=> x.id); }
+function suiviInfo(r, id){ return suivisFiches(r).filter(x=> x.id === id)[0] || null; }
 /* ------------------------------------------------------- les biens écartés
    Un refus n'est pas qu'une case à décocher : il a une DATE et un MOTIF —
    « trop cher », « le quartier ne va pas », « déjà visité en juin ». C'est
@@ -10162,14 +10271,16 @@ function motPdi(niveau, lib){
 }
 /* le rang et le nom d'une recherche : « Recherche 2 », ou le nom qu'on lui a
    donné — « la maison », « le studio à louer » */
-function rangRecherche(r, rc){
-  const l = recherchesDe(r);
-  for(let i = 0; i < l.length; i++) if(l[i] === rc || (rc && l[i].id === rc.id)) return i + 1;
+function rangRecherche(r){
+  const pid = premierPidProspect(r);
+  if(!pid) return 1;
+  const l = recherchesDeLaPersonne(pid);
+  for(let i = 0; i < l.length; i++) if(l[i].r === r || l[i].r.id === (r || {}).id) return i + 1;
   return 1;
 }
-function titreRecherche(r, rc){
-  const nom = String((rc || {}).nom || "").trim();
-  return nom || ("Recherche " + rangRecherche(r, rc));
+function titreRecherche(r){
+  const nom = String((r || {}).nomRech || "").trim();
+  return nom || ("Recherche " + rangRecherche(r));
 }
 /* Le résumé : d'UNE recherche si on la nomme, sinon de toutes celles qui sont
    actives — et chacune se présente alors sous son titre, car « maison 250 000
@@ -10179,7 +10290,7 @@ function resumeRecherche(r, rc){
   const l = recherchesActives(r);
   if(!l.length) return "";
   if(l.length === 1) return resumeUneRecherche(r, l[0]);
-  return l.map(x=> titreRecherche(r, x) + " : " + resumeUneRecherche(r, x))
+  return l.map(x=> titreRecherche(r) + " : " + resumeUneRecherche(r, x))
     .join("   —   ");
 }
 function resumeUneRecherche(r, rc){
@@ -10281,7 +10392,7 @@ function blocRapproAcq(r, i){
   catch(e){ if(window.console) console.error(e); return ""; }
   if(res.vide) return `<p class="muted" style="margin:0">Aucun critère saisi :
     renseignez au moins le budget, le type de bien ou le code postal, sur le volet
-    <b>Sa recherche</b>, pour que le rapprochement se fasse.</p>`;
+    <b>La recherche</b>, pour que le rapprochement se fasse.</p>`;
   /* ce que les fiches des biens retenus ne disent pas, et qu'il faudra voir
      sur place — niveau des pièces non saisi, le plus souvent */
   const manques = {};
@@ -10376,7 +10487,7 @@ function acquereursPourBien(d){
       if(!meilleur || v.pts < meilleur.pts)
         meilleur = {r:x.r, i:x.i, nom:libelleAcquereur(x.r), pts:v.pts,
                     ecarts:v.ecarts, flous:v.flous,
-                    titre: plusieurs ? titreRecherche(x.r, rc) : ""};
+                    titre: plusieurs ? titreRecherche(x.r) : ""};
     });
     if(!vue) return;
     if(meilleur) out.push(meilleur);
@@ -10768,7 +10879,76 @@ function titreZone(z){
    Rien n'est enregistré à part les fiches elles-mêmes : le tri, les filtres
    et le volet ouvert valent pour la séance.
    ===================================================================== */
-let PROSP = {ouvert:"", page:"coord", rech:0, tri:"maj", sens:-1, etat:"", f:{}};
+let PROSP = {ouvert:"", page:"recherche", tri:"maj", sens:-1, etat:"", f:{}};
+
+/* =====================================================================
+   LA PILE DES FENÊTRES
+   ---------------------------------------------------------------------
+   D'une recherche on ouvre la fiche de la personne, de là un dossier, et
+   l'on veut revenir — à l'endroit exact d'où l'on vient, pas au début de
+   la liste. Chaque ouverture EMPILE donc l'endroit quitté : la page, la
+   fiche, et le volet ouvert. Le bouton de retour dépile.
+
+   Rien n'est gardé en mémoire des saisies : il n'y en a pas besoin. Tout
+   ce qui est tapé est écrit dans la base au fil de la frappe — quitter un
+   volet n'a jamais rien perdu, et y revenir retrouve tout.
+   ===================================================================== */
+let PILE = [];
+function etatCourant(){
+  const p = pageActive();
+  if(p === "prospects")  return {page:"prospects",  id:PROSP.ouvert, volet:PROSP.page};
+  if(p === "repertoire") return {page:"repertoire", id:PERS.ouvert,  volet:PERS.onglet};
+  if(p === "general")    return {page:"general",    id:(typeof D !== "undefined" && D
+                                                       ? D.id : ""), volet:""};
+  return {page:p, id:"", volet:""};
+}
+function empilerFenetre(){
+  const e = etatCourant();
+  if(!e) return;
+  const h = PILE[PILE.length - 1];
+  if(h && h.page === e.page && h.id === e.id && h.volet === e.volet) return;
+  PILE.push(e);
+  if(PILE.length > 24) PILE.shift();
+}
+function libEtat(e){
+  if(!e) return "";
+  if(e.page === "prospects")
+    return e.id ? titreRecherche((L.prospects || [])
+                    .filter(r=> r && r.id === e.id)[0] || {}) : "Les recherches";
+  if(e.page === "repertoire"){
+    const f = e.id ? fichePersonne(e.id) : null;
+    return f ? (nomUsuel(f) || "sa fiche") : "Le répertoire";
+  }
+  if(e.page === "general") return "Le dossier";
+  return "la page précédente";
+}
+function retablirFenetre(e){
+  if(!e) return;
+  if(e.page === "prospects"){
+    PROSP.ouvert = e.id || ""; PROSP.page = e.volet || "recherche";
+    activerOnglet("prospects"); renderProspects();
+  } else if(e.page === "repertoire"){
+    PERS.ouvert = e.id || ""; PERS.onglet = e.volet || "ident";
+    PERS.fg = ""; PERS.fq = "";
+    activerOnglet("repertoire"); renderRepertoire();
+  } else if(e.page === "general" && e.id && typeof ouvrirDossier === "function"){
+    ouvrirDossier(e.id);
+  } else activerOnglet(e.page);
+  window.scrollTo(0, 0);
+}
+function revenirEnArriere(){
+  const e = PILE.pop();
+  if(!e) return false;
+  retablirFenetre(e);
+  return true;
+}
+/* le bouton de retour : il dit OÙ il ramène, faute de quoi on n'ose pas le
+   presser. Sans pile derrière, il remonte à la liste de la page. */
+function boutonRetour(defaut){
+  const e = PILE[PILE.length - 1];
+  const lib = e ? "‹ " + libEtat(e) : (defaut || "‹ Retour");
+  return `<button type="button" class="tbtn light" data-retour>${esc(lib)}</button>`;
+}
 
 function indexProspect(id){
   const l = L.prospects || [];
@@ -10807,7 +10987,8 @@ function renderProspects(){
 /* ------------------------------------------------------------- la liste */
 const COLS_PROSP = [
   {cle:"maj",    lib:"Mise à jour", genre:"date"},
-  {cle:"nom",    lib:"Nom"},
+  {cle:"nom",    lib:"Demandeur"},
+  {cle:"rech",   lib:"Recherche"},
   {cle:"attente",lib:"Sans réponse", genre:"nombre"},
   {cle:"nego",   lib:"Négociateur",
    choix:()=> (L.negociateurs || []).map(n=> n.nom).filter(Boolean).sort(triFr)},
@@ -10832,7 +11013,7 @@ function valeurProsp(r, cle){
   if(cle === "nom")    return libelleAcquereur(r);
   if(cle === "attente") return biensSansReponse(r).length;
   if(cle === "nego")   return r.nego || "";
-  if(cle === "rech")   return recherchesActives(r).length;
+  if(cle === "rech")   return titreRecherche(r);
   if(cle === "types")  return uneValeurDesRecherches(r, "types");
   if(cle === "cps")    return communesCourtes(uneValeurDesRecherches(r, "cps"));
   if(cle === "budget") return critAcq(r).budgetPlafond;
@@ -10845,7 +11026,7 @@ function resumeCriteres(r, rc){
   if(!rc){
     const l = recherchesActives(r);
     if(l.length > 1)
-      return l.map(x=> titreRecherche(r, x) + " : " + resumeCriteres(r, x))
+      return l.map(x=> titreRecherche(r) + " : " + resumeCriteres(r, x))
         .filter(x=> !/: $/.test(x)).join("   —   ");
     return resumeCriteres(r, l[0] || recherchesDe(r)[0]);
   }
@@ -10880,7 +11061,7 @@ function prospPasse(r){
     if(!q) return true;
     const v = col.cle === "cps" ? texteCps(uneValeurDesRecherches(r, "cps"))
                                 : valeurProsp(r, col.cle);
-    if(col.cle === "budget" || col.cle === "attente" || col.cle === "rech"){
+    if(col.cle === "budget" || col.cle === "attente"){
       const seuil = num(q);
       return seuil === null || (v !== null && v >= seuil);
     }
@@ -10933,6 +11114,7 @@ function vueProspListe(){
     return `<tr data-prosp="${esc(r.id)}"${clos ? ' class="pclos"' : ""}>
       <td class="pdate">${esc(fdate(jourDe(r.maj)))}</td>
       <td class="pnom">${esc(libelleAcquereur(r) || "(sans nom)")}</td>
+      <td class="prech">${esc(titreRecherche(r))}</td>
       <td class="patt">${valeurProsp(r, "attente")
         ? `<span class="rapneuf">${valeurProsp(r, "attente")}</span>` : "—"}</td>
       <td>${esc(r.nego || "—")}</td>
@@ -10943,15 +11125,15 @@ function vueProspListe(){
       <td class="pcrit">${esc(resumeCriteres(r)) || "—"}</td></tr>`;
   }).join("") : `<tr><td colspan="${COLS_PROSP.length}" class="muted"
       style="padding:16px">${tout.length
-        ? "Aucun demandeur ne répond à ces filtres."
-        : "Aucun demandeur pour l'instant. Le bouton ci-dessus en crée un."}</td></tr>`;
+        ? "Aucune recherche ne répond à ces filtres."
+        : "Aucune recherche pour l'instant. Le bouton ci-dessus en crée une."}</td></tr>`;
   return `<div class="card">
-    <h2>Demandeurs <span class="cnt">${vus.length}</span></h2>
+    <h2>Les recherches <span class="cnt">${vus.length}</span></h2>
     <div class="body">
       <div class="pbarre">
-        <button class="addbtn" data-prospadd>+ Ajouter un demandeur</button>
-        <div class="seg">${seg("actifs","Recherches en cours")}${
-          seg("closes","Closes")}${seg("","Toutes")}</div>
+        <button class="addbtn" data-prospadd>+ Ajouter une recherche</button>
+        <div class="seg">${seg("actifs","En cours")}${
+          seg("closes","En sommeil")}${seg("","Toutes")}</div>
         <div class="grow"></div>
         ${Object.keys(PROSP.f || {}).some(k=> PROSP.f[k])
           ? `<button type="button" class="tbtn light" data-praz>Effacer les filtres</button>`
@@ -10994,12 +11176,12 @@ function blocsPersonnesProspect(i){
       </div></div>`).join("") +
     `<button class="addbtn" data-ppadd="${i}">+ Ajouter une personne</button>`;
 }
-function champsProspect(i, champs, k){
+function champsProspect(i, champs, serre){
   const r = (L.prospects || [])[i] || {}, b = BOOKS.prospects;
-  /* k : le rang d'une recherche. Les champs écrivent alors dans ELLE, par un
-     chemin à quatre morceaux — « prospects:3:r1:surfaceMin ». */
-  const dans = k === undefined ? r : (recherchesDe(r)[k] || r);
-  const prefixe = k === undefined ? `prospects:${i}` : `prospects:${i}:r${k}`;
+  /* tout est sur la ligne désormais : les critères, le secteur, le budget.
+     Le chemin de saisie n'a plus que trois morceaux — « prospects:3:surfaceMin ». */
+  const dans = r;
+  const prefixe = `prospects:${i}`;
   const parCle = {};
   (b.cols || []).forEach(c=> parCle[c[0]] = c);
   const vus = [];
@@ -11009,24 +11191,13 @@ function champsProspect(i, champs, k){
     const [cle, lab, kd, w] = c;
     /* un critère hors sujet pour les types demandés ne s'affiche pas : il
        n'écarte rien non plus (voir critAcq), les deux vont ensemble */
-    if(k !== undefined && kd !== "sep" && !champSelonType(cle, dans.types)) return;
+    if(serre && kd !== "sep" && !champSelonType(cle, dans.types)) return;
     if(kd === "sep"){ vus.push({sep:true, lab:lab}); return; }
-    /* « Recherche en cours » ne se coche plus à la main : elle suit les
-       recherches de la fiche, et le dit */
-    if(cle === "actif" && k === undefined){
-      const on = prospectActif(r);
-      vus.push({html:`<div class="pf wide actifauto">
-        <label>${esc(lab)}</label>
-        <div class="chkline fige"><input type="checkbox" disabled${on ? " checked" : ""}>
-          <span>${on ? "oui" : "non"}</span>
-          <em>${on
-            ? "au moins une recherche est active — la fiche figure dans la liste"
-            : "aucune recherche active — la fiche sort de la liste, sans être effacée"}</em>
-          </div></div>`});
-      return;
-    }
+    /* « Recherche en cours » se coche et se décoche sur le bandeau du haut :
+       elle n'a plus à être ici une seconde fois */
+    if(cle === "actif") return;
     let h = controlRaw(`${prefixe}:${cle}`, kd, dans[cle] || "",
-                       `pr${i}${k === undefined ? "" : "r" + k}`, "data-book");
+                       `pr${i}`, "data-book");
     const off = champOff(b, dans, cle);
     if(off) h = h.replace(/<(input|select|textarea|button)\b/g, "$& disabled");
     vus.push({html:`<div class="pf${w === "wide" ? " wide" : w === "plein" ? " plein" : ""}${
@@ -11039,38 +11210,40 @@ function champsProspect(i, champs, k){
     const suivant = vus[n + 1];
     return !!suivant && !suivant.sep;
   });
-  return `<div class="pgrid${k === undefined ? "" : " cinq"}">` +
+  return `<div class="pgrid${serre ? " cinq" : ""}">` +
     sortie.map(x=> x.sep ? `<div class="pfsep">${esc(x.lab)}</div>` : x.html).join("") +
     `</div>`;
 }
-/* ------------------------------------------- le bandeau d'une recherche
-   « Recherche 2 sur 3 », deux flèches qui tournent en rond, le nom qu'on
-   peut lui donner, sa case ACTIVE, et de quoi en ajouter ou en retirer une.
-   Le tout tient sur une ligne : c'est une barre de navigation, pas un
-   formulaire de plus. */
-function barreRecherche(i, k){
+/* --------------------------------------- le bandeau d'une recherche
+   Une recherche est une ligne à elle : le bandeau dit à QUI elle est, lui
+   donne un nom, et porte sa case ACTIVE. On y trouve aussi de quoi en
+   ouvrir une autre pour la même personne, et de quoi dupliquer celle-ci —
+   deux recherches voisines se saisissent une fois et demie, pas deux. */
+function bandeauRecherche(i){
   const r = (L.prospects || [])[i] || {};
-  const l = recherchesDe(r);
-  const rc = l[k] || l[0];
-  const n = l.length;
-  const actif = rc.actif === undefined || !!rc.actif;
+  const actif = r.actif === undefined || !!r.actif;
+  const gens = personnesProspect(r);
   return `<div class="rechbar${actif ? "" : " dort"}">
-    <div class="rechnav">
-      <button type="button" class="xbtn" data-rechgo="-1"${n < 2 ? " disabled" : ""}
-        title="Recherche précédente" aria-label="Recherche précédente">‹</button>
-      <b>${k + 1} sur ${n}</b>
-      <button type="button" class="xbtn" data-rechgo="1"${n < 2 ? " disabled" : ""}
-        title="Recherche suivante" aria-label="Recherche suivante">›</button>
+    <div class="rechqui">
+      ${gens.length ? gens.map(p=>{
+        const pid = p.pid || "";
+        const f = pid ? fichePersonne(pid) : null;
+        const co = [f ? f.tel1 : p.tel, f ? f.email1 : p.email].filter(Boolean).join("  ·  ");
+        return `<span class="rqui"><b>${esc(nomPersonneProspect(p) || "(sans nom)")}</b>
+          <em>${esc(co || "aucune coordonnée")}</em>
+          ${pid ? `<button type="button" class="xbtn" data-persvers="${esc(pid)}"
+            >Sa fiche</button>` : ""}</span>`;
+      }).join("") : `<span class="rqui muted">Recherche rattachée à personne</span>`}
+      <button type="button" class="xbtn" data-ppadd="${i}">+ Une personne</button>
     </div>
-    <input type="text" class="rechnom" data-book="prospects:${i}:r${k}:nom"
-      value="${esc(rc.nom || "")}" placeholder="${esc("Recherche " + (k + 1))} — nommez-la
-      si vous voulez : « la maison », « le studio à louer »">
+    <input type="text" class="rechnom" data-book="prospects:${i}:nomRech"
+      value="${esc(r.nomRech || "")}" placeholder="Nommez cette recherche :
+      « la maison », « le studio à louer »">
     <label class="chkline rechactif"><input type="checkbox"
-      data-bookchk="prospects:${i}:r${k}:actif"${actif ? " checked" : ""}>
+      data-bookchk="prospects:${i}:actif"${actif ? " checked" : ""}>
       <span>${actif ? "active" : "en sommeil"}</span></label>
-    <button type="button" class="tbtn light mini" data-rechadd="1">+ Une recherche</button>
-    ${n > 1 ? `<button type="button" class="xbtn sup" data-rechdel="${k}"
-      >Supprimer</button>` : ""}
+    <button type="button" class="tbtn light mini" data-rechdup="${i}">Dupliquer</button>
+    <button type="button" class="tbtn light mini" data-rechadd="${i}">+ Une recherche</button>
   </div>${actif ? "" : `<p class="mdnote" style="margin:0 0 12px">Cette recherche est
     <b>en sommeil</b> : elle ne rapproche plus rien, et les biens qu'elle proposait ont
     quitté la liste. Ses critères sont gardés — recochez la case et tout revient.</p>`}`;
@@ -11080,46 +11253,38 @@ function vueProspFiche(){
   if(i < 0) return vueProspListe();
   const r = L.prospects[i];
   const lib = libelleAcquereur(r) || BOOKS.prospects.label;
-  const nSuivis = (Array.isArray(r.suivis) ? r.suivis : []).length;
   const page = PAGES_PROSPECT.filter(p=> p.cle === PROSP.page)[0] || PAGES_PROSPECT[0];
-  const nRech = assurerRecherches(r).length;
-  if(PROSP.rech >= nRech) PROSP.rech = 0;
-  if(PROSP.rech < 0) PROSP.rech = 0;
   let corps;
-  if(page.cle === "secteur")     corps = pageSecteur(i, PROSP.rech);
+  if(page.cle === "secteur")      corps = pageSecteur(i);
   else if(page.cle === "journal") corps = pageJournal(i);
-  else if(page.cle === "suivis") corps = pageBiensSuivis(i);
-  else if(page.cle === "rappro") corps = `<div class="rapzone">${blocRapproAcq(r, i)}</div>`;
-  else if(page.cle === "coord")  corps = blocsPersonnesProspect(i) +
-    `<div class="fsep" style="margin:14px 0 10px"></div>` +
-    champsProspect(i, page.champs);
+  else if(page.cle === "rappro")  corps = `<div class="rapzone">${blocRapproAcq(r, i)}</div>`;
   else if(page.cle === "recherche")
-    corps = barreRecherche(i, PROSP.rech) + champsProspect(i, page.champs, PROSP.rech);
+    corps = bandeauRecherche(i) + champsProspect(i, page.champs, true);
   else corps = champsProspect(i, page.champs);
   return `<div class="pbarre">
-      <button type="button" class="tbtn light" data-prospretour>‹ Tous les demandeurs</button>
+      ${boutonRetour()}
       <div class="grow"></div>
+      <button type="button" class="tbtn light" data-actadd="rech:${esc(r.id)}"
+        >+ Créer une action</button>
       ${lib ? boutonCarte("carnet:prospects:" + i, lib) : ""}
       ${lib ? trombone(sujetPersonne(r), "Pièces") : ""}
       <button type="button" class="xbtn sup" data-prospdel="${esc(r.id)}">Supprimer</button>
     </div>
     <div class="prospshell">
-      <nav class="dossrail dedans" aria-label="Volets du demandeur">
+      <nav class="dossrail dedans" aria-label="Volets de la recherche">
         <div class="drhead">
-          <span class="drlab">Demandeur</span>
-          <span class="drref">${esc(lib)}</span>
-          <span class="drsub">mis à jour le <b id="prospMaj">${
+          <span class="drlab">Recherche</span>
+          <span class="drref">${esc(titreRecherche(r))}</span>
+          <span class="drsub">${esc(lib)}</span>
+          <span class="drsub">mise à jour le <b id="prospMaj">${
             esc(fdate(jourDe(r.maj)))}</b></span>
         </div>
         ${PAGES_PROSPECT.map(p=>{
-          /* le chiffre du menu : les recherches ACTIVES, les biens qui
-             attendent une réponse, les biens suivis */
-          const n = p.cle === "suivis" ? nSuivis
-                  : p.cle === "rappro" ? biensSansReponse(r).length
-                  : p.cle === "recherche" ? recherchesActives(r).length
+          /* le chiffre du menu : les biens qui attendent une réponse, les
+             zones du secteur, les lignes de l'historique */
+          const n = p.cle === "rappro" ? biensSansReponse(r).length
                   : p.cle === "journal" ? journalDe(r).length
-                  : p.cle === "secteur"
-                    ? zonesDe(recherchesDe(r)[PROSP.rech] || {}).length : 0;
+                  : p.cle === "secteur" ? zonesDe(r).length : 0;
           return `<button class="mitem${p.cle === page.cle ? " on" : ""}"
             data-pgo="${p.cle}">${esc(p.lib)}${n ? ` <b>${n}</b>` : ""}</button>`;
         }).join("")}
@@ -11203,8 +11368,17 @@ function contactsApprochants(q){
     .sort((a,b)=> b.pts - a.pts)
     .slice(0, 5);
 }
-function ouvrirNouveauProspect(){
-  NOUV = {civilite:"", prenom:"", nom:"", tel:"", email:"", ecartes:[]};
+/* `vers` : l'identifiant d'une recherche à laquelle rattacher la personne,
+   au lieu d'en ouvrir une nouvelle. Le contrôle de doublon est le même — on
+   ne veut pas davantage de la même personne écrite deux fois ici. */
+function ouvrirNouveauProspect(vers){
+  NOUV = {civilite:"", prenom:"", nom:"", tel:"", email:"", ecartes:[],
+          vers:vers || ""};
+  const t = $("#nvTitre"), u = $("#nvSous");
+  if(t) t.textContent = NOUV.vers ? "Ajouter une personne" : "Nouvelle recherche";
+  if(u) u.textContent = NOUV.vers
+    ? "Elle cherchera avec les autres : le nom d'abord, pour ne pas la doubler."
+    : "Le nom d'abord : si la personne est déjà quelque part, autant reprendre sa fiche.";
   rendreNouveauProspect();
   $("#nvBox").hidden = false;
   setTimeout(()=>{ const e = $("#nvPrenom"); if(e) e.focus(); }, 40);
@@ -11252,48 +11426,127 @@ function rendreNouveauProspect(){
                            !String(NOUV.prenom || "").trim();
 }
 /* créer la fiche, enfin : avec ce qui a été saisi, et le reste à remplir */
-function creerLeProspect(depuis){
-  const src = depuis || NOUV || {};
+function ligneRechercheNeuve(gens){
   const row = {};
-  BOOKS.prospects.cols.forEach(c=> row[c[0]] = c[2] === "check" ? false : "");
+  BOOKS.prospects.cols.forEach(c=>{
+    if(c[2] === "sep") return;
+    row[c[0]] = c[2] === "check" ? false : "";
+  });
   row.id = idCarnet();
   Object.assign(row, BOOKS.prospects.defauts || {});
   row.nego = monNegociateur();
-  const p = personneProspect();
-  p.civilite = src.civilite || "";
-  p.prenom   = src.prenom || "";
-  p.nom      = String(src.nom || "").toUpperCase();
-  p.tel      = src.tel || "";
-  p.email    = src.email || "";
-  row.personnes = [p];
-  row.recherches = [rechercheNeuve()];
-  row.suivis = []; row.refus = []; row.journal = [];
+  row.nomRech = "";
+  row.zones = []; row.suivis = []; row.refus = []; row.journal = [];
+  row.personnes = ((gens && gens.length ? gens : [{}])).map(src=>{
+    const q = personneProspect();
+    ["civilite","nom","prenom","tel","email","pid"].forEach(k=>{
+      if(src && src[k]) q[k] = src[k]; });
+    q.nom = String(q.nom || "").toUpperCase();
+    return q;
+  });
+  row.cree = Date.now();
   row.maj = Date.now();
   row.rdv = auj();
   row.actif = true;
-  noterJournal(row, "Fiche créée", libelleAcquereur(row));
+  return row;
+}
+/* Une recherche neuve, rattachée à des personnes qui existent déjà ou que
+   l'on vient de nommer. Elles entrent au répertoire au passage : une
+   recherche n'est jamais celle de personne. */
+function nouvelleRechercheDe(gens, nom){
+  const row = ligneRechercheNeuve(gens);
+  if(nom) row.nomRech = nom;
+  (row.personnes || []).forEach(p=>{
+    if(!p.nom && !p.prenom) return;
+    const brut = Object.assign(blankPerson(), {civilite:p.civilite, nom:p.nom,
+      prenom:p.prenom, tel1:p.tel, email1:p.email, pid:p.pid});
+    const pid = inscrireAuRepertoire(brut);
+    if(pid) p.pid = pid;
+  });
   (L.prospects = L.prospects || []).push(row);
+  noterJournal(row, "Recherche créée", libelleAcquereur(row));
   saveLists();
+  ouvrirProspect(row.id, "recherche");
+  toast("Recherche créée");
+  return row;
+}
+/* La duplication : tous les critères, le secteur, le budget. Pas les biens
+   suivis ni les biens écartés — ceux-là appartiennent à l'histoire de la
+   recherche d'origine, et la recopier ferait croire à un travail déjà fait. */
+function dupliquerRecherche(r){
+  if(!r) return null;
+  const copie = JSON.parse(JSON.stringify(r));
+  copie.id = idCarnet();
+  copie.suivis = []; copie.refus = []; copie.journal = [];
+  copie.cree = Date.now(); copie.maj = Date.now();
+  copie.actif = true;
+  copie.nomRech = titreRecherche(r) + " (copie)";
+  (L.prospects = L.prospects || []).push(copie);
+  noterJournal(copie, "Recherche dupliquée", "d'après « " + titreRecherche(r) + " »");
+  saveLists();
+  ouvrirProspect(copie.id, "recherche");
+  toast("Recherche dupliquée");
+  return copie;
+}
+function creerLeProspect(depuis){
+  const src = depuis || NOUV || {};
+  const vers = (NOUV || {}).vers || "";
+  const gens = [{civilite:src.civilite || "", prenom:src.prenom || "",
+    nom:src.nom || "", tel:src.tel || "", email:src.email || ""}];
   fermerNouveauProspect();
-  ouvrirProspect(row.id, "coord");
-  toast("Demandeur créé");
+  if(vers) return rattacherPersonne(vers, gens[0]);
+  return nouvelleRechercheDe(gens, "");
+}
+/* rattacher une personne de plus à une recherche : un couple cherche à deux */
+function rattacherPersonne(idRech, src){
+  const r = (L.prospects || []).filter(x=> x && x.id === idRech)[0];
+  if(!r) return null;
+  const p = personneProspect();
+  ["civilite","nom","prenom","tel","email","pid"].forEach(k=>{ if(src[k]) p[k] = src[k]; });
+  p.nom = String(p.nom || "").toUpperCase();
+  const brut = Object.assign(blankPerson(), {civilite:p.civilite, nom:p.nom,
+    prenom:p.prenom, tel1:p.tel, email1:p.email, pid:p.pid});
+  const pid = inscrireAuRepertoire(brut);
+  if(pid) p.pid = pid;
+  if(!Array.isArray(r.personnes)) r.personnes = [];
+  /* la même deux fois, c'est précisément ce qu'on cherche à éviter */
+  if(r.personnes.some(x=> x && x.pid && x.pid === p.pid)){
+    toast("Elle est déjà sur cette recherche");
+    return r;
+  }
+  r.personnes = r.personnes.filter(x=> x && (x.nom || x.prenom || x.tel || x.email));
+  r.personnes.push(p);
+  r.maj = Date.now();
+  noterJournal(r, "Personne rattachée", nomPersonneProspect(p));
+  saveLists();
+  renderProspects();
+  toast("Personne rattachée");
+  return r;
 }
 /* « C'est elle » : un prospect s'ouvre, une personne d'un dossier donne ses
    coordonnées à la fiche qu'on crée — être vendeur n'empêche pas de chercher. */
 function reprendreContact(ref){
   const c = contactDeCle(ref);
   if(!c) return;
+  const vers = (NOUV || {}).vers || "";
+  if(vers){
+    fermerNouveauProspect();
+    rattacherPersonne(vers, {civilite:c.qui.civilite, prenom:c.qui.prenom,
+      nom:c.qui.nom, tel:c.qui.tel, email:c.qui.email});
+    return;
+  }
   if(c.ou === "prospect"){
     fermerNouveauProspect();
-    ouvrirProspect(c.id, "coord");
-    toast("Sa fiche était déjà là");
+    empilerFenetre();
+    ouvrirProspect(c.id, "recherche");
+    toast("Sa recherche était déjà là");
     return;
   }
   creerLeProspect({civilite:c.qui.civilite, prenom:c.qui.prenom, nom:c.qui.nom,
                    tel:c.qui.tel, email:c.qui.email});
   const r = (L.prospects || [])[L.prospects.length - 1];
   if(r){
-    noterJournal(r, "Fiche ouverte depuis un dossier", c.quoi);
+    noterJournal(r, "Recherche ouverte depuis un dossier", c.quoi);
     saveLists();
   }
 }
@@ -11309,8 +11562,7 @@ function rechCourante(){
   const i = indexProspect(PROSP.ouvert);
   if(i < 0) return null;
   const r = L.prospects[i];
-  const l = assurerRecherches(r);
-  return {i:i, r:r, k:Math.min(PROSP.rech, l.length - 1), rc:l[Math.min(PROSP.rech, l.length - 1)]};
+  return {i:i, r:r, k:0, rc:r};
 }
 function poserZones(c, zones, quoi){
   if(!c) return;
@@ -11320,10 +11572,10 @@ function poserZones(c, zones, quoi){
   saveLists();
   renderProspects();
 }
-function pageSecteur(i, k){
+function pageSecteur(i){
   const r = (L.prospects || [])[i];
   if(!r) return "";
-  const rc = recherchesDe(r)[k] || {};
+  const rc = r;
   const zones = zonesDe(rc);
   const hors = typeof navigator !== "undefined" && navigator.onLine === false;
   const quartiers = quartiersDessines(rc);
@@ -11331,7 +11583,7 @@ function pageSecteur(i, k){
   const v = MODES_DEPL.map(m=> m.lib + " " + String(vitesseDe(m.cle)).replace(".", ",")
     + " km/h").join(", ");
   return `<p class="mdnote" style="margin:0 0 12px">Le secteur de
-      <b>${esc(titreRecherche(r, rc))}</b> : dessinez-le, ou posez un cercle autour d'une
+      <b>${esc(titreRecherche(r))}</b> : dessinez-le, ou posez un cercle autour d'une
       adresse. Plusieurs zones se cumulent — un bien dans <b>l'une</b> d'elles est dans le
       secteur. Tant qu'aucune zone n'est posée, c'est le <b>code postal</b> qui filtre ;
       dès qu'il y en a une, c'est <b>elle</b> qui décide.</p>
@@ -11439,7 +11691,7 @@ async function majCarteSecteur(){
   LF.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19, attribution: "© OpenStreetMap"}).addTo(carte);
   SECT.carte = carte; SECT.couches = [];
-  const pour = PROSP.ouvert + "|" + PROSP.rech;
+  const pour = PROSP.ouvert;
   if(SECT.pour !== pour){ SECT.vue = null; SECT.mode = ""; SECT.pts = [];
                           SECT.centre = null; SECT.cible = null; }
   SECT.pour = pour;
@@ -11629,28 +11881,62 @@ async function poserCercleAdresse(){
     det:p.libelle + " · " + distanceLisible(rayon)});
 }
 
+/* ------------------------------------------------------------ l'historique
+   Trois choses, dans l'ordre où l'on vient les chercher : les biens SUIVIS
+   avec leur date d'entrée, les biens ÉCARTÉS avec leur date et leur motif,
+   puis tout le reste — le journal des actions, filtrable et cherchable,
+   jamais purgé. */
 function pageJournal(i){
   const r = (L.prospects || [])[i];
   if(!r) return "";
-  const l = journalDe(r).slice().sort((a,b)=> (b.t || 0) - (a.t || 0));
-  const ligne = x=>{
-    const d = new Date(x.t || 0);
-    const heure = isNaN(d.getTime()) ? "" :
-      ("0" + d.getHours()).slice(-2) + " h " + ("0" + d.getMinutes()).slice(-2);
-    return `<div class="jrow${x.quoi === "Note" ? " note" : ""}">
-      <span class="jquand">${esc(fdate(jourDe(x.t)))}<em>${esc(heure)}</em></span>
-      <span class="jqui">${esc(x.qui || "—")}</span>
-      <span class="jquoi">${esc(x.quoi || "")}${
-        x.det ? ` <em>${esc(x.det)}</em>` : ""}</span></div>`;
+  const tout = allDossiers();
+  if(typeof D !== "undefined" && D && D.id) tout[D.id] = D;
+  const suivis = suivisFiches(r);
+  const ecartes = refusFiches(r);
+  const nomBien = id=>{
+    const d = tout[id];
+    return d ? ("n° " + ((d.mandat || {}).num || "—") + " · " + bienDe(d))
+             : nomCourtBien(id);
   };
-  return `<div class="fbtns" style="margin:0 0 12px">
+  const blocSuivis = `<div class="mdsect"><h4>Les biens suivis ${
+      suivis.length ? `<span class="cnt">${suivis.length}</span>` : ""}</h4>
+    <div class="fbtns" style="margin:0 0 10px">
+      <button class="addbtn" data-suivicherche="${i}">Chercher un bien ${LOUPE}</button>
+    </div>
+    ${suivis.length ? `<div class="jtable">${suivis.map(x=> `<div class="jrow">
+        <span class="jquand">${x.date ? esc(fdate(x.date)) : "—"}
+          <em>${esc(x.qui || "")}</em></span>
+        <span class="jquoi"><b>${esc(nomBien(x.id))}</b>${tout[x.id]
+          ? ` <em>${esc(stade(tout[x.id]).lib.toLowerCase())}</em>` : ""}</span>
+        <span class="grow"></span>
+        ${tout[x.id] ? `<button type="button" class="xbtn" data-open="${esc(x.id)}"
+          >Voir</button>` : ""}
+        <button type="button" class="xbtn sup" data-suividel="${i}|${esc(x.id)}"
+          >Retirer</button></div>`).join("")}</div>`
+      : `<p class="muted" style="margin:0">Aucun bien suivi pour l'instant. Cherchez-en
+         un, ou prenez-en un au volet <b>Biens à rapprocher</b>.</p>`}</div>
+
+    <div class="mdsect" style="margin-top:16px"><h4>Les biens écartés ${
+      ecartes.length ? `<span class="cnt">${ecartes.length}</span>` : ""}</h4>
+    ${ecartes.length ? `<div class="jtable">${ecartes.map(x=> `<div class="jrow">
+        <span class="jquand">${x.date ? esc(fdate(x.date)) : "—"}
+          <em>${esc(x.qui || "")}</em></span>
+        <span class="jquoi"><b>${esc(nomBien(x.id))}</b>${x.motif
+          ? ` <em>${esc(x.motif)}</em>` : ` <em>sans motif</em>`}</span>
+        <span class="grow"></span>
+        <button type="button" class="xbtn" data-reproposer="${i}|${esc(x.id)}"
+          >Reproposer</button></div>`).join("")}</div>`
+      : `<p class="muted" style="margin:0">Aucun bien écarté. Écarter un bien au volet
+         <b>Biens à rapprocher</b> demande la date et le motif : six mois plus tard,
+         c'est ce qui dit s'il faut le reproposer.</p>`}</div>
+
+    <div class="mdsect" style="margin-top:16px"><h4>Tout ce qui a été fait</h4>
+    <div class="fbtns" style="margin:0 0 10px">
       <button type="button" class="addbtn" data-jadd="${i}">+ Ajouter une note</button>
-      <span class="muted" style="font-size:12.5px">Un appel, une visite, ce que le client a
-        dit : ce qui n'est pas écrit se perd.</span></div>` +
-    (l.length ? `<div class="jtable">${l.map(ligne).join("")}</div>`
-      : `<p class="muted" style="margin:0">Rien encore. Tout ce qui sera fait sur cette
-         fiche — une recherche ajoutée ou mise en sommeil, un bien suivi ou écarté, une
-         modification — s'inscrira ici, avec son auteur.</p>`);
+      <span class="muted" style="font-size:12.5px">Un appel, une visite, ce que le client
+        a dit : ce qui n'est pas écrit se perd.</span></div>
+    ${blocHistorique({recherche:r.id})}</div>`;
+  return blocSuivis;
 }
 function ouvrirNoteJournal(i){
   const r = (L.prospects || [])[i];
@@ -11681,7 +11967,11 @@ function poserSuivis(i, ids){
   if(!r) return;
   const propres = ids.filter((x,k,t)=> x && t.indexOf(x) === k);
   noterMajFiche("prospects", i, suivisDe(r).join(","), propres.join(","));
-  r.suivis = propres;
+  /* un bien déjà suivi garde sa date d'entrée : on ne la remet pas à zéro */
+  const avant = {};
+  suivisFiches(r).forEach(x=> avant[x.id] = x);
+  r.suivis = propres.map(id=> avant[id]
+    || {id:id, date:auj(), qui:(typeof quiSuisJe === "function" ? quiSuisJe() : "")});
   /* prendre un bien au suivi lève le refus qu'on en avait fait */
   r.refus = refusFiches(r).filter(x=> propres.indexOf(x.id) < 0);
   saveLists();
@@ -11698,7 +11988,7 @@ function poserRefus(i, fiches){
   noterMajFiche("prospects", i, refusDe(r).join(","),
                 propres.map(x=> x.id).join(","));
   r.refus = propres;
-  r.suivis = suivisDe(r).filter(x=> !vus[x]);
+  r.suivis = suivisFiches(r).filter(x=> !vus[x.id]);
   saveLists();
 }
 /* ------------------------------------------- écarter un bien, en le disant
@@ -11766,26 +12056,6 @@ function ligneBienSuivi(d, i, suivi){
              >Retirer</button></span>`
       : `<button type="button" class="xbtn" data-suivre="${i}|${esc(d.id)}">Suivre</button>`}
     </div>`;
-}
-function pageBiensSuivis(i){
-  const r = L.prospects[i];
-  const ids = suivisDe(r);
-  const all = allDossiers();
-  if(D && D.id) all[D.id] = D;
-  const vus = ids.map(id=> all[id]).filter(Boolean);
-  const perdus = ids.length - vus.length;
-  return `<div class="pbarre" style="margin:0 0 10px">
-      <button class="addbtn" data-suivicherche="${i}">Chercher un bien ${LOUPE}</button>
-      <div class="grow"></div>
-      <span class="muted" style="font-size:12px">${vus.length} bien${
-        vus.length > 1 ? "s" : ""} suivi${vus.length > 1 ? "s" : ""}</span>
-    </div>
-    ${vus.length ? vus.map(d=> ligneBienSuivi(d, i, true)).join("")
-      : `<p class="muted" style="margin:0">Aucun bien suivi pour l'instant. Cherchez-en un,
-         ou prenez-en un au volet <b>Biens à rapprocher</b>.</p>`}
-    ${perdus ? `<p class="muted" style="margin:8px 0 0">${perdus} bien${
-      perdus > 1 ? "s" : ""} suivi${perdus > 1 ? "s ont" : " a"} été supprimé${
-      perdus > 1 ? "s" : ""} de la base.</p>` : ""}`;
 }
 /* la loupe : n'importe quel dossier, pas seulement ceux du rapprochement —
    on suit parfois un bien qui ne coche pas les cases */
@@ -14340,7 +14610,7 @@ document.addEventListener("input", e=>{
   }
   if(t.dataset.fq !== undefined){
     PERS.fq = t.value;
-    renderRepertoire();
+    redessinerHistorique();
     const c = $("[data-fq]");
     if(c){ c.focus(); c.setSelectionRange(c.value.length, c.value.length); }
     return;
@@ -14708,7 +14978,7 @@ $("#memeNotaire").addEventListener("change", e=>{
 
 document.addEventListener("change", e=>{
   if(e.target && e.target.dataset && e.target.dataset.fgenre !== undefined){
-    PERS.fg = e.target.value; renderRepertoire(); return;
+    PERS.fg = e.target.value; redessinerHistorique(); return;
   }
   const t = e.target;
   const carnet = t.dataset.bookyn !== undefined;
@@ -14734,7 +15004,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour],[data-rechgo],[data-rechadd],[data-rechdel],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-pgopers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -14778,13 +15048,9 @@ document.addEventListener("click", e=>{
     return;
   }
   if(t.dataset.ppadd !== undefined){
-    const i = +t.dataset.ppadd;
-    const r = L.prospects[i];
+    const r = (L.prospects || [])[+t.dataset.ppadd];
     if(!r) return;
-    if(!Array.isArray(r.personnes)) r.personnes = [];
-    r.personnes.push(personneProspect());
-    r.maj = Date.now();
-    saveLists(); renderProspects();
+    ouvrirNouveauProspect(r.id);
     return;
   }
   if(t.dataset.ppdel !== undefined){
@@ -14890,25 +15156,35 @@ document.addEventListener("click", e=>{
     autosave(); renderDiags(); renderPreview();
     return;
   }
-  /* ------------------------------------------------------ les prospects */
-  if(t.dataset.prosp !== undefined){ ouvrirProspect(t.dataset.prosp); return; }
+  /* ----------------------------------------------------- les recherches */
+  if(t.dataset.prosp !== undefined){
+    /* on vient d'ailleurs : l'endroit quitté est empilé, le retour y ramène */
+    if(pageActive() !== "prospects" || PROSP.ouvert !== t.dataset.prosp) empilerFenetre();
+    ouvrirProspect(t.dataset.prosp); return; }
   if(t.dataset.prospretour !== undefined){
-    PROSP.ouvert = ""; renderProspects(); return; }
-  if(t.dataset.pgo){ PROSP.page = t.dataset.pgo; renderProspects(); return; }
-  /* ------------------------------------- d'une recherche à la suivante */
-  if(t.dataset.rechgo){
-    const i = indexProspect(PROSP.ouvert);
-    const n = i < 0 ? 1 : recherchesDe(L.prospects[i]).length;
-    /* en boucle : reculer depuis la première mène à la dernière */
-    PROSP.rech = ((PROSP.rech + (+t.dataset.rechgo)) % n + n) % n;
-    renderProspects(); return;
+    PILE = []; PROSP.ouvert = ""; renderProspects(); return; }
+  if(t.dataset.retour !== undefined){
+    if(revenirEnArriere()) return;
+    if(pageActive() === "prospects"){ PROSP.ouvert = ""; renderProspects(); return; }
+    if(pageActive() === "repertoire"){ PERS.ouvert = ""; renderRepertoire(); return; }
+    return;
   }
+  if(t.dataset.persvers){
+    empilerFenetre();
+    PERS.ouvert = t.dataset.persvers; PERS.onglet = "ident";
+    PERS.fg = ""; PERS.fq = "";
+    activerOnglet("repertoire"); renderRepertoire(); window.scrollTo(0, 0);
+    return;
+  }
+  if(t.dataset.pgo){ PROSP.page = t.dataset.pgo; renderProspects(); return; }
   if(t.dataset.jadd !== undefined){ ouvrirNoteJournal(+t.dataset.jadd); return; }
   /* ------------------------------------------------ le répertoire des personnes */
-  if(t.dataset.pers){ PERS.ouvert = t.dataset.pers; PERS.onglet = "ident";
+  if(t.dataset.pers){ if(pageActive() !== "repertoire") empilerFenetre();
+    PERS.ouvert = t.dataset.pers; PERS.onglet = "ident";
     PERS.fg = ""; PERS.fq = ""; activerOnglet("repertoire"); renderRepertoire();
     window.scrollTo(0, 0); return; }
-  if(t.dataset.persretour !== undefined){ PERS.ouvert = ""; renderRepertoire(); return; }
+  if(t.dataset.persretour !== undefined){ PILE = []; PERS.ouvert = "";
+    renderRepertoire(); return; }
   if(t.dataset.pgopers){ PERS.onglet = t.dataset.pgopers; PERS.fg = ""; PERS.fq = "";
     renderRepertoire(); return; }
   if(t.dataset.persadd !== undefined){
@@ -14923,7 +15199,8 @@ document.addEventListener("click", e=>{
     toast("Fiche créée");
     return;
   }
-  if(t.dataset.fraz !== undefined){ PERS.fg = ""; PERS.fq = ""; renderRepertoire(); return; }
+  if(t.dataset.fraz !== undefined){ PERS.fg = ""; PERS.fq = "";
+    redessinerHistorique(); return; }
   if(t.dataset.actadd){ ouvrirCreerAction(t.dataset.actadd); return; }
   /* ------------------------------------------------- le secteur sur la carte */
   if(t.dataset.sectmode){
@@ -14972,41 +15249,32 @@ document.addEventListener("click", e=>{
     return;
   }
   if(t.dataset.rechadd !== undefined){
-    const i = indexProspect(PROSP.ouvert);
-    const r = i < 0 ? null : L.prospects[i];
+    const r = (L.prospects || [])[+t.dataset.rechadd];
     if(!r) return;
-    if(!Array.isArray(r.recherches) || !r.recherches.length) r.recherches = recherchesDe(r);
-    r.recherches.push(rechercheNeuve());
-    PROSP.rech = r.recherches.length - 1;
-    r.maj = Date.now();
-    noterJournal(r, "Recherche ajoutée", "n° " + r.recherches.length);
-    majActifProspect(r);
-    saveLists(); renderProspects();
-    toast("Nouvelle recherche");
+    nouvelleRechercheDe(personnesProspect(r), null);
     return;
   }
-  if(t.dataset.rechdel !== undefined){
-    const i = indexProspect(PROSP.ouvert);
-    const r = i < 0 ? null : L.prospects[i];
+  if(t.dataset.rechdup !== undefined){
+    const r = (L.prospects || [])[+t.dataset.rechdup];
     if(!r) return;
-    const k = +t.dataset.rechdel;
-    const l = recherchesDe(r);
-    if(l.length < 2) return;
-    popup({titre:"Supprimer cette recherche",
-      corps:`<p style="margin:0">« ${esc(titreRecherche(r, l[k]))} » et tous ses critères
-        seront effacés. Les autres recherches de ${esc(libelleAcquereur(r) || "ce demandeur")}
-        ne bougent pas.<br><br>Pour la mettre seulement de côté, décochez plutôt
-        <b>active</b> : elle cesse de rapprocher et se garde.</p>`,
-      boutons:[{lib:"Annuler"}, {lib:"Supprimer", action:()=>{
-        const nom = titreRecherche(r, l[k]);
-        r.recherches = l.filter((x,n)=> n !== k);
-        if(PROSP.rech >= r.recherches.length) PROSP.rech = r.recherches.length - 1;
-        r.maj = Date.now();
-        noterJournal(r, "Recherche supprimée", nom);
-        majActifProspect(r);
-        saveLists(); renderProspects();
-        toast("Recherche supprimée");
+    popup({titre:"Dupliquer cette recherche",
+      corps:`<p style="margin:0">Une copie de « <b>${esc(titreRecherche(r))}</b> » sera
+        créée pour ${esc(libelleAcquereur(r) || "le même demandeur")} : <b>tous les
+        critères</b>, le secteur, l'objectif et le budget. Les biens suivis, les biens
+        écartés et l'historique ne sont pas repris — ils appartiennent à la recherche
+        d'origine.</p>`,
+      boutons:[{lib:"Annuler"}, {lib:"Dupliquer", primaire:true, action:()=>{
+        dupliquerRecherche(r);
       }}]});
+    return;
+  }
+  /* « + Une recherche » depuis la fiche d'une personne */
+  if(t.dataset.rechpers){
+    const f = fichePersonne(t.dataset.rechpers);
+    if(!f) return;
+    empilerFenetre();
+    nouvelleRechercheDe([{civilite:f.civilite, nom:f.nom, prenom:f.prenom,
+      tel:f.tel1, email:f.email1, pid:f.pid}], null);
     return;
   }
   if(t.dataset.ptri){
@@ -19593,78 +19861,94 @@ const AIDE = [
   "<b>Une étude</b> saisie à la place d'une personne — SCP, SELARL, Office, Étude — reste "+
   "d'un bloc dans le champ Nom et <b>ne reçoit pas de « Maître »</b> : on n'écrit pas "+
   "« Maître SCP DUPONT »."],
- ["L'onglet Demandeurs",
-  "L'onglet <b>Demandeurs</b>, juste après <b>Mes dossiers</b>, tient le fichier de toutes "+
-  "les personnes qui cherchent — <b>tous négociateurs confondus</b>. La liste donne, en "+
-  "colonnes : la date de dernière mise à jour (la plus récente en tête), le nom, le "+
-  "négociateur, les types de biens, les communes, le budget et un résumé des critères. "+
+ ["L'onglet Recherches",
+  "L'onglet <b>Recherches</b>, juste après <b>Mes dossiers</b>, tient toutes les "+
+  "recherches de biens en cours — <b>tous négociateurs confondus</b>. Une ligne = "+
+  "<b>une recherche</b>, et non une personne : quelqu'un qui cherche deux choses a deux "+
+  "lignes, chacune avec ses critères, son secteur et son budget. "+
+  "La liste donne, en colonnes : la date de dernière mise à jour (la plus récente en "+
+  "tête), le <b>demandeur</b>, le <b>nom de la recherche</b>, les biens qui attendent une "+
+  "réponse, le négociateur, les types de biens, les communes, le budget et un résumé des "+
+  "critères. "+
   "<b>Chaque titre de colonne trie</b> — un second clic renverse le sens — et la ligne "+
   "sous les titres <b>filtre colonne par colonne</b> : le budget s'entend comme un "+
   "minimum, la date comme « depuis », le reste se cherche sans casse ni accent. Les trois "+
-  "boutons du haut passent des recherches en cours aux recherches closes, ou aux deux. "+
-  "Un clic sur une ligne ouvre la fiche."],
- ["La fiche d'un demandeur : les volets",
-  "Elle reprend la <b>fiche découverte</b> de l'agence, et se parcourt par une colonne de "+
-  "gauche comme la fiche d'un bien. <b>Coordonnées</b> : la date du rendez-vous, le "+
-  "négociateur, la saisie AC3, le suivi — et les personnes, en <b>blocs ajoutables</b> "+
-  "comme les vendeurs d'un dossier, puisqu'on achète souvent à deux. <b>Sa recherche</b> : "+
-  "types, codes postaux, secteurs recherchés et refusés, surfaces et pièces (minimum et "+
-  "idéal), les critères de confort, le style, les travaux, le DPE, et le classement "+
-  "prioritaire des trois critères qui comptent le plus. <b>Objectif et financement</b> : "+
-  "résidence principale ou investissement, délais, les trois budgets, le mode de "+
-  "financement, la banque, la vente d'un bien, et vos observations. <b>Biens à "+
-  "rapprocher</b> et <b>Biens suivis</b> : voir plus bas."],
- ["Créer un demandeur sans en créer deux",
-  "Le bouton <b>+ Ajouter un demandeur</b> n'ouvre plus une fiche vide : il demande "+
-  "d'abord <b>le nom</b>, le prénom, le téléphone et le courriel. Pendant que vous tapez, "+
-  "l'application cherche ce qui ressemble dans <b>toutes vos bases</b> — les demandeurs, et "+
-  "les <b>personnes de vos dossiers</b>, vendeurs comme acquéreurs. "+
+  "boutons du haut passent des recherches <b>en cours</b> à celles <b>en sommeil</b>, ou "+
+  "aux deux. Un clic sur une ligne ouvre la recherche."],
+ ["La fiche d'une recherche : les volets",
+  "Elle se parcourt par une colonne de gauche, comme la fiche d'un bien, et ses volets "+
+  "sont dans l'ordre où l'on travaille. "+
+  "<b>En tête</b>, un bandeau : qui cherche — avec <b>Sa fiche</b> pour aller au "+
+  "répertoire et <b>+ Une personne</b> pour en rattacher une seconde, puisqu'on achète "+
+  "souvent à deux —, le <b>nom</b> que vous donnez à cette recherche, sa case "+
+  "<b>active</b>, <b>Dupliquer</b> et <b>+ Une recherche</b>. "+
+  "<b>La recherche</b> : types, codes postaux, quartiers recherchés et refusés, surfaces "+
+  "et pièces (minimum et idéal), les critères de confort, le terrain, les travaux, le "+
+  "DPE, et vos observations. "+
+  "<b>Le secteur</b> : la carte, et ce qu'on y dessine (voir plus bas). "+
+  "<b>Objectif et financement</b> : résidence principale ou investissement, délais, les "+
+  "<b>trois budgets</b>, le mode de financement, la banque, la vente d'un bien — et, en "+
+  "bas, le suivi de cette recherche : date du rendez-vous, négociateur, saisie AC3, "+
+  "dernier contact. "+
+  "<b>Biens à rapprocher</b> : ce que le portefeuille lui propose, et pourquoi le reste "+
+  "est écarté. "+
+  "<b>Historique</b> : les biens suivis, les biens écartés, et tout ce qui a été fait."],
+ ["Créer une recherche sans doubler la personne",
+  "Le bouton <b>+ Ajouter une recherche</b> n'ouvre pas une fiche vide : il demande "+
+  "d'abord <b>le nom</b> de la personne, son prénom, son téléphone et son courriel. "+
+  "Pendant que vous tapez, l'application cherche ce qui ressemble dans <b>toutes vos "+
+  "bases</b> — les recherches existantes, et les <b>personnes de vos dossiers</b>, "+
+  "vendeurs comme acquéreurs. "+
   "La ressemblance tient d'abord au <b>nom</b> et au <b>premier prénom</b>, y compris "+
   "approchants — DURAN pour DURAND, une lettre de travers suffit à créer un doublon —, et "+
   "le <b>téléphone</b> ou le <b>courriel</b> identiques emportent la décision : deux "+
   "clients n'ont pas le même numéro. "+
-  "Chaque proposition se tranche : <b>« C'est elle »</b> ouvre la fiche existante quand "+
-  "c'est un demandeur — vous reprenez son historique et ses recherches au lieu de repartir "+
-  "de zéro — ou <b>reprend ses coordonnées</b> quand c'est une personne d'un dossier : "+
-  "être vendeur n'empêche pas de chercher. <b>« Ce n'est pas elle »</b> écarte la "+
-  "proposition. Rien n'est créé tant que vous n'avez pas cliqué sur « Créer la fiche »."],
- ["« Recherche en cours » se coche toute seule",
-  "Elle ne se coche plus à la main : un demandeur est <b>en recherche dès qu'une de ses "+
-  "recherches est active</b>, et il ne l'est plus quand elles dorment toutes. La case du "+
-  "volet Coordonnées montre l'état et reste figée — deux cases à tenir d'accord, celle de "+
-  "la fiche et celles des recherches, finissaient toujours par se contredire, et c'est la "+
-  "liste qui mentait. "+
-  "Une fiche sans recherche active <b>sort de la liste</b> des demandeurs en recherche, "+
-  "mais elle <b>n'est pas effacée</b> : on la retrouve sous « Closes » ou « Toutes », avec "+
-  "tout son contenu, et il suffit de réveiller une recherche pour qu'elle revienne."],
- ["Un demandeur, plusieurs recherches",
+  "Chaque proposition se tranche : <b>« C'est elle »</b> ouvre la recherche existante, ou "+
+  "<b>reprend ses coordonnées</b> quand c'est une personne d'un dossier — être vendeur "+
+  "n'empêche pas de chercher. <b>« Ce n'est pas elle »</b> écarte la proposition. Rien "+
+  "n'est créé tant que vous n'avez pas cliqué sur « Créer ». "+
+  "<b>Le même contrôle</b> s'applique à <b>+ Une personne</b>, quand vous rattachez un "+
+  "conjoint à une recherche déjà ouverte."],
+ ["Plusieurs recherches pour une même personne",
   "Un même client cherche souvent deux choses à la fois : une maison pour y vivre, et un "+
   "studio à louer. Les mettre dans une seule fiche donnait une recherche qui ne "+
-  "ressemblait à rien — un budget de maison et une surface de studio — et ne rapprochait "+
-  "rien de bon. Le volet <b>Sa recherche</b> en porte donc autant qu'il en faut. "+
-  "En haut du volet, un bandeau : <b>« 1 sur 3 »</b>, deux flèches <b>‹</b> et <b>›</b> qui "+
-  "passent d'une recherche à l'autre <b>en boucle</b> — reculer depuis la première mène à "+
-  "la dernière —, un champ pour la <b>nommer</b> (« la maison », « le studio à louer »), la "+
-  "case <b>active</b>, et de quoi en <b>ajouter</b> ou en <b>supprimer</b> une. Le chiffre "+
-  "du menu de gauche, à côté de « Sa recherche », est le nombre de recherches "+
-  "<b>actives</b>. "+
-  "Ce qui appartient à la recherche : les types, les communes, les quartiers, les surfaces, "+
-  "les pièces, le confort, le style, les travaux, le DPE, les priorités. Ce qui reste au "+
-  "<b>client</b> et vaut pour toutes : les coordonnées, le négociateur, l'objectif, les "+
-  "<b>trois budgets</b> et le financement — un budget est celui d'une personne, pas d'une "+
-  "recherche. "+
-  "Le volet <b>Biens à rapprocher</b> réunit ce que toutes les recherches actives "+
-  "rapportent : un bien qui répond à deux recherches n'apparaît qu'une fois, sous la "+
-  "meilleure des deux, et chaque ligne dit de quelle recherche elle vient quand il y en a "+
-  "plusieurs. "+
+  "ressemblait à rien — un budget de maison, une surface de studio, un secteur pour les "+
+  "deux — et ne rapprochait rien de bon. "+
+  "<b>Chaque recherche est donc une fiche à elle</b>, avec SES critères, SON secteur, SON "+
+  "budget, SES biens suivis et écartés, SON historique. Ce qui reste commun, c'est la "+
+  "<b>personne</b> : ses coordonnées sont au répertoire, et toutes ses recherches les "+
+  "reprennent. "+
+  "<b>Trois façons d'en ouvrir une :</b> <b>+ Ajouter une recherche</b> depuis l'onglet "+
+  "Recherches ; <b>+ Une recherche</b> depuis le bandeau d'une recherche déjà ouverte, ou "+
+  "depuis l'onglet « Ses recherches » de la fiche d'une personne ; et <b>Dupliquer</b>, "+
+  "qui recopie tous les critères, le secteur et le budget — mais ni les biens suivis, ni "+
+  "les biens écartés, ni l'historique : ceux-là appartiennent à la recherche d'origine, et "+
+  "les recopier ferait croire à un travail déjà fait. "+
   "<b>Décocher « active »</b> n'efface rien : la recherche cesse de rapprocher, les biens "+
-  "qu'elle proposait quittent aussitôt la liste, et ses critères sont gardés — recochez, et "+
-  "tout revient. C'est ce qu'il faut faire quand un projet est en pause ; la "+
-  "<b>suppression</b>, elle, est définitive et vous le dit avant."],
+  "qu'elle proposait quittent aussitôt la liste, et ses critères sont gardés — recochez, "+
+  "et tout revient. C'est ce qu'il faut faire quand un projet est en pause. La personne "+
+  "cesse alors d'être <b>demandeuse</b> si plus aucune de ses recherches ne tourne ; sa "+
+  "fiche, elle, ne bouge pas."],
+ ["Ses recherches, sur la fiche d'une personne",
+  "La fiche d'une personne qui cherche porte un onglet <b>Ses recherches</b> : les "+
+  "<b>en cours</b> en haut, les <b>en sommeil</b> en dessous, chacune avec son nom, son "+
+  "résumé, le nombre de biens qui attendent une réponse et de biens suivis, et un bouton "+
+  "pour l'ouvrir. L'onglet n'apparaît que si elle en a au moins une. "+
+  "C'est là qu'on répond à « qu'est-ce qu'elle cherchait déjà, l'an dernier ? » — rien "+
+  "n'est jamais effacé, seulement mis en sommeil."],
+ ["Passer d'une fenêtre à l'autre sans rien perdre",
+  "D'une recherche on va voir la fiche de la personne, de là un de ses dossiers, et l'on "+
+  "veut <b>revenir</b>. Le bouton en haut à gauche ne ramène plus au début d'une liste : "+
+  "il <b>dit où il ramène</b> — « ‹ la maison de ville », « ‹ M. Patrick VIDAL » — et vous "+
+  "rend l'endroit exact d'où vous venez, <b>le volet ouvert compris</b>. "+
+  "<b>Rien n'est perdu en chemin.</b> Tout ce que vous tapez est écrit dans la base au fil "+
+  "de la frappe : quitter un volet n'a jamais rien effacé, et y revenir retrouve tout, y "+
+  "compris un champ à moitié rempli. "+
+  "Le chemin se remonte marche par marche : autant de retours que d'allers."],
  ["Le secteur sur la carte",
   "Un acquéreur ne cherche pas « dans le 13200 ». Il cherche <b>à dix minutes à pied du "+
   "centre</b>, <b>entre la gare et les arènes</b>, <b>pas de l'autre côté du Rhône</b>. "+
-  "Le volet <b>Son secteur</b>, dans la fiche du demandeur, porte une carte où cela se "+
+  "Le volet <b>Le secteur</b>, dans la fiche de la recherche, porte une carte où cela se "+
   "dessine. "+
   "<b>Trois façons de poser une zone.</b> <b>« Dessiner un secteur »</b> : cliquez les "+
   "sommets, double-cliquez — ou « Terminer le tracé » — pour fermer. <b>« Poser un "+
@@ -19727,7 +20011,7 @@ const AIDE = [
   "<b>décrit</b> pour les annonces, celui-ci <b>classe</b> pour le rapprochement."],
  ["Les critères qui ne valent que pour certains types",
   "L'ascenseur et l'étage ne veulent rien dire pour une maison ; le terrain et la piscine "+
-  "ne veulent rien dire pour un appartement. Dans <b>Sa recherche</b>, ces critères "+
+  "ne veulent rien dire pour un appartement. Dans <b>La recherche</b>, ces critères "+
   "n'apparaissent donc que si le <b>type de bien</b> correspondant est coché : "+
   "<b>ascenseur, étage maximum et étages recherchés</b> pour un appartement ou un local ; "+
   "<b>terrain et piscine</b> pour une maison, un terrain ou un immeuble. L'intertitre d'un "+
@@ -19755,16 +20039,26 @@ const AIDE = [
   "comme plafond — au-delà, le bien sort — et le plus bas comme référence : entre les deux, "+
   "le bien est proposé avec la mention « <i>au-dessus du budget courant, dans l'enveloppe "+
   "coup de cœur</i> ». Un seul montant saisi suffit."],
- ["L'historique du demandeur",
-  "Un sixième volet, <b>Historique</b>, garde ce qui a été fait sur la fiche et "+
-  "<b>par qui</b> — le nom du compte connecté, à défaut le négociateur de l'appareil. "+
-  "S'y inscrivent la création de la fiche, les modifications, les recherches ajoutées, "+
-  "supprimées, mises en sommeil ou réveillées, les biens mis au suivi, <b>écartés avec "+
-  "leur motif</b> ou reproposés. Les saisies qui se suivent tiennent sur une seule ligne, "+
-  "avec le nom des champs touchés : un historique illisible ne se lit pas. "+
-  "<b>+ Ajouter une note</b> y inscrit ce que l'application ne peut pas deviner — un "+
-  "appel, une visite, un mot du client. C'est souvent ce qui manque le plus six mois plus "+
-  "tard, et ce qui permet de reprendre une fiche qu'un collègue a suivie."],
+ ["L'historique d'une recherche",
+  "Le dernier volet, <b>Historique</b>, tient trois choses, dans l'ordre où l'on vient "+
+  "les chercher. "+
+  "<b>Les biens suivis</b>, avec la <b>date</b> à laquelle ils sont entrés au suivi et "+
+  "qui les y a mis — « suivi depuis le 3 mars » se dit à un client, « suivi » tout court "+
+  "ne se dit pas. Le bouton <b>Chercher un bien</b> ouvre une loupe sur l'ensemble de vos "+
+  "dossiers, y compris ceux qui ne correspondent pas aux critères : on suit parfois un "+
+  "bien qui ne coche pas les cases. "+
+  "<b>Les biens écartés</b>, avec leur <b>date</b> et leur <b>motif</b>, et de quoi les "+
+  "reproposer d'un clic. "+
+  "<b>Tout ce qui a été fait</b> : la création, les modifications, les mises en sommeil, "+
+  "les biens suivis ou écartés, les courriels, les appels — chacun daté et signé "+
+  "<b>par qui</b>, le nom du compte connecté, à défaut le négociateur de l'appareil. Les "+
+  "saisies qui se suivent tiennent sur une seule ligne, avec le nom des champs touchés : "+
+  "un historique illisible ne se lit pas. "+
+  "<b>Rien n'est purgé.</b> On ne jette pas : on <b>filtre</b> par genre d'action et l'on "+
+  "<b>cherche en toutes lettres</b> dans la barre du haut. "+
+  "<b>+ Ajouter une note</b> et <b>+ Créer une action</b> y inscrivent ce que "+
+  "l'application ne peut pas deviner — un appel, une visite, un mot du client. C'est "+
+  "souvent ce qui manque le plus six mois plus tard."],
  ["Répondre à un bien rapproché",
   "Le volet <b>Biens à rapprocher</b> range les biens en trois : <b>sans réponse</b>, "+
   "<b>déjà au suivi</b>, <b>refusés</b>. Deux icônes sur chaque ligne : la coche le met au "+
@@ -19781,10 +20075,11 @@ const AIDE = [
   "appareils, contrairement à l'ancienne pastille « nouveau », qui s'éteignait d'un simple "+
   "regard et n'existe plus. Les mêmes icônes figurent sur la carte d'<b>Aujourd'hui</b>, "+
   "pour répondre sans ouvrir la fiche. Et la colonne <b>Sans réponse</b> de la liste des "+
-  "demandeurs compte, pour chacun, ce qui attend encore votre avis."],
+  "recherches compte, pour chacune, ce qui attend encore votre avis."],
  ["Le négociateur et la date de mise à jour",
-  "Une fiche neuve est <b>rattachée au négociateur connecté</b> — ou, s'il n'y a pas de "+
-  "comptes, au seul négociateur de l'agence. Le champ reste modifiable. La <b>date de mise "+
+  "Une recherche neuve est <b>rattachée au négociateur connecté</b> — ou, s'il n'y a pas "+
+  "de comptes, au seul négociateur de l'agence. Le champ, au volet <b>Objectif et "+
+  "financement</b>, reste modifiable. La <b>date de mise "+
   "à jour</b>, en haut de la colonne de gauche, part de la création et ne bouge "+
   "qu'à bon escient : ouvrir la fiche, la relire, la refermer ne la touche pas ; modifier "+
   "ou ajouter quoi que ce soit — un champ, une case, un bien suivi — la passe au jour même. "+
@@ -19796,12 +20091,6 @@ const AIDE = [
   "c'est la vérification. Un code inconnu s'affiche en rouge. Un code qui couvre plusieurs "+
   "communes les annonce toutes — 13150 en couvre trois, dont Tarascon. Le rapprochement "+
   "compare alors le code postal du bien, et non son nom de commune."],
- ["Les biens suivis d'un demandeur",
-  "Le troisième volet de la fiche tient la liste des biens que cette personne suit. Deux "+
-  "façons d'en ajouter : le bouton <b>Chercher un bien</b>, qui ouvre une loupe sur "+
-  "l'ensemble de vos dossiers — y compris ceux qui ne correspondent pas à sa recherche —, "+
-  "et la <b>coche verte</b> sur chacun des biens du volet <b>Biens à rapprocher</b>. "+
-  "<b>Retirer</b> les enlève. Le compteur du menu latéral suit."],
  ["Le rapprochement avec le portefeuille",
   "Dès qu'une fiche porte un critère, l'application la compare à <b>tous les mandats en "+
   "vente</b> et affiche les biens qui correspondent, sur le volet <b>Biens à rapprocher</b> "+
