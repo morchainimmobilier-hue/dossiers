@@ -1029,9 +1029,13 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
   border-radius:8px;cursor:pointer;white-space:nowrap;line-height:1.2}
 .mddupb .dupoui{background:var(--navy);color:#fff;border:1px solid var(--navy)}
 .mddupb .dupoui:hover{background:#122a56}
+.mddupb .dupneuf{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.mddupb .dupneuf:hover{background:var(--accent-soft)}
 .mddupb .dupnon{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
 .mddupb .dupnon:hover{background:#f1f4f9;color:var(--ink)}
 .tbtn.mini{padding:4px 10px;font-size:12.5px}
+/* la pastille du métier : elle ne s'éteint pas, on l'exerce */
+.bookcard.vise{box-shadow:0 0 0 3px var(--accent);border-radius:12px}
 /* un mandat qui prend la suite d'un autre */
 .renq{width:100%;background:var(--field);border:1px solid var(--field-line);
   border-radius:var(--radius-sm,8px);padding:8px 11px;font-size:13.5px}
@@ -1122,6 +1126,8 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .rolp.rvend.on{background:#dcfce7;color:#15803d}
 .rolp.racq.on{background:#dbeafe;color:#1d4ed8}
 .rolp.rdem.on{background:#fef3c7;color:#92400e}
+/* la pastille du métier : elle ne s'allume ni ne s'éteint — on l'exerce */
+.rolp.rfonc.on{background:#cffafe;color:#0e7490}
 .rolvide{font-size:11.5px;color:var(--ink-3);font-style:italic}
 .drsub .rolp{margin-right:4px}
 .seczone .szg.clos{background:var(--line-2)}
@@ -1998,7 +2004,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 16 octobre 2026, 14 h 55">Dossiers de vente</div>
+  <div class="brand" title="Version du 16 octobre 2026, 23 h 13">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2209,7 +2215,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>16 octobre 2026, 14 h 55</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>16 octobre 2026, 23 h 13</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2496,6 +2502,10 @@ const LISTS_DEFAULT = {
   /* qui suit un dossier dans une étude */
   fonctionNot:["Clerc de notaire","Notaire assistant","Collaborateur","Formaliste",
                "Assistant(e)","Négociateur de l'étude","Autre"],
+  /* le métier d'une personne du répertoire — modifiable, comme toute liste */
+  fonctionPers:["Notaire","Personne en charge","Clerc de notaire","Négociateur",
+                "Diagnostiqueur","Syndic","Banque","Courtier","Géomètre","Architecte",
+                "Artisan","Huissier","Expert","Assureur","Avocat"],
   chargeHono: ["Vendeur","Acquéreur"],
   baseHono:   ["HT","TTC"],
   coteHono:   ["Vendeur","Acquéreur","Les deux"],
@@ -2581,6 +2591,7 @@ const LIST_LABELS = {
   chargeHono:"Charge des honoraires",
   modeEquip:"Chauffage / refroidissement — nature", modeEcs:"Eau chaude — nature",
   energie:"Énergies", fonctionNot:"Fonctions dans une étude",
+  fonctionPers:"Fonctions au répertoire",
   exposition:"Expositions", etatBien:"États du bien", piecesNoms:"Noms de pièces",
   niveauPiece:"Niveaux des pièces",
   condSusp:"Financement", motifResil:"Motifs de résiliation d'un mandat",
@@ -3452,9 +3463,14 @@ function repandreFichePersonne(f){
       if([p.civilite, p.nom, p.prenom, p.tel, p.email].join("|") !== avant) bougeL = true;
     });
   });
+  /* les carnets métier portent les mêmes coordonnées : elles suivent aussi */
+  carnetsDeLaPersonne(f.pid).forEach(x=>{
+    if(verserDansCarnet(x.k, x.r, f)) bougeL = true;
+  });
   if(bougeL){
     saveLists();
     if(pageActive() === "prospects") renderProspects();
+    if(pageActive() === "repertoire") renderRepertoire();
   }
   if(D){
     ["vendeurs","acquereurs"].forEach(k=> (D[k] || []).forEach(p=>{
@@ -7057,6 +7073,9 @@ function ficheCarnet(k, r, i, apres, sansEntete){
     ${lib && k !== "residences" ? boutonCarte("carnet:" + k + ":" + i, lib) : ""}
     ${lib ? trombone(k === "residences" ? sujetImmeuble(lib)
                                         : sujetPersonne(r), "Pièces") : ""}
+    ${lib && r.ppid && CARNETS_REP.indexOf(k) >= 0
+      ? `<button type="button" class="xbtn" data-vpers="${esc(r.ppid)}"
+           title="Sa fiche au répertoire des personnes">Sa fiche</button>` : ""}
     <button class="xbtn" data-bookdel="${k}:${i}">Supprimer</button></header>`}
     <div class="pgrid">${fields}</div>${apres ? apres(r, i) : ""}</div>`;
 }
@@ -7437,11 +7456,168 @@ function rolesConnus(pid){
   actionsDe({pid:pid}).forEach(a=>{ if(a.role) vus[a.role] = vus[a.role] || false; });
   return ROLES_PERS.map(r=> r.cle).filter(c=> c in vus);
 }
+/* =====================================================================
+   LES MÉTIERS AU RÉPERTOIRE — ÉTAPE 3
+   ---------------------------------------------------------------------
+   Les carnets gardent ce qui est PROFESSIONNEL : l'étude d'un notaire, le
+   pourcentage d'un négociateur, le portrait d'une carte de fin. Ce sont
+   leurs champs à eux, et les dossiers les désignent par leur libellé —
+   on n'y touche pas.
+
+   Mais la PERSONNE, elle, entre au répertoire comme tout le monde : une
+   fiche, un identifiant, des coordonnées, un historique. Un notaire qui est
+   aussi vendeur d'un bien n'a plus deux existences séparées.
+
+   Le lien est le `pid`, écrit dans la fiche du carnet. Ce qui circule :
+   les coordonnées et l'adresse, dans les deux sens ; le nom, du carnet vers
+   le répertoire et, en retour, par la machinerie de renommage qui existait
+   déjà — celle qui fait suivre les dossiers d'un notaire rebaptisé.
+   ===================================================================== */
+const FONCTION_CARNET = {
+  notaires:"Notaire", clercs:"Personne en charge", negociateurs:"Négociateur",
+  syndics:"Syndic", diagnostiqueurs:"Diagnostiqueur", banques:"Banque"};
+const CARNETS_MORALE = ["syndics","diagnostiqueurs","banques"];
+function fonctionDuCarnet(k, r){
+  /* une personne en charge dit elle-même ce qu'elle fait dans l'étude */
+  if(k === "clercs"){
+    const f = String((r || {}).fonction || "").trim();
+    return f || FONCTION_CARNET.clercs;
+  }
+  return FONCTION_CARNET[k] || "";
+}
+/* la fiche de répertoire que décrit une fiche de carnet */
+function personneDuCarnet(k, r){
+  const p = blankPerson();
+  if(!r) return p;
+  if(CARNETS_MORALE.indexOf(k) >= 0){
+    p.civilite = "Société";
+    p.raison = r.nom || "";
+    /* la banque a un interlocuteur : c'est lui, le représentant */
+    if(k === "banques" && String(r.interlocuteur || "").trim())
+      p.nom = r.interlocuteur;
+  } else if(k === "notaires"){
+    p.prenom = r.prenom || "";
+    p.nom = r.patronyme || "";
+  } else {
+    p.nom = r.nom || "";
+  }
+  p.tel1 = r.tel || "";
+  p.email1 = r.email || "";
+  ["adresse","cp","ville","pays"].forEach(c=>{ if(r[c]) p[c] = r[c]; });
+  /* `pid` de la fiche de carnet est l'identifiant de ses PIÈCES JOINTES, et
+     il est tiré du libellé — « Maître Clémence TORTEL ». Celui de la personne
+     au répertoire se tire de son nom et de son prénom, pour qu'il tombe sur le
+     même que si on la saisit comme vendeuse d'un bien. Deux clés, deux
+     usages : on range la seconde dans `ppid`. */
+  if(r.ppid) p.pid = r.ppid;
+  return p;
+}
+/* le chemin du retour : ce que le répertoire rend au carnet. Les
+   coordonnées et l'adresse, jamais les champs du métier. */
+function verserDansCarnet(k, r, f){
+  if(!r || !f) return false;
+  let bouge = false;
+  const pose = (cle, v)=>{
+    const t = String(v === undefined || v === null ? "" : v).trim();
+    if(t && t !== String(r[cle] || "")){ r[cle] = v; bouge = true; }
+  };
+  pose("tel", f.tel1);
+  pose("email", f.email1);
+  if(CARNETS_MORALE.indexOf(k) >= 0 || k === "notaires" ||
+     BOOKS[k].cols.some(c=> c[0] === "adresse")){
+    pose("adresse", f.adresse); pose("cp", f.cp);
+    pose("ville", f.ville); pose("pays", f.pays);
+  }
+  return bouge;
+}
+/* inscrire une fiche de carnet au répertoire, ou la remettre d'accord */
+function inscrireLeCarnet(k, r){
+  if(!r) return "";
+  const p = personneDuCarnet(k, r);
+  if(personneVide(p)) return "";
+  const pid = inscrireAuRepertoire(p);
+  if(!pid) return "";
+  if(r.ppid !== pid) r.ppid = pid;
+  const f = fichePersonne(pid);
+  /* la fonction se pose une fois ; ensuite elle se modifie sur la fiche,
+     et le carnet ne la reprend plus — c'est ce qui était demandé */
+  if(f && !String(f.fonction || "").trim()){
+    f.fonction = fonctionDuCarnet(k, r);
+    f.maj = Date.now();
+  }
+  return pid;
+}
+/* appelé à chaque frappe dans un carnet : la fiche du répertoire suit */
+function synchroniserCarnet(k, r){
+  if(CARNETS_REP.indexOf(k) < 0) return;
+  inscrireLeCarnet(k, r);
+}
+/* le grand recensement des métiers, une fois */
+function enrolerLesMetiers(){
+  CARNETS_REP.forEach(k=>{
+    (L[k] || []).forEach(r=> inscrireLeCarnet(k, r));
+  });
+}
+/* les fiches de carnet d'une personne : « où elle exerce » */
+function carnetsDeLaPersonne(pid){
+  const out = [];
+  if(!pid) return out;
+  CARNETS_REP.forEach(k=>{
+    (L[k] || []).forEach((r, i)=>{
+      if(!r) return;
+      const q = r.ppid || pidPersonne(personneDuCarnet(k, r));
+      if(q === pid) out.push({k:k, i:i, r:r, lib:libelleCarnet(k, r),
+                              fonction:fonctionDuCarnet(k, r)});
+    });
+  });
+  return out;
+}
+/* Les dossiers où elle intervient AU TITRE DE SON MÉTIER. Les dossiers ne
+   la désignent pas par son identifiant mais par son libellé — c'est ainsi
+   depuis toujours, et les documents impriment ce libellé. On compare donc
+   les libellés de ses fiches de carnet. */
+function interventionsMetier(pid){
+  const libs = {};
+  carnetsDeLaPersonne(pid).forEach(x=>{
+    const l = fold(String(x.lib || "").trim());
+    if(l) libs[l] = x.fonction;
+  });
+  if(!Object.keys(libs).length) return [];
+  const out = [];
+  dossiersVivants().forEach(d=>{
+    const n = d.notaire || {}, g = d.nego || {}, pr = d.pret || {};
+    [[n.vendeur, "notaire du vendeur"], [n.acquereur, "notaire de l'acquéreur"],
+     [n.vendeurContact, "en charge, côté vendeur"],
+     [n.acquereurContact, "en charge, côté acquéreur"],
+     [g.vendeur, "négociateur du vendeur"], [g.acquereur, "négociateur de l'acquéreur"],
+     [pr.banque, "banque de l'acquéreur"], [d.diagPar, "diagnostiqueur"]
+    ].forEach(([v, titre])=>{
+      const t = fold(String(v || "").trim());
+      if(t && libs[t] !== undefined)
+        out.push({d:d, titre:titre, fonction:libs[t], encours:dossierEnCours(d)});
+    });
+  });
+  /* un syndic : ce sont les immeubles qu'il gère, et non des dossiers */
+  (L.residences || []).forEach(im=>{
+    const t = fold(String(im.syndic || "").trim());
+    if(t && libs[t] !== undefined)
+      out.push({immeuble:im, titre:"syndic de l'immeuble", fonction:libs[t],
+                encours:true});
+  });
+  return out;
+}
+/* la pastille du métier : elle ne s'allume ni ne s'éteint — on l'exerce */
+function pastilleFonction(f){
+  const v = String((f || {}).fonction || "").trim();
+  if(!v) return "";
+  return `<span class="rolp rfonc on" title="Fonction">${esc(v)}</span>`;
+}
 function pastillesRoles(pid){
   const actifs = rolesActifs(pid);
   const connus = rolesConnus(pid);
-  if(!connus.length) return `<span class="rolvide">aucun rôle en cours</span>`;
-  return connus.map(c=>{
+  const met = pastilleFonction(fichePersonne(pid));
+  if(!connus.length) return met || `<span class="rolvide">aucun rôle en cours</span>`;
+  return met + connus.map(c=>{
     const r = ROLES_PERS.filter(x=> x.cle === c)[0];
     const on = !!actifs[c];
     return `<span class="rolp ${r.cl}${on ? " on" : ""}" title="${esc(r.lib +
@@ -7453,14 +7629,20 @@ function pastillesRoles(pid){
 /* =====================================================================
    LE RÉPERTOIRE DES PERSONNES
    ===================================================================== */
-let PERS = {ouvert:"", onglet:"ident", q:"", fg:"", fq:""};
+let PERS = {ouvert:"", onglet:"ident", q:"", tri:"", fg:"", fq:""};
 function personnesTriees(){
   const mots = fold(PERS.q).split(/\s+/).filter(Boolean);
   return (L.personnes || []).filter(f=>{
     if(!f || personneVide(f)) return false;
     if(!mots.length) return true;
-    const texte = fold(CHAMPS_FICHE.map(k=> f[k]).filter(Boolean).join(" "));
+    const texte = fold(CHAMPS_FICHE.map(k=> f[k]).filter(Boolean).join(" ")
+      + " " + (f.fonction || "") + " " + (f.note || ""));
     return mots.every(m=> texte.includes(m));
+  }).filter(f=>{
+    /* le segment : un rôle connu, ou un métier */
+    if(!PERS.tri) return true;
+    if(PERS.tri === "metier") return !!String(f.fonction || "").trim();
+    return rolesConnus(f.pid).indexOf(PERS.tri) >= 0;
   }).sort((a,b)=> triFr(nomPersonne(a), nomPersonne(b)));
 }
 function vuePersonnesListe(){
@@ -7472,7 +7654,12 @@ function vuePersonnesListe(){
       <div class="pbarre">
         <button class="addbtn" data-persadd>+ Ajouter une personne</button>
         <input type="text" class="filtrebox" data-persq value="${esc(PERS.q)}"
-          placeholder="Chercher un nom, une ville, un téléphone…">
+          placeholder="Chercher un nom, une ville, un métier, un téléphone…">
+        <div class="seg">${["", "vendeur", "acquereur", "demandeur", "metier"]
+          .map(c=> `<button type="button" data-perstri="${c}"${
+            PERS.tri === c ? ' class="on"' : ""}>${esc(c === "" ? "Tous"
+              : c === "metier" ? "Avec un métier" : libRolePers(c) + "s")}</button>`)
+          .join("")}</div>
         <div class="grow"></div>
         <span class="muted" style="font-size:12px">${l.length} sur ${tout}</span>
       </div>
@@ -7497,7 +7684,10 @@ function ongletsPersonne(pid){
   if(recherchesDeLaPersonne(pid).length) l.push({cle:"rech", lib:"Ses recherches"});
   const connus = rolesConnus(pid);
   connus.forEach(c=> l.push({cle:"h:" + c, lib:"Historique " + libRolePers(c)}));
-  if(!connus.length) l.push({cle:"h:", lib:"Historique"});
+  /* le métier a son historique comme un rôle : « Historique Notaire » */
+  const met = String((fichePersonne(pid) || {}).fonction || "").trim();
+  if(met) l.push({cle:"h:" + met, lib:"Historique " + met});
+  if(!connus.length && !met) l.push({cle:"h:", lib:"Historique"});
   return l;
 }
 /* ------------------------------------------- l'histoire de ses recherches
@@ -7594,10 +7784,36 @@ function champsFichePersonne(f){
     return h;
   }).join("");
   const dos = dossiersDeLaPersonne(f.pid), rec = recherchesDeLaPersonne(f.pid);
+  const met = carnetsDeLaPersonne(f.pid), inter = interventionsMetier(f.pid);
   return `<div class="pgrid">${champs}
+      <div class="pf"><label>Fonction</label>
+        ${controlRaw(`personnes:${i}:fonction`, "list:fonctionPers", f.fonction || "",
+                     `fp${i}`, "data-book")}</div>
       <div class="pf wide"><label>Observations</label>
         ${controlRaw(`personnes:${i}:note`, "area", f.note || "", `fp${i}`, "data-book")}
       </div></div>
+    ${met.length ? `<div class="mdsect" style="margin-top:16px"><h4>Son métier</h4>
+      <div class="seczones">${met.map(x=> `<div class="seczone">
+        <span class="szg"></span>
+        <span><b>${esc(x.fonction)}</b> — ${esc(x.lib || "(sans nom)")}
+          <em>fiche du carnet « ${esc(BOOKS[x.k].title)} » : c'est là que se corrigent
+            ${esc(x.k === "notaires" ? "l'étude et les champs du métier"
+                                     : "les champs du métier")}</em></span>
+        <span class="grow"></span>
+        <button type="button" class="xbtn" data-vcarnet="${esc(x.k)}:${x.i}"
+          >Au carnet</button></div>`).join("")}</div>
+      ${inter.length ? `<div class="seczones" style="margin-top:7px">${inter.map(x=>
+        `<div class="seczone"><span class="szg ${x.encours ? "" : "clos"}"></span>
+        <span><b>${esc(x.titre)}</b> — ${x.immeuble
+          ? esc(x.immeuble.nom || "(immeuble)")
+          : "n° " + esc((x.d.mandat || {}).num || "—") + " · " + esc(bienDe(x.d))}
+          ${x.d ? `<em>${esc(stade(x.d).lib.toLowerCase())}</em>` : ""}</span>
+        <span class="grow"></span>
+        ${x.d ? `<button type="button" class="xbtn" data-open="${esc(x.d.id)}"
+          >Ouvrir</button>` : ""}</div>`).join("")}</div>`
+        : `<p class="muted" style="margin:7px 0 0">Aucun dossier ne la nomme pour
+           l'instant à ce titre.</p>`}
+    </div>` : ""}
     <div class="mdsect" style="margin-top:16px"><h4>Où elle intervient</h4>
       ${dos.length || rec.length ? `<div class="seczones">
         ${dos.map(x=> `<div class="seczone">
@@ -7684,6 +7900,17 @@ function ouvrirCreerAction(cible){
   const d = dossierId ? (dossiersVivants().filter(x=> x.id === dossierId)[0] || null)
                       : null;
   const dossiers = pid ? dossiersDeLaPersonne(pid) : [];
+  /* une même personne peut agir à plusieurs titres : vendeuse d'un bien,
+     demandeuse d'un autre, et notaire par métier. On lui demande lequel. */
+  const titres = pid ? rolesConnus(pid).slice() : [];
+  if(f && String(f.fonction || "").trim() && titres.indexOf(f.fonction) < 0)
+    titres.push(String(f.fonction).trim());
+  /* partie d'une recherche, c'est le demandeur qu'on propose d'abord */
+  if(rech){
+    const k2 = titres.indexOf("demandeur");
+    if(k2 >= 0) titres.splice(k2, 1);
+    titres.unshift("demandeur");
+  }
   const gens = d ? ["vendeurs","acquereurs"].reduce((o, k)=>
     o.concat((d[k] || []).filter(x=> x && !personneVide(x))
       .map(x=> ({pid:pidPersonne(x), nom:titrePersonne(x),
@@ -7704,6 +7931,10 @@ function ouvrirCreerAction(cible){
             >+</button></span></div>
         <div class="pf"><label for="acDate">Date</label>
           <input type="date" id="acDate" value="${esc(auj())}"></div>
+        ${titres.length > 1 ? `<div class="pf"><label for="acTitre">À quel titre</label>
+          <select id="acTitre">${titres.map(x=>
+            `<option value="${esc(x)}">${esc(libRolePers(x))}</option>`).join("")}</select>
+          </div>` : ""}
         ${gens.length ? `<div class="pf"><label for="acQui">Qui</label>
           <select id="acQui"><option value="">—</option>${gens.map(g=>
             `<option value="${esc(g.pid + "|" + g.role)}">${esc(g.nom)} (${
@@ -7721,7 +7952,7 @@ function ouvrirCreerAction(cible){
       const genre = (($("#acGenre") || {}).value) || "Note";
       const texte = String((($("#acTexte") || {}).value) || "").trim();
       const date = (($("#acDate") || {}).value) || auj();
-      let quiPid = pid, role = "";
+      let quiPid = pid, role = ($("#acTitre") || {}).value || "";
       const selQui = ($("#acQui") || {}).value || "";
       if(selQui){ quiPid = selQui.split("|")[0]; role = selQui.split("|")[1]; }
       let dos = dossierId;
@@ -7730,9 +7961,11 @@ function ouvrirCreerAction(cible){
       /* depuis une recherche, c'est le demandeur qui agit : son rôle de
          vendeur dans un autre dossier n'a rien à voir ici */
       if(!role && rech) role = "demandeur";
+      if(!role && titres.length === 1) role = titres[0];
       if(!role && quiPid){
         const actifs = rolesActifs(quiPid);
-        role = Object.keys(actifs)[0] || "";
+        role = Object.keys(actifs)[0] ||
+               String((fichePersonne(quiPid) || {}).fonction || "").trim();
       }
       const a = noterAction({pid:quiPid, role:role, genre:genre, texte:texte,
                              dossier:dos, recherche: rech ? rech.id : ""});
@@ -10988,7 +11221,6 @@ function renderProspects(){
 const COLS_PROSP = [
   {cle:"maj",    lib:"Mise à jour", genre:"date"},
   {cle:"nom",    lib:"Demandeur"},
-  {cle:"rech",   lib:"Recherche"},
   {cle:"attente",lib:"Sans réponse", genre:"nombre"},
   {cle:"nego",   lib:"Négociateur",
    choix:()=> (L.negociateurs || []).map(n=> n.nom).filter(Boolean).sort(triFr)},
@@ -11114,7 +11346,6 @@ function vueProspListe(){
     return `<tr data-prosp="${esc(r.id)}"${clos ? ' class="pclos"' : ""}>
       <td class="pdate">${esc(fdate(jourDe(r.maj)))}</td>
       <td class="pnom">${esc(libelleAcquereur(r) || "(sans nom)")}</td>
-      <td class="prech">${esc(titreRecherche(r))}</td>
       <td class="patt">${valeurProsp(r, "attente")
         ? `<span class="rapneuf">${valeurProsp(r, "attente")}</span>` : "—"}</td>
       <td>${esc(r.nego || "—")}</td>
@@ -11331,42 +11562,61 @@ function proximiteContact(a, b){
   if(ea && eb && ea === eb){ pts += 45; rais.push("même courriel"); }
   return {pts:pts, raisons:rais};
 }
-/* toutes les personnes que l'application connaît, d'où qu'elles viennent */
-function tousLesContacts(){
-  const out = [];
-  (L.prospects || []).forEach((r,i)=>{
-    if(!r) return;
-    personnesProspect(r).forEach(p=> out.push({
-      ou:"prospect", i:i, id:r.id, r:r,
-      qui:{prenom:p.prenom, nom:p.nom, tel:p.tel, email:p.email,
-           civilite:p.civilite, dateNaissance:""},
-      quoi:resumeRecherche(r) || "aucun critère saisi"}));
+/* ------------------------------------- qui, au répertoire, pourrait être elle
+   Depuis que toutes les personnes ont une fiche, il n'y a plus qu'un endroit
+   où chercher : le répertoire. On y cherche DEUX choses à la fois, et c'est
+   voulu —
+
+     · ce que l'on tape au fil de la frappe : « VID » doit faire monter VIDAL
+       avant qu'on ait fini le mot. C'est une liste de choix, pas un
+       avertissement ;
+     · ce qui RESSEMBLE à ce que l'on tape, une fois le nom écrit : DURAN
+       pour DURAND, un prénom inversé, un même téléphone. C'est le garde-fou
+       contre le doublon, qui existait déjà.
+
+   Les deux donnent la même liste, et la même façon de la trancher. */
+function quoiFichePersonne(f){
+  const b = [];
+  dossiersDeLaPersonne(f.pid).forEach(x=>{
+    b.push(libRolePers(x.role).toLowerCase() + " de n° " +
+           ((x.d.mandat || {}).num || "—") + " · " + bienDe(x.d));
   });
-  toutesLesPersonnes().forEach(x=>{
-    if(estMorale(x.p)) return;
-    out.push({ou: x.kind === "vendeurs" ? "vendeur" : "acquéreur",
-      d:x.d, p:x.p,
-      qui:{prenom:x.p.prenom, nom:x.p.nom, tel:x.p.tel1, email:x.p.email1,
-           civilite:x.p.civilite, dateNaissance:x.p.dateNaissance},
-      quoi:"mandat n° " + ((x.d.mandat || {}).num || "—") + " · " + bienDe(x.d)});
-  });
-  return out;
+  const n = recherchesDeLaPersonne(f.pid).length;
+  if(n) b.push(n + " recherche" + (n > 1 ? "s" : ""));
+  return b.slice(0, 3).join("  ·  ");
 }
-function cleContact(c){
-  return c.ou === "prospect" ? "p|" + c.id
-    : "d|" + c.d.id + "|" + (c.p.pid || nomPersonne(c.p));
+function cleFichePersonne(f){ return "f|" + (f.pid || ""); }
+function ficheDeCle(ref){
+  const pid = String(ref || "").slice(2);
+  return fichePersonne(pid);
 }
-function contactDeCle(ref){
-  return tousLesContacts().filter(c=> cleContact(c) === ref)[0] || null;
-}
-function contactsApprochants(q){
-  if(!String(q.nom || "").trim() && !telChiffres(q.tel)) return [];
-  return tousLesContacts().map(c=>{
-    const pr = proximiteContact(q, c.qui);
-    return {c:c, pts:pr.pts, raisons:pr.raisons};
-  }).filter(x=> x.pts >= DUP_SEUIL)
-    .sort((a,b)=> b.pts - a.pts)
-    .slice(0, 5);
+function personnesApprochantes(q){
+  const nom = fold(String(q.nom || "").trim());
+  const pre = fold(String(q.prenom || "").trim());
+  const assez = nom.length >= 2 || pre.length >= 2 || telChiffres(q.tel).length >= 6
+             || String(q.email || "").trim().length >= 4;
+  if(!assez) return [];
+  return (L.personnes || []).filter(f=> f && !personneVide(f) && !estMorale(f))
+    .map(f=>{
+      const pr = proximiteContact(q, {prenom:f.prenom, nom:f.nom, tel:f.tel1,
+        email:f.email1, civilite:f.civilite, dateNaissance:f.dateNaissance});
+      let pts = pr.pts;
+      const rais = pr.raisons.slice();
+      /* le début du nom, pour la saisie en cours */
+      const fn = fold(String(f.nom || "")), fp = fold(String(f.prenom || ""));
+      if(nom.length >= 2 && fn){
+        if(fn.indexOf(nom) === 0){ pts += 60; rais.push("le nom commence pareil"); }
+        else if(fn.indexOf(nom) > 0){ pts += 50; rais.push("le nom contient ce mot"); }
+      }
+      if(pre.length >= 2 && fp && fp.indexOf(pre) === 0 && !nom){
+        pts += 55; rais.push("le prénom commence pareil");
+      }
+      return {f:f, pts:pts,
+              raisons:rais.filter((x,k,t)=> t.indexOf(x) === k)};
+    })
+    .filter(x=> x.pts >= DUP_SEUIL)
+    .sort((a,b)=> b.pts - a.pts || triFr(nomPersonne(a.f), nomPersonne(b.f)))
+    .slice(0, 6);
 }
 /* `vers` : l'identifiant d'une recherche à laquelle rattacher la personne,
    au lieu d'en ouvrir une nouvelle. Le contrôle de doublon est le même — on
@@ -11381,49 +11631,72 @@ function ouvrirNouveauProspect(vers){
     : "Le nom d'abord : si la personne est déjà quelque part, autant reprendre sa fiche.";
   rendreNouveauProspect();
   $("#nvBox").hidden = false;
-  setTimeout(()=>{ const e = $("#nvPrenom"); if(e) e.focus(); }, 40);
+  /* le curseur dans le NOM : c'est par là qu'on commence, et c'est lui qui
+     fait monter les personnes du répertoire */
+  setTimeout(()=>{ const e = $("#nvNom"); if(e) e.focus(); }, 40);
 }
 function fermerNouveauProspect(){ $("#nvBox").hidden = true; NOUV = null; }
+/* Le formulaire se dessine UNE FOIS, à l'ouverture : on ne remplace pas sous
+   les doigts les champs dans lesquels on est en train de taper. Seule la
+   liste des personnes qui correspondent est redessinée à chaque frappe. */
 function rendreNouveauProspect(){
   if(!NOUV) return;
-  const cands = contactsApprochants(NOUV)
-    .filter(x=> NOUV.ecartes.indexOf(cleContact(x.c)) < 0);
   $("#nvCorps").innerHTML = `
     <div class="mdgrid">
+      <div class="mdf"><label for="nvNom">NOM</label>
+        <input type="text" id="nvNom" data-nv="nom" autocomplete="off"
+          value="${esc(NOUV.nom)}"></div>
+      <div class="mdf"><label for="nvPrenom">Prénom</label>
+        <input type="text" id="nvPrenom" data-nv="prenom" autocomplete="off"
+          value="${esc(NOUV.prenom)}"></div>
       <div class="mdf"><label for="nvCiv">Civilité</label>
         <select id="nvCiv" data-nv="civilite"><option value=""></option>${
           (L.civilite || []).map(o=> `<option${o === NOUV.civilite ? " selected" : ""}>${
             esc(o)}</option>`).join("")}</select></div>
-      <div class="mdf"><label for="nvPrenom">Prénom</label>
-        <input type="text" id="nvPrenom" data-nv="prenom" value="${esc(NOUV.prenom)}"></div>
-      <div class="mdf"><label for="nvNom">NOM</label>
-        <input type="text" id="nvNom" data-nv="nom" value="${esc(NOUV.nom)}"></div>
       <div class="mdf"><label for="nvTel">Téléphone</label>
-        <input type="text" id="nvTel" data-nv="tel" value="${esc(NOUV.tel)}"></div>
+        <input type="text" id="nvTel" data-nv="tel" autocomplete="off"
+          value="${esc(NOUV.tel)}"></div>
       <div class="mdf"><label for="nvMail">Courriel</label>
-        <input type="text" id="nvMail" data-nv="email" value="${esc(NOUV.email)}"></div>
-    </div>` +
-    (cands.length ? `<div class="mdnote mddup" style="margin:14px 0 0">
-      <b>Cette personne est peut-être déjà chez vous.</b> ${cands.length > 1
-        ? "Ces fiches ressemblent" : "Cette fiche ressemble"} à ce que vous saisissez.
-      Validez pour reprendre la fiche existante au lieu d'en créer une seconde, écartez
-      s'il s'agit de quelqu'un d'autre.
+        <input type="text" id="nvMail" data-nv="email" autocomplete="off"
+          value="${esc(NOUV.email)}"></div>
+    </div>
+    <div id="nvSug"></div>`;
+  majSuggestionsNouveau();
+}
+/* la liste des personnes du répertoire qui pourraient être celle-là */
+function majSuggestionsNouveau(){
+  if(!NOUV) return;
+  const z = $("#nvSug");
+  const cands = personnesApprochantes(NOUV)
+    .filter(x=> NOUV.ecartes.indexOf(cleFichePersonne(x.f)) < 0);
+  if(z) z.innerHTML = cands.length ? `<div class="mdnote mddup" style="margin:14px 0 0">
+      <b>${cands.length > 1 ? "Ces personnes sont" : "Cette personne est"} déjà au
+      répertoire.</b> ${NOUV.vers
+        ? "Cliquez pour la rattacher à cette recherche plutôt que d'en créer une seconde."
+        : "Cliquez pour la reprendre telle quelle, avec ses coordonnées et son histoire, "
+          + "plutôt que d'en créer une seconde."} Écartez s'il s'agit de quelqu'un d'autre.
       ${cands.map(x=>{
-        const c = x.c, ref = cleContact(c);
+        const f = x.f, ref = cleFichePersonne(f);
+        const rech = recherchesDeLaPersonne(f.pid);
         return `<div class="mddupl">
-          <div class="mddupq"><b>${esc(nomPersonneProspect(c.qui) || "sans nom")}</b>
-            <span>${esc([c.ou, c.qui.tel, c.qui.email].filter(Boolean).join(" · "))}</span>
-            <span>${esc(c.quoi || "")}</span>
-            <em>${esc(x.raisons.join(", "))}${x.pts >= 80 ? " — très probable" : ""}</em></div>
+          <div class="mddupq"><b>${esc(titrePersonne(f) || "sans nom")}</b>
+            <span>${esc([f.tel1, f.email1, [f.cp, f.ville].filter(Boolean).join(" ")]
+              .filter(Boolean).join(" · ") || "aucune coordonnée")}</span>
+            <span>${esc(quoiFichePersonne(f))}</span>
+            <em>${esc(x.raisons.join(", "))}${x.pts >= 110 ? " — très probable" : ""}</em></div>
           <div class="mddupb">
             <button type="button" class="dupoui" data-nvdup="oui|${esc(ref)}">${
-              c.ou === "prospect" ? "C'est elle — ouvrir sa fiche"
-                                  : "C'est elle — reprendre ses coordonnées"}</button>
+              NOUV.vers ? "C'est elle — la rattacher"
+                : rech.length ? "C'est elle — ouvrir sa recherche"
+                              : "C'est elle — la reprendre"}</button>
+            ${!NOUV.vers && rech.length ? `<button type="button" class="dupneuf"
+              data-nvdup="neuf|${esc(ref)}">Une autre recherche pour elle</button>` : ""}
             <button type="button" class="dupnon" data-nvdup="non|${esc(ref)}">Ce n'est pas
               elle</button></div></div>`;
-      }).join("")}</div>` : "");
-  $("#nvCreer").disabled = !String(NOUV.nom || "").trim() &&
-                           !String(NOUV.prenom || "").trim();
+      }).join("")}</div>` : "";
+  const c = $("#nvCreer");
+  if(c) c.disabled = !String(NOUV.nom || "").trim() &&
+                     !String(NOUV.prenom || "").trim();
 }
 /* créer la fiche, enfin : avec ce qui a été saisi, et le reste à remplir */
 function ligneRechercheNeuve(gens){
@@ -11525,30 +11798,30 @@ function rattacherPersonne(idRech, src){
 }
 /* « C'est elle » : un prospect s'ouvre, une personne d'un dossier donne ses
    coordonnées à la fiche qu'on crée — être vendeur n'empêche pas de chercher. */
-function reprendreContact(ref){
-  const c = contactDeCle(ref);
-  if(!c) return;
+function reprendreContact(ref, neuve){
+  const f = ficheDeCle(ref);
+  if(!f) return;
   const vers = (NOUV || {}).vers || "";
+  const src = {civilite:f.civilite, prenom:f.prenom, nom:f.nom,
+               tel:f.tel1, email:f.email1, pid:f.pid};
   if(vers){
     fermerNouveauProspect();
-    rattacherPersonne(vers, {civilite:c.qui.civilite, prenom:c.qui.prenom,
-      nom:c.qui.nom, tel:c.qui.tel, email:c.qui.email});
+    rattacherPersonne(vers, src);
     return;
   }
-  if(c.ou === "prospect"){
+  const rech = recherchesDeLaPersonne(f.pid);
+  /* elle cherche déjà, et l'on n'a pas demandé une recherche de plus :
+     c'est sa recherche qu'on voulait, pas une seconde */
+  if(rech.length && !neuve){
     fermerNouveauProspect();
     empilerFenetre();
-    ouvrirProspect(c.id, "recherche");
-    toast("Sa recherche était déjà là");
+    ouvrirProspect(rech[0].r.id, "recherche");
+    toast(rech.length > 1 ? "Elle en a " + rech.length + " — voici la première"
+                          : "Sa recherche était déjà là");
     return;
   }
-  creerLeProspect({civilite:c.qui.civilite, prenom:c.qui.prenom, nom:c.qui.nom,
-                   tel:c.qui.tel, email:c.qui.email});
-  const r = (L.prospects || [])[L.prospects.length - 1];
-  if(r){
-    noterJournal(r, "Recherche ouverte depuis un dossier", c.quoi);
-    saveLists();
-  }
+  fermerNouveauProspect();
+  nouvelleRechercheDe([src], "");
 }
 
 /* =====================================================================
@@ -14660,6 +14933,7 @@ document.addEventListener("input", e=>{
     noterMajFiche(k, i, cb.obj[f], t.value, libelleChampProspect(f));
     cb.obj[f] = t.value;
     if(k === "personnes"){ cb.obj.maj = Date.now(); repandreFichePersonne(cb.obj); }
+    else synchroniserCarnet(k, cb.obj);
     saveLists();
     if(t.list && String(t.list.id).startsWith("dl-cps-")) majCpsVu(t);
     /* la date exacte du permis donne l'année de construction */
@@ -15004,7 +15278,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -15201,6 +15475,30 @@ document.addEventListener("click", e=>{
   }
   if(t.dataset.fraz !== undefined){ PERS.fg = ""; PERS.fq = "";
     redessinerHistorique(); return; }
+  if(t.dataset.perstri !== undefined){ PERS.tri = t.dataset.perstri;
+    renderRepertoire(); return; }
+  /* de la fiche d'une personne à sa fiche de carnet, et retour */
+  if(t.dataset.vcarnet){
+    const [k, i] = t.dataset.vcarnet.split(":");
+    empilerFenetre();
+    PERS.ouvert = "";
+    activerOnglet("repertoire");
+    PLIS["b_" + k] = false;
+    renderRepertoire();
+    setTimeout(()=>{
+      const el = document.getElementById("bk_" + k + "_" + i);
+      if(el){ el.scrollIntoView({block:"center"}); el.classList.add("vise");
+              setTimeout(()=> el.classList.remove("vise"), 1600); }
+    }, 60);
+    return;
+  }
+  if(t.dataset.vpers){
+    empilerFenetre();
+    PERS.ouvert = t.dataset.vpers; PERS.onglet = "ident";
+    PERS.fg = ""; PERS.fq = "";
+    activerOnglet("repertoire"); renderRepertoire(); window.scrollTo(0, 0);
+    return;
+  }
   if(t.dataset.actadd){ ouvrirCreerAction(t.dataset.actadd); return; }
   /* ------------------------------------------------- le secteur sur la carte */
   if(t.dataset.sectmode){
@@ -16985,23 +17283,18 @@ $("#nvBox").addEventListener("click", e=>{
   if(!b || !NOUV) return;
   const v = b.getAttribute("data-nvdup");
   const quoi = v.slice(0, v.indexOf("|")), ref = v.slice(v.indexOf("|") + 1);
-  if(quoi === "oui") reprendreContact(ref);
-  else { NOUV.ecartes.push(ref); rendreNouveauProspect(); }
+  if(quoi === "oui")       reprendreContact(ref, false);
+  else if(quoi === "neuf") reprendreContact(ref, true);
+  else { NOUV.ecartes.push(ref); majSuggestionsNouveau(); }
 });
 $("#nvCorps").addEventListener("input", e=>{
   const el = e.target.closest("[data-nv]");
   if(!el || !NOUV) return;
   NOUV[el.dataset.nv] = el.value;
-  /* on ne redessine pas sous les doigts : seules les propositions bougent */
-  clearTimeout(rendreNouveauProspect.t);
-  rendreNouveauProspect.t = setTimeout(()=>{
-    if(!NOUV) return;
-    const ou = document.activeElement, cle = ou && ou.dataset ? ou.dataset.nv : "";
-    const pos = ou && ou.selectionStart;
-    rendreNouveauProspect();
-    const re = cle ? $(`[data-nv="${cle}"]`) : null;
-    if(re){ re.focus(); try{ re.setSelectionRange(pos, pos); }catch(x){} }
-  }, 350);
+  /* seule la liste bouge : les champs, eux, ne sont jamais remplacés sous
+     les doigts, et le curseur n'a donc rien à rattraper */
+  clearTimeout(majSuggestionsNouveau.t);
+  majSuggestionsNouveau.t = setTimeout(majSuggestionsNouveau, 120);
 });
 $("#renFermer").onclick = fermerRenouvellement;
 $("#renBox").addEventListener("click", e=>{
@@ -19720,9 +20013,11 @@ const AIDE = [
   "il a quitté les Listes, un immeuble n'étant pas une liste de référence mais un sujet."],
  ["Répertoire",
   "Tous vos contacts au même endroit. En haut de la page, <b>Les personnes</b> : une fiche "+
-  "par personne, quel que soit le rôle qu'elle tient chez vous. En dessous, les carnets "+
-  "métier : notaires, personnes en charge chez un notaire, syndics, négociateurs, "+
-  "diagnostiqueurs, banques. Chaque carnet se déplie et ses fiches se modifient sur place. "+
+  "par personne, quel que soit le rôle ou le métier qu'elle tient chez vous — vendeurs, "+
+  "acquéreurs, demandeurs, notaires, syndics, diagnostiqueurs, banques. En dessous, les "+
+  "carnets métier, qui gardent ce qui est professionnel : l'étude d'un notaire, le "+
+  "pourcentage d'un négociateur. Chaque carnet se déplie et ses fiches se modifient sur "+
+  "place. "+
   "La recherche en haut cherche dans <b>tout</b> — nom, étude, adresse, ville, "+
   "téléphone, courriel — et ramène en plus les <b>vendeurs et acquéreurs saisis dans les "+
   "dossiers</b>, chacun avec le mandat d'où il vient et un bouton pour y aller : une personne "+
@@ -19746,6 +20041,44 @@ const AIDE = [
   "<b>Où elle intervient.</b> Au bas de la fiche, la liste de ses dossiers et de ses "+
   "recherches, chacun avec son état — en vente, vendu, en cours — et un bouton pour y aller. "+
   "Une pastille pleine signale ce qui est vivant, une pastille grise ce qui est clos."],
+ ["Les métiers au répertoire : notaires, syndics, diagnostiqueurs…",
+  "<b>Tout le monde est au répertoire</b>, y compris ceux avec qui vous travaillez : "+
+  "notaires, personnes en charge d'une étude, négociateurs, et — comme <b>personnes "+
+  "morales</b>, avec leur dénomination — les cabinets de syndic, les diagnostiqueurs et "+
+  "les banques. Ils y sont entrés tout seuls, à la première ouverture, depuis les carnets. "+
+  "<b>Une pastille verte d'eau</b> porte leur <b>fonction</b> : Notaire, Clerc de notaire, "+
+  "Syndic… Contrairement aux rôles, elle ne s'allume ni ne s'éteint — on exerce un métier, "+
+  "on ne le suspend pas. Elle se <b>modifie directement sur la fiche</b>, dans le champ "+
+  "<b>Fonction</b>, pris dans une liste que vous complétez comme les autres. Une fois "+
+  "modifiée à la main, le carnet ne la reprend plus : c'est votre mot qui reste. "+
+  "<b>Ce qui circule entre la fiche et le carnet</b> : le téléphone, le courriel et "+
+  "l'adresse, dans les deux sens — corrigez d'un côté, l'autre suit. "+
+  "<b>Ce qui reste au carnet</b> : les champs du métier — l'étude d'un notaire, le "+
+  "pourcentage et le portrait d'un négociateur, l'interlocuteur d'une banque — et surtout "+
+  "le <b>libellé</b> que les dossiers retiennent et que les documents impriment. Un bouton "+
+  "<b>Au carnet</b> sur la fiche y mène, et un bouton <b>Sa fiche</b> fait le retour. "+
+  "<b>Son métier</b>, au bas de la fiche, nomme les dossiers où elle intervient à ce "+
+  "titre — notaire du vendeur, personne en charge côté acquéreur, banque, diagnostiqueur, "+
+  "négociateur — et, pour un syndic, les <b>immeubles</b> qu'il gère."],
+ ["Une notaire qui vend sa maison : une seule fiche",
+  "C'est le cas qui faisait trois saisies et qui n'en fait plus qu'une. Une personne peut "+
+  "être <b>notaire</b> par métier et <b>vendeuse</b> dans un de vos dossiers : elle n'a "+
+  "qu'<b>une fiche</b>, avec les deux pastilles, et <b>un historique par titre</b> — "+
+  "« Historique Vendeur » et « Historique Notaire ». "+
+  "Quand vous créez une action pour elle, l'application vous demande alors <b>à quel "+
+  "titre</b> elle agit, pour que l'action aille dans le bon historique. Si elle n'a qu'un "+
+  "titre, la question ne se pose pas et n'est pas posée. "+
+  "<b>Une nuance utile :</b> les <b>pièces jointes</b> d'une fiche de carnet restent "+
+  "rangées sous son libellé professionnel (« Maître Clémence TORTEL ») et celles de la "+
+  "vendeuse sous son nom. Les deux dossiers du Drive restent donc distincts — c'est "+
+  "voulu : un acte de vente personnel n'a pas à se mêler à la correspondance de l'étude."],
+ ["Chercher et filtrer au répertoire",
+  "Le champ de recherche porte sur <b>tout</b> ce que la fiche contient — nom, ville, "+
+  "téléphone, courriel, <b>métier</b>, observations : taper « syndic » ramène les cabinets "+
+  "de syndic, « arles » tous ceux qui y habitent. "+
+  "À côté, quatre boutons filtrent d'un clic : <b>Vendeurs</b>, <b>Acquéreurs</b>, "+
+  "<b>Demandeurs</b> — les rôles <i>connus</i>, qu'ils soient en cours ou éteints — et "+
+  "<b>Avec un métier</b>, qui ne garde que les gens des carnets. <b>Tous</b> les rend."],
  ["Les rôles : vendeur, acquéreur, demandeur",
   "<b>Un rôle ne se saisit pas, il se constate.</b> Les trois pastilles en haut de la fiche — "+
   "<b>Vendeur</b>, <b>Acquéreur</b>, <b>Demandeur</b> — s'allument toutes seules, d'après ce "+
@@ -19894,21 +20227,27 @@ const AIDE = [
   "est écarté. "+
   "<b>Historique</b> : les biens suivis, les biens écartés, et tout ce qui a été fait."],
  ["Créer une recherche sans doubler la personne",
-  "Le bouton <b>+ Ajouter une recherche</b> n'ouvre pas une fiche vide : il demande "+
-  "d'abord <b>le nom</b> de la personne, son prénom, son téléphone et son courriel. "+
-  "Pendant que vous tapez, l'application cherche ce qui ressemble dans <b>toutes vos "+
-  "bases</b> — les recherches existantes, et les <b>personnes de vos dossiers</b>, "+
-  "vendeurs comme acquéreurs. "+
-  "La ressemblance tient d'abord au <b>nom</b> et au <b>premier prénom</b>, y compris "+
-  "approchants — DURAN pour DURAND, une lettre de travers suffit à créer un doublon —, et "+
-  "le <b>téléphone</b> ou le <b>courriel</b> identiques emportent la décision : deux "+
-  "clients n'ont pas le même numéro. "+
-  "Chaque proposition se tranche : <b>« C'est elle »</b> ouvre la recherche existante, ou "+
-  "<b>reprend ses coordonnées</b> quand c'est une personne d'un dossier — être vendeur "+
-  "n'empêche pas de chercher. <b>« Ce n'est pas elle »</b> écarte la proposition. Rien "+
-  "n'est créé tant que vous n'avez pas cliqué sur « Créer ». "+
+  "Le bouton <b>+ Ajouter une recherche</b> n'ouvre pas une fiche vide : il ouvre une "+
+  "fenêtre, <b>le curseur dans le NOM</b>. "+
+  "<b>Dès la deuxième ou la troisième lettre</b>, les personnes du <b>répertoire</b> qui "+
+  "pourraient être celle-là montent en dessous : « VID » fait apparaître VIDAL avant que "+
+  "vous ayez fini le mot. Chaque ligne dit ce qu'elle est — vendeur du n° 1101, deux "+
+  "recherches en cours — et ses coordonnées, pour que vous reconnaissiez la bonne. "+
+  "<b>Un clic la reprend</b>, avec son téléphone, son courriel et son histoire : vous ne "+
+  "retapez rien. "+
+  "La même liste sert de <b>garde-fou contre le doublon</b> : elle ne montre pas que les "+
+  "noms qui commencent pareil, mais aussi ceux qui <b>ressemblent</b> — DURAN pour "+
+  "DURAND, une lettre de travers suffit à créer un doublon — et ceux qui partagent le "+
+  "<b>téléphone</b> ou le <b>courriel</b>, ce qui emporte la décision : deux clients "+
+  "n'ont pas le même numéro. "+
+  "Trois façons de trancher : <b>« C'est elle — ouvrir sa recherche »</b> va à celle "+
+  "qu'elle a déjà ; <b>« Une autre recherche pour elle »</b> en ouvre une seconde à son "+
+  "nom ; <b>« Ce n'est pas elle »</b> écarte la proposition. Si elle ne cherche encore "+
+  "rien, le premier bouton dit simplement <b>« la reprendre »</b>. Rien n'est créé tant "+
+  "que vous n'avez pas cliqué, ni sur une ligne, ni sur « Créer ». "+
   "<b>Le même contrôle</b> s'applique à <b>+ Une personne</b>, quand vous rattachez un "+
-  "conjoint à une recherche déjà ouverte."],
+  "conjoint à une recherche déjà ouverte : le clic la rattache au lieu d'ouvrir une "+
+  "seconde recherche."],
  ["Plusieurs recherches pour une même personne",
   "Un même client cherche souvent deux choses à la fois : une maison pour y vivre, et un "+
   "studio à louer. Les mettre dans une seule fiche donnait une recherche qui ne "+
@@ -24909,6 +25248,8 @@ document.addEventListener("focusout", e=>{
   chargerSeance();
   /* le recensement des personnes : une fois, au démarrage */
   try{ enrolerLesPersonnes(); }catch(e){ if(window.console) console.error(e); }
+  try{ enrolerLesMetiers(); saveLists(); }
+  catch(e){ if(window.console) console.error(e); }
   /* avant de charger le dossier courant : un notaire renommé ailleurs ne doit
      pas laisser ici des dossiers orphelins de leur étude */
   recalerNotairesDossiers();
