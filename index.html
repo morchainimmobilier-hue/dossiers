@@ -127,6 +127,15 @@ main{flex:1;min-width:0;max-width:1240px;margin:0 auto;padding:22px 0 80px}
 .card > h2 .perim{background:rgba(255,255,255,.14);border-radius:5px;padding:2px 7px;
   font-size:10.5px;font-weight:600;letter-spacing:.4px;opacity:.9;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis;max-width:46%;margin-left:auto}
+/* le nom de la recherche, calé à droite de son bandeau */
+.card > h2 .h2droite{margin-left:auto;text-transform:none;letter-spacing:0}
+.card > h2 .h2droite select{background:rgba(255,255,255,.14);color:#fff;
+  border:1px solid rgba(255,255,255,.3);border-radius:7px;padding:3px 8px;
+  font:inherit;font-size:12px;text-transform:none;letter-spacing:0;min-width:190px}
+.card > h2 .h2droite select option{color:var(--ink);background:#fff}
+.card > h2 .h2droite .addinline{background:rgba(255,255,255,.14);color:#fff;
+  border:1px solid rgba(255,255,255,.3)}
+.card > h2 .h2droite .addinline:hover{background:rgba(255,255,255,.3)}
 .card .body{padding:14px 16px}
 .card .body.scroll{overflow-x:auto}
 
@@ -1034,6 +1043,31 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .mddupb .dupnon{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
 .mddupb .dupnon:hover{background:#f1f4f9;color:var(--ink)}
 .tbtn.mini{padding:4px 10px;font-size:12.5px}
+/* le bandeau d'une recherche : les boutons dessus, les coordonnées dessous */
+.rechl1,.rechl2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%}
+.rechl2{margin-top:7px;padding-top:7px;border-top:1px solid var(--line-2);gap:18px}
+.rechl2 .rqui{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+.rechl2 .rqui b{font-weight:650}
+.rechl2 .rcoord{display:inline-flex;align-items:center;gap:4px;color:var(--ink-2)}
+.rechl2 .rcoord .addinline{padding:2px 6px}
+/* les quartiers, deux colonnes de front : les recherchés en bleu, les
+   refusés en rouge — les mêmes couleurs que sur la carte */
+.quartduo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.quartduo{grid-template-columns:1fr}}
+.qcol > label{display:block;font-size:11px;letter-spacing:.4px;text-transform:uppercase;
+  font-weight:600;margin:0 0 5px}
+.qcol .multibox{border-radius:9px;padding:8px 10px}
+.qcol .multibox .chkline{gap:6px;margin-right:12px}
+.qcol.qoui > label{color:#1d4ed8}
+.qcol.qoui .multibox{background:#eff6ff;border:1px solid #bfdbfe}
+.qcol.qnon > label{color:#b91c1c}
+.qcol.qnon .multibox{background:#fef2f2;border:1px solid #fecaca}
+/* les communes d'un code postal qui en couvre plusieurs */
+.cpvilles{display:flex;flex-direction:column;gap:8px}
+.cpv{display:flex;align-items:flex-start;gap:10px}
+.cpvcode{font-weight:700;font-size:12.5px;color:var(--ink-2);padding-top:4px;
+  min-width:52px}
+.cpv .multibox{flex:1}
 /* la pastille du métier : elle ne s'éteint pas, on l'exerce */
 .bookcard.vise{box-shadow:0 0 0 3px var(--accent);border-radius:12px}
 /* la reprise d'un fichier : ce qu'on va écrire, avant de l'écrire */
@@ -2009,7 +2043,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 17 octobre 2026, 10 h 15">Dossiers de vente</div>
+  <div class="brand" title="Version du 17 octobre 2026, 14 h 35">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2220,7 +2254,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>17 octobre 2026, 10 h 15</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>17 octobre 2026, 14 h 35</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2461,7 +2495,12 @@ const INDICATIFS = {
 /* ---------------------------------------------------------------- listes */
 const LISTS_DEFAULT = {
   mandat:     ["Simple","Semi-exclusif","Exclusif","Délégation"],
-  typeBien:   ["Maison","Appartement","Immeuble","Terrain","Local","Garage / Parking","Autre"],
+  /* L'ordre compte : c'est celui de la liste déroulante, du plus courant au
+     plus rare. `LISTES_ORDRE` empêche le tri alphabétique de le défaire. */
+  typeBien:   ["Appartement","Maison","Local","Immeuble","Garage / Parking",
+               "Terrain constructible","Terrain non constructible","Autre"],
+  /* ce que la recherche vise — elle en porte le nom */
+  nomRecherche:["Résidence principale","Investissement locatif","Résidence secondaire"],
   /* Les quartiers, par commune. Un quartier n'existe que dans SA ville —
      « Trinquetaille » ne veut rien dire à Saint-Martin-de-Crau —, d'où un
      couple {ville, nom} et non une liste de mots. Elle part VIDE et se
@@ -2613,6 +2652,7 @@ const LIST_LABELS = {
   chargeHono:"Charge des honoraires",
   modeEquip:"Chauffage / refroidissement — nature", modeEcs:"Eau chaude — nature",
   energie:"Énergies", fonctionNot:"Fonctions dans une étude",
+  nomRecherche:"Objets d'une recherche",
   fonctionPers:"Fonctions au répertoire",
   exposition:"Expositions", etatBien:"États du bien", piecesNoms:"Noms de pièces",
   niveauPiece:"Niveaux des pièces",
@@ -2712,11 +2752,12 @@ const BOOKS = {
     ["@suivi","Le suivi de cette recherche","sep"],
     ["rdv","Date du rendez-vous","date"],
     ["nego","Négociateur qui la suit","book:negociateurs"],
-    ["ac3","Saisie AC3","yn"],
     ["actif","Recherche en cours","check"],
     ["contact","Dernier contact","date"],
     /* --- volet 2 : la recherche */
-    ["types","Types de biens","multi:typeBien","wide"],
+    ["types","Type de bien","list:typeBien","wide"],
+    ["prixMin","Prix mini","money"],
+    ["villes","Communes retenues","communes","plein"],
     ["cps","Codes postaux recherchés","cps","wide"],
     ["quartiersOui","Quartiers recherchés","quartiers","wide"],
     ["quartiersNon","Quartiers refusés","quartiers","wide"],
@@ -2777,7 +2818,8 @@ const BOOKS = {
    de saisie : il porte les biens suivis, qui se cueillent ailleurs. */
 const PAGES_PROSPECT = [
   {cle:"recherche", lib:"La recherche",
-   champs:["types","cps","quartiersOui","quartiersNon",
+   /* le secteur — codes postaux, communes, quartiers — a son volet à lui */
+   champs:["types","prixMin","budgetSansTravaux",
            "@surf","surfaceMin","surfaceMax","chambresMin","chambresIdeal","piecesMin",
            "@conf","plainPiedChambre","plainPiedCommod","parkingPdi","garagePdi",
            "terrassePdi","ascenseurPdi","ascenseurNon","etageMax","etagesApt",
@@ -2790,7 +2832,7 @@ const PAGES_PROSPECT = [
            "@budget","budgetTravaux","budgetSansTravaux","budgetCoup",
            "@fin","financement","banqueVue","accordPrincipe",
            "@vente","venteFaite","venteCompromis","venteVendu",
-           "@suivi","rdv","nego","ac3","contact"]},
+           "@suivi","rdv","nego","contact"]},
   {cle:"rappro",  lib:"Biens à rapprocher", champs:[]},
   {cle:"journal", lib:"Historique", champs:[]}
 ];
@@ -2811,8 +2853,11 @@ const PAGES_PROSPECT = [
    Chaque recherche porte sa case ACTIVE. La décocher ne l'efface pas : elle
    cesse simplement de rapprocher, et les biens qu'elle proposait sortent de
    la liste. On la réactive d'un clic. */
+/* Les critères d'une recherche : ceux du volet « La recherche », plus ceux
+   du secteur, qui a son volet à lui depuis qu'il porte une carte. */
 const CHAMPS_RECHERCHE = (PAGES_PROSPECT.filter(p=> p.cle === "recherche")[0].champs)
-  .filter(c=> c.charAt(0) !== "@");
+  .filter(c=> c.charAt(0) !== "@")
+  .concat(["cps","villes","quartiersOui","quartiersNon"]);
 function rechercheNeuve(){
   const r = {id:"rc" + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
              actif:true, nom:"", zones:[]};
@@ -3153,7 +3198,12 @@ function loadListesDepuis(v){
         ligne.id = x.id + "~" + (rc.id || ("r" + k));
         ligne.suivis = []; ligne.refus = []; ligne.journal = [];
       }
-      CHAMPS_RECHERCHE.forEach(f=>{ if(rc[f] !== undefined) ligne[f] = rc[f]; });
+      CHAMPS_RECHERCHE.forEach(f=>{
+        if(rc[f] === undefined) return;
+        /* une recherche imbriquée ne portait pas le budget : il était sur la
+           fiche. Un blanc ne doit donc pas effacer ce que la ligne a déjà. */
+        if(String(rc[f]) !== "" || ligne[f] === undefined) ligne[f] = rc[f];
+      });
       ligne.zones = Array.isArray(rc.zones) ? rc.zones : [];
       /* le nom d'une recherche a sa clé à lui : `nom` sert encore de nom de
          famille sur les bases restées en arrière, on ne le lui prend pas */
@@ -4108,8 +4158,15 @@ function villesDuContexte(path, attr){
   if(!c) return [];
   return villesDesCps((c.obj || {}).cps);
 }
+/* Deux listes se lisent dans l'ordre où elles sont écrites, et non par
+   ordre alphabétique : le type de bien va du plus courant au plus rare, et
+   l'objet d'une recherche suit l'usage. */
+const LISTES_ORDRE = ["typeBien", "nomRecherche"];
 function optionsFor(kind, path){
-  if(kind.startsWith("list:")) return (L[kind.slice(5)]||[]).slice().sort(triFr);
+  if(kind.startsWith("list:")){
+    const cle = kind.slice(5), l = (L[cle] || []).slice();
+    return LISTES_ORDRE.indexOf(cle) >= 0 ? l : l.sort(triFr);
+  }
   if(kind.startsWith("book:")) return (L[kind.slice(5)]||[]).map(x=>x.nom).sort(triFr);
   if(kind==="pays") return PAYS.slice();
   if(kind==="on" || kind==="yn") return ["OUI","NON"];
@@ -4242,6 +4299,10 @@ const IC_MAIL = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="tr
 
 /* le bouton lit la valeur du champ voisin au moment du clic */
 function valeurVoisine(bouton){
+  /* un bouton posé hors d'un champ porte la valeur lui-même : c'est le cas
+     du bandeau d'une recherche, qui affiche les coordonnées sans les saisir */
+  const direct = (bouton.dataset.wa || bouton.dataset.mail || "").trim();
+  if(direct) return direct;
   const zone = bouton.closest(".withadd");
   const el = zone ? zone.querySelector("input") : null;
   return el ? el.value.trim() : "";
@@ -4272,6 +4333,11 @@ function lienMail(bouton){
    écrit, et à quel titre. On en tire de quoi inscrire l'action au bon
    historique, sans rien demander de plus à personne. */
 function contexteDuBouton(bouton){
+  /* le bandeau d'une recherche écrit le contexte sur le bouton : la personne
+     et la recherche, puisqu'il n'y a pas de champ de saisie à côté */
+  if(bouton && bouton.dataset.pid)
+    return {pid:bouton.dataset.pid, role:"demandeur",
+            recherche:bouton.dataset.rech || ""};
   const zone = bouton && bouton.parentElement;
   const champ = zone ? zone.querySelector("[data-b],[data-book],[data-pper]") : null;
   if(!champ) return {};
@@ -4371,7 +4437,9 @@ function controlBase(path,kind,v,grp,attr){
      la liste. Les cases sont donc celles de la liste, et la fiche garde leurs
      intitulés séparés par des virgules — lisible à l'œil, et exploitable. */
   if(kind.startsWith("multi:")){
-    const choix = (L[kind.slice(6)] || []).slice().sort(triFr);
+    const cleM = kind.slice(6);
+    const choix = (L[cleM] || []).slice();
+    if(LISTES_ORDRE.indexOf(cleM) < 0) choix.sort(triFr);
     const pris = listeMulti(v);
     if(!choix.length) return `<span class="muted">Liste vide.</span>`;
     return `<div class="multibox">` + choix.map(o=>
@@ -4414,6 +4482,28 @@ function controlBase(path,kind,v,grp,attr){
       `<label class="chkline"><input type="checkbox" data-bmulti="${esc(path)}"` +
       ` value="${esc(o)}"${pris.indexOf(o) >= 0 ? " checked" : ""}>` +
       `<span>${esc(o)}</span></label>`).join("") + `</div>` + plus;
+  }
+  /* ------------------------------------- les communes d'un code postal ---
+     Un code postal en couvre souvent plusieurs : 13150 vaut pour Tarascon,
+     Boulbon et Saint-Pierre-de-Mézoargues. On laisse choisir — une ou
+     plusieurs —, et tant que rien n'est coché le code entier vaut. */
+  if(kind==="communes"){
+    const c = cibleBook(path);
+    const cps = listeMulti((c && c.obj || {}).cps);
+    const pris = listeMulti(v);
+    const groupes = cps.map(cp=> ({cp:cp, villes:(villesPour("France", cp) || [])}))
+      .filter(g=> g.villes.length > 1);
+    if(!groupes.length) return `<div class="multibox vide"><span class="muted">${
+      cps.length ? "Chacun de ces codes postaux ne désigne qu'une commune."
+                 : "Saisissez d'abord les codes postaux."}</span></div>`;
+    return `<div class="cpvilles">` + groupes.map(g=>
+      `<div class="cpv"><span class="cpvcode">${esc(g.cp)}</span>
+        <div class="multibox">${g.villes.map(x=>{
+          const val = g.cp + " " + x;
+          return `<label class="chkline"><input type="checkbox" data-bmulti="${esc(path)}"`
+            + ` value="${esc(val)}"${pris.indexOf(val) >= 0 ? " checked" : ""}>`
+            + `<span>${esc(x)}</span></label>`;
+        }).join("")}</div></div>`).join("") + `</div>`;
   }
   if(kind==="cps"){
     return `<input type="text" ${a} value="${esc(v)}" inputmode="numeric"
@@ -10153,8 +10243,10 @@ const CHAMPS_TYPE = {
   ascenseurNon: ["Appartement","Local"],
   etageMax:     ["Appartement","Local"],
   etagesApt:    ["Appartement"],
-  terrainMin:   ["Maison","Terrain","Immeuble"],
-  terrainMax:   ["Maison","Terrain","Immeuble"],
+  terrainMin:   ["Maison","Terrain","Terrain constructible",
+                 "Terrain non constructible","Immeuble"],
+  terrainMax:   ["Maison","Terrain","Terrain constructible",
+                 "Terrain non constructible","Immeuble"],
   piscinePdi:   ["Maison","Immeuble"]
 };
 function champSelonType(cle, types){
@@ -10177,6 +10269,12 @@ function critAcq(r, rech){
   return {
     budgetSocle:   sous.length ? Math.min.apply(null, sous) : null,
     budgetPlafond: sous.length ? Math.max.apply(null, sous) : null,
+    /* le prix plancher : on ne cherche pas en dessous d'un certain prix
+       quand on sait ce qu'on veut — un studio à 60 000 € n'intéresse pas
+       qui vise 250 000 € */
+    prixMin: num(a.prixMin),
+    /* les communes retenues, quand un code postal en couvre plusieurs */
+    villes: listeMulti(a.villes),
     types: listeMulti(a.types),
     cps: listeMulti(a.cps),
     quartiersNon: listeMulti(a.quartiersNon),
@@ -10184,6 +10282,9 @@ function critAcq(r, rech){
     /* le secteur dessiné sur la carte : plusieurs zones, dont l'union fait
        le périmètre */
     zones: Array.isArray(a.zones) ? a.zones : [],
+    /* les contours des quartiers demandés : ils matérialisent le secteur
+       quand rien n'a été tracé à la main */
+    zonesQ: zonesDesQuartiers(a),
     surfaceMin: num(a.surfaceMin),
     surfaceMax: num(a.surfaceMax),
     terrainMin: num(selonType("terrainMin", a.terrainMin)),
@@ -10230,7 +10331,8 @@ function critaresAVerifier(r, o){
 /* Une fiche sans critère ne se rapproche de rien : on ne va pas proposer tout
    le portefeuille à qui n'a rien dit de ce qu'il cherche. */
 function rechercheRenseignee(c){
-  return c.budgetPlafond !== null || c.types.length > 0 || c.cps.length > 0 ||
+  return c.budgetPlafond !== null || c.prixMin !== null ||
+         c.types.length > 0 || c.cps.length > 0 ||
          c.quartiersOui.length > 0 || c.quartiersNon.length > 0 ||
          c.zones.length > 0 ||
          c.surfaceMin !== null || c.surfaceMax !== null ||
@@ -10268,6 +10370,18 @@ function comparerAcqBien(c, o){
   if(!c.zones.length && c.cps.length && o.cp && !c.cps.some(x=> x === o.cp))
     return rejet("code postal non demandé (" + o.cp +
                  (o.ville ? " " + o.ville : "") + ")");
+  /* Un code postal en couvre parfois plusieurs : si l'on a dit lesquelles,
+     les autres sortent — mais seulement pour LEUR code, les autres codes
+     n'ayant rien demandé. */
+  if(!c.zones.length && c.villes.length && o.cp){
+    const pour = c.villes.filter(x=> x.indexOf(o.cp + " ") === 0)
+                         .map(x=> x.slice(o.cp.length + 1));
+    if(pour.length){
+      if(!o.ville) flou("commune du bien non renseignée");
+      else if(!pour.some(v=> fold(v) === fold(o.ville)))
+        return rejet("commune non demandée (" + o.ville + ")");
+    }
+  }
   /* 1 bis. le secteur tracé sur la carte */
   if(c.zones.length){
     if(o.lat === null || o.lon === null)
@@ -10287,9 +10401,19 @@ function comparerAcqBien(c, o){
      c.quartiersNon.some(q=> fold(q) === fold(o.quartier)))
     return rejet("quartier refusé (" + o.quartier + ")");
   if(c.quartiersOui.length){
-    if(!o.quartier) flou("quartier du bien non renseigné");
-    else if(!c.quartiersOui.some(q=> fold(q) === fold(o.quartier)))
+    const dit = o.quartier && c.quartiersOui.some(q=> fold(q) === fold(o.quartier));
+    if(o.quartier && !dit)
       return rejet("quartier non demandé (" + o.quartier + ")");
+    /* Le bien ne dit pas son quartier ? Le CONTOUR, s'il existe, tranche :
+       un bien repéré hors des quartiers demandés n'y est pas, quoi qu'en
+       dise sa fiche. Sans contour ni quartier saisi, on ne tranche pas —
+       on le signale et il reste à voir. */
+    if(!o.quartier){
+      if(c.zonesQ.length && o.lat !== null && o.lon !== null){
+        if(!dansSecteur(c.zonesQ, o.lat, o.lon))
+          return rejet("hors des quartiers demandés");
+      } else flou("quartier du bien non renseigné");
+    }
   }
 
   /* 2. le budget, en deux temps : le socle, puis le plafond */
@@ -10302,6 +10426,14 @@ function comparerAcqBien(c, o){
     } else if(c.budgetSocle !== null && o.fai > c.budgetSocle){
       ecart(15, "au-dessus du budget courant, dans l'enveloppe coup de cœur");
     }
+  }
+  /* le prix plancher, s'il est dit : même tolérance, en sens inverse */
+  if(c.prixMin !== null && c.prixMin > 0 && o.fai !== null && o.fai < c.prixMin){
+    const d = c.prixMin - o.fai, part = d / c.prixMin;
+    const dit = "en dessous du prix minimum de " + eur(d)
+              + " (" + Math.round(part * 100) + " %)";
+    if(part > 0.15) return rejet(dit);
+    ecart(part > 0.07 ? 45 : 25, dit);
   }
   /* 3. les surfaces */
   if(c.surfaceMin !== null && c.surfaceMin > 0 &&
@@ -10556,7 +10688,10 @@ function resumeUneRecherche(r, rc){
   if(c.quartiersNon.length) b.push("sauf " + c.quartiersNon.join(", "));
   if(c.types.length) b.push(c.types.join(", "));
   if(c.cps.length) b.push(communesCourtes(c.cps.join(", ")));
-  if(c.budgetPlafond !== null) b.push("jusqu'à " + eur(c.budgetPlafond));
+  if(c.prixMin !== null && c.budgetPlafond !== null)
+    b.push("de " + eur(c.prixMin) + " à " + eur(c.budgetPlafond));
+  else if(c.prixMin !== null) b.push("à partir de " + eur(c.prixMin));
+  else if(c.budgetPlafond !== null) b.push("jusqu'à " + eur(c.budgetPlafond));
   if(c.surfaceMin !== null || c.surfaceMax !== null)
     b.push(c.surfaceMin !== null && c.surfaceMax !== null
       ? "de " + c.surfaceMin + " à " + m2txt(c.surfaceMax)
@@ -11443,7 +11578,10 @@ function champsProspect(i, champs, serre){
   champs.forEach(f=>{
     const c = parCle[f];
     if(!c) return;
-    const [cle, lab, kd, w] = c;
+    let [cle, lab, kd, w] = c;
+    /* le même champ, deux noms : « Bien sans travaux » dans le financement,
+       « Prix maxi » à côté du type de bien, où il se lit comme une borne */
+    if(serre && cle === "budgetSansTravaux") lab = "Prix maxi";
     /* un critère hors sujet pour les types demandés ne s'affiche pas : il
        n'écarte rien non plus (voir critAcq), les deux vont ensemble */
     if(serre && kd !== "sep" && !champSelonType(cle, dans.types)) return;
@@ -11478,36 +11616,69 @@ function bandeauRecherche(i){
   const r = (L.prospects || [])[i] || {};
   const actif = r.actif === undefined || !!r.actif;
   const gens = personnesProspect(r);
+  /* le contact d'une personne : ce que dit sa fiche du répertoire d'abord,
+     ce que porte la recherche à défaut */
+  const contactDe = p=>{
+    const f = p.pid ? fichePersonne(p.pid) : null;
+    return {tel:(f && f.tel1) || p.tel || "", mail:(f && f.email1) || p.email || "",
+            tel2:(f && f.tel2) || "", mail2:(f && f.email2) || ""};
+  };
   return `<div class="rechbar${actif ? "" : " dort"}">
-    <div class="rechqui">
-      ${gens.length ? gens.map(p=>{
-        const pid = p.pid || "";
-        const f = pid ? fichePersonne(pid) : null;
-        const co = [f ? f.tel1 : p.tel, f ? f.email1 : p.email].filter(Boolean).join("  ·  ");
-        return `<span class="rqui"><b>${esc(nomPersonneProspect(p) || "(sans nom)")}</b>
-          <em>${esc(co || "aucune coordonnée")}</em>
-          ${pid ? `<button type="button" class="xbtn" data-persvers="${esc(pid)}"
-            >Sa fiche</button>` : ""}</span>`;
-      }).join("") : `<span class="rqui muted">Recherche rattachée à personne</span>`}
-      <button type="button" class="xbtn" data-ppadd="${i}">+ Une personne</button>
+    <div class="rechl1">
+      ${gens.filter(p=> p.pid).map(p=> `<button type="button" class="tbtn light mini"
+        data-persvers="${esc(p.pid)}">${esc(gens.length > 1
+          ? "Fiche " + (prenomUsuel(p) || nomPersonneProspect(p))
+          : "Sa fiche")}</button>`).join("")}
+      <button type="button" class="tbtn light mini" data-ppadd="${i}"
+        >+ Une personne</button>
+      <button type="button" class="tbtn light mini" data-rechdup="${i}">Dupliquer</button>
+      <button type="button" class="tbtn light mini" data-rechadd="${i}"
+        >+ 1 recherche</button>
+      <span class="grow"></span>
+      <label class="chkline rechactif"><input type="checkbox"
+        data-bookchk="prospects:${i}:actif"${actif ? " checked" : ""}>
+        <span>${actif ? "active" : "en sommeil"}</span></label>
     </div>
-    <input type="text" class="rechnom" data-book="prospects:${i}:nomRech"
-      value="${esc(r.nomRech || "")}" placeholder="Nommez cette recherche :
-      « la maison », « le studio à louer »">
-    <label class="chkline rechactif"><input type="checkbox"
-      data-bookchk="prospects:${i}:actif"${actif ? " checked" : ""}>
-      <span>${actif ? "active" : "en sommeil"}</span></label>
-    <button type="button" class="tbtn light mini" data-rechdup="${i}">Dupliquer</button>
-    <button type="button" class="tbtn light mini" data-rechadd="${i}">+ Une recherche</button>
+    <div class="rechl2">
+      ${gens.length ? gens.map(p=>{
+        const c = contactDe(p);
+        const tel = t=> t ? `<span class="rcoord"><span>${esc(t)}</span>
+          <button type="button" class="addinline contact" data-wa="${esc(t)}"
+            data-pid="${esc(p.pid || "")}" data-rech="${esc(r.id)}"
+            title="Envoyer un message WhatsApp">${IC_MSG}</button></span>` : "";
+        const mel = m=> m ? `<span class="rcoord"><span>${esc(m)}</span>
+          <button type="button" class="addinline contact" data-mail="${esc(m)}"
+            data-pid="${esc(p.pid || "")}" data-rech="${esc(r.id)}"
+            title="Écrire un courriel">${IC_MAIL}</button></span>` : "";
+        const tout = tel(c.tel) + tel(c.tel2) + mel(c.mail) + mel(c.mail2);
+        return `<span class="rqui"><b>${esc(nomPersonneProspect(p) || "(sans nom)")}</b>
+          ${tout || `<em>aucune coordonnée</em>`}</span>`;
+      }).join("") : `<span class="rqui muted">Recherche rattachée à personne</span>`}
+    </div>
   </div>${actif ? "" : `<p class="mdnote" style="margin:0 0 12px">Cette recherche est
     <b>en sommeil</b> : elle ne rapproche plus rien, et les biens qu'elle proposait ont
     quitté la liste. Ses critères sont gardés — recochez la case et tout revient.</p>`}`;
+}
+/* le premier prénom, et lui seul : c'est celui dont on se sert pour parler */
+function prenomUsuel(p){
+  return String((p || {}).prenom || "").trim().split(/[\s,]+/)[0] || "";
+}
+/* « M. Thomas HILBERT », « M. Thomas HILBERT et Mme Claire DURAND » : la
+   civilité quand on la connaît, le premier prénom, le nom. */
+function titreDemandeurs(r){
+  const l = personnesProspect(r).map(p=>{
+    const f = p.pid ? fichePersonne(p.pid) : null;
+    const civ = String((f && f.civilite) || p.civilite || "").trim();
+    return [civ, prenomUsuel(p), enMajuscules(p.nom)].filter(Boolean).join(" ");
+  }).filter(Boolean);
+  return l.join(" et ");
 }
 function vueProspFiche(){
   const i = indexProspect(PROSP.ouvert);
   if(i < 0) return vueProspListe();
   const r = L.prospects[i];
   const lib = libelleAcquereur(r) || BOOKS.prospects.label;
+  const qui = titreDemandeurs(r);
   const page = PAGES_PROSPECT.filter(p=> p.cle === PROSP.page)[0] || PAGES_PROSPECT[0];
   let corps;
   if(page.cle === "secteur")      corps = pageSecteur(i);
@@ -11545,7 +11716,10 @@ function vueProspFiche(){
         }).join("")}
       </nav>
       <div class="prospcorps" id="prospCorps">
-        <div class="card"><h2>${esc(page.lib)}</h2>
+        <div class="card"><h2>${esc(page.lib)}${qui ? " de " + esc(qui) : ""}${
+          page.cle === "recherche" ? `<span class="h2droite">${
+            controlRaw(`prospects:${i}:nomRech`, "list:nomRecherche", r.nomRech || "",
+                       `pr${i}`, "data-book")}</span>` : ""}</h2>
           <div class="body">${corps}</div></div>
       </div>
     </div>`;
@@ -12261,11 +12435,34 @@ function pageSecteur(i){
   const aRepere = biensARepere().length;
   const v = MODES_DEPL.map(m=> m.lib + " " + String(vitesseDe(m.cle)).replace(".", ",")
     + " km/h").join(", ");
+  const cps = listeMulti(r.cps);
+  const sansContour = cps.filter(cp=> !contoursDuCp(cp).length);
   return `<p class="mdnote" style="margin:0 0 12px">Le secteur de
-      <b>${esc(titreRecherche(r))}</b> : dessinez-le, ou posez un cercle autour d'une
-      adresse. Plusieurs zones se cumulent — un bien dans <b>l'une</b> d'elles est dans le
-      secteur. Tant qu'aucune zone n'est posée, c'est le <b>code postal</b> qui filtre ;
-      dès qu'il y en a une, c'est <b>elle</b> qui décide.</p>
+      <b>${esc(titreRecherche(r))}</b> se dit de trois façons, de la plus large à la
+      plus fine : les <b>communes</b>, puis les <b>quartiers</b>, puis un tracé
+      <b>à la main</b> sur la carte. La carte montre toujours la plus fine des trois —
+      un quartier choisi remplace sa commune, un tracé remplace tout.</p>
+
+    <div class="mdsect"><h4>Les communes</h4>
+      <div class="pgrid" style="padding:0">
+        <div class="pf wide"><label>Codes postaux recherchés</label>
+          ${controlRaw(`prospects:${i}:cps`, "cps", r.cps || "", `pr${i}`, "data-book")}
+        </div>
+        <div class="pf plein"><label>Communes retenues <em class="muted">quand un code
+          en couvre plusieurs</em></label>
+          ${controlRaw(`prospects:${i}:villes`, "communes", r.villes || "",
+                       `pr${i}`, "data-book")}</div>
+      </div></div>
+
+    <div class="mdsect" style="margin-top:14px"><h4>Les quartiers</h4>
+      <div class="quartduo">
+        <div class="qcol qoui"><label>Quartiers recherchés</label>
+          ${controlRaw(`prospects:${i}:quartiersOui`, "quartiers", r.quartiersOui || "",
+                       `pr${i}`, "data-book")}</div>
+        <div class="qcol qnon"><label>Quartiers refusés</label>
+          ${controlRaw(`prospects:${i}:quartiersNon`, "quartiers",
+                       r.quartiersNon || "", `pr${i}`, "data-book")}</div>
+      </div></div>
     ${hors ? `<div class="planhors"><b>Pas de connexion internet.</b><br>
       Le fond de carte vient d'OpenStreetMap et les adresses sont repérées par l'API
       adresse de l'État : la carte a besoin du réseau. Les zones déjà posées continuent
@@ -12314,24 +12511,119 @@ function pageSecteur(i){
          codes postaux de la recherche.</p>`}
     </div>
 
-    <div class="mdsect"><h4>Par quartier</h4>
-      ${quartiers.length ? `<div class="secquart">${quartiers.map(q=>{
-          const pris = zones.some(z=> z.genre === "quartier"
-            && fold(z.ville) === fold(q.ville) && fold(z.nom) === fold(q.nom));
-          return `<label class="chkline"><input type="checkbox" data-sectq="${
-            esc(q.ville + "|" + q.nom)}"${pris ? " checked" : ""}>
-            <span>${esc(q.nom)}<em>${esc(q.ville)}</em></span></label>`;
-        }).join("")}</div>`
-        : `<p class="muted" style="margin:0">Aucun quartier n'a encore de contour.</p>`}
+    <div class="mdsect"><h4>Les contours des quartiers</h4>
+      <p class="muted" style="margin:0 0 8px">Un quartier coché plus haut ne se dessine
+      sur la carte que s'il a un <b>contour</b>. On le trace une fois, et il sert
+      ensuite à toutes les recherches.${sansContour.length
+        ? " Les communes " + esc(sansContour.join(", ")) + " n'ont pas encore de contour :"
+          + " la carte les cerclera d'un trait approché jusqu'à ce qu'il soit chargé."
+        : ""}</p>
+      ${quartiers.length ? `<p class="muted" style="margin:0 0 8px">Déjà contournés :
+        <b>${esc(quartiers.map(q=> q.nom).join(", "))}</b>.</p>`
+        : `<p class="muted" style="margin:0 0 8px">Aucun quartier n'a encore de
+           contour.</p>`}
       ${hors ? "" : `<div class="secqadd">
         <select id="sectQnom"><option value="">— un quartier à contourner —</option>${
           quartiersAContourner(rc).map(q=> `<option value="${esc(q.ville + "|" + q.nom)}"
             >${esc(q.nom)} — ${esc(q.ville)}</option>`).join("")}</select>
         <button type="button" class="tbtn light mini" data-sectqdraw="1">Dessiner son
-          contour</button>
-        <span class="muted">Une fois pour toutes : le contour sert ensuite à tous les
-          prospects.</span></div>`}
+          contour</button></div>`}
     </div>`;
+}
+/* Les quartiers demandés, en zones : leurs contours, quand ils en ont un.
+   C'est ce qui « matérialise » un quartier sur la carte comme le ferait une
+   commune, et ce qui permet de trancher sur un bien dont la fiche ne dit
+   pas le quartier. */
+function zonesDesQuartiers(rc){
+  const noms = listeMulti((rc || {}).quartiersOui);
+  if(!noms.length) return [];
+  const villes = villesDesCps((rc || {}).cps);
+  const out = [];
+  noms.forEach(nom=>{
+    (villes.length ? villes : (L.quartiers || []).map(q=> q.ville)).forEach(v=>{
+      const l = contourQuartier(v, nom);
+      if(l && !out.some(z=> z.nom === nom && z.ville === v))
+        out.push({id:"q:" + v + "|" + nom, genre:"polygone", points:l,
+                  ville:v, nom:nom});
+    });
+  });
+  return out;
+}
+/* ------------------------------------------- le contour d'une commune ----
+   Un demandeur qui dit « Arles » dit une commune, pas un cercle. Le contour
+   exact vient de `geo.api.gouv.fr`, le service de découpage administratif de
+   l'État : sans clé, sans compte, et surtout CHARGÉ UNE FOIS — il est gardé
+   dans les listes, comme le contour d'un quartier dessiné à la main. Une
+   commune connue se dessine ensuite hors ligne, pour toujours.
+
+   Tant qu'un contour manque, la carte ne ment pas : elle ne dessine rien et
+   le dit. On ne remplace pas un contour par un cercle qui ferait croire à
+   une limite administrative. */
+function communesConnues(){
+  if(!Array.isArray(L.communes)) L.communes = [];
+  return L.communes;
+}
+function contourCommune(cp, ville){
+  const c = communesConnues().filter(x=> x && x.cp === String(cp) &&
+    fold(x.ville) === fold(ville))[0];
+  return c && Array.isArray(c.contour) && c.contour.length > 2 ? c.contour : null;
+}
+function contoursDuCp(cp){
+  return communesConnues().filter(x=> x && x.cp === String(cp) &&
+    Array.isArray(x.contour) && x.contour.length > 2);
+}
+/* les communes que cette recherche vise : celles de ses codes postaux, ou
+   seulement celles qu'on a cochées quand un code en couvre plusieurs */
+function communesDeLaRecherche(rc){
+  const choisies = listeMulti((rc || {}).villes);
+  const out = [];
+  listeMulti((rc || {}).cps).forEach(cp=>{
+    const prises = choisies.filter(x=> x.indexOf(cp + " ") === 0)
+      .map(x=> x.slice(cp.length + 1));
+    const l = prises.length ? prises : (villesPour("France", cp) || []);
+    l.forEach(v=> out.push({cp:cp, ville:v}));
+  });
+  return out;
+}
+let COMMUNES_EN_COURS = {};
+async function chargerContourCommune(cp){
+  const code = String(cp || "").trim();
+  if(!/^\d{5}$/.test(code) || COMMUNES_EN_COURS[code]) return 0;
+  if(contoursDuCp(code).length) return 0;
+  COMMUNES_EN_COURS[code] = true;
+  let n = 0;
+  try{
+    const rep = await fetch("https://geo.api.gouv.fr/communes?codePostal=" + code +
+      "&fields=nom,contour&format=json&geometry=contour");
+    if(rep.ok){
+      const l = await rep.json();
+      (Array.isArray(l) ? l : []).forEach(c=>{
+        const g = c && c.contour;
+        if(!g || !g.coordinates) return;
+        /* Polygon ou MultiPolygon : on garde l'anneau extérieur le plus vaste */
+        const anneaux = g.type === "MultiPolygon"
+          ? g.coordinates.map(x=> x[0]) : [g.coordinates[0]];
+        let best = null;
+        anneaux.forEach(a=>{ if(a && (!best || a.length > best.length)) best = a; });
+        if(!best) return;
+        communesConnues().push({cp:code, ville:String(c.nom || "").toUpperCase(),
+          contour:best.map(pt=> [pt[1], pt[0]])});
+        n++;
+      });
+      if(n) saveLists();
+    }
+  }catch(e){ /* hors ligne : on réessaiera à la prochaine ouverture */ }
+  delete COMMUNES_EN_COURS[code];
+  return n;
+}
+/* au moment d'ouvrir la carte : on va chercher ce qui manque, une fois */
+async function assurerContoursCommunes(rc){
+  const manque = listeMulti((rc || {}).cps).filter(cp=> !contoursDuCp(cp).length);
+  if(!manque.length) return 0;
+  let n = 0;
+  for(const cp of manque) n += await chargerContourCommune(cp);
+  if(n && pageActive() === "prospects") renderProspects();
+  return n;
 }
 /* les quartiers des communes de la recherche — ceux qui ont un contour, et
    ceux qui n'en ont pas encore */
@@ -12364,6 +12656,8 @@ async function majCarteSecteur(){
   }
   SECT.occupe = false;
   if(!document.body.contains(zone)) return;
+  /* les contours de commune qui manquent : une fois, puis gardés */
+  assurerContoursCommunes(c.rc);
   if(SECT.carte){ try{ SECT.carte.remove(); }catch(e){} SECT.carte = null; }
   const carte = LF.map(zone, {zoomControl:true, attributionControl:true,
                              doubleClickZoom:false});
@@ -12419,6 +12713,40 @@ function dessinerSecteur(LF, carte, c){
   SECT.couches = [];
   const garde = x=>{ SECT.couches.push(x); return x; };
   const zones = zonesDe(c.rc);
+  const rc = c.rc || {};
+  /* La plus fine des trois l'emporte à l'écran : un tracé à la main cache
+     les quartiers, un quartier choisi cache sa commune. */
+  const qOui = listeMulti(rc.quartiersOui);
+  const qNon = listeMulti(rc.quartiersNon);
+  if(!zones.length && !qOui.length){
+    communesDeLaRecherche(rc).forEach(x=>{
+      const l = contourCommune(x.cp, x.ville);
+      if(l) garde(LF.polygon(l, {color:"#1d4ed8", weight:2, dashArray:"6,4",
+        fillColor:"#2563eb", fillOpacity:.08})).addTo(carte)
+        .bindTooltip(x.ville + " (" + x.cp + ")", {direction:"top"});
+    });
+  }
+  if(!zones.length){
+    qOui.forEach(nom=>{
+      villesDesCps(rc.cps).concat(communesDeLaRecherche(rc).map(x=> x.ville))
+        .filter((v,k,t)=> t.indexOf(v) === k).forEach(v=>{
+          const l = contourQuartier(v, nom);
+          if(l) garde(LF.polygon(l, {color:"#1d4ed8", weight:2, fillColor:"#2563eb",
+            fillOpacity:.14})).addTo(carte).bindTooltip(nom, {direction:"top"});
+        });
+    });
+  }
+  /* les quartiers refusés, en rouge : ils ne font pas le secteur, ils le
+     creusent — et on doit les voir même sous un tracé à la main */
+  qNon.forEach(nom=>{
+    villesDesCps(rc.cps).concat(communesDeLaRecherche(rc).map(x=> x.ville))
+      .filter((v,k,t)=> t.indexOf(v) === k).forEach(v=>{
+        const l = contourQuartier(v, nom);
+        if(l) garde(LF.polygon(l, {color:"#b91c1c", weight:2, fillColor:"#ef4444",
+          fillOpacity:.16})).addTo(carte).bindTooltip(nom + " — refusé",
+          {direction:"top"});
+      });
+  });
   zones.forEach(z=>{
     if(z.genre === "cercle")
       garde(LF.circle([+z.lat, +z.lon], {radius:num(z.rayon) || 0,
@@ -12524,9 +12852,15 @@ function terminerPolygone(c){
     const q = (L.quartiers || []).filter(x=> x && fold(x.ville) === fold(ville)
                                            && fold(x.nom) === fold(nom))[0];
     if(q){ q.contour = pts; saveLists(); }
-    const zones = zonesDe(c.rc).concat([{id:idZone(), genre:"quartier",
-      ville:ville, nom:nom}]);
-    poserZones(c, zones, {titre:"Secteur : quartier contourné", det:nom + " — " + ville});
+    /* le contour ne fait pas le secteur : c'est la case « quartier recherché »
+       qui le dit, et le contour ne sert qu'à le dessiner. On coche donc, pour
+       que le geste ait l'effet qu'on en attend. */
+    const deja = listeMulti(c.rc.quartiersOui);
+    if(deja.indexOf(nom) < 0) c.rc.quartiersOui = deja.concat([nom]).join(", ");
+    c.rc.maj = Date.now();
+    noterJournal(c.r, "Secteur : quartier contourné", nom + " — " + ville);
+    saveLists();
+    renderProspects();
     toast("Contour du quartier enregistré");
     return;
   }
@@ -15584,18 +15918,6 @@ document.addEventListener("change", e=>{
          est souvent longue — on y perdrait sa place */
       majRapproFiche(k, i);
     }
-    return;
-  }
-  if(t.dataset && t.dataset.sectq !== undefined){
-    const c = rechCourante();
-    if(!c) return;
-    const [ville, nom] = t.dataset.sectq.split("|");
-    const reste = zonesDe(c.rc).filter(z=> !(z.genre === "quartier"
-      && fold(z.ville) === fold(ville) && fold(z.nom) === fold(nom)));
-    poserZones(c, t.checked
-      ? reste.concat([{id:idZone(), genre:"quartier", ville:ville, nom:nom}]) : reste,
-      {titre: t.checked ? "Secteur : quartier ajouté" : "Secteur : quartier retiré",
-       det: nom + " — " + ville});
     return;
   }
   if(t.dataset && t.dataset.bookchk !== undefined){
@@ -20642,45 +20964,69 @@ const AIDE = [
   "boutons du haut passent des recherches <b>en cours</b> à celles <b>en sommeil</b>, ou "+
   "aux deux. Un clic sur une ligne ouvre la recherche."],
  ["La fiche d'une recherche : les volets",
-  "Elle se parcourt par une colonne de gauche, comme la fiche d'un bien, et ses volets "+
-  "sont dans l'ordre où l'on travaille. "+
-  "<b>En tête</b>, un bandeau : qui cherche — avec <b>Sa fiche</b> pour aller au "+
-  "répertoire et <b>+ Une personne</b> pour en rattacher une seconde, puisqu'on achète "+
-  "souvent à deux —, le <b>nom</b> que vous donnez à cette recherche, sa case "+
-  "<b>active</b>, <b>Dupliquer</b> et <b>+ Une recherche</b>. "+
-  "<b>La recherche</b> : types, codes postaux, quartiers recherchés et refusés, surfaces "+
-  "et pièces (minimum et idéal), les critères de confort, le terrain, les travaux, le "+
-  "DPE, et vos observations. "+
-  "<b>Le secteur</b> : la carte, et ce qu'on y dessine (voir plus bas). "+
-  "<b>Objectif et financement</b> : résidence principale ou investissement, délais, les "+
-  "<b>trois budgets</b>, le mode de financement, la banque, la vente d'un bien — et, en "+
-  "bas, le suivi de cette recherche : date du rendez-vous, négociateur, saisie AC3, "+
-  "dernier contact. "+
-  "<b>Biens à rapprocher</b> : ce que le portefeuille lui propose, et pourquoi le reste "+
-  "est écarté. "+
-  "<b>Historique</b> : les biens suivis, les biens écartés, et tout ce qui a été fait."],
- ["Créer une recherche sans doubler la personne",
-  "Le bouton <b>+ Ajouter une recherche</b> n'ouvre pas une fiche vide : il ouvre une "+
-  "fenêtre, <b>le curseur dans le NOM</b>. "+
-  "<b>Dès la deuxième ou la troisième lettre</b>, les personnes du <b>répertoire</b> qui "+
-  "pourraient être celle-là montent en dessous : « VID » fait apparaître VIDAL avant que "+
-  "vous ayez fini le mot. Chaque ligne dit ce qu'elle est — vendeur du n° 1101, deux "+
-  "recherches en cours — et ses coordonnées, pour que vous reconnaissiez la bonne. "+
-  "<b>Un clic la reprend</b>, avec son téléphone, son courriel et son histoire : vous ne "+
-  "retapez rien. "+
-  "La même liste sert de <b>garde-fou contre le doublon</b> : elle ne montre pas que les "+
-  "noms qui commencent pareil, mais aussi ceux qui <b>ressemblent</b> — DURAN pour "+
-  "DURAND, une lettre de travers suffit à créer un doublon — et ceux qui partagent le "+
-  "<b>téléphone</b> ou le <b>courriel</b>, ce qui emporte la décision : deux clients "+
-  "n'ont pas le même numéro. "+
-  "Trois façons de trancher : <b>« C'est elle — ouvrir sa recherche »</b> va à celle "+
-  "qu'elle a déjà ; <b>« Une autre recherche pour elle »</b> en ouvre une seconde à son "+
-  "nom ; <b>« Ce n'est pas elle »</b> écarte la proposition. Si elle ne cherche encore "+
-  "rien, le premier bouton dit simplement <b>« la reprendre »</b>. Rien n'est créé tant "+
-  "que vous n'avez pas cliqué, ni sur une ligne, ni sur « Créer ». "+
-  "<b>Le même contrôle</b> s'applique à <b>+ Une personne</b>, quand vous rattachez un "+
-  "conjoint à une recherche déjà ouverte : le clic la rattache au lieu d'ouvrir une "+
-  "seconde recherche."],
+  "<b>Le bandeau bleu</b> dit de qui il s'agit — « <i>La recherche de M. Thomas "+
+  "HILBERT</i> », civilité, premier prénom et nom — et porte à droite l'<b>objet</b> de "+
+  "la recherche, pris dans une liste modifiable : résidence principale, investissement "+
+  "locatif, résidence secondaire. C'est lui qui nomme la recherche partout ailleurs. "+
+  "<b>Le bandeau clair</b>, juste dessous, tient sur deux lignes. En haut les boutons : "+
+  "<b>Sa fiche</b> (au répertoire), <b>+ Une personne</b> (un conjoint, avec le même "+
+  "contrôle de doublon), <b>Dupliquer</b>, <b>+ 1 recherche</b>, et la case "+
+  "<b>active</b>. En bas les <b>coordonnées</b> — téléphones et courriels, lus sur la "+
+  "fiche du répertoire —, chacune avec son bouton : la bulle ouvre <b>WhatsApp</b>, "+
+  "l'enveloppe ouvre votre messagerie. Chaque envoi s'inscrit à l'historique. "+
+  "Les volets sont dans l'ordre où l'on travaille : "+
+  "<b>La recherche</b> — le type de bien, le prix, les surfaces, le confort, les "+
+  "travaux, le DPE et vos observations ; "+
+  "<b>Le secteur</b> — les communes, les quartiers et la carte ; "+
+  "<b>Objectif et financement</b> — l'objectif, les délais, les trois budgets, le "+
+  "financement, et le suivi de la recherche (rendez-vous, négociateur, dernier "+
+  "contact) ; "+
+  "<b>Biens à rapprocher</b> et <b>Historique</b>."],
+ ["Le type de bien, et les deux prix",
+  "<b>Un seul type par recherche.</b> Le type de bien se choisit dans une liste "+
+  "déroulante — <b>Appartement, Maison, Local, Immeuble, Garage / Parking, Terrain "+
+  "constructible, Terrain non constructible, Autre</b> —, et la liste s'allonge par le "+
+  "« + ». Mélanger une maison et un studio dans la même recherche donnait un "+
+  "rapprochement qui ne ressemblait à rien : pour deux projets, faites deux recherches, "+
+  "le bouton <b>+ 1 recherche</b> est là pour cela. "+
+  "<b>Une recherche d'avant qui portait plusieurs types</b> les garde en tête de liste, "+
+  "tels quels, jusqu'à ce que vous tranchiez : une reprise de données ne doit rien faire "+
+  "disparaître en silence. "+
+  "<b>Deux prix</b>, à côté du type : <b>Prix mini</b> et <b>Prix maxi</b>. Le maxi est "+
+  "le même montant que « Bien sans travaux » du volet financement — un seul chiffre, "+
+  "visible aux deux endroits. Le mini écarte ce qui est trop bon marché, avec la même "+
+  "tolérance que le plafond : au-delà de 15 % en dessous, le bien ne sort plus, et le "+
+  "motif le dit."],
+ ["Le secteur : la commune, le quartier, le tracé",
+  "Tout ce qui situe la recherche est réuni sur le volet <b>Le secteur</b>, du plus "+
+  "large au plus fin. "+
+  "<b>1. Les communes.</b> Les codes postaux d'abord ; l'application répond par les "+
+  "communes qu'ils désignent. Quand un code en couvre plusieurs — 13150 vaut pour "+
+  "Boulbon, Saint-Pierre-de-Mézoargues et Tarascon —, il propose de <b>choisir</b> : une "+
+  "ou plusieurs. Tant que rien n'est coché, le code entier vaut ; dès qu'une commune est "+
+  "cochée, les autres <b>de ce code-là</b> sortent, et les autres codes ne bougent pas. "+
+  "Sur la carte, la commune est cernée d'un trait bleu tireté. "+
+  "<b>2. Les quartiers</b>, en deux colonnes au-dessus de la carte : les "+
+  "<b>recherchés</b> à gauche, sur fond bleu comme les zones de la carte, les "+
+  "<b>refusés</b> à droite, sur fond rouge. Un quartier recherché <b>remplace</b> le "+
+  "dessin de sa commune et se matérialise à sa place ; un quartier refusé se dessine en "+
+  "rouge. Un quartier ne se dessine que s'il a un <b>contour</b> : on le trace une fois, "+
+  "au bas du volet, et il sert ensuite à toutes les recherches. "+
+  "<b>3. Le tracé à la main</b> — un polygone, un cercle, un cercle autour d'une adresse "+
+  "— n'a pas changé, et <b>prend le pas sur tout le reste</b> : c'est le plus précis et "+
+  "le plus récent. "+
+  "La carte montre toujours la plus fine des trois."],
+ ["D'où viennent les contours de commune",
+  "Du <b>découpage administratif officiel</b> : <b>geo.api.gouv.fr</b>, le service de "+
+  "l'État, sans clé et sans compte. Le contour d'une commune n'est demandé "+
+  "<b>qu'une fois</b> — à la première ouverture de la carte pour ce code postal — puis "+
+  "<b>gardé dans vos listes</b>, comme le contour d'un quartier que vous dessinez. "+
+  "Ensuite il s'affiche hors ligne, pour toujours. "+
+  "Seul le <b>code postal</b> part : ni nom, ni prix, ni rien du dossier. Tant qu'un "+
+  "contour manque — pas de réseau, commune inconnue du service —, la carte ne dessine "+
+  "rien plutôt que d'inventer un cercle : une limite de commune approchée serait pire "+
+  "que pas de limite du tout. Le rapprochement, lui, continue de se faire sur le "+
+  "<b>code postal</b>, qui n'a jamais eu besoin de la carte."],
  ["Reprendre un fichier de demandeurs",
   "Le bouton <b>Importer un fichier</b>, en haut de l'onglet Recherches, reprend un "+
   "tableau exporté en <b>.csv</b> — depuis Excel, depuis un ancien logiciel. La première "+
