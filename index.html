@@ -1036,6 +1036,11 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .tbtn.mini{padding:4px 10px;font-size:12.5px}
 /* la pastille du métier : elle ne s'éteint pas, on l'exerce */
 .bookcard.vise{box-shadow:0 0 0 3px var(--accent);border-radius:12px}
+/* la reprise d'un fichier : ce qu'on va écrire, avant de l'écrire */
+.jrow.off{opacity:.45}
+.jrow .impr{font-size:12.5px;color:var(--ink-2)}
+.jrow .impsouci{font-size:12px;color:#b45309}
+#impBox .jtable{max-height:46vh;overflow:auto}
 /* un mandat qui prend la suite d'un autre */
 .renq{width:100%;background:var(--field);border:1px solid var(--field-line);
   border-radius:var(--radius-sm,8px);padding:8px 11px;font-size:13.5px}
@@ -2004,7 +2009,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 16 octobre 2026, 23 h 13">Dossiers de vente</div>
+  <div class="brand" title="Version du 17 octobre 2026, 10 h 15">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2215,7 +2220,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>16 octobre 2026, 23 h 13</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>17 octobre 2026, 10 h 15</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2256,6 +2261,23 @@ table.tdb .puce.resilie{background:#64748b}
       <span class="muted" id="renBilan"></span><span class="grow"></span>
       <button type="button" class="tbtn light" data-renfermer>Annuler</button>
       <button type="button" class="addbtn" id="renCreer">Créer le dossier</button>
+    </div>
+  </div>
+</div>
+
+<!-- la reprise d'un fichier de demandeurs : on montre avant d'écrire -->
+<div class="modal" id="impBox" hidden>
+  <div class="modalbox secbox mdbox large">
+    <div class="sh">
+      <div><h3>Reprendre un fichier de demandeurs</h3>
+        <p>Un tableau exporté en <b>.csv</b>, dont la première ligne porte les
+          intitulés. On lit, on montre, et l'on n'écrit qu'ensuite.</p></div>
+      <button type="button" class="sfermer" id="impFermer" aria-label="Fermer">×</button>
+    </div>
+    <div class="scorps" id="impCorps"></div>
+    <div class="spieds"><span class="grow"></span>
+      <button type="button" class="tbtn light" data-impfermer>Annuler</button>
+      <button type="button" class="addbtn" id="impGo" disabled>Reprendre</button>
     </div>
   </div>
 </div>
@@ -11363,6 +11385,8 @@ function vueProspListe(){
     <div class="body">
       <div class="pbarre">
         <button class="addbtn" data-prospadd>+ Ajouter une recherche</button>
+        <button type="button" class="tbtn light" data-impouvrir
+          title="Reprendre un fichier .csv de demandeurs">Importer un fichier</button>
         <div class="seg">${seg("actifs","En cours")}${
           seg("closes","En sommeil")}${seg("","Toutes")}</div>
         <div class="grow"></div>
@@ -11822,6 +11846,388 @@ function reprendreContact(ref, neuve){
   }
   fermerNouveauProspect();
   nouvelleRechercheDe([src], "");
+}
+
+/* =====================================================================
+   REPRENDRE UN FICHIER DE DEMANDEURS
+   ---------------------------------------------------------------------
+   Une agence qui arrive avec deux cents demandeurs dans un tableur ne va
+   pas les retaper. Elle dépose son .csv, l'application montre ce qu'elle
+   a compris — ligne par ligne, colonne par colonne, avec ce qu'elle ne
+   sait pas reprendre —, et n'écrit qu'après.
+
+   L'ordre est celui qui a été demandé, et c'est le bon : la PERSONNE
+   d'abord, au répertoire, en vérifiant qu'elle n'y est pas déjà ; la
+   RECHERCHE ensuite, rattachée à elle. Un tableau qui porte trois
+   recherches sur la même ligne en crée trois, pour la même personne.
+   ===================================================================== */
+let IMP = null;
+
+/* ---------------------------------------------------------- le décodage
+   Ces fichiers viennent d'Excel, et leur encodage est rarement propre.
+   Celui-ci était MIXTE : les premiers intitulés en Windows-1252, le reste
+   en UTF-8 écrit dans un fichier Windows-1252 — « PrÃ©cision » pour
+   « Précision ». On décode donc en Windows-1252, qui ne échoue jamais,
+   puis on RÉPARE champ par champ : si le texte se laisse relire en UTF-8
+   sans faute, c'est qu'il était de l'UTF-8 mal lu. */
+const CP1252_HAUT = {
+  0x20AC:0x80, 0x201A:0x82, 0x0192:0x83, 0x201E:0x84, 0x2026:0x85, 0x2020:0x86,
+  0x2021:0x87, 0x02C6:0x88, 0x2030:0x89, 0x0160:0x8A, 0x2039:0x8B, 0x0152:0x8C,
+  0x017D:0x8E, 0x2018:0x91, 0x2019:0x92, 0x201C:0x93, 0x201D:0x94, 0x2022:0x95,
+  0x2013:0x96, 0x2014:0x97, 0x02DC:0x98, 0x2122:0x99, 0x0161:0x9A, 0x203A:0x9B,
+  0x0153:0x9C, 0x017E:0x9E, 0x0178:0x9F};
+function reparerMojibake(t){
+  const s = String(t == null ? "" : t);
+  if(!/[À-ÿŒœŽžŸ–-›€™]/.test(s))
+    return s;
+  const oct = [];
+  for(let i = 0; i < s.length; i++){
+    const c = s.charCodeAt(i);
+    if(c < 0x100) oct.push(c);
+    else if(CP1252_HAUT[c] !== undefined) oct.push(CP1252_HAUT[c]);
+    else return s;                       /* pas du Windows-1252 : on ne touche pas */
+  }
+  try{
+    const u = new TextDecoder("utf-8", {fatal:true}).decode(new Uint8Array(oct));
+    /* on ne « répare » que si cela change vraiment quelque chose */
+    return u;
+  }catch(e){ return s; }
+}
+function texteDuFichier(buf){
+  const o = new Uint8Array(buf);
+  /* la marque d'ordre des octets, quand Excel la pose */
+  if(o.length > 2 && o[0] === 0xEF && o[1] === 0xBB && o[2] === 0xBF)
+    return new TextDecoder("utf-8").decode(o.subarray(3));
+  try{ return new TextDecoder("utf-8", {fatal:true}).decode(o); }
+  catch(e){ return new TextDecoder("windows-1252").decode(o); }
+}
+/* ------------------------------------------------------------ le découpage
+   Guillemets, guillemets doublés, retours à la ligne DANS une cellule :
+   les observations en contiennent, et une lecture naïve couperait la fiche
+   en six. */
+function decouperCsv(texte, sep){
+  const t = String(texte || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const lignes = [];
+  let cel = "", ligne = [], guil = false;
+  for(let i = 0; i < t.length; i++){
+    const c = t[i];
+    if(guil){
+      if(c === '"'){
+        if(t[i + 1] === '"'){ cel += '"'; i++; }
+        else guil = false;
+      } else cel += c;
+      continue;
+    }
+    if(c === '"'){ guil = true; continue; }
+    if(c === sep){ ligne.push(cel); cel = ""; continue; }
+    if(c === "\n"){ ligne.push(cel); lignes.push(ligne); ligne = []; cel = ""; continue; }
+    cel += c;
+  }
+  ligne.push(cel); lignes.push(ligne);
+  return lignes.filter(l=> l.some(x=> String(x).trim() !== ""));
+}
+function separateurProbable(texte){
+  const prem = String(texte || "").split(/\r?\n/)[0] || "";
+  const compte = c=> prem.split(c).length - 1;
+  const cands = [[";", compte(";")], [",", compte(",")], ["\t", compte("\t")]];
+  cands.sort((a,b)=> b[1] - a[1]);
+  return cands[0][1] ? cands[0][0] : ";";
+}
+
+/* ------------------------------------------------- ce que l'on sait lire
+   Les intitulés attendus, repliés — sans casse, sans accent, sans
+   ponctuation — pour qu'« Pièces min. » et « pieces min » soient le même.
+   `bloc` : 0 pour la recherche principale, 2 et 3 pour les colonnes
+   « … 2 » et « … 3 » d'un second tableur. */
+function cleEntete(s){
+  return fold(String(s || "")).replace(/[^a-z0-9]+/g, " ").trim();
+}
+const IMPORT_COLS = [
+  {e:"civilite",                  cible:"pers", f:"civilite"},
+  {e:"nom",                       cible:"pers", f:"nom"},
+  {e:"prenom",                    cible:"pers", f:"prenom"},
+  {e:"telephone",                 cible:"pers", f:"tel"},
+  {e:"email",                     cible:"pers", f:"email"},
+  {e:"negociateur qui le suit",   cible:"rech", f:"nego",  bloc:0},
+  {e:"dernier contact",           cible:"rech", f:"contact", bloc:0},
+  {e:"observations diverses",     cible:"rech", f:"note",  bloc:0},
+  {e:"type de bien",              cible:"rech", f:"types", bloc:0},
+  {e:"code postaux recherches",   cible:"rech", f:"cps",   bloc:0},
+  {e:"pieces min",                cible:"rech", f:"piecesMin",   bloc:0},
+  {e:"chambres min",              cible:"rech", f:"chambresMin", bloc:0},
+  {e:"surface mini",              cible:"rech", f:"surfaceMin",  bloc:0},
+  {e:"budget maxi",               cible:"rech", f:"budgetSansTravaux", bloc:0},
+  {e:"terrain mini",              cible:"rech", f:"terrainMin",  bloc:0},
+  {e:"kelquartier 1",             cible:"rech", f:"quartiersOui", bloc:0}
+];
+/* les blocs 2 et 3 d'un export « Kelquartier » : d'autres intitulés, la
+   même substance */
+[2, 3].forEach(n=>{
+  IMPORT_COLS.push(
+    {e:"type de bien " + n,       cible:"rech", f:"types", bloc:n},
+    {e:"c p ou ville " + n,       cible:"rech", f:"cps",   bloc:n},
+    {e:"prix " + n,               cible:"rech", f:"budgetSansTravaux", bloc:n},
+    {e:"nombre pieces " + n,      cible:"rech", f:"piecesMin",   bloc:n},
+    {e:"chambres " + n,           cible:"rech", f:"chambresMin", bloc:n},
+    {e:"surface " + n,            cible:"rech", f:"surfaceMin",  bloc:n},
+    {e:"surface terrain " + n,    cible:"rech", f:"terrainMin",  bloc:n},
+    {e:"kelquartier " + n,        cible:"rech", f:"quartiersOui", bloc:n},
+    {e:"precision " + n,          cible:"rech", f:"note",  bloc:n},
+    {e:"secteur " + n,            cible:"rech", f:"note",  bloc:n, ajoute:"secteur : "},
+    {e:"dans un rayon " + n,      cible:"rech", f:"note",  bloc:n, ajoute:"rayon : "},
+    {e:"type de transaction " + n, cible:"rech", f:"@transaction", bloc:n},
+    {e:"loyer mensuel hc " + n,   cible:"rech", f:"@loyer", bloc:n},
+    {e:"loyer charges comprises " + n, cible:"rech", f:"@loyer", bloc:n});
+});
+
+/* ------------------------------------------------------- les conversions */
+function impDate(v){
+  const t = String(v || "").trim();
+  if(!t) return "";
+  let m = t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if(m){
+    const an = m[3].length === 2 ? (+m[3] > 70 ? "19" + m[3] : "20" + m[3]) : m[3];
+    return an + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[1]).slice(-2);
+  }
+  if(/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+  return null;                                   /* illisible : on le dira */
+}
+function impNombre(v){
+  const t = String(v || "").replace(/\s| /g, "").replace(",", ".")
+    .replace(/[^\d.]/g, "");
+  if(!t) return "";
+  const n = parseFloat(t);
+  return isNaN(n) ? "" : String(Math.round(n));
+}
+/* « 13200 ARLES,13280 MOULES… » → « 13200, 13280 » : le code, et rien que
+   le code, sans doublon. Vide : le 13200 par défaut, qui est chez nous. */
+function impCps(v){
+  const l = String(v || "").match(/\b\d{5}\b/g) || [];
+  const vus = [];
+  l.forEach(c=>{ if(vus.indexOf(c) < 0) vus.push(c); });
+  return vus.join(", ");
+}
+function impTypes(v, soucis){
+  const connus = L.typeBien || [];
+  const out = [];
+  String(v || "").split(/[,;\/]+/).forEach(x=>{
+    const t = x.trim();
+    if(!t) return;
+    const trouve = connus.filter(c=> fold(c) === fold(t))[0]
+                || connus.filter(c=> fold(c).indexOf(fold(t)) === 0)[0];
+    if(trouve){ if(out.indexOf(trouve) < 0) out.push(trouve); }
+    else if(soucis) soucis.push("type de bien inconnu : « " + t + " »");
+  });
+  return out.join(", ");
+}
+/* « MORCHAIN Thierry » et « Thierry MORCHAIN » sont le même homme */
+function impNego(v, soucis){
+  const t = String(v || "").trim();
+  if(!t) return "";
+  const mots = x=> fold(x).split(/\s+/).filter(Boolean).sort().join(" ");
+  const trouve = (L.negociateurs || []).filter(n=> n && mots(n.nom) === mots(t))[0];
+  if(trouve) return trouve.nom;
+  if(soucis) soucis.push("négociateur « " + t + " » absent du carnet — laissé tel quel");
+  return t;
+}
+
+/* ------------------------------------------------------------- l'analyse */
+function analyserImport(texte, nomFichier){
+  const sep = separateurProbable(texte);
+  const brut = decouperCsv(texte, sep);
+  if(!brut.length) return {vide:true, fichier:nomFichier, sep:sep};
+  const entetes = (brut[0] || []).map(reparerMojibake);
+  const vues = entetes.map(e=>{
+    const c = IMPORT_COLS.filter(x=> x.e === cleEntete(e))[0];
+    return {entete:e.trim(), col:c || null};
+  });
+  const ignorees = vues.filter(v=> !v.col && v.entete).map(v=> v.entete);
+  const lignes = [];
+  brut.slice(1).forEach((r, n)=>{
+    const val = i=> reparerMojibake(r[i] === undefined ? "" : r[i]).trim();
+    if(!r.some((x, i)=> val(i) !== "")) return;
+    const soucis = [];
+    const pers = {civilite:"", nom:"", prenom:"", tel:"", email:""};
+    const blocs = {};
+    const dansBloc = b=> (blocs[b] = blocs[b] || {note:[], hors:[]});
+    vues.forEach((v, i)=>{
+      if(!v.col) return;
+      const brutV = val(i);
+      if(!brutV) return;
+      if(v.col.cible === "pers"){ pers[v.col.f] = brutV; return; }
+      const b = dansBloc(v.col.bloc);
+      const f = v.col.f;
+      if(f === "@transaction"){
+        if(!/vente|achat/i.test(brutV))
+          b.hors.push("transaction « " + brutV + " » : l'application ne suit que la vente");
+        return;
+      }
+      if(f === "@loyer"){ b.hors.push("loyer « " + brutV + " » : sans objet en vente"); return; }
+      if(f === "note"){ b.note.push((v.col.ajoute || "") + brutV); return; }
+      /* deux colonnes portent le même intitulé dans ces exports — « Prix 2 »
+         y figure deux fois : la première renseignée l'emporte */
+      if(!String(b[f] || "").trim()) b[f] = brutV;
+    });
+    /* une ligne = autant de recherches qu'elle porte de blocs renseignés */
+    const rechs = [];
+    const socle = blocs["0"] || {};
+    Object.keys(blocs).sort().forEach(k=>{
+      const b = blocs[k];
+      /* les blocs suivants n'ont ni négociateur ni date : ceux de la ligne */
+      if(k !== "0"){
+        if(!b.nego) b.nego = socle.nego;
+        if(!b.contact) b.contact = socle.contact;
+      }
+      const utile = ["types","cps","piecesMin","chambresMin","surfaceMin",
+                     "terrainMin","budgetSansTravaux","quartiersOui"]
+        .some(c=> String(b[c] || "").trim()) || b.note.length;
+      if(!utile && k !== "0") return;
+      const rc = {};
+      rc.nego = impNego(b.nego, soucis);
+      const d = impDate(b.contact);
+      if(d === null) soucis.push("date « " + b.contact + " » illisible — laissée vide");
+      rc.contact = d || "";
+      rc.types = impTypes(b.types, soucis);
+      /* le code postal : celui du fichier, ou le nôtre par défaut */
+      rc.cps = impCps(b.cps);
+      if(!rc.cps){ rc.cps = "13200"; soucis.push("codes postaux absents — 13200 par défaut"); }
+      ["piecesMin","chambresMin","surfaceMin","terrainMin"].forEach(c=>{
+        rc[c] = impNombre(b[c]); });
+      /* le budget va dans la case du milieu : « bien sans travaux » */
+      rc.budgetSansTravaux = impNombre(b.budgetSansTravaux);
+      rc.quartiersOui = String(b.quartiersOui || "").trim();
+      if(rc.quartiersOui)
+        soucis.push("quartiers « " + rc.quartiersOui + " » : repris tels quels, "
+          + "à rapprocher de votre liste");
+      const notes = b.note.slice();
+      if(b.hors.length) notes.push("[non repris] " + b.hors.join(" · "));
+      rc.note = notes.join("\n");
+      rc.nomRech = k === "0" ? "" : "Recherche " + k;
+      rechs.push(rc);
+    });
+    /* la personne est-elle déjà là ? */
+    const proches = personnesApprochantes(pers);
+    const sure = proches.filter(x=>
+      (fold(x.f.nom) === fold(pers.nom) && fold(x.f.prenom) === fold(pers.prenom)
+       && fold(pers.nom)) || memeTel(x.f.tel1, pers.tel))[0];
+    lignes.push({n:n + 2, pers:pers, rechs:rechs, soucis:soucis,
+                 dejala: sure ? sure.f : null,
+                 proches: sure ? [] : proches.slice(0, 2)});
+  });
+  return {fichier:nomFichier, sep:sep, entetes:vues, ignorees:ignorees, lignes:lignes};
+}
+
+/* ------------------------------------------------------------- l'écriture */
+function appliquerImport(a){
+  if(!a || !a.lignes) return {gens:0, rech:0};
+  let gens = 0, rech = 0;
+  a.lignes.forEach(x=>{
+    if(x.ecarte) return;
+    const p = {civilite:x.pers.civilite, prenom:x.pers.prenom,
+               nom:enMajuscules(x.pers.nom), tel:x.pers.tel, email:x.pers.email};
+    if(x.dejala) p.pid = x.dejala.pid;
+    else gens++;
+    x.rechs.forEach((rc, k)=>{
+      const row = ligneRechercheNeuve([p]);
+      Object.keys(rc).forEach(c=>{ if(rc[c] !== "") row[c] = rc[c]; });
+      if(k === 0) row.nomRech = rc.nomRech || "";
+      (row.personnes || []).forEach(q=>{
+        if(!q.nom && !q.prenom) return;
+        const brut = Object.assign(blankPerson(), {civilite:q.civilite, nom:q.nom,
+          prenom:q.prenom, tel1:q.tel, email1:q.email, pid:q.pid});
+        const pid = inscrireAuRepertoire(brut);
+        if(pid){ q.pid = pid; p.pid = pid; }
+      });
+      (L.prospects = L.prospects || []).push(row);
+      noterJournal(row, "Recherche reprise d'un fichier",
+                   a.fichier ? "fichier « " + a.fichier + " », ligne " + x.n : "");
+      rech++;
+    });
+  });
+  saveLists();
+  return {gens:gens, rech:rech};
+}
+
+/* ------------------------------------------------------------ la fenêtre */
+function ouvrirImport(){
+  IMP = null;
+  $("#impCorps").innerHTML = `
+    <div class="f"><label for="impFichier">Le fichier (.csv)</label>
+      <input type="file" id="impFichier" accept=".csv,text/csv,text/plain"></div>
+    <p class="muted" style="margin:12px 0 0">La première ligne porte les intitulés.
+      Sont repris : la civilité, le nom, le prénom, le téléphone, le courriel, le
+      négociateur, la date du dernier contact, les observations, le type de bien, les
+      codes postaux, les pièces, les chambres, la surface, le terrain et le budget —
+      qui va dans « <b>Bien sans travaux</b> ». Un code postal absent devient
+      <b>13200</b>. Rien n'est écrit avant que vous ayez vu ce qui sera créé.</p>`;
+  $("#impGo").disabled = true;
+  $("#impBox").hidden = false;
+  const ch = $("#impFichier");
+  if(ch) ch.onchange = ()=>{
+    const f = (ch.files || [])[0];
+    if(!f) return;
+    const lec = new FileReader();
+    lec.onload = ()=>{
+      try{
+        IMP = analyserImport(texteDuFichier(lec.result), f.name);
+        rendreImport();
+      }catch(e){
+        $("#impCorps").innerHTML = `<p class="mdnote erreur">Le fichier n'a pas pu être
+          lu : ${esc(e.message || String(e))}</p>`;
+      }
+    };
+    lec.readAsArrayBuffer(f);
+  };
+}
+function fermerImport(){ $("#impBox").hidden = true; IMP = null; }
+function rendreImport(){
+  const a = IMP;
+  if(!a) return;
+  if(a.vide){
+    $("#impCorps").innerHTML = `<p class="mdnote erreur">Ce fichier ne contient
+      aucune ligne.</p>`;
+    return;
+  }
+  const retenues = a.lignes.filter(x=> !x.ecarte);
+  const nRech = retenues.reduce((s, x)=> s + x.rechs.length, 0);
+  const nDeja = retenues.filter(x=> x.dejala).length;
+  const lues = a.entetes.filter(v=> v.col).length;
+  $("#impCorps").innerHTML = `
+    <div class="mdnote" style="margin:0 0 12px"><b>${a.lignes.length} ligne${
+      a.lignes.length > 1 ? "s" : ""} lue${a.lignes.length > 1 ? "s" : ""}</b> —
+      ${lues} colonne${lues > 1 ? "s" : ""} reconnue${lues > 1 ? "s" : ""}${
+      a.ignorees.length ? `, ${a.ignorees.length} laissée${
+        a.ignorees.length > 1 ? "s" : ""} de côté : <em>${
+        esc(a.ignorees.join(", "))}</em>` : ""}.
+      <br><b>${retenues.length - nDeja}</b> personne${
+        retenues.length - nDeja > 1 ? "s" : ""} à créer, <b>${nDeja}</b> déjà au
+      répertoire, <b>${nRech}</b> recherche${nRech > 1 ? "s" : ""} en tout.</div>
+    <div class="jtable">${a.lignes.map(x=>`
+      <div class="jrow${x.ecarte ? " off" : ""}">
+        <span class="jquand">ligne ${x.n}</span>
+        <span class="jquoi"><b>${esc([x.pers.prenom, enMajuscules(x.pers.nom)]
+            .filter(Boolean).join(" ") || "(sans nom)")}</b>
+          ${x.dejala ? `<em>déjà au répertoire — la recherche s'y rattachera</em>`
+                     : `<em>nouvelle fiche</em>`}
+          ${x.rechs.map(rc=> `<br><span class="impr">${esc([
+              rc.types, rc.cps, rc.budgetSansTravaux
+                ? eur(num(rc.budgetSansTravaux)) : "",
+              rc.surfaceMin ? "≥ " + rc.surfaceMin + " m²" : "",
+              rc.piecesMin ? "≥ " + rc.piecesMin + " p." : "",
+              rc.chambresMin ? "≥ " + rc.chambresMin + " ch." : ""
+            ].filter(Boolean).join("  ·  ") || "aucun critère")}</span>`).join("")}
+          ${x.soucis.length ? `<br><em class="impsouci">${
+            esc(x.soucis.join(" · "))}</em>` : ""}
+          ${x.proches.length ? `<br><em class="impsouci">ressemble à ${
+            esc(x.proches.map(p=> titrePersonne(p.f)).join(", "))} — vérifiez après
+            la reprise</em>` : ""}</span>
+        <span class="grow"></span>
+        <button type="button" class="xbtn${x.ecarte ? "" : " sup"}"
+          data-impoff="${x.n}">${x.ecarte ? "Reprendre" : "Écarter"}</button>
+      </div>`).join("")}</div>`;
+  $("#impGo").disabled = !retenues.length;
+  $("#impGo").textContent = "Reprendre " + retenues.length + " ligne"
+    + (retenues.length > 1 ? "s" : "");
 }
 
 /* =====================================================================
@@ -15278,7 +15684,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -15583,6 +15989,7 @@ document.addEventListener("click", e=>{
   if(t.dataset.petat !== undefined){ PROSP.etat = t.dataset.petat; renderProspects(); return; }
   if(t.dataset.praz !== undefined){ PROSP.f = {}; renderProspects(); return; }
   if(t.dataset.prospadd !== undefined){ ouvrirNouveauProspect(); return; }
+  if(t.dataset.impouvrir !== undefined){ ouvrirImport(); return; }
   if(t.dataset.prospdel){
     const i = indexProspect(t.dataset.prospdel);
     if(i < 0) return;
@@ -17273,6 +17680,32 @@ async function copierLesPieces(ids, ancienId, neufId){
   if(ok){ ecrirePieces(); filePieces(); }
   return {ok, rate};
 }
+$("#impFermer").onclick = fermerImport;
+$("#impBox").addEventListener("click", e=>{
+  if(e.target.id === "impBox" || e.target.closest("[data-impfermer]")){
+    fermerImport(); return;
+  }
+  const b = e.target.closest("[data-impoff]");
+  if(!b || !IMP) return;
+  const n = +b.dataset.impoff;
+  (IMP.lignes || []).forEach(x=>{ if(x.n === n) x.ecarte = !x.ecarte; });
+  rendreImport();
+});
+$("#impGo").onclick = ()=>{
+  if(!IMP) return;
+  const a = IMP, nom = a.fichier;
+  const r = appliquerImport(a);
+  fermerImport();
+  PROSP.ouvert = ""; PROSP.etat = "";
+  activerOnglet("prospects"); renderProspects(); renderCarnets();
+  popup({titre:"Fichier repris",
+    corps:`<p style="margin:0"><b>${r.rech}</b> recherche${r.rech > 1 ? "s" : ""} créée${
+      r.rech > 1 ? "s" : ""}, au nom de <b>${r.gens}</b> nouvelle${
+      r.gens > 1 ? "s" : ""} personne${r.gens > 1 ? "s" : ""} au répertoire${
+      nom ? ", depuis « " + esc(nom) + " »" : ""}.<br><br>Vérifiez-les : chaque
+      recherche porte à son historique la ligne du fichier d'où elle vient.</p>`,
+    boutons:[{lib:"Fermer", primaire:true}]});
+};
 $("#nvFermer").onclick = fermerNouveauProspect;
 $("#nvCreer").onclick = ()=> creerLeProspect(null);
 $("#nvBox").addEventListener("click", e=>{
@@ -20248,6 +20681,37 @@ const AIDE = [
   "<b>Le même contrôle</b> s'applique à <b>+ Une personne</b>, quand vous rattachez un "+
   "conjoint à une recherche déjà ouverte : le clic la rattache au lieu d'ouvrir une "+
   "seconde recherche."],
+ ["Reprendre un fichier de demandeurs",
+  "Le bouton <b>Importer un fichier</b>, en haut de l'onglet Recherches, reprend un "+
+  "tableau exporté en <b>.csv</b> — depuis Excel, depuis un ancien logiciel. La première "+
+  "ligne doit porter les <b>intitulés</b> ; c'est sur eux que les colonnes sont "+
+  "reconnues, sans tenir compte de la casse, des accents ni de la ponctuation. "+
+  "<b>Rien n'est écrit avant que vous ayez vu.</b> L'application lit le fichier et "+
+  "affiche, ligne par ligne, la personne et la recherche qu'elle s'apprête à créer, avec "+
+  "ce qui la gêne. Chaque ligne s'<b>écarte</b> d'un clic. Le bouton du bas dit combien "+
+  "de lignes seront reprises. "+
+  "<b>L'ordre est celui qu'il faut</b> : la <b>personne</b> d'abord, au répertoire — et "+
+  "si elle y est déjà, on ne la crée pas deux fois, la recherche se rattache à sa fiche "+
+  "—, puis la <b>recherche</b>, à son nom. Chaque recherche garde à son historique le "+
+  "nom du fichier et le <b>numéro de ligne</b> d'où elle vient : en cas de doute, on "+
+  "retourne à la source. "+
+  "<b>Ce qui est repris</b> : civilité, nom, prénom, téléphone et courriel pour la "+
+  "personne ; négociateur, date du dernier contact, observations, type de bien, codes "+
+  "postaux, pièces, chambres, surface, terrain et budget pour la recherche. "+
+  "<b>Trois conversions à connaître.</b> La <b>date</b> française (01/10/2026) devient "+
+  "une date d'application. Le <b>budget</b> va dans la case du milieu, « Bien sans "+
+  "travaux ». Les <b>codes postaux</b> sont réduits au code, sans le nom de commune et "+
+  "sans doublon — « 13200 ARLES,13280 MOULES,13280 RAPHÈLE » donne « 13200, 13280 » —, "+
+  "et une colonne vide devient <b>13200</b>. "+
+  "<b>Si une ligne porte plusieurs recherches</b> — des colonnes « Type de bien 2 », "+
+  "« Prix 2 », « Surface 2 » —, elle en crée autant, pour la même personne. Ce que "+
+  "l'application ne sait pas reprendre (une location, un loyer) est écrit en clair dans "+
+  "les observations de la recherche, précédé de « <b>[non repris]</b> » : rien ne "+
+  "disparaît en silence. "+
+  "<b>L'encodage</b> se devine : UTF-8, Windows-1252, et même les fichiers mélangés qui "+
+  "affichent « PrÃ©cision » au lieu de « Précision » sont redressés. Le séparateur aussi "+
+  "— point-virgule, virgule ou tabulation. Une observation sur plusieurs lignes, entre "+
+  "guillemets, reste entière."],
  ["Plusieurs recherches pour une même personne",
   "Un même client cherche souvent deux choses à la fois : une maison pour y vivre, et un "+
   "studio à louer. Les mettre dans une seule fiche donnait une recherche qui ne "+
