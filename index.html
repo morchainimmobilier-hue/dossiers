@@ -1068,6 +1068,10 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .cpvcode{font-weight:700;font-size:12.5px;color:var(--ink-2);padding-top:4px;
   min-width:52px}
 .cpv .multibox{flex:1}
+/* la liste des quartiers officiels, qu'on renomme avant de les prendre */
+.irisnom{width:min(320px,70%);font:inherit;font-size:13px;padding:4px 8px;
+  border:1px solid var(--field-line);border-radius:7px;background:var(--field)}
+#pop .jtable{max-height:50vh;overflow:auto}
 /* la pastille du métier : elle ne s'éteint pas, on l'exerce */
 .bookcard.vise{box-shadow:0 0 0 3px var(--accent);border-radius:12px}
 /* la reprise d'un fichier : ce qu'on va écrire, avant de l'écrire */
@@ -2043,7 +2047,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 17 octobre 2026, 14 h 35">Dossiers de vente</div>
+  <div class="brand" title="Version du 18 octobre 2026, 9 h 41">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2254,7 +2258,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>17 octobre 2026, 14 h 35</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>18 octobre 2026, 9 h 41</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -12527,7 +12531,16 @@ function pageSecteur(i){
           quartiersAContourner(rc).map(q=> `<option value="${esc(q.ville + "|" + q.nom)}"
             >${esc(q.nom)} — ${esc(q.ville)}</option>`).join("")}</select>
         <button type="button" class="tbtn light mini" data-sectqdraw="1">Dessiner son
-          contour</button></div>`}
+          contour</button></div>
+      <div class="secqadd" style="margin-top:8px">
+        <span class="muted">Ou partez du découpage officiel de l'INSEE :</span>
+        ${communesDeLaRecherche(rc).filter((x,k,t)=>
+            t.findIndex(y=> y.ville === x.ville) === k).map(x=>
+          `<button type="button" class="tbtn light mini"
+            data-irisgo="${esc(x.cp + "|" + x.ville)}"${contourCommune(x.cp, x.ville)
+              ? "" : " disabled"}>Quartiers officiels de ${esc(x.ville)}</button>`)
+          .join("") || `<span class="muted">saisissez d'abord un code postal</span>`}
+      </div>`}
     </div>`;
 }
 /* Les quartiers demandés, en zones : leurs contours, quand ils en ont un.
@@ -12559,6 +12572,32 @@ function zonesDesQuartiers(rc){
    Tant qu'un contour manque, la carte ne ment pas : elle ne dessine rien et
    le dit. On ne remplace pas un contour par un cercle qui ferait croire à
    une limite administrative. */
+/* Un contour GeoJSON — Polygon ou MultiPolygon — rendu en liste de points
+   [lat, lon], l'anneau extérieur le plus vaste retenu : une commune a parfois
+   une île ou une enclave, et c'est le corps principal qui la dessine. */
+function anneauDuGeoJson(g){
+  if(!g || !g.coordinates) return null;
+  const anneaux = g.type === "MultiPolygon"
+    ? g.coordinates.map(x=> x && x[0]).filter(Boolean)
+    : [g.coordinates[0]];
+  let best = null;
+  anneaux.forEach(a=>{ if(a && (!best || a.length > best.length)) best = a; });
+  if(!best || best.length < 4) return null;
+  return best.map(pt=> [pt[1], pt[0]]);
+}
+/* le rectangle qui enferme un contour, et son centre */
+function cadreDuContour(l){
+  let a = 90, b = 180, c = -90, d = -180;
+  (l || []).forEach(pt=>{
+    a = Math.min(a, pt[0]); c = Math.max(c, pt[0]);
+    b = Math.min(b, pt[1]); d = Math.max(d, pt[1]);
+  });
+  return a > c ? null : [a, b, c, d];
+}
+function centreDuContour(l){
+  const q = cadreDuContour(l);
+  return q ? [(q[0] + q[2]) / 2, (q[1] + q[3]) / 2] : null;
+}
 function communesConnues(){
   if(!Array.isArray(L.communes)) L.communes = [];
   return L.communes;
@@ -12598,16 +12637,10 @@ async function chargerContourCommune(cp){
     if(rep.ok){
       const l = await rep.json();
       (Array.isArray(l) ? l : []).forEach(c=>{
-        const g = c && c.contour;
-        if(!g || !g.coordinates) return;
-        /* Polygon ou MultiPolygon : on garde l'anneau extérieur le plus vaste */
-        const anneaux = g.type === "MultiPolygon"
-          ? g.coordinates.map(x=> x[0]) : [g.coordinates[0]];
-        let best = null;
-        anneaux.forEach(a=>{ if(a && (!best || a.length > best.length)) best = a; });
+        const best = anneauDuGeoJson(c && c.contour);
         if(!best) return;
         communesConnues().push({cp:code, ville:String(c.nom || "").toUpperCase(),
-          contour:best.map(pt=> [pt[1], pt[0]])});
+          contour:best});
         n++;
       });
       if(n) saveLists();
@@ -12615,6 +12648,174 @@ async function chargerContourCommune(cp){
   }catch(e){ /* hors ligne : on réessaiera à la prochaine ouverture */ }
   delete COMMUNES_EN_COURS[code];
   return n;
+}
+/* Les champs qui changent ce que la carte montre : les toucher doit la
+   redessiner, sans redessiner la page — on y perdrait sa place. */
+const CHAMPS_SECTEUR = ["cps", "villes", "quartiersOui", "quartiersNon"];
+function redessinerLaCarte(){
+  if(pageActive() !== "prospects" || PROSP.page !== "secteur") return;
+  if(!$("#sectCarte")) return;
+  setTimeout(()=> majCarteSecteur(), 20);
+}
+/* ===================================================================
+   LES QUARTIERS OFFICIELS — LES IRIS DE L'INSEE
+   -------------------------------------------------------------------
+   Il n'existe pas de « quartiers d'Arles » en données ouvertes : la
+   commune n'en publie pas. Le seul découpage infra-communal officiel et
+   complet, ce sont les IRIS — les îlots regroupés pour l'information
+   statistique de l'INSEE, dont l'IGN publie les contours sous licence
+   ouverte (couche `STATISTICALUNITS.IRISGE:iris_ge`).
+
+   Deux précautions, et elles ne sont pas de forme :
+
+     · un IRIS est tracé pour le RECENSEMENT, pas pour la vente. Ses
+       limites passent là où l'INSEE avait besoin de deux mille habitants,
+       pas là où le marché change. On les propose donc comme un POINT DE
+       DÉPART, à renommer et à retoucher — et le tracé à la main reste ;
+     · on ne filtre pas sur un nom de champ qu'on n'a pas vérifié. La
+       requête se fait par RECTANGLE, à partir du contour de commune qu'on
+       possède déjà, et l'on ne garde que les IRIS dont le centre tombe
+       DANS la commune. Les noms d'attributs sont lus avec tolérance : un
+       service qui renomme une colonne ne doit pas tout casser.
+   =================================================================== */
+const WFS_IRIS = "https://data.geopf.fr/wfs/ows";
+function valeurTolerante(p, prefs, motif){
+  const cles = Object.keys(p || {});
+  for(let i = 0; i < prefs.length; i++){
+    const k = cles.filter(x=> x.toLowerCase() === prefs[i])[0];
+    if(k && String(p[k] === null ? "" : p[k]).trim()) return String(p[k]).trim();
+  }
+  const k2 = cles.filter(x=> motif.test(x) && String(p[x] || "").trim())[0];
+  return k2 ? String(p[k2]).trim() : "";
+}
+function nomDeLIris(p){
+  return valeurTolerante(p, ["nom_iris","nomiris","lib_iris","libiris","libelle_iris"],
+                         /(nom|lib).*iris|iris.*(nom|lib)/i);
+}
+function communeDeLIris(p){
+  return valeurTolerante(p, ["nom_com","nomcom","libcom","commune"],
+                         /(nom|lib).*com/i);
+}
+/* l'adresse de la requête : un rectangle, et rien d'autre. `ordre` dit dans
+   quel sens le service attend les coordonnées — on essaie les deux. */
+function urlIris(cadre, ordre){
+  const b = ordre === "latlon"
+    ? [cadre[0], cadre[1], cadre[2], cadre[3]].join(",") + ",EPSG:4326"
+    : [cadre[1], cadre[0], cadre[3], cadre[2]].join(",") + ",CRS:84";
+  return WFS_IRIS + "?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature"
+    + "&TYPENAMES=STATISTICALUNITS.IRISGE:iris_ge"
+    + "&OUTPUTFORMAT=application/json&SRSNAME=CRS:84&COUNT=400&BBOX=" + b;
+}
+async function lireIris(cadre){
+  for(const ordre of ["lonlat", "latlon"]){
+    let rep;
+    try{ rep = await fetch(urlIris(cadre, ordre)); }
+    catch(e){ throw new Error("le service de l'IGN n'a pas répondu"); }
+    if(!rep.ok) continue;
+    let j;
+    try{ j = await rep.json(); }catch(e){ continue; }
+    const f = (j && j.features) || [];
+    if(f.length) return f;
+  }
+  return [];
+}
+/* les IRIS d'une commune : on demande le rectangle, on garde ce qui tombe
+   dedans, on nomme et on dédoublonne */
+async function quartiersOfficiels(cp, ville){
+  const contour = contourCommune(cp, ville);
+  if(!contour) throw new Error("le contour de la commune n'est pas encore chargé");
+  const cadre = cadreDuContour(contour);
+  const brut = await lireIris(cadre);
+  const out = [];
+  brut.forEach(f=>{
+    const l = anneauDuGeoJson(f && f.geometry);
+    if(!l) return;
+    const c = centreDuContour(l);
+    if(!c || !dansPolygone(c[0], c[1], contour)) return;
+    const p = (f && f.properties) || {};
+    const nom = nomDeLIris(p);
+    if(!nom) return;
+    /* un IRIS « commune entière » ne dit rien de plus que la commune */
+    if(fold(nom) === fold(ville) || fold(nom) === fold(communeDeLIris(p))) return;
+    if(out.some(x=> fold(x.nom) === fold(nom))) return;
+    out.push({nom:nom, contour:l,
+              deja:!!contourQuartier(ville, nom),
+              connu:(L.quartiers || []).some(q=> q && fold(q.ville) === fold(ville)
+                                              && fold(q.nom) === fold(nom))});
+  });
+  out.sort((a,b)=> triFr(a.nom, b.nom));
+  return out;
+}
+/* --------------------------------------------------------- la fenêtre */
+let IRIS = null;
+async function ouvrirQuartiersOfficiels(cp, ville){
+  popup({titre:"Les quartiers officiels",
+    corps:`<p style="margin:0">Interrogation du découpage de l'INSEE pour
+      <b>${esc(ville)}</b>…</p>`, boutons:[{lib:"Annuler"}]});
+  let l;
+  try{ l = await quartiersOfficiels(cp, ville); }
+  catch(e){
+    popup({genre:"erreur", titre:"Quartiers officiels",
+      corps:`<p style="margin:0">${esc(e.message || String(e))}.<br><br>Le service de
+        l'IGN a besoin d'internet, et le contour de la commune doit avoir été chargé —
+        ouvrez la carte une fois, puis réessayez.</p>`});
+    return;
+  }
+  if(!l.length){
+    popup({titre:"Quartiers officiels",
+      corps:`<p style="margin:0">L'INSEE ne découpe <b>${esc(ville)}</b> en aucun
+        quartier : le découpage IRIS ne vaut que pour les communes d'une certaine
+        taille. Dessinez vos quartiers à la main, c'est fait pour.</p>`});
+    return;
+  }
+  IRIS = {cp:cp, ville:ville, liste:l};
+  rendreQuartiersOfficiels();
+}
+function rendreQuartiersOfficiels(){
+  if(!IRIS) return;
+  const l = IRIS.liste;
+  popup({titre:"Les quartiers officiels de " + IRIS.ville, large:true,
+    corps:`<p class="mdnote" style="margin:0 0 12px"><b>${l.length} quartier${
+        l.length > 1 ? "s" : ""}</b> au découpage <b>IRIS</b> de l'INSEE, contours de
+      l'IGN (licence ouverte).
+      <br><b>À retoucher, pas à adopter les yeux fermés :</b> un IRIS est tracé pour le
+      recensement, pas pour la vente. Renommez-les comme vous les nommez à vos clients,
+      écartez ceux qui ne vous servent pas — et le tracé à la main reste là pour le
+      reste.</p>
+      <div class="jtable">${l.map((q, k)=> `<div class="jrow">
+        <span class="jqui"><label class="chkline"><input type="checkbox"
+          data-irisq="${k}"${q.prendre === false ? "" : " checked"}><span></span>
+          </label></span>
+        <span class="jquoi"><input type="text" class="irisnom" data-irisnom="${k}"
+          value="${esc(q.nomChoisi === undefined ? q.nom : q.nomChoisi)}">
+          <em>${q.connu ? (q.deja ? "déjà au carnet, avec un contour — il sera remplacé"
+                                  : "déjà au carnet, sans contour — il en recevra un")
+                        : "nouveau quartier"} · ${q.contour.length} points</em></span>
+        </div>`).join("")}</div>`,
+    boutons:[{lib:"Annuler"},
+             {lib:"Ajouter au carnet", primaire:true, action:appliquerQuartiersOfficiels}]});
+}
+function appliquerQuartiersOfficiels(){
+  if(!IRIS) return;
+  if(!Array.isArray(L.quartiers)) L.quartiers = [];
+  let n = 0;
+  IRIS.liste.forEach(q=>{
+    if(q.prendre === false) return;
+    const nom = String(q.nomChoisi === undefined ? q.nom : q.nomChoisi).trim();
+    if(!nom) return;
+    let f = (L.quartiers || []).filter(x=> x && fold(x.ville) === fold(IRIS.ville)
+                                        && fold(x.nom) === fold(nom))[0];
+    if(!f){ f = {ville:IRIS.ville, nom:nom, contour:[]}; L.quartiers.push(f); }
+    f.contour = q.contour;
+    f.source = "IRIS INSEE / IGN";
+    n++;
+  });
+  saveLists();
+  IRIS = null;
+  renderCarnets();
+  if(pageActive() === "prospects") renderProspects();
+  toast(n + " quartier" + (n > 1 ? "s" : "") + " ajouté" + (n > 1 ? "s" : "")
+        + " au carnet");
 }
 /* au moment d'ouvrir la carte : on va chercher ce qui manque, une fois */
 async function assurerContoursCommunes(rc){
@@ -12760,10 +12961,13 @@ function dessinerSecteur(LF, carte, c){
   });
   /* les biens : verts dedans, gris dehors — on voit tout de suite ce que
      le secteur ramène */
+  /* les pastilles suivent la MÊME règle que le rapprochement : le tracé à
+     la main s'il y en a un, sinon les quartiers demandés qui ont un contour */
+  const decide = zones.length ? zones : zonesDesQuartiers(rc);
   portefeuilleRappro().forEach(d=>{
     if(!bienRepere(d)) return;
     const lat = +d.bien.lat, lon = +d.bien.lon;
-    const dedans = !zones.length || dansSecteur(zones, lat, lon);
+    const dedans = !decide.length || dansSecteur(decide, lat, lon);
     const m = garde(LF.circleMarker([lat, lon], {radius:7, weight:2,
       color: dedans ? "#15803d" : "#94a3b8",
       fillColor: dedans ? "#22c55e" : "#cbd5e1", fillOpacity:.9}));
@@ -15683,6 +15887,10 @@ document.addEventListener("input", e=>{
       if(el) el.value = L[k][+i].annee;
     }
     if(t.dataset.role === "cp" || t.dataset.role === "pays") refreshVilles(t.dataset.grp, true);
+    if(k === "prospects" && CHAMPS_SECTEUR.indexOf(f) >= 0){
+      clearTimeout(redessinerLaCarte.t);
+      redessinerLaCarte.t = setTimeout(redessinerLaCarte, 700);
+    }
     if(k === "notaires" && (f === "prenom" || f === "patronyme")) majLibelleNotaire(+i);
     majEnteteCarnet(t, k, i);
     majRapproFiche(k, i);
@@ -15915,8 +16123,10 @@ document.addEventListener("change", e=>{
       cb.obj[f] = pris.join(", ");
       saveLists();
       /* pas de redessin : les cases sont déjà dans l'état voulu, et la fiche
-         est souvent longue — on y perdrait sa place */
+         est souvent longue — on y perdrait sa place. La CARTE, elle, doit
+         suivre : un quartier coché change ce qu'elle montre. */
       majRapproFiche(k, i);
+      if(k === "prospects" && CHAMPS_SECTEUR.indexOf(f) >= 0) redessinerLaCarte();
     }
     return;
   }
@@ -16006,7 +16216,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -16312,6 +16522,11 @@ document.addEventListener("click", e=>{
   if(t.dataset.praz !== undefined){ PROSP.f = {}; renderProspects(); return; }
   if(t.dataset.prospadd !== undefined){ ouvrirNouveauProspect(); return; }
   if(t.dataset.impouvrir !== undefined){ ouvrirImport(); return; }
+  if(t.dataset.irisgo){
+    const [cp, ville] = t.dataset.irisgo.split("|");
+    ouvrirQuartiersOfficiels(cp, ville);
+    return;
+  }
   if(t.dataset.prospdel){
     const i = indexProspect(t.dataset.prospdel);
     if(i < 0) return;
@@ -18002,6 +18217,19 @@ async function copierLesPieces(ids, ancienId, neufId){
   if(ok){ ecrirePieces(); filePieces(); }
   return {ok, rate};
 }
+/* la fenêtre des quartiers officiels : on coche, on renomme, et c'est tout */
+$("#pop").addEventListener("change", e=>{
+  const c = e.target.closest("[data-irisq]");
+  if(!c || !IRIS) return;
+  const q = IRIS.liste[+c.dataset.irisq];
+  if(q) q.prendre = c.checked;
+});
+$("#pop").addEventListener("input", e=>{
+  const n = e.target.closest("[data-irisnom]");
+  if(!n || !IRIS) return;
+  const q = IRIS.liste[+n.dataset.irisnom];
+  if(q) q.nomChoisi = n.value;
+});
 $("#impFermer").onclick = fermerImport;
 $("#impBox").addEventListener("click", e=>{
   if(e.target.id === "impBox" || e.target.closest("[data-impfermer]")){
@@ -21016,8 +21244,30 @@ const AIDE = [
   "— n'a pas changé, et <b>prend le pas sur tout le reste</b> : c'est le plus précis et "+
   "le plus récent. "+
   "La carte montre toujours la plus fine des trois."],
+ ["Les quartiers officiels : le découpage de l'INSEE",
+  "Arles ne publie pas ses quartiers en données ouvertes — j'ai cherché. Le seul "+
+  "découpage infra-communal <b>officiel et complet</b> qui existe, ce sont les "+
+  "<b>IRIS</b> de l'INSEE, dont l'IGN publie les contours sous licence ouverte. "+
+  "Au bas du volet <b>Le secteur</b>, le bouton <b>« Quartiers officiels de… »</b> va "+
+  "les chercher pour la commune, et vous montre ce qu'il a trouvé <b>avant d'écrire "+
+  "quoi que ce soit</b> : une ligne par quartier, son nom <b>modifiable</b>, et une case "+
+  "à décocher pour l'écarter. "+
+  "<b>À retoucher, pas à adopter les yeux fermés.</b> Un IRIS est tracé pour le "+
+  "<b>recensement</b>, pas pour la vente : sa limite passe là où l'INSEE avait besoin "+
+  "de deux mille habitants, pas là où le marché change. Renommez-les comme vous les "+
+  "nommez à vos clients — « Barriol », « Trinquetaille » —, écartez ceux qui ne vous "+
+  "servent pas, et redessinez à la main ceux que vous connaissez mieux que l'INSEE : "+
+  "le tracé à la main reste et prend toujours le dessus. "+
+  "Une fois entrés, ce sont des <b>quartiers comme les autres</b> : ils apparaissent "+
+  "dans les deux colonnes du volet, se dessinent sur la carte, et servent à toutes vos "+
+  "recherches. Les recharger plus tard remplace le contour sans toucher au nom que vous "+
+  "avez donné. "+
+  "<b>Deux conditions</b> : le contour de la commune doit avoir été chargé — ouvrez la "+
+  "carte une fois —, et le découpage IRIS n'existe que pour les communes d'une "+
+  "certaine taille. Pour un village, l'application vous le dira au lieu d'inventer."],
  ["D'où viennent les contours de commune",
-  "Du <b>découpage administratif officiel</b> : <b>geo.api.gouv.fr</b>, le service de "+
+  "Du <b>découpage administratif officiel</b> : <b>geo.api.gouv.fr</b> pour les "+
+  "communes, <b>data.geopf.fr</b> (l'IGN) pour les quartiers IRIS — deux services de "+
   "l'État, sans clé et sans compte. Le contour d'une commune n'est demandé "+
   "<b>qu'une fois</b> — à la première ouverture de la carte pour ce code postal — puis "+
   "<b>gardé dans vos listes</b>, comme le contour d'un quartier que vous dessinez. "+
