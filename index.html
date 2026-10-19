@@ -645,6 +645,17 @@ table.envois tr.repondu td.emode b{color:#166534}
   font-size:10.5px;font-weight:700}
 .raprow.refuse{opacity:.6}
 .raprow.suivi{box-shadow:inset 3px 0 0 #16a34a}
+/* la carte d'Aujourd'hui range autrement : le prix et les écarts d'abord,
+   le détail du bien ensuite — on y vient pour savoir s'il faut répondre */
+.raprow.auj{grid-template-columns:minmax(0,1.2fr) auto minmax(0,1.3fr) minmax(0,.9fr) auto}
+/* la ligne des filtres : le champ, et le ∅ qui cherche l'absence */
+.pfiltrebox{display:flex;align-items:center;gap:4px}
+.pfiltrebox input,.pfiltrebox select{flex:1;min-width:0}
+.pvide{flex:0 0 auto;width:22px;height:24px;line-height:1;border-radius:6px;cursor:pointer;
+  border:1px solid var(--line);background:#fff;color:var(--ink-3);font-size:13px;
+  font-weight:700;padding:0}
+.pvide:hover{background:#f1f5f9;color:var(--ink)}
+.pvide.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .raprow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.9fr) auto minmax(0,1.3fr) auto;
   gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;background:#fff;
   padding:7px 10px;margin-bottom:6px;font-size:13px}
@@ -2047,7 +2058,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 18 octobre 2026, 9 h 41">Dossiers de vente</div>
+  <div class="brand" title="Version du 19 octobre 2026, 8 h 18">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2258,7 +2269,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>18 octobre 2026, 9 h 41</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>19 octobre 2026, 8 h 18</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5415,8 +5426,8 @@ function plainPiedDe(d, re){
   /* toutes repérées et situées, aucune au rez-de-chaussée : c'est non */
   return vises.every(p=> String(p.niveau || "").trim()) ? false : null;
 }
-function depouillePieces(){
-  const l = (D.pieces || []).filter(p=> String(p.nom || "").trim());
+function depouillePieces(d){
+  const l = ((d || D).pieces || []).filter(p=> String(p.nom || "").trim());
   if(!l.length) return null;
   const r = {surface:0, pieces:0, chambres:0, sdb:0, sdEau:0, wc:0};
   l.forEach(p=>{
@@ -5436,9 +5447,15 @@ function majDepuisPieces(){
   const r = depouillePieces();
   if(!r) return false;
   PIECES_CALCULES.forEach(k=>{
+    /* ZÉRO N'EST PAS « NON RENSEIGNÉ ». Quand le détail des pièces est
+       saisi, il fait loi : un studio y dit « aucune chambre », et c'est une
+       réponse. L'écrire comme une case vide le faisait passer pour une
+       ignorance, et le rapprochement se taisait alors sur un critère que le
+       client avait pourtant posé. Seule la surface garde le blanc : une
+       somme de zéro ne veut rien dire, les surfaces n'ayant pas été saisies. */
     const v = k === "surface"
       ? (r.surface ? String(Math.round(r.surface * 100) / 100).replace(".", ",") : "")
-      : (r[k] ? String(r[k]) : "");
+      : String(r[k]);
     D.detail[k] = v;
   });
   return true;
@@ -8040,7 +8057,8 @@ function ouvrirCreerAction(cible){
         <b>${esc(quiSuisJe())}</b>.</p>
       <div class="pgrid" style="padding:0">
         <div class="pf"><label for="acGenre">Genre</label>
-          <span class="withadd"><select id="acGenre">${(L.genreAction || []).map(g=>
+          <span class="withadd"><select id="acGenre" data-acgenre="acGenre">${(L.genreAction
+            || []).map(g=>
             `<option>${esc(g)}</option>`).join("")}</select>
           <button type="button" class="addinline" data-addlist="list:genreAction"
             data-target="acGenre" data-attr="data-acgenre" title="Ajouter un genre"
@@ -10182,6 +10200,7 @@ function critBien(d){
   const b = d.bien || {}, det = d.detail || {};
   const r = book("residences", b.residence);
   const dpe = (d.diags || []).filter(x=> x.nom === "DPE")[0] || {};
+  const dep = depouillePieces(d);
   const surf = num(det.surface);
   return {
     id: d.id,
@@ -10194,8 +10213,12 @@ function critBien(d){
     /* à défaut de surface habitable, la loi Carrez dit la même chose */
     surface: surf === null ? num(det.carrez) : surf,
     terrain: num(det.terrain),
-    pieces: num(det.pieces),
-    chambres: num(det.chambres),
+    /* Le détail des pièces fait loi, et il est lu ICI, sur le dossier tel
+       qu'il est rangé — sans attendre qu'on l'ouvre pour que les comptes se
+       recalculent. Un dossier jamais rouvert depuis sa saisie comptait
+       autrement que la fiche qu'on lit à l'écran. */
+    pieces: dep ? dep.pieces : num(det.pieces),
+    chambres: dep ? dep.chambres : num(det.chambres),
     etage: etageNombre(det.etage),
     ascenseur: ouNon([r.ascenseur]),
     exterieur: ouNon([det.terrasse, det.balcon, det.jardin]),
@@ -10439,6 +10462,18 @@ function comparerAcqBien(c, o){
     if(part > 0.15) return rejet(dit);
     ecart(part > 0.07 ? 45 : 25, dit);
   }
+  /* Un critère chiffré que la fiche du bien ne permet pas de vérifier ne
+     doit pas être passé SOUS SILENCE : c'est ainsi qu'un bien ressortait
+     « tous critères OK » alors que personne n'avait répondu à la question.
+     On le signale, comme on le fait depuis toujours pour le confort. */
+  const chiffreFlou = (crit, val, sujet)=>{
+    if(crit !== null && crit > 0 && val === null) flou(sujet + " non renseigné");
+  };
+  chiffreFlou(c.surfaceMin,  o.surface,  "la surface du bien");
+  chiffreFlou(c.chambresMin, o.chambres, "le nombre de chambres");
+  chiffreFlou(c.chambresIdeal, o.chambres, "le nombre de chambres");
+  chiffreFlou(c.piecesMin,   o.pieces,   "le nombre de pièces");
+  chiffreFlou(c.terrainMin,  o.terrain,  "la surface du terrain");
   /* 3. les surfaces */
   if(c.surfaceMin !== null && c.surfaceMin > 0 &&
      o.surface !== null && o.surface < c.surfaceMin){
@@ -10468,11 +10503,16 @@ function comparerAcqBien(c, o){
     if(part > 0.25) return rejet(dit);
     ecart(part > 0.12 ? 30 : 15, dit);
   }
-  /* 4. les comptes de pièces : une de moins se discute, deux non */
-  if(c.chambresMin !== null && o.chambres !== null && o.chambres < c.chambresMin){
-    const d = c.chambresMin - o.chambres;
-    if(d > 1) return rejet(d + " chambres de moins");
-    ecart(30, "une chambre de moins");
+  /* 4. les comptes de pièces : une de moins se discute, deux non — et
+     AUCUNE n'est pas « une de moins ». Qui demande une chambre ne cherche
+     pas un studio : c'est un changement de nature, pas un écart de degré. */
+  if(c.chambresMin !== null && c.chambresMin > 0 && o.chambres !== null){
+    if(o.chambres === 0) return rejet("aucune chambre");
+    if(o.chambres < c.chambresMin){
+      const d = c.chambresMin - o.chambres;
+      if(d > 1) return rejet(d + " chambres de moins");
+      ecart(30, "une chambre de moins");
+    }
   }
   /* l'idéal n'est pas le minimum : en être loin se dit, et ne coûte presque rien */
   if(c.chambresIdeal !== null && o.chambres !== null && o.chambres < c.chambresIdeal &&
@@ -10662,16 +10702,43 @@ function motPdi(niveau, lib){
 }
 /* le rang et le nom d'une recherche : « Recherche 2 », ou le nom qu'on lui a
    donné — « la maison », « le studio à louer » */
-function rangRecherche(r){
-  const pid = premierPidProspect(r);
-  if(!pid) return 1;
-  const l = recherchesDeLaPersonne(pid);
-  for(let i = 0; i < l.length; i++) if(l[i].r === r || l[i].r.id === (r || {}).id) return i + 1;
-  return 1;
+/* ------------------------------------------- le numéro d'une recherche ---
+   Il ne se saisit pas et ne se range nulle part : il se CALCULE, à chaque
+   affichage, d'après ce que la personne a en cours. Trois conséquences, et
+   c'est pour elles qu'on l'a voulu ainsi :
+
+     · une personne qui n'a qu'une recherche n'a pas de numéro à lire — un
+       « Recherche 1 » solitaire ne dit rien à personne ;
+     · créer, dupliquer ou supprimer renumérote tout, immédiatement et sans
+       trou : il n'y a rien à renuméroter puisqu'il n'y a rien d'écrit ;
+     · la plus ancienne porte le plus petit numéro, et le garde.
+
+   L'âge, c'est la date de création. Les lignes nées avant qu'on la note
+   valent zéro et passent donc devant, dans l'ordre où elles ont été
+   écrites — ce qui est bien leur ordre d'arrivée. */
+function recherchesOrdonnees(pid){
+  return recherchesDeLaPersonne(pid)
+    .map(x=> ({x:x, t:num(x.r.cree) || 0}))
+    .sort((a, b)=> (a.t - b.t) || (a.x.i - b.x.i))
+    .map(o=> o.x);
 }
+function numeroRecherche(r){
+  const pid = premierPidProspect(r);
+  if(!pid) return 0;
+  const l = recherchesOrdonnees(pid);
+  if(l.length < 2) return 0;
+  for(let i = 0; i < l.length; i++)
+    if(l[i].r === r || l[i].r.id === (r || {}).id) return i + 1;
+  return 0;
+}
+function rangRecherche(r){ return numeroRecherche(r) || 1; }
+/* « Recherche 2 — Investissement locatif », ou l'objet seul quand elle est
+   la seule, ou « Recherche » quand on n'a encore rien dit d'elle */
 function titreRecherche(r){
-  const nom = String((r || {}).nomRech || "").trim();
-  return nom || ("Recherche " + rangRecherche(r));
+  const n = numeroRecherche(r);
+  const objet = String((r || {}).nomRech || "").trim();
+  if(!n) return objet || "Recherche";
+  return "Recherche " + n + (objet ? " — " + objet : "");
 }
 /* Le résumé : d'UNE recherche si on la nomme, sinon de toutes celles qui sont
    actives — et chacune se présente alors sous son titre, car « maison 250 000
@@ -10764,18 +10831,25 @@ function boutonsReponse(i, id, etat){
     <button type="button" class="ricone sup" data-refuser="${i}|${esc(id)}"
       title="Refuser ce bien">${IC_NON}</button>`;
 }
-function ligneRapproBien(b, i, etat){
+/* `ou` : « auj » pour la carte d'Aujourd'hui, qui range autrement — le bien
+   nommé par son adresse et non par son numéro de mandat, et le détail
+   rejeté APRÈS le respect des critères, qui est ce qu'on vient y lire. */
+function ligneRapproBien(b, i, etat, ou){
   const o = b.o;
-  return `<div class="raprow${etat ? " " + etat : ""}">
-    <span class="rapqui">${esc([o.type, o.ville].filter(Boolean).join(" — ") || "Bien")}
-      <em>mandat n° ${esc(o.mandat || "—")}${
-        o.adresse ? " · " + esc(o.adresse) : ""}</em></span>
-    <span class="rapquoi">${esc(resumeBien(o)) || "—"}</span>
-    <span class="rapprix">${o.fai === null ? "—" : esc(eur(o.fai))}</span>
-    <span class="rapec">${pastillesEcarts(b)}</span>
-    <span class="rapfin">${i === undefined || i === null ? ""
+  const auj = ou === "auj";
+  const qui = `<span class="rapqui">${esc([o.type, o.ville].filter(Boolean).join(" — ")
+      || "Bien")}<em>${auj
+        ? esc(o.adresse || "adresse non renseignée")
+        : "mandat n° " + esc(o.mandat || "—")
+          + (o.adresse ? " · " + esc(o.adresse) : "")}</em></span>`;
+  const quoi = `<span class="rapquoi">${esc(resumeBien(o)) || "—"}</span>`;
+  const prix = `<span class="rapprix">${o.fai === null ? "—" : esc(eur(o.fai))}</span>`;
+  const ec = `<span class="rapec">${pastillesEcarts(b)}</span>`;
+  const fin = `<span class="rapfin">${i === undefined || i === null ? ""
       : boutonsReponse(i, o.id, etat || "")}
-      <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></span></div>`;
+      <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></span>`;
+  return `<div class="raprow${auj ? " auj" : ""}${etat ? " " + etat : ""}">` +
+    (auj ? qui + prix + ec + quoi + fin : qui + quoi + prix + ec + fin) + `</div>`;
 }
 /* -------------------------------------------- le volet « Biens à rapprocher »
    Trois temps : ce qui attend une réponse, ce qu'on a déjà pris au suivi, ce
@@ -10929,14 +11003,14 @@ function carteRapprochements(){
   if(PLIS["auj_rappro"] === undefined) PLIS["auj_rappro"] = false;
   const plie = estPlie("auj_rappro", false);
   return `<div class="card" id="carteRappro">
-    <h2 class="pliable" data-pli="auj_rappro">${chevron(plie)}Prospects et biens en vente
+    <h2 class="pliable" data-pli="auj_rappro">${chevron(plie)}Demandeurs et biens en vente
       <span class="cnt">${tout.length}</span>
       <span class="rapneuf">${n} sans réponse</span></h2>
     <div class="body plibody"${plie ? ' style="display:none"' : ''}>
       ${tout.map(x=>`<div class="rapacq">
         <h4>${esc(x.nom)} <span class="cnt">${x.attente}</span>
           <em>${esc(resumeRecherche(x.r))}</em></h4>
-        ${x.biens.map(b=> ligneRapproBien(b, x.i, "")).join("")}</div>`).join("")}
+        ${x.biens.map(b=> ligneRapproBien(b, x.i, "", "auj")).join("")}</div>`).join("")}
       <div class="fbtns" style="margin-top:10px">
         <button type="button" class="tbtn light" id="btnRapproRep"
           >Ouvrir le fichier des prospects</button></div>
@@ -11273,7 +11347,7 @@ function titreZone(z){
    Rien n'est enregistré à part les fiches elles-mêmes : le tri, les filtres
    et le volet ouvert valent pour la séance.
    ===================================================================== */
-let PROSP = {ouvert:"", page:"recherche", tri:"maj", sens:-1, etat:"", f:{}};
+let PROSP = {ouvert:"", page:"recherche", tri:"maj", sens:-1, etat:"", f:{}, vide:{}};
 
 /* =====================================================================
    LA PILE DES FENÊTRES
@@ -11382,6 +11456,7 @@ function renderProspects(){
 const COLS_PROSP = [
   {cle:"maj",    lib:"Mise à jour", genre:"date"},
   {cle:"nom",    lib:"Demandeur"},
+  {cle:"nbrech", lib:"Recherches", genre:"nombre"},
   {cle:"attente",lib:"Sans réponse", genre:"nombre"},
   {cle:"nego",   lib:"Négociateur",
    choix:()=> (L.negociateurs || []).map(n=> n.nom).filter(Boolean).sort(triFr)},
@@ -11407,6 +11482,8 @@ function valeurProsp(r, cle){
   if(cle === "attente") return biensSansReponse(r).length;
   if(cle === "nego")   return r.nego || "";
   if(cle === "rech")   return titreRecherche(r);
+  /* combien de recherches la personne mène en tout — la sienne comprise */
+  if(cle === "nbrech") return recherchesDeLaPersonne(premierPidProspect(r)).length || 1;
   if(cle === "types")  return uneValeurDesRecherches(r, "types");
   if(cle === "cps")    return communesCourtes(uneValeurDesRecherches(r, "cps"));
   if(cle === "budget") return critAcq(r).budgetPlafond;
@@ -11446,15 +11523,31 @@ function resumeCriteres(r, rc){
 }
 /* un filtre de colonne : le texte se cherche sans accents ni casse, le
    budget s'entend comme un minimum, la date comme « depuis » */
+/* la valeur d'une colonne, telle que le filtre la voit */
+function valeurColonne(r, cle){
+  return cle === "cps" ? texteCps(uneValeurDesRecherches(r, "cps"))
+                       : valeurProsp(r, cle);
+}
+/* « vide » veut dire : rien du tout. Un nombre à zéro n'est pas rien — un
+   demandeur sans aucun bien en attente a bien reçu une réponse à tout. */
+function colonneVide(r, cle){
+  const v = valeurColonne(r, cle);
+  if(v === null || v === undefined) return true;
+  if(typeof v === "number") return cle === "maj" ? !v : v === 0;
+  return String(v).trim() === "" || String(v).trim() === "—";
+}
 function prospPasse(r){
   if(PROSP.etat === "actifs" && !prospectActif(r)) return false;
   if(PROSP.etat === "closes" && prospectActif(r)) return false;
+  /* les colonnes qu'on veut VIDES : elles se cumulent avec le reste */
+  const vides = PROSP.vide || {};
+  if(!COLS_PROSP.every(col=> !vides[col.cle] || colonneVide(r, col.cle))) return false;
   return COLS_PROSP.every(col=>{
+    if(vides[col.cle]) return true;      /* on cherche le vide, pas un contenu */
     const q = String((PROSP.f || {})[col.cle] || "").trim();
     if(!q) return true;
-    const v = col.cle === "cps" ? texteCps(uneValeurDesRecherches(r, "cps"))
-                                : valeurProsp(r, col.cle);
-    if(col.cle === "budget" || col.cle === "attente"){
+    const v = valeurColonne(r, col.cle);
+    if(col.cle === "budget" || col.cle === "attente" || col.cle === "nbrech"){
       const seuil = num(q);
       return seuil === null || (v !== null && v >= seuil);
     }
@@ -11489,24 +11582,34 @@ function vueProspListe(){
   }).join("");
   const filtres = COLS_PROSP.map(c=>{
     const v = esc((PROSP.f || {})[c.cle] || "");
-    if(c.choix) return `<th><select data-pfiltre="${c.cle}">
-      <option value="">toutes</option>${c.choix().map(o=>
-        `<option${o === (PROSP.f || {})[c.cle] ? " selected" : ""}>${esc(o)}</option>`
-      ).join("")}</select></th>`;
-    if(c.cle === "maj") return `<th><input type="date" data-pfiltre="maj" value="${v}"
-      title="Mis à jour depuis cette date"></th>`;
-    if(c.cle === "budget") return `<th><input type="text" inputmode="numeric"
-      data-pfiltre="budget" value="${v}" placeholder="≥ €"></th>`;
-    if(c.cle === "attente") return `<th><input type="text" inputmode="numeric"
-      data-pfiltre="attente" value="${v}" placeholder="≥"></th>`;
-    return `<th><input type="text" data-pfiltre="${c.cle}" value="${v}"
-      placeholder="filtrer"></th>`;
+    const nul = !!(PROSP.vide || {})[c.cle];
+    /* le ∅ : ne garder que les lignes où CETTE colonne est vide. Un filtre
+       ne savait chercher qu'un contenu ; il fallait pouvoir chercher
+       l'absence — c'est elle qu'on vient corriger. */
+    const vide = `<button type="button" class="pvide${nul ? " on" : ""}"
+      data-pvide="${c.cle}" title="${nul ? "Ne plus filtrer sur le vide"
+        : "Ne montrer que les lignes où ce champ est vide"}">∅</button>`;
+    const champ = c.choix
+      ? `<select data-pfiltre="${c.cle}"${nul ? " disabled" : ""}>
+          <option value="">toutes</option>${c.choix().map(o=>
+            `<option${o === (PROSP.f || {})[c.cle] ? " selected" : ""}>${esc(o)}</option>`
+          ).join("")}</select>`
+      : c.cle === "maj"
+        ? `<input type="date" data-pfiltre="maj" value="${v}"${nul ? " disabled" : ""}
+            title="Mis à jour depuis cette date">`
+        : (c.genre === "nombre")
+          ? `<input type="text" inputmode="numeric" data-pfiltre="${c.cle}" value="${v}"
+              placeholder="≥"${nul ? " disabled" : ""}>`
+          : `<input type="text" data-pfiltre="${c.cle}" value="${v}"
+              placeholder="filtrer"${nul ? " disabled" : ""}>`;
+    return `<th><div class="pfiltrebox">${champ}${vide}</div></th>`;
   }).join("");
   const corps = vus.length ? vus.map(x=>{
     const r = x.r, clos = !prospectActif(r);
     return `<tr data-prosp="${esc(r.id)}"${clos ? ' class="pclos"' : ""}>
       <td class="pdate">${esc(fdate(jourDe(r.maj)))}</td>
       <td class="pnom">${esc(libelleAcquereur(r) || "(sans nom)")}</td>
+      <td class="pnb">${valeurProsp(r, "nbrech")}</td>
       <td class="patt">${valeurProsp(r, "attente")
         ? `<span class="rapneuf">${valeurProsp(r, "attente")}</span>` : "—"}</td>
       <td>${esc(r.nego || "—")}</td>
@@ -11530,6 +11633,7 @@ function vueProspListe(){
           seg("closes","En sommeil")}${seg("","Toutes")}</div>
         <div class="grow"></div>
         ${Object.keys(PROSP.f || {}).some(k=> PROSP.f[k])
+          || Object.keys(PROSP.vide || {}).some(k=> PROSP.vide[k])
           ? `<button type="button" class="tbtn light" data-praz>Effacer les filtres</button>`
           : ""}
         <span class="muted" style="font-size:12px">${vus.length} sur ${tout.length}</span>
@@ -11955,7 +12059,9 @@ function dupliquerRecherche(r){
   copie.suivis = []; copie.refus = []; copie.journal = [];
   copie.cree = Date.now(); copie.maj = Date.now();
   copie.actif = true;
-  copie.nomRech = titreRecherche(r) + " (copie)";
+  /* la copie garde l'OBJET de l'originale ; son numéro, elle le reçoit du
+     seul fait d'exister — la numérotation se recalcule */
+  copie.nomRech = String(r.nomRech || "");
   (L.prospects = L.prospects || []).push(copie);
   noterJournal(copie, "Recherche dupliquée", "d'après « " + titreRecherche(r) + " »");
   saveLists();
@@ -12280,7 +12386,8 @@ function analyserImport(texte, nomFichier){
       const notes = b.note.slice();
       if(b.hors.length) notes.push("[non repris] " + b.hors.join(" · "));
       rc.note = notes.join("\n");
-      rc.nomRech = k === "0" ? "" : "Recherche " + k;
+      /* le numéro vient tout seul : on ne l'écrit pas dans le nom */
+      rc.nomRech = "";
       rechs.push(rc);
     });
     /* la personne est-elle déjà là ? */
@@ -12959,23 +13066,39 @@ function dessinerSecteur(LF, carte, c){
           fillOpacity:.12})).addTo(carte);
     }
   });
-  /* les biens : verts dedans, gris dehors — on voit tout de suite ce que
-     le secteur ramène */
-  /* les pastilles suivent la MÊME règle que le rapprochement : le tracé à
-     la main s'il y en a un, sinon les quartiers demandés qui ont un contour */
-  const decide = zones.length ? zones : zonesDesQuartiers(rc);
+  /* Les biens : la carte dit la MÊME chose que la liste « Biens à
+     rapprocher », et par le MÊME calcul — comparerAcqBien, tous critères
+     confondus, et non le seul secteur. Vert, le bien lui est proposé ;
+     rouge, il est en vente mais écarté, et l'infobulle dit pourquoi. Le
+     secteur n'est plus qu'un critère parmi les autres : un bien peut
+     tomber dans la zone et sortir rouge pour son prix. */
+  const crit = critAcq(c.r, rc);
+  const juge = rechercheRenseignee(crit);
   portefeuilleRappro().forEach(d=>{
     if(!bienRepere(d)) return;
     const lat = +d.bien.lat, lon = +d.bien.lon;
-    const dedans = !decide.length || dansSecteur(decide, lat, lon);
+    let genre = "gris", dit = "aucun critère saisi : rien n'est encore tranché";
+    if(juge){
+      const v = comparerAcqBien(crit, critBien(d));
+      if(v.rejet){ genre = "rouge"; dit = v.rejet; }
+      else {
+        genre = "vert";
+        const e = (v.ecarts || []).concat(v.flous || []);
+        dit = e.length ? e.join(" · ") : "tous les critères OK";
+      }
+    }
+    const TEINTE = {vert:["#15803d", "#22c55e"], rouge:["#b91c1c", "#ef4444"],
+                    gris:["#94a3b8", "#cbd5e1"]};
+    /* une classe sur la pastille : elle la distingue d'un contour de même
+       teinte — un quartier refusé est rouge comme un bien écarté */
     const m = garde(LF.circleMarker([lat, lon], {radius:7, weight:2,
-      color: dedans ? "#15803d" : "#94a3b8",
-      fillColor: dedans ? "#22c55e" : "#cbd5e1", fillOpacity:.9}));
+      className:"bienpt bienpt-" + genre,
+      color: TEINTE[genre][0], fillColor: TEINTE[genre][1], fillOpacity:.9}));
     m.addTo(carte);
     m.bindTooltip("n° " + ((d.mandat || {}).num || "—") + " · " +
       ((d.bien || {}).type || "bien") +
-      (num((d.prix || {}).fai) !== null ? " · " + eur(num(d.prix.fai)) : ""),
-      {direction:"top"});
+      (num((d.prix || {}).fai) !== null ? " · " + eur(num(d.prix.fai)) : "") +
+      " — " + dit, {direction:"top"});
   });
   /* le dessin en cours */
   if(SECT.pts.length){
@@ -12997,7 +13120,8 @@ function majAideSecteur(){
   if(!z) return;
   const mots = {
     "": "Cliquez sur « Dessiner un secteur » ou « Poser un cercle ». Les points verts "
-        + "sont les biens en vente qui tombent dans le secteur.",
+        + "sont les biens en vente qui répondent aux critères, les rouges ceux qui n'y "
+        + "répondent pas — survolez-en un pour savoir pourquoi.",
     poly: "Cliquez les sommets du secteur, puis double-cliquez — ou « Terminer » — pour "
         + "le fermer.",
     quartier: "Dessinez le contour du quartier, puis double-cliquez pour le fermer. Il "
@@ -13227,8 +13351,12 @@ function ouvrirEcartBien(i, id){
         <div class="pf"><label for="ecDate">Date</label>
           <input type="date" id="ecDate" value="${esc(auj())}"></div>
         <div class="pf wide"><label for="ecMotif">Motif</label>
-          <select id="ecMotif"><option value=""></option>${
-            motifs.map(o=> `<option>${esc(o)}</option>`).join("")}</select></div>
+          <span class="withadd"><select id="ecMotif" data-ecmotif="ecMotif"><option
+            value=""></option>${
+            motifs.map(o=> `<option>${esc(o)}</option>`).join("")}</select>
+          <button type="button" class="addinline" data-addlist="list:motifEcart"
+            data-target="ecMotif" data-attr="data-ecmotif"
+            title="Ajouter un motif">+</button></span></div>
         <div class="pf plein"><label for="ecNote">Précision (facultatif)</label>
           <input type="text" id="ecNote" placeholder="ce que le client en a dit"></div>
       </div>`,
@@ -16216,7 +16344,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -16519,7 +16647,14 @@ document.addEventListener("click", e=>{
            PROSP.sens = t.dataset.ptri === "maj" ? -1 : 1; }
     renderProspects(); return; }
   if(t.dataset.petat !== undefined){ PROSP.etat = t.dataset.petat; renderProspects(); return; }
-  if(t.dataset.praz !== undefined){ PROSP.f = {}; renderProspects(); return; }
+  if(t.dataset.praz !== undefined){ PROSP.f = {}; PROSP.vide = {};
+    renderProspects(); return; }
+  if(t.dataset.pvide){
+    PROSP.vide = PROSP.vide || {};
+    if(PROSP.vide[t.dataset.pvide]) delete PROSP.vide[t.dataset.pvide];
+    else PROSP.vide[t.dataset.pvide] = true;
+    renderProspects(); return;
+  }
   if(t.dataset.prospadd !== undefined){ ouvrirNouveauProspect(); return; }
   if(t.dataset.impouvrir !== undefined){ ouvrirImport(); return; }
   if(t.dataset.irisgo){
@@ -21191,6 +21326,35 @@ const AIDE = [
   "minimum, la date comme « depuis », le reste se cherche sans casse ni accent. Les trois "+
   "boutons du haut passent des recherches <b>en cours</b> à celles <b>en sommeil</b>, ou "+
   "aux deux. Un clic sur une ligne ouvre la recherche."],
+ ["Chercher ce qui n'est pas rempli",
+  "Un filtre ordinaire répond à « lesquelles portent sur un appartement ». Il ne répondait "+
+  "pas à <b>« lesquelles n'ont pas de type de bien »</b> — et c'est pourtant la question "+
+  "qu'on se pose quand on veut finir de remplir un fichier repris, ou retrouver les "+
+  "recherches orphelines de négociateur. "+
+  "Chaque colonne porte donc, à droite de sa case de filtre, un petit bouton <b>∅</b> : il "+
+  "ne garde que les lignes où <b>ce champ est vide</b>. Le bouton s'allume, la case de "+
+  "filtre se grise — les deux ne se cumulent pas, ce serait contradictoire — et un second "+
+  "clic le relâche. "+
+  "Plusieurs ∅ se cumulent entre colonnes : ∅ sur le négociateur et ∅ sur le budget ramène "+
+  "ce qui n'a ni l'un ni l'autre. <b>Effacer les filtres</b> relâche tout d'un coup, cases "+
+  "et ∅ ensemble. "+
+  "<b>Zéro n'est pas vide</b> : un budget à 0 est renseigné, et ne sort pas au ∅. "+
+  "Une colonne de plus a été ajoutée pour cela : <b>Recherches</b>, qui dit combien de "+
+  "recherches a la personne de la ligne — un moyen rapide de voir qui a plusieurs projets "+
+  "en cours."],
+ ["Classer la liste dans les deux sens",
+  "Chaque titre de colonne classe la liste, et un <b>second clic renverse le sens</b> : la "+
+  "petite flèche du titre dit lequel des deux est en cours — <b>▲</b> croissant, <b>▼</b> "+
+  "décroissant. "+
+  "Cela vaut pour tout : les <b>dates</b> de la plus ancienne à la plus récente ou "+
+  "l'inverse, le <b>nombre de recherches</b> croissant ou décroissant, les <b>budgets</b>, "+
+  "les <b>biens sans réponse</b>, et les colonnes de texte dans l'ordre alphabétique ou à "+
+  "rebours. Les nombres se comparent comme des nombres, les dates comme des dates, les "+
+  "textes sans casse ni accent. "+
+  "À l'ouverture, la liste est classée par <b>date de mise à jour, la plus récente en "+
+  "tête</b> : c'est ce qu'on veut voir en arrivant. Le classement choisi tient jusqu'à ce "+
+  "qu'on en choisisse un autre, et il se combine avec les filtres : on filtre d'abord, on "+
+  "classe ensuite ce qui reste."],
  ["La fiche d'une recherche : les volets",
   "<b>Le bandeau bleu</b> dit de qui il s'agit — « <i>La recherche de M. Thomas "+
   "HILBERT</i> », civilité, premier prénom et nom — et porte à droite l'<b>objet</b> de "+
@@ -21328,6 +21492,21 @@ const AIDE = [
   "et tout revient. C'est ce qu'il faut faire quand un projet est en pause. La personne "+
   "cesse alors d'être <b>demandeuse</b> si plus aucune de ses recherches ne tourne ; sa "+
   "fiche, elle, ne bouge pas."],
+ ["Les recherches se numérotent toutes seules",
+  "Une personne qui ne cherche qu'une chose a une recherche <b>sans numéro</b> : « la "+
+  "recherche de M. Thomas HILBERT », et son objet à droite du bandeau. « Recherche 1 » ne "+
+  "dirait rien de plus, et laisserait croire qu'il y en a une seconde. "+
+  "<b>Dès la deuxième, les numéros apparaissent</b> — Recherche 1, Recherche 2… — et la "+
+  "<b>plus ancienne porte le plus petit</b> : le numéro dit l'ordre dans lequel les projets "+
+  "sont venus, ce qui est la seule chose qu'un numéro puisse dire d'utile. "+
+  "<b>Rien à tenir à jour.</b> Les numéros ne sont écrits nulle part : ils se recalculent à "+
+  "chaque affichage. Ajoutez-en une, elle prend le numéro suivant ; dupliquez-en une, la "+
+  "copie se met au bout ; <b>supprimez celle du milieu, et les suivantes se resserrent</b> — "+
+  "il n'y a jamais de trou dans la suite. Revenue à une seule, la recherche perd son "+
+  "numéro. "+
+  "Le numéro ne remplace pas l'<b>objet</b> : « Recherche 2 — Investissement locatif » se "+
+  "lit en entier, dans le bandeau, dans la liste et partout où la recherche est nommée. Une "+
+  "recherche sans objet se lit « Recherche 2 » tout court."],
  ["Ses recherches, sur la fiche d'une personne",
   "La fiche d'une personne qui cherche porte un onglet <b>Ses recherches</b> : les "+
   "<b>en cours</b> en haut, les <b>en sommeil</b> en dessous, chacune avec son nom, son "+
@@ -21358,9 +21537,14 @@ const AIDE = [
   "secteur. Chacune se retire d'un bouton. Tant qu'aucune zone n'est posée, c'est le "+
   "<b>code postal</b> qui filtre ; dès qu'il y en a une, c'est <b>elle</b> qui décide — "+
   "deux filtres géographiques qui se contredisent ne ramèneraient jamais rien. "+
-  "Les <b>points verts</b> sur la carte sont les biens en vente qui tombent dans le "+
-  "secteur, les gris ceux qui n'y sont pas ; survolez-en un pour voir son mandat et son "+
-  "prix. "+
+  "<b>Les pastilles de la carte disent le rapprochement, pas le seul secteur.</b> "+
+  "<b>Vert</b> : le bien répond à la recherche, c'est ce que la liste « Biens à "+
+  "rapprocher » propose. <b>Rouge</b> : le bien est en vente, mais il est écarté. "+
+  "Survolez-en un : l'infobulle donne le mandat, le prix et <b>la raison</b> — « hors "+
+  "secteur », « dépasse le budget de 12 000 € », « aucune chambre ». Un bien peut donc "+
+  "tomber dans votre zone et sortir rouge pour son prix : le secteur n'est qu'un critère "+
+  "parmi les autres. Tant qu'aucun critère n'est saisi, tout reste <b>gris</b> : il n'y a "+
+  "rien à trancher. "+
   "<b>Repérer les biens</b> place vos mandats sur la carte : leur adresse est envoyée "+
   "<b>une fois</b> à l'API adresse de l'État, et le point est gardé dans le dossier — il "+
   "ne repartira plus, et le rapprochement se fera ensuite hors ligne. Un bien pas encore "+
@@ -21408,6 +21592,24 @@ const AIDE = [
   "dans la fiche du bien, et la réponse devient franche. "+
   "Ne confondez pas avec « Le quartier en une phrase » de la fiche d'un immeuble : celle-là "+
   "<b>décrit</b> pour les annonces, celui-ci <b>classe</b> pour le rapprochement."],
+ ["« Non renseigné » n'est pas « non » — et zéro n'est pas « on ne sait pas »",
+  "<b>Le symptôme.</b> Un demandeur voulait au moins une chambre ; le rapprochement lui "+
+  "proposait un <b>studio</b> en annonçant <i>tous les critères satisfaits</i>. "+
+  "<b>La cause.</b> Quand le détail des pièces d'un bien est saisi, l'application en "+
+  "tire les comptes — pièces, chambres, salles de bain. Un studio y compte <b>zéro "+
+  "chambre</b>, et ce zéro s'inscrivait comme une <b>case vide</b>, c'est-à-dire comme "+
+  "« on ne sait pas ». Le rapprochement se taisait alors sur un critère que le client "+
+  "avait pourtant posé. "+
+  "<b>Ce qui a changé.</b> Le détail des pièces fait loi : <b>zéro s'écrit zéro</b>, et "+
+  "c'est une réponse. Les comptes sont désormais relus <b>au moment du rapprochement</b>, "+
+  "sur le dossier tel qu'il est rangé — sans attendre qu'on rouvre la fiche. "+
+  "<b>Et surtout</b> : un critère chiffré que la fiche du bien ne permet pas de "+
+  "vérifier — surface, chambres, pièces, terrain — le <b>dit</b> maintenant en gris "+
+  "(« le nombre de chambres non renseigné »), au lieu d'être passé sous silence. Un bien "+
+  "qui ne répond pas à une question n'est pas un bien qui y répond bien. "+
+  "<b>Une règle resserrée.</b> Une chambre de moins que demandé reste une discussion ; "+
+  "<b>aucune</b> chambre n'en est plus une. Qui demande une chambre ne cherche pas un "+
+  "studio : le bien est écarté, motif « aucune chambre »."],
  ["Les critères qui ne valent que pour certains types",
   "L'ascenseur et l'étage ne veulent rien dire pour une maison ; le terrain et la piscine "+
   "ne veulent rien dire pour un appartement. Dans <b>La recherche</b>, ces critères "+
@@ -21463,8 +21665,12 @@ const AIDE = [
   "<b>déjà au suivi</b>, <b>refusés</b>. Deux icônes sur chaque ligne : la coche le met au "+
   "<b>suivi du demandeur</b>, la croix l'<b>écarte</b>. "+
   "Écarter ouvre une petite fenêtre : la <b>date</b> — celle du jour, modifiable, car on "+
-  "saisit souvent le lendemain — et le <b>motif</b>, pris dans une liste que vous "+
-  "complétez (onglet Listes) ou précisé à la main. Six mois plus tard, c'est ce qui permet "+
+  "saisit souvent le lendemain — et le <b>motif</b>. "+
+  "<b>La liste des motifs se complète sur place</b> : le bouton <b>+</b> à droite du menu "+
+  "ajoute un motif sans quitter la fenêtre, et le motif tout neuf est aussitôt choisi. Il "+
+  "rejoint la liste pour de bon — on le retrouve au refus suivant, et dans l'onglet "+
+  "<b>Listes</b>, où l'on peut le renommer ou le retirer. La case « Précision » reste là "+
+  "pour ce qui ne mérite pas d'entrer dans la liste. Six mois plus tard, c'est ce qui permet "+
   "de savoir s'il faut reproposer le bien, et ce qui se dit au vendeur quand il demande "+
   "pourquoi personne ne vient. Le motif se lit sur la ligne du bien écarté, et "+
   "l'<b>historique</b> de la fiche en garde la suite complète — même après qu'on a "+
@@ -21511,6 +21717,20 @@ const AIDE = [
   "« partout ». La pastille <b>nouveau</b> marque les rapprochements que vous n'avez pas "+
   "encore vus ; le bouton au bas de la carte les passe tous en « vus ». Rien n'est "+
   "enregistré : tout se recalcule, de sorte qu'un prix modifié se voit aussitôt."],
+ ["La carte « Demandeurs et biens » : l'ordre des colonnes",
+  "La carte d'<b>Aujourd'hui</b> et le volet <b>Biens à rapprocher</b> montrent les mêmes "+
+  "biens, mais ne servent pas à la même chose, et ne rangent donc pas leurs colonnes de la "+
+  "même façon. "+
+  "<b>Sur la fiche d'une recherche</b>, on sait déjà de quel bien on parle : l'ordre est "+
+  "bien, détail, prix, critères. "+
+  "<b>Sur Aujourd'hui</b>, on parcourt une liste de rapprochements de tout le portefeuille, "+
+  "et la question est « est-ce que ça colle, et à quel prix ». La première colonne donne "+
+  "donc le type, la commune et l'<b>adresse</b> — et non le numéro de mandat, qui ne dit "+
+  "rien à l'œil qui balaie —, puis viennent le <b>prix</b>, le <b>respect des critères</b>, "+
+  "et seulement ensuite le <b>détail du bien</b> : surface, pièces, chambres, extérieur. Ce "+
+  "détail n'intéresse qu'une fois qu'on a décidé de s'arrêter sur la ligne ; le mettre en "+
+  "deuxième position écartait le verdict vers la droite. "+
+  "Le numéro de mandat reste accessible : un clic sur la ligne ouvre le dossier."],
  ["Qui cherche ce bien ? — depuis le dossier",
   "Le rapprochement se lit aussi par l'autre bout. Sur l'onglet <b>Général</b> d'un mandat "+
   "<b>en vente</b>, une tuile <b>Acquéreurs pour ce bien</b> apparaît dès qu'une recherche "+
