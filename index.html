@@ -946,9 +946,52 @@ table.tdb.statuts tr.stat td.cpart,table.tdb.statuts tr.tot td.cpart{font-weight
 .detailbox h3{flex:0 0 auto}
 .detailbox .modalbody{flex:1 1 auto;overflow:auto;min-height:0}
 .detailbox .modalfoot{flex:0 0 auto;padding-top:12px;border-top:1px solid var(--line-2)}
-.detailbox .modalbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:0 18px;align-items:start;padding:16px 18px}
+/* La fiche du bien : un rail de volets à gauche, le volet ouvert à droite.
+   Les deux colonnes d'autrefois montraient tout et ne laissaient rien
+   trouver ; on lit maintenant un sujet à la fois. */
+.detailbox .modalbody.detailbody{display:grid;
+  grid-template-columns:206px minmax(0,1fr);gap:0 18px;align-items:start;
+  padding:16px 18px}
+@media(max-width:860px){
+  .detailbox .modalbody.detailbody{grid-template-columns:1fr}
+}
+.bienrail{display:flex;flex-direction:column;gap:3px;position:sticky;top:0;
+  align-self:start}
+@media(max-width:860px){
+  .bienrail{position:static;flex-direction:row;flex-wrap:wrap}
+}
+.bienrail .mitem{text-align:left;white-space:normal}
+.bienrail .mitem.sous{margin-left:14px;font-size:12.5px}
+.bienrail .mitem.ajout{margin-top:6px;color:var(--accent);font-weight:600}
+.biencorps{min-width:0;display:flex;flex-direction:column;gap:14px}
 .dcol{min-width:0;display:flex;flex-direction:column;gap:14px}
+/* les pastilles de bilan : elles se lisent, elles ne se saisissent pas */
+.pbilan{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));
+  gap:9px 10px}
+.plue{border:1px solid var(--line-2);border-radius:9px;padding:8px 9px;
+  background:#fbfcfe;display:flex;flex-direction:column;gap:5px;
+  align-items:flex-start;min-width:0}
+.plue.saisi{background:#fff;border-color:var(--line)}
+.plue .pl{font-size:11.5px;font-weight:600;color:var(--ink-2)}
+.plue .ynb{min-width:58px;padding:4px 10px;font-size:11.5px}
+/* une pastille lue n'est pas un bouton : elle n'en a ni le curseur ni le
+   relief, pour qu'on n'essaie pas de cliquer dessus */
+.ynb.lu{cursor:default;box-shadow:none}
+/* l'état d'occupation : trois réponses, une seule à la fois */
+.occstat{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.occb{font:inherit;font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:999px;
+  border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer;
+  line-height:1.2}
+.occb:hover{border-color:var(--accent);color:var(--navy)}
+.occb.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.occbail{margin-top:12px}
+.detailbox .pfsep{grid-column:1/-1;font-size:11px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--ink-3);margin:6px 0 0}
+/* le tableau des logements d'un immeuble */
+table.lgt td:nth-child(n+2):nth-child(-n+4),
+table.lgt th:nth-child(n+2):nth-child(-n+4){text-align:right}
+table.lgt tr.tot td{font-weight:700;background:#f7f9fc}
+.lgtete .dnote{margin-top:6px}
 .detailbox .dsec{border:1px solid var(--line);border-radius:var(--radius);
   padding:12px 14px;background:#fff;margin:0}
 .detailbox .dsec h4{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.6px;
@@ -959,8 +1002,9 @@ table.tdb.statuts tr.stat td.cpart,table.tdb.statuts tr.tot td.cpart{font-weight
 /* un champ qui doit commencer une nouvelle ligne de la grille */
 .detailbox .pf.br{grid-column-start:1}
 /* les quatre comptes, alignés sur une seule ligne */
-.dcount{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 10px;
+.dcount{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px 10px;
   margin-bottom:12px}
+@media(max-width:1120px){.dcount{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .dcount .pf > label{font-size:11px}
 /* les annexes : la réponse, et sa surface dessous */
 .dannx{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 10px}
@@ -993,8 +1037,7 @@ table.piecetot tr.tot td{font-weight:700}
 .detailbox .dcalc{padding:7px 10px;font-weight:600;text-align:left}
 .detailbox .dact{margin-top:10px}
 .dnote{margin:9px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.45}
-/* l'argumentaire : pleine largeur sous les deux colonnes */
-.detailbox .darg{grid-column:1/-1;margin-top:14px}
+.detailbox .darg{margin:0}
 .arggs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px}
 .argg h5{margin:0 0 7px;font-size:11px;font-weight:700;letter-spacing:.4px;
   text-transform:uppercase;color:var(--ink-2)}
@@ -2090,7 +2133,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 19 octobre 2026, 9 h 30">Dossiers de vente</div>
+  <div class="brand" title="Version du 19 octobre 2026, 13 h 02">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2301,7 +2344,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>19 octobre 2026, 9 h 30</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>19 octobre 2026, 13 h 02</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2408,8 +2451,8 @@ table.tdb .puce.resilie{background:#64748b}
 
 <div class="modal" id="detailBox" hidden>
   <div class="modalbox detailbox">
-    <h3>Fiche détaillée du bien</h3>
-    <div class="modalbody" id="detailCorps"></div>
+    <h3 id="detailTitre">Le bien</h3>
+    <div class="modalbody detailbody" id="detailCorps"></div>
     <div class="modalfoot">
       <div id="detailPj"></div>
       <div style="flex:1"></div>
@@ -2602,6 +2645,11 @@ const LISTS_DEFAULT = {
   ecs:        ["Chauffe-eau électrique","Chauffe-eau thermodynamique",
                "Chaudière gaz individuelle","Chaudière mixte (chauffage + eau chaude)",
                "Solaire","Collective","Autre"],
+  /* le bail d'un bien loué : ce qu'il faut savoir avant de promettre une
+     date de libération à un acquéreur */
+  typeBail:   ["Location vide","Location meublée","Bail mobilité","Bail étudiant",
+               "Bail commercial","Bail professionnel","Location saisonnière",
+               "Bail rural","Convention d'occupation précaire","Autre"],
   /* immeuble : nature de l'installation, puis énergie employée */
   modeEquip:  ["Individuel","Collectif","Individuel avec base collective"],
   modeEcs:    ["Individuelle","Collective","Individuelle avec base collective"],
@@ -2696,7 +2744,7 @@ const LIST_LABELS = {
   qualite:"Qualité / civilité des parties",
   sitMat:"Situations matrimoniales", nationalite:"Nationalités",
   chauffage:"Modes de chauffage", froid:"Refroidissement", ecs:"Production d'eau chaude",
-  chargeHono:"Charge des honoraires",
+  chargeHono:"Charge des honoraires", typeBail:"Types de bail",
   modeEquip:"Chauffage / refroidissement — nature", modeEcs:"Eau chaude — nature",
   energie:"Énergies", fonctionNot:"Fonctions dans une étude",
   nomRecherche:"Objets d'une recherche",
@@ -2721,6 +2769,7 @@ const BOOKS = {
     ["nbLots","Nombre de lots","nb"],
     ["nbLotsPrinc","dont lots d'habitation","nb"],
     ["@lieu","Le quartier et l'immeuble","sep"],
+    ["qnom","Quartier (celui des recherches)","quartier"],
     ["quartier","Le quartier en une phrase","text","wide"],
     ["caractere","Caractère de la résidence","text","wide"],
     ["@equip","Équipements","sep"],
@@ -3292,8 +3341,20 @@ function loadListesDepuis(v){
    structure jouée au démarrage — n'est pas une saisie : elle ne doit donc
    jamais dater les carnets, sous peine de faire passer pour « tout neuf »
    un poste qui n'a encore rien lu de la base. D'où le drapeau. */
-function saveLists(sansDater){ try{ localStorage.setItem(LS_LISTS, JSON.stringify(L)); }catch(e){}
-  if(!sansDater) noterMajListes(); }
+/* Une liste enregistrée doit PARTIR. Jusqu'ici, `saveLists` s'arrêtait au
+   navigateur : une recherche supprimée, un notaire ajouté, une valeur de
+   liste renommée n'atteignaient la base partagée qu'au prochain
+   enregistrement d'un DOSSIER — qui pouvait ne jamais venir. Entre-temps,
+   la base gardait l'ancienne version, et une suppression paraissait
+   « revenir » au premier rechargement. L'envoi est différé de quatre
+   secondes, comme ailleurs : une rafale de retouches ne vaut pas une rafale
+   d'allers-retours. */
+function saveLists(sansDater){
+  try{ localStorage.setItem(LS_LISTS, JSON.stringify(L)); }catch(e){}
+  if(sansDater) return;                 // reprise d'une base : rien à renvoyer
+  noterMajListes();
+  if(typeof syncDiffere === "function") syncDiffere();
+}
 
 /* ---------------------------------------------------------------- modèle */
 const DIAGS = ["DPE","Termites","E.R.P.","Électricité","Gaz","Amiante","Plomb","Loi Carrez"];
@@ -3644,6 +3705,17 @@ function enrolerLesPersonnes(){
   });
   saveLists();
 }
+/* L'état d'occupation d'un bien — ou d'un logement d'immeuble. Les trois
+   statuts sont fermés : libre, occupé par le propriétaire, loué. Le bail
+   n'est demandé que pour le troisième. */
+const OCCUPATIONS = ["Libre", "Occupé par le propriétaire", "Loué"];
+function occupationVierge(){
+  return {statut:"", civilite:"", nom:"", prenom:"", tel:"", email:"",
+          bail:"", debut:"", fin:"", preavis:"", loyer:"", charges:""};
+}
+function occupationReprise(o){
+  return Object.assign(occupationVierge(), (o && typeof o === "object") ? o : {});
+}
 function blankDossier(){
   return {
     id: "d" + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
@@ -3672,8 +3744,15 @@ function blankDossier(){
             wc:"", etage:"", etages:"", exposition:"", etat:"", annexes:"",
             terrasse:"", terrasseM2:"", balcon:"", balconM2:"", jardin:"", jardinM2:"",
             cave:"", caveM2:"", garage:"", garageNb:"", parking:"", parkingNb:"",
-            chauffage:"", froid:"", ecs:"",
+            chauffage:"", froid:"", ecs:"", piscine:"",
             charges:"", taxe:"", observations:""},
+    /* ce qu'il advient du bien aujourd'hui : libre, habité par son
+       propriétaire, ou loué — et dans ce dernier cas, de quoi parler du bail
+       sans aller chercher le dossier de gestion */
+    occupation:occupationVierge(),
+    /* un immeuble se décrit logement par logement ; les autres biens n'ont
+       pas de logements, et ce tableau reste vide */
+    logements:[],
     /* ce que la fiche technique ne dit pas : le quartier, l'atmosphère, à qui
        le bien s'adresse, et ce que le négociateur a vu en visitant. Sans cela,
        une annonce n'est qu'un inventaire. */
@@ -3705,13 +3784,59 @@ function blankDossier(){
 }
 let D = null;
 
+/* ----------------------------------------------- un dossier encore vierge
+   « Nouveau » puis rien : ce n'est pas un dossier, c'est une intention.
+   Il ne doit ni s'enregistrer, ni paraître dans « Mes dossiers », ni
+   compter dans un rapprochement ou une statistique. Dès la première
+   frappe — un numéro, une adresse, un prix, un nom —, il devient un
+   dossier comme les autres.
+
+   On le reconnaît en le comparant à un dossier neuf, et non à une liste de
+   champs qu'il faudrait tenir à jour : un champ ajouté au modèle est
+   couvert d'office. La comparaison est faite sur une signature stable
+   (clés triées, identifiant et dates de service écartés), et seulement
+   après trois tests immédiats qui règlent la quasi-totalité des cas. */
+function signatureDossier(d){
+  const nu = x=>{
+    if(Array.isArray(x)) return x.map(nu);
+    if(x && typeof x === "object")
+      return Object.keys(x).sort().reduce((o, k)=>{ o[k] = nu(x[k]); return o; }, {});
+    return x === null || x === undefined ? "" : x;
+  };
+  const c = Object.assign({}, d || {});
+  delete c.id; delete c.maj; delete c.cree;
+  return JSON.stringify(nu(c));
+}
+let SIGNATURE_VIERGE = null;
+function dossierVierge(d){
+  if(!d) return true;
+  const m = d.mandat || {}, b = d.bien || {}, p = d.prix || {};
+  if(m.num || b.adresse || p.fai) return false;       // le cas courant, d'un coup
+  /* les deux côtés passent par `migrate` : un dossier relu du navigateur en
+     sort toujours, un dossier tout juste ouvert non — sans cela, les deux
+     formes du MÊME dossier vide ne se ressembleraient pas */
+  if(SIGNATURE_VIERGE === null)
+    SIGNATURE_VIERGE = signatureDossier(migrate(blankDossier()));
+  return signatureDossier(migrate(JSON.parse(JSON.stringify(d)))) === SIGNATURE_VIERGE;
+}
+
 /* -------------------------------------------------------------- stockage */
 function allDossiers(){
   try { return JSON.parse(localStorage.getItem(LS_DOSS) || "{}"); } catch(e){ return {}; }
 }
 function persist(silent){
-  D.maj = Date.now();
   const all = allDossiers();
+  if(dossierVierge(D)){
+    /* rien n'a été tapé : on n'écrit pas, et l'on retire la trace d'un
+       dossier qu'on aurait vidé depuis */
+    if(all[D.id]){
+      delete all[D.id];
+      try{ localStorage.setItem(LS_DOSS, JSON.stringify(all)); }catch(e){}
+    }
+    if(!silent) toast("Dossier encore vide : rien à enregistrer");
+    return;
+  }
+  D.maj = Date.now();
   all[D.id] = D;
   try{
     localStorage.setItem(LS_DOSS, JSON.stringify(all));
@@ -4203,7 +4328,9 @@ function villesDuContexte(path, attr){
   if(attr === "data-b") return [String((D.bien || {}).ville || "").trim()].filter(Boolean);
   const c = cibleBook(path);
   if(!c) return [];
-  return villesDesCps((c.obj || {}).cps);
+  /* une recherche porte des codes postaux, une résidence porte UNE ville */
+  const v = String((c.obj || {}).ville || "").trim();
+  return v ? [v] : villesDesCps((c.obj || {}).cps);
 }
 /* Deux listes se lisent dans l'ordre où elles sont écrites, et non par
    ordre alphabétique : le type de bien va du plus courant au plus rare, et
@@ -4281,7 +4408,7 @@ function appliquerYn(path, val, carnet){
     renderGeneral(); renderPreview();
     return;
   }
-  if(path.startsWith("detail.")){
+  if(/(^|\.)detail\./.test(path) || /(^|\.)occupation\./.test(path)){
     set(D, path, val);
     autosave(); renderDetail(); majDetail();
     return;
@@ -4613,23 +4740,11 @@ function refreshAllVilles(){
 /* Onglet Général : le bien à gauche, l'argent et le calendrier à droite.
    Le n° de mandat, son type et sa date sont saisis dans la barre du haut. */
 const SCHEMA_GENERAL = [
- {col:0,t:"Le bien",n:"1",cle:"bien",f:[
-   ["bien.residence","Résidence / Immeuble","book:residences"],
-   ["@imm","Dossiers de l'immeuble","imm","sub","",
-     ()=> !!String((D.bien || {}).residence || "").trim()],
-   ["bien.adresse","Adresse du bien","text"],
-   ["bien.adresse2","Complément d'adresse","text"],
-   ["bien.cp","Code postal","cp","","bien"],
-   ["bien.ville","Ville","ville","","bien"],
-   ["bien.quartier","Quartier","quartier"],
-   ["bien.pays","Pays","pays","","bien"],
-   ["bien.type","Type de bien","list:typeBien"],
-   ["bien.sitJur","Situation juridique","list:sitJur"],
-   ["@detail","Fiche détaillée","detail"],
-   ["@syndic","Syndic","calc"],
-   ["bien.dateConstruction","Date exacte (permis de construire)","date"],
-   ["bien.annee","Année de construction","annee","sub"],
-   ["@sepResil","",'sep'],
+ /* Le bien lui-même — type, adresse, pièces, caractéristiques, terrain,
+    occupation — a sa propre fiche, ouverte par le bouton « Le bien » de
+    l'en-tête. Ne reste ici que ce qui touche au MANDAT et non au bien :
+    la résiliation, où mène l'étape correspondante de la frise. */
+ {col:0,t:"Résiliation du mandat",n:"1",cle:"bien",f:[
    ["mandat.resilie","Mandat résilié","check"],
    ["mandat.resilieDate","Date de résiliation","date","sub",null,()=> !!D.mandat.resilie],
    ["mandat.resilieMotif","Motif","list:motifResil","sub",null,()=> !!D.mandat.resilie]
@@ -4988,7 +5103,7 @@ function heroDossier(){
   const tiroirsAffaire = (rubriquesDe(sujetDossier(D)) || [])
     .map(r=> trombone(sujetDossier(D), r, r));
   const actions = [
-    `<button type="button" class="xbtn" data-dbien="1">${IC_LOUPE_BIEN}<span>Fiche détaillée du bien</span></button>`
+    `<button type="button" class="xbtn" data-dbien="1">${IC_LOUPE_BIEN}<span>Le bien</span></button>`
   ].concat(tiroirsAffaire).concat([
     trombone(sujetBien(D), "Photos"),
     String(b.residence || "").trim() ? trombone(sujetImmeuble(b.residence), "Documents immeubles") : "",
@@ -5030,7 +5145,6 @@ function heroDossier(){
    s'ouvre en cliquant les chiffres du bandeau, la seconde répétait la frise
    — qui se saisit maintenant. Les deux fenêtres, elles, sont inchangées. */
 const TUILES_GENERAL = [
-  {cle:"bien",     titre:"Le bien"},
   {cle:"suivi",    titre:"Suivi du dossier"},
   {cle:"copro",    titre:"Infos sur copropriété", si:coproRenseigne},
   {cle:"acqs",     titre:"Demandeurs pour ce bien",
@@ -5042,16 +5156,6 @@ function vide(t){ return !String(t || "").trim(); }
 function lignesTuile(cle){
   const b = D.bien || {}, L4 = [];
   const l = (dt, dd, faible, brut)=> L4.push([dt, dd, faible, brut]);
-  if(cle === "bien"){
-    l("Résidence", b.residence || "aucune", vide(b.residence));
-    l("Type", typeBienLisible() || "à préciser", vide(typeBienLisible()));
-    const rue = [b.adresse, b.adresse2].filter(Boolean).join(" ");
-    l("Adresse", rue || "à saisir", vide(rue));
-    if(D.mandat.resilie)
-      l("Mandat", "résilié" + (isoValide(D.mandat.resilieDate)
-        ? " le " + fdate(D.mandat.resilieDate) : ""));
-    else l("Surface", surfaceLisible() || "non renseignée", !surfaceLisible());
-  }
   if(cle === "suivi"){
     l("Vendeur suivi par", D.nego.vendeur || "personne", vide(D.nego.vendeur));
     if(phaseAcquereur())
@@ -5096,11 +5200,6 @@ function lignesTuile(cle){
   return L4;
 }
 function piedTuile(cle){
-  if(cle === "bien"){
-    const r = resumeDetail();
-    return r ? `<b>Fiche détaillée</b> · ${esc(r.length > 60 ? r.slice(0, 59) + "…" : r)}`
-             : `<b>Fiche détaillée</b> · rien de saisi`;
-  }
   if(cle === "copro"){
     const rest = String(residenceDuBien().restrictions || "").trim();
     return rest ? esc(rest.length > 72 ? rest.slice(0, 71) + "…" : rest)
@@ -5125,7 +5224,6 @@ function piedTuile(cle){
 }
 function tuileAlerte(cle){
   if(cle === "copro") return coproAlerte();
-  if(cle === "bien")  return !!D.mandat.resilie;
   if(cle === "annulees") return true;
   return false;
 }
@@ -5156,7 +5254,7 @@ function majDetailTuile(){ majDetail(); }
 /* ------------------------------------ la fenêtre d'une section du dossier */
 let SECTION_OUVERTE = "", TIROIR_OUVERT = "";
 const SOUS_SECTION = {
-  bien:"Désignation, situation juridique, état du mandat.",
+  bien:"Un mandat résilié garde son dossier : rien n'est effacé, le bien quitte seulement la vente.",
   prix:"Le net vendeur, le prix porté à l'acte et le taux se déduisent des trois premiers champs.",
   dates:"Les échéances n'apparaissent qu'une fois l'offre ou le compromis daté.",
   suivi:"Qui suit le vendeur, qui suit l'acquéreur, et l'intermédiaire éventuel.",
@@ -5346,8 +5444,10 @@ const DETAIL_G = [
     ["etages",    "Sur combien d'étages",   "text", "",   estAppartement]
   ]},
   {t:"Distribution et annexes",
+   /* « Nb de pièces » manquait à l'appel : il se compte comme les autres
+      dès que les pièces sont détaillées, et se saisit à la main sinon. */
    comptes:[
-     ["chambres", "Chambres"], ["sdb", "Salles de bain"],
+     ["pieces",   "Pièces"], ["chambres", "Chambres"], ["sdb", "Salles de bain"],
      ["sdEau",    "Salles d'eau"], ["wc", "WC"]
    ],
    annexes:[
@@ -5512,8 +5612,9 @@ function depouillePieces(d){
 }
 /* on inscrit ces valeurs dans le dossier : les documents les y liront */
 const PIECES_CALCULES = ["surface","pieces","chambres","sdb","sdEau","wc"];
-function majDepuisPieces(){
-  const r = depouillePieces();
+function majDepuisPieces(o){
+  const cible = o || D;
+  const r = depouillePieces(cible);
   if(!r) return false;
   PIECES_CALCULES.forEach(k=>{
     /* ZÉRO N'EST PAS « NON RENSEIGNÉ ». Quand le détail des pièces est
@@ -5525,7 +5626,7 @@ function majDepuisPieces(){
     const v = k === "surface"
       ? (r.surface ? String(Math.round(r.surface * 100) / 100).replace(".", ",") : "")
       : String(r[k]);
-    D.detail[k] = v;
+    cible.detail[k] = v;
   });
   return true;
 }
@@ -5533,68 +5634,247 @@ function majDepuisPieces(){
 /* les champs de surface d'une annexe ne se remplissent que si elle existe */
 const DETAIL_DEP = {terrasseM2:"terrasse", balconM2:"balcon", jardinM2:"jardin",
                     caveM2:"cave", garageNb:"garage", parkingNb:"parking"};
-function detailActif(champ){
+function detailActif(champ, o){
   const dep = DETAIL_DEP[champ];
-  return !dep || D.detail[dep] === "OUI";
+  return !dep || (o || D).detail[dep] === "OUI";
 }
-function renderDetail(){
-  const box = $("#detailCorps");
-  if(!box) return;
-  const auto = majDepuisPieces();        // le détail des pièces fait loi
-  const champ = ([k, lab, kind, w, cond])=>{
-    if(cond && !cond()) return "";
-    const calcule = auto && PIECES_CALCULES.indexOf(k) >= 0;
-    const off = !detailActif(k);
-    let h;
-    if(calcule){
-      const v = D.detail[k] || "—";
-      h = `<div class="calc dcalc" data-dcalc="${esc(k)}"
-        title="Calculé d'après le détail des pièces">${esc(v)}</div>`;
-    } else {
-      h = control("detail." + k, kind);
-      if(off) h = h.replace(/<(input|select|button)\b/g, "$& disabled");
-    }
-    const mod = w === "wide" ? " wide" : w === "br" ? " br" : "";
-    return `<div class="pf${mod}${off ? " off" : ""}">` +
-           `<label>${esc(lab)}</label>${h}</div>`;
-  };
-  /* une annexe tient en une case : la pastille OUI/NON, et sa surface dessous,
-     verrouillée tant que la réponse n'est pas OUI */
-  const annexe = ([k, lab, kSurf, labSurf])=>{
-    const ouvert = D.detail[k] === "OUI";
-    let su = control("detail." + kSurf, kSurf.endsWith("Nb") ? "nb" : "money");
-    if(!ouvert) su = su.replace(/<input\b/g, "$& disabled");
-    return `<div class="annx${ouvert ? " on" : ""}">
-      <span class="al">${esc(lab)}</span>
-      ${ynBascule("detail." + k, D.detail[k] || "", "yn")}
-      <span class="as${ouvert ? "" : " off"}"><i>${esc(labSurf)}</i>${su}</span>
-    </div>`;
-  };
-  const bloc = sec=>{
-    const champs = (sec.f || []).map(champ).join("");
-    const comptes = sec.comptes
-      ? `<div class="dcount">${sec.comptes.map(([k,lab])=> champ([k,lab,"nb"])).join("")}</div>`
-      : "";
-    const annexes = sec.annexes
-      ? `<div class="dannx">${sec.annexes.map(annexe).join("")}</div>` : "";
-    if(!champs.trim() && !comptes && !annexes) return "";
-    return `<div class="dsec"><h4>${esc(sec.t)}</h4>` + comptes + annexes +
-      (champs.trim() ? `<div class="dgrid">${champs}</div>` : "") +
-      (sec.t === "Surfaces et situation" && auto
-        ? `<p class="dnote">Surfaces et comptes repris du détail des pièces, à droite.</p>`
-        : "") +
-      (sec.t === "Distribution et annexes" && auto
-        ? `<p class="dnote">Chambres, salles de bain, salles d'eau et WC comptés d'après
-           les pièces.</p>` : "") +
-      (sec.t === "Surfaces et situation" && !estAppartement()
-        ? `<p class="dnote">L'étage ne se demande que sur un appartement.</p>` : "") +
-      (sec.t === "Surfaces et situation" && !estCoproBien()
-        ? `<p class="dnote">La loi Carrez n'apparaît que sur un bien en copropriété
-           (onglet Général → Le bien → Situation juridique).</p>` : "") + `</div>`;
-  };
+/* =====================================================================
+   LA FICHE DU BIEN
+   ---------------------------------------------------------------------
+   Elle tenait sur deux colonnes où tout se voyait d'un coup — et où l'on
+   ne trouvait rien. Elle se lit désormais par sujets, un par volet, dans
+   l'ordre où l'on décrit un bien à quelqu'un : ce que c'est, où c'est, ce
+   qu'il y a dedans, ce que cela mesure, le terrain, et qui l'occupe.
 
-  /* le détail pièce par pièce */
-  const lignes = (D.pieces || []).map((p,i)=>
+   Un IMMEUBLE se décrit autrement : un résumé pour l'ensemble, puis un
+   volet par LOGEMENT. Le logement reprend les trois volets qui lui
+   appartiennent — ses pièces, ses caractéristiques, son occupation —, et
+   le résumé porte ce qui ne se divise pas : les charges, les impôts, et
+   les totaux de tous les logements.
+
+   La CIBLE dit de qui l'on parle : le bien lui-même, ou l'un de ses
+   logements. Les deux ont les mêmes pièces, les mêmes caractéristiques et
+   la même occupation ; tout ce qui suit travaille sur la cible, et rien
+   n'est écrit deux fois.
+   ===================================================================== */
+const BIEN = {page:"", lg:""};
+function logementsDe(d){ return Array.isArray((d || D).logements) ? (d || D).logements : []; }
+function cibleBien(){
+  const l = logementsDe(D);
+  const g = BIEN.lg ? l.filter(x=> x.id === BIEN.lg)[0] : null;
+  return g ? {o:g, chemin:"logements." + l.indexOf(g) + ".", lg:true}
+           : {o:D, chemin:"", lg:false};
+}
+function estImmeubleBien(){ return (D.bien || {}).type === "Immeuble"; }
+/* Un appartement et un local partagent la même question : à quel étage, et
+   l'immeuble a-t-il un ascenseur. Une maison, un terrain, non. */
+function estApptOuLocal(){
+  const t = (D.bien || {}).type;
+  return t === "Appartement" || t === "Local";
+}
+function nomLogement(g, i){
+  return String((g || {}).nom || "").trim() || ("Logement " + (i + 1));
+}
+/* Le loyer charges comprises s'additionne à la frappe : c'est le chiffre
+   qu'on annonce, et il ne vaut rien s'il faut fermer la fiche pour le voir. */
+function majLoyerTotal(){
+  const z = document.getElementById("occTotal");
+  if(!z) return;
+  const oc = cibleBien().o.occupation || {};
+  const t = num(oc.loyer) === null && num(oc.charges) === null
+    ? null : (num(oc.loyer) || 0) + (num(oc.charges) || 0);
+  z.textContent = t === null ? "—" : eur(t);
+}
+/* Le nom d'un logement se lit à trois endroits à la fois : on remet le menu
+   à jour sans redessiner la page, pour ne pas emporter le curseur. */
+function majNomLogement(){
+  const l = logementsDe(D);
+  document.querySelectorAll('#detailCorps .bienrail [data-bpage^="lg:"]')
+    .forEach(b=>{
+      const id = b.dataset.bpage.slice(3);
+      const g = l.filter(x=> x.id === id)[0];
+      if(g) b.textContent = nomLogement(g, l.indexOf(g));
+    });
+}
+function ajouterLogement(){
+  const l = (D.logements = logementsDe(D));
+  const g = {id:"lg" + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+             nom:"", detail:JSON.parse(JSON.stringify(blankDossier().detail)),
+             pieces:[], occupation:occupationVierge()};
+  l.push(g);
+  BIEN.page = "lg:" + g.id;
+  autosave(); renderDetail(); majDetail();
+  const e = document.querySelector('#detailCorps [data-b$=".nom"]');
+  if(e) e.focus();
+}
+function retirerLogement(id){
+  const l = logementsDe(D);
+  const g = l.filter(x=> x.id === id)[0];
+  if(!g) return;
+  const i = l.indexOf(g);
+  popup({titre:"Retirer ce logement ?", genre:"erreur",
+    corps:`<p style="margin:0"><b>${esc(nomLogement(g, i))}</b> et tout ce qu'il
+      porte — ses pièces, ses caractéristiques, son bail — seront retirés de
+      l'immeuble.</p>`,
+    boutons:[{lib:"Annuler"}, {lib:"Retirer", primaire:true, action:()=>{
+      l.splice(i, 1);
+      if(BIEN.page === "lg:" + id) BIEN.page = "immeuble";
+      autosave(); renderDetail(); majDetail();
+      toast("Logement retiré");
+    }}]});
+}
+
+/* ------------------------------------------------- les pastilles de bilan
+   « Extérieur ? », « Pkg/Garage ? », « Terrasse/Balcon ? » : on ne les
+   SAISIT pas, on les LIT de ce qui est déjà renseigné plus bas. Une case de
+   plus aurait fait une seconde source pour un même fait, et deux sources
+   finissent toujours par se contredire — un jardin coché en annexe et un
+   « Extérieur : NON » en tête, et plus personne ne sait.
+
+   Trois états, comme partout : OUI dès qu'un élément répond oui, NON quand
+   tous ont répondu non, et « ? » tant que rien n'est dit. Zéro n'est pas
+   « non renseigné », et « rien de coché » non plus.                      */
+function bilanOuiNon(det, clefs){
+  const vus = clefs.map(k=> det[k]);
+  if(vus.some(v=> v === "OUI")) return "OUI";
+  if(vus.every(v=> v === "NON")) return "NON";
+  return "";
+}
+function pastilleLue(lab, val, dou){
+  const cls = val === "OUI" ? "oui" : val === "NON" ? "non" : "vide";
+  return `<div class="plue"><span class="pl">${esc(lab)}</span>
+    <span class="ynb lu ${cls}" title="${esc(dou)}">${esc(val || "?")}</span></div>`;
+}
+/* Rez-de-chaussée et dernier étage se lisent de l'étage saisi. « RDC » ou
+   « 0 » d'un côté, l'étage égal au nombre d'étages de l'autre. */
+function etageRdc(det){
+  const t = String(det.etage || "").trim();
+  if(!t) return "";
+  if(/[+½]/.test(t)) return "NON";
+  return (/rez.?de.?chauss|^rdc\b/i.test(t) || num(t) === 0) ? "OUI" : "NON";
+}
+function etageDernier(det){
+  const e = num(det.etage), n = num(det.etages);
+  if(e === null || n === null) return "";
+  return e >= n ? "OUI" : "NON";
+}
+function troisEtats(v){ return v === true ? "OUI" : v === false ? "NON" : ""; }
+/* Les pastilles d'un bien ou d'un logement, dans l'ordre où on les lit. */
+function pastillesBien(o){
+  const det = o.detail || {};
+  const l = [
+    ["Extérieur", bilanOuiNon(det, ["terrasse","balcon","jardin"]),
+     "d'après Terrasse, Balcon et Jardin, plus bas"],
+    ["Pkg / Garage", bilanOuiNon(det, ["garage","parking"]),
+     "d'après Garage et Parking, plus bas"]
+  ];
+  if(estApptOuLocal() || BIEN.lg){
+    l.push(["Rez-de-chaussée", etageRdc(det), "d'après l'étage saisi"]);
+    l.push(["Dernier étage", etageDernier(det),
+            "d'après l'étage et le nombre d'étages"]);
+    l.push(["Terrasse / Balcon", bilanOuiNon(det, ["terrasse","balcon"]),
+            "d'après Terrasse et Balcon, plus bas"]);
+    if(!BIEN.lg){
+      const r = residenceDuBien();
+      l.push(["Ascenseur", r.ascenseur || "",
+              r.nom ? "repris de la résidence " + r.nom
+                    : "à renseigner sur la fiche de la résidence"]);
+    }
+  } else {
+    l.push(["Jardin", det.jardin || "", "d'après le jardin, plus bas"]);
+    l.push(["Terrasse / Balcon", bilanOuiNon(det, ["terrasse","balcon"]),
+            "d'après Terrasse et Balcon, plus bas"]);
+    l.push(["Chambre en RDC", troisEtats(plainPiedDe(o, PIECE_CH)),
+            "d'après le niveau des chambres, au volet Les pièces"]);
+    l.push(["Commodité en RDC", troisEtats(plainPiedDe(o, PIECE_COMMOD)),
+            "d'après le niveau des WC et salles d'eau, au volet Les pièces"]);
+  }
+  return l;
+}
+function blocPastilles(o, piscine){
+  const chemin = cibleBien().chemin;
+  const lues = pastillesBien(o).map(([lab, val, dou])=> pastilleLue(lab, val, dou))
+    .join("");
+  /* La piscine, elle, ne se déduit de rien : c'est la seule qui se saisit. */
+  const pis = piscine
+    ? `<div class="plue saisi"><span class="pl">Piscine</span>${
+        ynBascule(chemin + "detail.piscine", o.detail.piscine || "", "yn")}</div>`
+    : "";
+  return `<div class="pbilan">${lues}${pis}</div>
+    <p class="dnote">Ces pastilles se <b>lisent</b> de ce qui est renseigné plus bas —
+      une seule source par fait. ${piscine
+        ? "Seule la <b>piscine</b> se répond ici." : ""}</p>`;
+}
+
+/* --------------------------------------------------- les volets du bien */
+function pagesBien(){
+  const l = [{cle:"type", lib:"Le type de bien"},
+             {cle:"adresse", lib:"L'adresse du bien"}];
+  if(estImmeubleBien()){
+    l.push({cle:"terrain", lib:"Le terrain"});
+    l.push({cle:"immeuble", lib:"L'immeuble en entier"});
+    logementsDe(D).forEach((g, i)=> l.push({cle:"lg:" + g.id,
+      lib:nomLogement(g, i), sous:true}));
+  } else {
+    l.push({cle:"pieces",  lib:"Les pièces"},
+           {cle:"carac",   lib:"Les caractéristiques"},
+           {cle:"terrain", lib:"Le terrain"},
+           {cle:"occup",   lib:"L'occupation"});
+  }
+  l.push({cle:"argu", lib:"Argumentaire"});
+  return l;
+}
+function pageBienCourante(){
+  const l = pagesBien();
+  if(l.some(x=> x.cle === BIEN.page)) return BIEN.page;
+  return l[0].cle;
+}
+
+/* -------------------------------------------------- les blocs réutilisés */
+/* un champ de la fiche, calculé ou saisi, sur la cible courante */
+function champBien(o, chemin, def){
+  const [k, lab, kind, w, cond] = def;
+  if(cond && !cond()) return "";
+  const auto = !!depouillePieces(o);
+  const calcule = auto && PIECES_CALCULES.indexOf(k) >= 0;
+  const off = !detailActif(k, o);
+  let h;
+  if(calcule){
+    h = `<div class="calc dcalc" data-dcalc="${esc(k)}"
+      title="Calculé d'après le détail des pièces">${esc(o.detail[k] || "—")}</div>`;
+  } else {
+    h = control(chemin + "detail." + k, kind);
+    if(off) h = h.replace(/<(input|select|button)\b/g, "$& disabled");
+  }
+  const mod = w === "wide" ? " wide" : w === "br" ? " br" : "";
+  return `<div class="pf${mod}${off ? " off" : ""}"><label>${esc(lab)}</label>${h}</div>`;
+}
+function annexeBien(o, chemin, [k, lab, kSurf, labSurf]){
+  const ouvert = o.detail[k] === "OUI";
+  let su = control(chemin + "detail." + kSurf, kSurf.endsWith("Nb") ? "nb" : "money");
+  if(!ouvert) su = su.replace(/<input\b/g, "$& disabled");
+  return `<div class="annx${ouvert ? " on" : ""}">
+    <span class="al">${esc(lab)}</span>
+    ${ynBascule(chemin + "detail." + k, o.detail[k] || "", "yn")}
+    <span class="as${ouvert ? "" : " off"}"><i>${esc(labSurf)}</i>${su}</span>
+  </div>`;
+}
+function blocDetail(o, chemin, sec){
+  const champs = (sec.f || []).map(f=> champBien(o, chemin, f)).join("");
+  const comptes = sec.comptes
+    ? `<div class="dcount">${sec.comptes.map(([k,lab])=>
+        champBien(o, chemin, [k, lab, "nb"])).join("")}</div>` : "";
+  const annexes = sec.annexes
+    ? `<div class="dannx">${sec.annexes.map(a=> annexeBien(o, chemin, a)).join("")}</div>`
+    : "";
+  if(!champs.trim() && !comptes && !annexes) return "";
+  return `<div class="dsec"><h4>${esc(sec.t)}</h4>` + comptes + annexes +
+    (champs.trim() ? `<div class="dgrid">${champs}</div>` : "") + `</div>`;
+}
+
+/* le tableau des pièces, pour le bien ou pour un logement */
+function tableauPieces(o){
+  const lignes = (o.pieces || []).map((p,i)=>
     `<tr><td>${controlBase(`${i}:niveau`, "list:niveauPiece", p.niveau || "", "",
         "data-piece")}</td>
       <td>${controlRaw(`${i}:nom`, "list:piecesNoms", p.nom || "", "", "data-piece")}</td>
@@ -5611,9 +5891,44 @@ function renderDetail(){
         placeholder="remarque"></td>
       <td class="cact"><button type="button" class="xbtn mini" data-piecedel="${i}"
         title="Retirer cette pièce">✕</button></td></tr>`).join("");
+  return `<div class="dsec"><h4>Les pièces</h4>
+    <div class="tdbscroll"><table class="grid-t piecest">
+      <tr><th style="width:124px">Niveau</th><th style="width:184px">Pièce</th>
+        <th style="width:88px">Au sol (m²)</th>
+        <th class="cact" title="Exclure de la surface habitable">hors</th>
+        <th style="width:92px">Habitable (m²)</th><th>Remarque</th>
+        <th class="cact"></th></tr>
+      ${lignes || `<tr><td colspan="7" class="muted">Aucune pièce détaillée.</td></tr>`}
+    </table></div>
+    <div id="piecesTot">${blocTotauxPieces(o)}</div>
+    <div class="dact"><button type="button" class="addbtn"
+      id="pieceAjout">+ Ajouter une pièce</button></div>
+    <p class="dnote">Choisissez le nom dans la liste — le <b>+</b> en ajoute un
+      qui manquerait, pour tous vos dossiers. Les caractéristiques s'en déduisent, et
+      deux pièces du même nom se numérotent toutes seules : une deuxième chambre
+      fait « Chambre 1 » et « Chambre 2 ».<br>
+      La <b>surface au sol</b> se recopie d'elle-même en <b>habitable</b> : il n'y a
+      rien à saisir deux fois. La case <b>hors</b> en exclut la pièce — elle se coche
+      toute seule pour une cave, un garage, une terrasse — et la colonne habitable
+      accepte une valeur moindre pour une pièce mansardée. Le <b>niveau</b> sert aux
+      totaux par étage, et dit si une chambre ou des commodités sont de plain-pied :
+      c'est ce que demandent les fiches découverte des prospects.</p>
+  </div>`;
+}
 
-  /* les parcelles cadastrales : un bien en compte souvent plusieurs */
-  const parc = (D.parcelles || []).map((p,i)=>
+/* le terrain : les parcelles du bien, ou celles de sa résidence */
+function cibleParcelles(){
+  const r = residenceDuBien();
+  if(r.nom){
+    if(!Array.isArray(r.parcelles)) r.parcelles = [];
+    return {liste:r.parcelles, res:r};
+  }
+  if(!Array.isArray(D.parcelles)) D.parcelles = [];
+  return {liste:D.parcelles, res:null};
+}
+function tableauParcelles(){
+  const c = cibleParcelles();
+  const parc = c.liste.map((p,i)=>
     `<tr><td><input type="text" data-parc="${i}:prefixe" value="${esc(p.prefixe||"")}"
         placeholder="000"></td>
       <td><input type="text" data-parc="${i}:section" value="${esc(p.section||"")}"
@@ -5626,72 +5941,278 @@ function renderDetail(){
         placeholder="8a 72ca"></td>
       <td class="cact"><button type="button" class="xbtn mini" data-parcdel="${i}"
         title="Retirer cette parcelle">✕</button></td></tr>`).join("");
-  const totParc = (D.parcelles || []).reduce((t,p)=> t + (surfaceCadastrale(p.contenance) || 0), 0);
+  const tot = c.liste.reduce((t,p)=> t + (surfaceCadastrale(p.contenance) || 0), 0);
+  return `<div class="dsec"><h4>Références cadastrales</h4>
+    ${c.res ? `<p class="dnote" style="margin:0 0 10px">Ce bien appartient à
+      <b>${esc(c.res.nom)}</b> : les parcelles sont celles de la <b>résidence</b>, et
+      servent à tous ses lots. Les saisir ici, c'est les saisir une fois pour
+      toutes.</p>` : ""}
+    <div class="tdbscroll"><table class="grid-t parct">
+      <tr><th style="width:68px">Préf.</th><th style="width:72px">Sect.</th>
+        <th style="width:84px">N°</th><th>Lieudit</th>
+        <th style="width:104px">Contenance</th><th class="cact"></th></tr>
+      ${parc || `<tr><td colspan="6" class="muted">Aucune parcelle enregistrée.</td></tr>`}
+      ${tot ? `<tr class="tot"><td colspan="4">Contenance totale</td>
+        <td>${esc(tot.toLocaleString("fr-FR"))} m²</td><td></td></tr>` : ""}
+    </table></div>
+    <div class="dact"><button type="button" class="addbtn"
+      id="parcAjout">+ Ajouter une parcelle</button></div></div>`;
+}
 
-  box.innerHTML = `<div class="dcol">
-      ${DETAIL_G.map(bloc).join("")}
-      <div class="dsec"><h4>Références cadastrales</h4>
-        <div class="tdbscroll"><table class="grid-t parct">
-          <tr><th style="width:68px">Préf.</th><th style="width:72px">Sect.</th>
-            <th style="width:84px">N°</th><th>Lieudit</th>
-            <th style="width:104px">Contenance</th><th class="cact"></th></tr>
-          ${parc || `<tr><td colspan="6" class="muted">Aucune parcelle enregistrée.</td></tr>`}
-          ${totParc ? `<tr class="tot"><td colspan="4">Contenance totale</td>
-            <td>${esc(totParc.toLocaleString("fr-FR"))} m²</td><td></td></tr>` : ""}
-        </table></div>
-        <div class="dact"><button type="button" class="addbtn"
-          id="parcAjout">+ Ajouter une parcelle</button></div></div>
-    </div>
-    <div class="dcol">
-      <div class="dsec"><h4>Les pièces</h4>
-        <div class="tdbscroll"><table class="grid-t piecest">
-          <tr><th style="width:124px">Niveau</th><th style="width:184px">Pièce</th>
-            <th style="width:88px">Au sol (m²)</th>
-            <th class="cact" title="Exclure de la surface habitable">hors</th>
-            <th style="width:92px">Habitable (m²)</th><th>Remarque</th>
-            <th class="cact"></th></tr>
-          ${lignes || `<tr><td colspan="7" class="muted">Aucune pièce détaillée.</td></tr>`}
-        </table></div>
-        <div id="piecesTot">${blocTotauxPieces()}</div>
-        <div class="dact"><button type="button" class="addbtn"
-          id="pieceAjout">+ Ajouter une pièce</button></div>
-        <p class="dnote">Choisissez le nom dans la liste — le <b>+</b> en ajoute un
-          qui manquerait, pour tous vos dossiers. La colonne de gauche s'en déduit, et
-          deux pièces du même nom se numérotent toutes seules : une deuxième chambre
-          fait « Chambre 1 » et « Chambre 2 ».<br>
-          La <b>surface au sol</b> se recopie d'elle-même en <b>habitable</b> : il n'y a
-          rien à saisir deux fois. La case <b>hors</b> en exclut la pièce — elle se coche
-          toute seule pour une cave, un garage, une terrasse — et la colonne habitable
-          accepte une valeur moindre pour une pièce mansardée. Le <b>niveau</b> sert aux
-          totaux par étage, et dit si une chambre ou des commodités sont de plain-pied :
-          c'est ce que demandent les fiches découverte des prospects.</p>
+/* --------------------------------------------------------- l'occupation */
+function blocOccupation(o, chemin){
+  const oc = o.occupation || occupationVierge();
+  const loue = oc.statut === "Loué";
+  const mois = num(oc.loyer) === null && num(oc.charges) === null
+    ? null : (num(oc.loyer) || 0) + (num(oc.charges) || 0);
+  const ch = (k, lab, kind, w)=>
+    `<div class="pf${w ? " " + w : ""}"><label>${esc(lab)}</label>${
+      control(chemin + "occupation." + k, kind)}</div>`;
+  return `<div class="dsec"><h4>État d'occupation</h4>
+    <div class="occstat">${OCCUPATIONS.map(x=>
+      `<button type="button" class="occb${oc.statut === x ? " on" : ""}"
+        data-occ="${esc(chemin)}|${esc(x)}">${esc(x)}</button>`).join("")}</div>
+    ${!oc.statut ? `<p class="dnote">Libre, habité par son propriétaire, ou loué :
+      c'est la première question d'un acquéreur, et celle qui commande la date de
+      jouissance.</p>` : ""}
+    ${loue ? `<div class="dgrid occbail">
+        <div class="pfsep">Le locataire</div>
+        ${ch("civilite", "Civilité", "list:qualite")}
+        ${ch("nom", "Nom", "text")}
+        ${ch("prenom", "Prénom", "text")}
+        ${ch("tel", "Téléphone", "text")}
+        ${ch("email", "Courriel", "text", "wide")}
+        <div class="pfsep">Le bail</div>
+        ${ch("bail", "Type de bail", "list:typeBail", "wide")}
+        ${ch("debut", "Début du bail", "date")}
+        ${ch("fin", "Fin du bail", "date")}
+        <div class="pf"><label>Préavis donné au locataire</label>
+          ${ynBascule(chemin + "occupation.preavis", oc.preavis || "", "yn")}</div>
+        <div class="pfsep">Le loyer</div>
+        ${ch("loyer", "Loyer mensuel hors charges (€)", "money")}
+        ${ch("charges", "Provision pour charges (€)", "money")}
+        <div class="pf"><label>Loyer mensuel charges comprises</label>
+          <div class="calc" id="occTotal">${mois === null ? "—" : esc(eur(mois))}</div></div>
       </div>
-      ${DETAIL_D.map(bloc).join("")}
-      <div class="dsec"><h4>Observations</h4>
-        ${control("detail.observations","area")}</div>
+      <p class="dnote">Le <b>préavis</b> dit si le congé pour vendre a été donné : c'est
+        lui, et non la fin du bail, qui dit à quelle date l'acquéreur entrera dans les
+        lieux. Le loyer charges comprises s'additionne tout seul.</p>` : ""}
+  </div>`;
+}
+
+/* ----------------------------------------------- le résumé d'un immeuble */
+function totauxImmeuble(){
+  const l = logementsDe(D);
+  const t = {surface:0, chambres:0, pieces:0, n:l.length, surfaceDite:0};
+  l.forEach(g=>{
+    const dep = depouillePieces(g);
+    const su = dep ? dep.surface : num((g.detail || {}).surface);
+    const ch = dep ? dep.chambres : num((g.detail || {}).chambres);
+    const pi = dep ? dep.pieces : num((g.detail || {}).pieces);
+    if(su) { t.surface += su; t.surfaceDite++; }
+    if(ch) t.chambres += ch;
+    if(pi) t.pieces += pi;
+  });
+  return t;
+}
+/* Une pastille de l'immeuble est verte dès qu'UN logement répond oui : un
+   immeuble dont un seul lot a un garage a bien un garage à vendre. */
+function pastilleImmeuble(clefs){
+  const l = logementsDe(D);
+  if(!l.length) return "";
+  const vus = l.map(g=> bilanOuiNon(g.detail || {}, clefs));
+  if(vus.some(v=> v === "OUI")) return "OUI";
+  if(vus.every(v=> v === "NON")) return "NON";
+  return "";
+}
+function pageImmeuble(){
+  const t = totauxImmeuble();
+  const m2 = v=> v ? Math.round(v * 100) / 100 : 0;
+  const l = logementsDe(D);
+  return `<div class="dsec"><h4>Les logements</h4>
+    ${l.length ? `<div class="tdbscroll"><table class="grid-t lgt">
+      <tr><th>Logement</th><th style="width:96px">Surface</th>
+        <th style="width:80px">Pièces</th><th style="width:88px">Chambres</th>
+        <th style="width:150px">Occupation</th><th class="cact"></th></tr>
+      ${l.map((g, i)=>{
+        const dep = depouillePieces(g), d = g.detail || {};
+        const su = dep ? dep.surface : num(d.surface);
+        const ch = dep ? dep.chambres : num(d.chambres);
+        const pi = dep ? dep.pieces : num(d.pieces);
+        const oc = (g.occupation || {}).statut || "";
+        return `<tr><td><button type="button" class="lienbtn"
+            data-bpage="lg:${esc(g.id)}">${esc(nomLogement(g, i))}</button></td>
+          <td>${su ? esc(m2(su).toLocaleString("fr-FR")) + " m²" : "—"}</td>
+          <td>${pi === null || pi === undefined ? "—" : esc(String(pi))}</td>
+          <td>${ch === null || ch === undefined ? "—" : esc(String(ch))}</td>
+          <td>${oc ? esc(oc) : `<span class="muted">non dit</span>`}</td>
+          <td class="cact"><button type="button" class="xbtn mini"
+            data-lgdel="${esc(g.id)}" title="Retirer ce logement">✕</button></td></tr>`;
+      }).join("")}
+      <tr class="tot"><td>Total — ${t.n} logement${t.n > 1 ? "s" : ""}</td>
+        <td>${t.surface ? esc(m2(t.surface).toLocaleString("fr-FR")) + " m²" : "—"}</td>
+        <td>${t.pieces || "—"}</td><td>${t.chambres || "—"}</td>
+        <td colspan="2"></td></tr>
+    </table></div>` : `<p class="muted" style="margin:0 0 12px">Aucun logement.
+      Un immeuble se décrit logement par logement : c'est ainsi qu'on en donne la
+      surface, le nombre de chambres et ce que chacun rapporte.</p>`}
+    <div class="dact"><button type="button" class="addbtn" data-lgadd="1"
+      >+ Ajouter un logement</button></div></div>
+  <div class="dsec"><h4>Ce que l'immeuble offre</h4>
+    <div class="pbilan">
+      ${pastilleLue("Extérieur", pastilleImmeuble(["terrasse","balcon","jardin"]),
+        "vert dès qu'un logement en a un")}
+      ${pastilleLue("Pkg / Garage", pastilleImmeuble(["garage","parking"]),
+        "vert dès qu'un logement en a un")}
     </div>
-    ${blocArgumentaire()}`;
+    <p class="dnote">Un immeuble dont un seul lot a un garage a bien un garage à
+      vendre : la pastille passe au vert dès qu'<b>un</b> logement répond oui.</p></div>
+  ${blocDetail(D, "", {t:"Charges et impôts", f:[
+      ["charges", "Charges de copropriété (€/an)", "money", "", estCoproBien],
+      ["taxe",    "Taxe foncière (€/an)",          "money"]]})}
+  <p class="dnote">Les charges et la taxe foncière sont celles de <b>l'immeuble
+    entier</b> : elles ne se divisent pas par logement, et ne se saisissent donc
+    qu'ici.</p>
+  ${blocDetail(D, "", {t:"Équipements de l'immeuble", f:[
+      ["chauffage", "Chauffage",              "list:chauffage", "wide"],
+      ["froid",     "Refroidissement",        "list:froid", "wide"],
+      ["ecs",       "Production d'eau chaude","list:ecs", "wide"]]})}
+  <div class="dsec"><h4>Observations</h4>${control("detail.observations","area")}</div>`;
+}
+
+/* ------------------------------------------------------------ le rendu */
+function renderDetail(){
+  const box = $("#detailCorps");
+  if(!box) return;
+  const page = pageBienCourante();
+  BIEN.page = page;
+  BIEN.lg = /^lg:/.test(page) ? page.slice(3) : "";
+  const c = cibleBien();
+  const o = c.o, chemin = c.chemin;
+  majDepuisPieces(o);
+  const pages = pagesBien();
+  const rail = `<nav class="bienrail" aria-label="Volets de la fiche du bien">
+    ${pages.map(x=> `<button type="button" class="mitem${x.sous ? " sous" : ""}${
+      x.cle === page ? " on" : ""}" data-bpage="${esc(x.cle)}">${esc(x.lib)}</button>`)
+      .join("")}
+    ${estImmeubleBien() ? `<button type="button" class="mitem ajout" data-lgadd="1"
+      >+ Un logement</button>` : ""}</nav>`;
+
+  let corps = "";
+  if(page === "type"){
+    const copro = ["Copropriété","ASL"].indexOf((D.bien || {}).sitJur) >= 0;
+    corps = `<div class="dsec"><h4>Ce que c'est</h4>
+      <div class="dgrid">
+        <div class="pf"><label>Type de bien</label>${control("bien.type","list:typeBien")}</div>
+        ${(D.bien || {}).type === "Autre"
+          ? `<div class="pf"><label>Préciser</label>${control("bien.typeAutre","text")}</div>` : ""}
+        <div class="pf"><label>Situation juridique</label>${
+          control("bien.sitJur","list:sitJur")}</div>
+        ${(D.bien || {}).sitJur === "Autre"
+          ? `<div class="pf"><label>Préciser</label>${control("bien.sitJurAutre","text")}</div>` : ""}
+      </div>
+      ${copro ? `<div class="dgrid" style="margin-top:10px">
+          <div class="pf wide"><label>Résidence / Immeuble</label>${
+            control("bien.residence","book:residences")}</div>
+          ${String((D.bien || {}).residence || "").trim()
+            ? `<div class="pf wide"><label>Syndic</label>
+                <div class="calc">${esc(calcValue("@syndic"))}</div></div>` : ""}
+        </div>
+        ${String((D.bien || {}).residence || "").trim()
+          ? `<div class="dact">${boutonImmeuble(D.bien.residence,
+              "Les dossiers de l'immeuble")}</div>` : ""}
+        <p class="dnote">La résidence porte l'adresse, l'année, le syndic, le quartier,
+          les parcelles et tout ce qui concerne la copropriété : choisie ici, le bien
+          en hérite. C'est aussi ce qui évite de ressaisir l'immeuble à chaque lot.</p>`
+        : `<p class="dnote">La <b>résidence</b> ne se demande qu'en <b>copropriété</b>
+          ou en <b>ASL</b> : ailleurs, il n'y a pas d'immeuble commun à décrire.</p>`}
+    </div>
+    <div class="dsec"><h4>Son âge</h4>
+      <div class="dgrid">
+        <div class="pf"><label>Date exacte (permis de construire)</label>${
+          control("bien.dateConstruction","date")}</div>
+        <div class="pf"><label>Année de construction</label>${
+          control("bien.annee","annee")}</div>
+      </div></div>`;
+  }
+  else if(page === "adresse"){
+    const r = residenceDuBien();
+    corps = `<div class="dsec"><h4>Où se trouve le bien</h4>
+      ${r.nom ? `<p class="dnote" style="margin:0 0 10px">Repris de la résidence
+        <b>${esc(r.nom)}</b> : corrigez ici si ce lot a une entrée à lui, cela ne
+        touchera pas la résidence.</p>` : ""}
+      <div class="dgrid">
+        <div class="pf wide"><label>Adresse du bien</label>${control("bien.adresse","text")}</div>
+        <div class="pf wide"><label>Complément d'adresse</label>${
+          control("bien.adresse2","text")}</div>
+        <div class="pf"><label>Code postal</label>${control("bien.cp","cp","bien")}</div>
+        <div class="pf"><label>Ville</label>${control("bien.ville","ville","bien")}</div>
+        <div class="pf"><label>Pays</label>${control("bien.pays","pays","bien")}</div>
+        <div class="pf"><label>Quartier</label>${control("bien.quartier","quartier")}</div>
+      </div>
+      <p class="dnote">Le <b>quartier</b> est celui des recherches : la même liste, les
+        mêmes noms, le même contour sur la carte. C'est ce qui permet à un bien de
+        ressortir quand un acquéreur cherche « Trinquetaille ».
+        ${r.nom ? `Saisi ici, il est reporté sur la <b>résidence</b> et servira à tous
+          ses lots.` : ""}</p></div>`;
+  }
+  else if(page === "pieces")  corps = tableauPieces(o);
+  else if(page === "terrain") corps = tableauParcelles() +
+    blocDetail(D, "", {t:"La surface du terrain", f:[["terrain","Terrain (m²)","money"]]});
+  else if(page === "occup")   corps = blocOccupation(o, chemin);
+  else if(page === "immeuble")corps = pageImmeuble();
+  else if(page === "argu")    corps = blocArgumentaire();
+  else if(page === "carac" || c.lg){
+    const g = c.lg;
+    const surf = {t:"Surfaces et situation", f:[
+      ["surface",   "Surface habitable (m²)", "money"],
+      ["carrez",    "Dont loi Carrez (m²)",   "money", "", estCoproBien],
+      ["exposition","Exposition",             "list:exposition", "br"],
+      ["etat",      "État général",           "list:etatBien"],
+      ["etage",     "Étage",                  "text", "br",
+       ()=> estApptOuLocal() || !!g],
+      ["etages",    "Sur combien d'étages",   "text", "",
+       ()=> estApptOuLocal() || !!g]]};
+    corps = (g ? `<div class="dsec lgtete"><h4>Ce logement</h4>
+        <div class="dgrid"><div class="pf wide"><label>Nom du logement</label>${
+          control(chemin + "nom", "text")}</div></div>
+        <p class="dnote">« Rez-de-chaussée gauche », « T2 du 2<sup>e</sup> », « Local
+          commercial » : ce que vous écrivez ici nomme le logement dans le menu et dans
+          le tableau de l'immeuble.</p></div>
+      ${tableauPieces(o)}` : "") +
+      `<div class="dsec"><h4>Ce qu'il offre</h4>${blocPastilles(o, !estApptOuLocal() && !g)}</div>` +
+      blocDetail(o, chemin, surf) +
+      blocDetail(o, chemin, DETAIL_G[1]) +
+      (g ? "" : blocDetail(D, "", DETAIL_D[0])) +
+      (g ? "" : blocDetail(o, chemin, DETAIL_D[1])) +
+      (g ? blocOccupation(o, chemin) : "") +
+      (g ? "" : `<div class="dsec"><h4>Observations</h4>${
+        control("detail.observations","area")}</div>`);
+  }
+
+  box.innerHTML = rail + `<div class="biencorps" id="bienCorps">${corps}</div>`;
 
   const b = $("#pieceAjout");
   if(b) b.onclick = ()=>{
-    /* la pièce neuve hérite du niveau de la précédente : on décrit un étage
-       d'un bout à l'autre avant de monter */
-    const der = (D.pieces || [])[D.pieces.length - 1] || {};
-    D.pieces.push({nom:"", niveau:der.niveau || "", surface:"", hab:"",
-                   horsHab:false, note:""});
+    const cc = cibleBien().o;
+    const der = (cc.pieces || [])[cc.pieces.length - 1] || {};
+    cc.pieces.push({nom:"", niveau:der.niveau || "", surface:"", hab:"",
+                    horsHab:false, note:""});
     autosave(); renderDetail(); majDetail();
     const dernier = $$("#detailCorps [data-piece$=':nom']").pop();
     if(dernier) dernier.focus();
   };
   const bp = $("#parcAjout");
   if(bp) bp.onclick = ()=>{
-    D.parcelles = D.parcelles || [];
-    D.parcelles.push({prefixe:"", section:"", numero:"", lieudit:"", contenance:""});
-    autosave(); renderDetail(); majDetail();
+    const cp = cibleParcelles();
+    cp.liste.push({prefixe:"", section:"", numero:"", lieudit:"", contenance:""});
+    if(cp.res) saveLists(); else autosave();
+    renderDetail(); majDetail();
     const der = $$("#detailCorps [data-parc$=':prefixe']").pop();
     if(der) der.focus();
   };
 }
+
 /* L'argumentaire : trois séries de cases et trois lignes libres. Il tient sur
    toute la largeur, sous les deux colonnes — c'est la partie qu'on remplit en
    rentrant de visite, pas celle qu'on relève sur le mandat. */
@@ -5739,8 +6260,8 @@ function blocArgumentaire(){
 function nomNu(s){
   return String(s || "").replace(/\s+\d+\s*$/, "").trim();
 }
-function numeroterPieces(){
-  const liste = D.pieces || [];
+function numeroterPieces(i, o){
+  const liste = ((o || cibleBien().o).pieces) || [];
   const parNom = {};
   liste.forEach(p=>{
     const base = nomNu(p.nom);
@@ -5764,43 +6285,24 @@ function numeroterPieces(){
   return change;
 }
 
+/* Le détail des pièces nourrit les caractéristiques, qui vivent sur un
+   AUTRE volet : il n'y a donc plus rien à redessiner ici quand la première
+   pièce est nommée. On recalcule, on remet les totaux à jour, et le curseur
+   ne bouge pas — c'était tout le problème de l'ancienne fiche, où la
+   bascule du saisi au calculé emportait le champ en cours de frappe. */
 function rafraichirDepuisPieces(){
   const box = $("#detailCorps");
   if(!box) return;
-  const avant = !!box.querySelector(".dcalc");
-  const auto = majDepuisPieces();
-  if(auto !== avant){
-    /* La première lettre tapée dans une pièce fait basculer la colonne de
-       gauche en calculé, ce qui redessine la fiche — et emportait le champ
-       où l'on était en train d'écrire : il fallait recliquer pour taper la
-       deuxième lettre. On note où était le curseur, et on l'y remet. */
-    const ou = document.activeElement;
-    const marque = ou && ou.dataset
-      ? (ou.dataset.piece !== undefined ? ["data-piece", ou.dataset.piece]
-        : ou.dataset.parc !== undefined ? ["data-parc", ou.dataset.parc] : null)
-      : null;
-    const pos = marque && ou.selectionStart !== undefined
-      ? [ou.selectionStart, ou.selectionEnd] : null;
-    renderDetail();
-    if(marque){
-      const neuf = box.querySelector(`[${marque[0]}="${marque[1]}"]`);
-      if(neuf){
-        neuf.focus();
-        if(pos && neuf.setSelectionRange){
-          try{ neuf.setSelectionRange(pos[0], pos[1]); }catch(e){}
-        }
-      }
-    }
-    return;
-  }
+  const cible = cibleBien().o;
+  majDepuisPieces(cible);
   box.querySelectorAll("[data-dcalc]").forEach(el=>
-    el.textContent = D.detail[el.dataset.dcalc] || "—");
+    el.textContent = cible.detail[el.dataset.dcalc] || "—");
   majTotauxPieces();
 }
 /* Les totaux, sous le tableau : une ligne par niveau, puis l'ensemble. La
    surface du bien, elle, reprend le total habitable. */
-function blocTotauxPieces(){
-  const t = totauxPieces(D);
+function blocTotauxPieces(o){
+  const t = totauxPieces(o || cibleBien().o);
   if(!t.lignes.length) return "";
   const m2 = v=> v ? v.toLocaleString("fr-FR") : "—";
   const seul = t.lignes.length === 1;
@@ -5817,12 +6319,13 @@ function blocTotauxPieces(){
 }
 function majTotauxPieces(){
   const z = document.getElementById("piecesTot");
-  if(z) z.innerHTML = blocTotauxPieces();
+  if(z) z.innerHTML = blocTotauxPieces(cibleBien().o);
 }
 function majTotalParcelles(){
   const box = $("#detailCorps");
   if(!box) return;
-  const t = (D.parcelles || []).reduce((n,p)=> n + (surfaceCadastrale(p.contenance) || 0), 0);
+  const t = cibleParcelles().liste
+    .reduce((n,p)=> n + (surfaceCadastrale(p.contenance) || 0), 0);
   const td = box.querySelector("table.parct tr.tot td:nth-child(2)");
   if(td) td.textContent = t.toLocaleString("fr-FR") + " m²";
 }
@@ -5846,8 +6349,8 @@ const IC_LOUPE_BIEN = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidd
   <path d="M2 7 L8 2 L14 7"/><path d="M3.5 6.6V14h9V6.6"/><path d="M6.5 14V9.5h3V14"/></svg>`;
 function boutonDetailBien(){
   return `<div class="dbien"><button type="button" class="xbtn" data-dbien="1"
-      title="Surfaces, étage, exposition, extérieurs, pièce par pièce">${
-      IC_LOUPE_BIEN}<span>Ouvrir la fiche</span></button>
+      title="Type, adresse, pièces, caractéristiques, terrain, occupation">${
+      IC_LOUPE_BIEN}<span>Ouvrir la fiche du bien</span></button>
     <span class="dres" id="resumeBien"></span></div>`;
 }
 function ouvrirDetail(){
@@ -6649,6 +7152,13 @@ function appliquerResidence(){
     const el = document.querySelector(`[data-b="bien.${k}"]`);
     if(el) el.value = r[k];
   });
+  /* le quartier NOMMÉ de la résidence — celui des recherches — et non la
+     phrase qui le décrit, qui sert à l'argumentaire */
+  if(r.qnom){
+    D.bien.quartier = r.qnom;
+    const el = document.querySelector('[data-b="bien.quartier"]');
+    if(el) el.value = r.qnom;
+  }
   refreshVilles("bien", false);
   renderDiags();
 }
@@ -8430,7 +8940,9 @@ function texteFiche(carnet, r){
 function dossiersVivants(){
   const all = allDossiers();
   if(D && D.id) all[D.id] = D;
-  return Object.values(all);
+  /* les dossiers encore vierges n'en sont pas : ni dans les listes, ni dans
+     les comptes, ni dans les rapprochements */
+  return Object.values(all).filter(d=> !dossierVierge(d));
 }
 function toutesLesPersonnes(){
   const out = [];
@@ -8619,8 +9131,7 @@ function parNumeroDecroissant(a, b){
   return y.localeCompare(x, "fr", {numeric:true});
 }
 function renderDossiers(){
-  const all = allDossiers();
-  const items = Object.values(all).sort((x,y)=>(y.maj||0)-(x.maj||0));
+  const items = dossiersVivants().sort((x,y)=>(y.maj||0)-(x.maj||0));
   /* ordre voulu : les dossiers qui bougent d'abord, les vendus en dernier */
   /* l'ordre suit la vie du dossier : en vente, sous offre, sous compromis, vendu */
   const GROUPES = [
@@ -15624,8 +16135,11 @@ function renderFacture(){
   const box = $("#factBody");
   if(!box) return;
   const f = D.facture;
-  /* la date du jour s'inscrit d'elle-même à la première ouverture */
-  if(!isoValide(f.date)){ f.date = auj(); autosave(); }
+  /* La date du jour se MONTRE sans s'écrire. Elle s'inscrivait dans le
+     dossier au premier affichage, avec un enregistrement à la clé : un
+     dossier où l'on n'avait rien tapé se retrouvait ainsi modifié, puis
+     sauvegardé, pour une date que `factDate()` sait déjà déduire au moment
+     d'imprimer. Une page qui se dessine ne modifie pas ce qu'elle montre. */
   const auto = intituleAuto(factCote());
   const champ = (lab, inner, note)=> `<div class="f"><label>${esc(lab)}</label>${inner}</div>` +
     (note ? `<p class="fnote">${note}</p>` : "");
@@ -15639,7 +16153,7 @@ function renderFacture(){
         `</select>`)}
       ${champ("N° de facture",
         `<input type="text" data-b="facture.num" value="${esc(f.num||"")}" placeholder="1597">`)}
-      ${champ("Date", `<input type="date" data-b="facture.date" value="${esc(f.date||"")}">`)}
+      ${champ("Date", `<input type="date" data-b="facture.date" value="${esc(factDate())}">`)}
       ${champ("Intitulé de la facture",
         `<input type="text" data-b="facture.libelle" value="${esc(f.libelle||"")}"
            placeholder="HONORAIRES DE NÉGOCIATION">`)}
@@ -15919,6 +16433,12 @@ document.addEventListener("input", e=>{
     if(/^bien\.(residence|adresse|adresse2|ville)$/.test(t.dataset.b)) majMenuDossier();
     if(t.dataset.b.startsWith("mandat."))   majObligatoires();
     if(t.dataset.b === "bien.residence"){ appliquerResidence(); renderGeneral(); }
+    /* Saisi sur un lot, le quartier vaut pour l'immeuble entier : il remonte
+       sur la résidence, et tous ses autres lots en hériteront. */
+    if(t.dataset.b === "bien.quartier"){
+      const r = residenceDuBien();
+      if(r.nom && t.value && r.qnom !== t.value){ r.qnom = t.value; saveLists(); }
+    }
     /* la date exacte du permis donne l'année de construction */
     if(t.dataset.b === "bien.dateConstruction" && t.value){
       D.bien.annee = t.value.slice(0,4);
@@ -15927,7 +16447,11 @@ document.addEventListener("input", e=>{
     }
     if(t.dataset.b.startsWith("prix."))     majDepot();
     if(t.dataset.b === "facture.cote")      renderFacture();
-    if(t.dataset.b && t.dataset.b.startsWith("detail.")) majDetail();
+    if(t.dataset.b && /(^|\.)detail\./.test(t.dataset.b)) majDetail();
+    if(t.dataset.b && /occupation\.(loyer|charges)$/.test(t.dataset.b)) majLoyerTotal();
+    /* le nom d'un logement se lit dans le menu de la fiche : on le redessine
+       une fois le champ quitté, pour ne pas perdre le curseur à la frappe */
+    if(t.dataset.b && /^logements\.\d+\.nom$/.test(t.dataset.b)) majNomLogement();
     if(["bien.annee","bien.dateConstruction","bien.sitJur","bien.type","dpeDispense"]
        .includes(t.dataset.b)) renderDiags();
     if(t.dataset.b.startsWith("diags."))    majDiagCalc();
@@ -16047,7 +16571,7 @@ document.addEventListener("input", e=>{
   }
   if(t.dataset.piece !== undefined){
     const [i,champ] = t.dataset.piece.split(":");
-    const p = (D.pieces || [])[+i];
+    const p = (cibleBien().o.pieces || [])[+i];
     if(p){
       p[champ] = t.value;
       /* Un nom choisi dans la liste est arrêté : on numérote tout de suite.
@@ -16078,8 +16602,12 @@ document.addEventListener("input", e=>{
   }
   if(t.dataset.parc !== undefined){
     const [i,champ] = t.dataset.parc.split(":");
-    const p = (D.parcelles || [])[+i];
-    if(p){ p[champ] = t.value; autosave(); majTotalParcelles(); }
+    const cp = cibleParcelles();
+    const p = cp.liste[+i];
+    if(p){ p[champ] = t.value;
+      /* celles d'une résidence vivent dans les listes, pas dans le dossier */
+      if(cp.res) saveLists(); else autosave();
+      majTotalParcelles(); }
   }
   if(t.dataset.annot !== undefined){
     const a = (D.annulations || [])[+t.dataset.annot];
@@ -16129,6 +16657,9 @@ document.addEventListener("focusout", e=>{
 
   /* dossier ouvert : vendeurs.0.nom, bien.ville, pret.courtierTel… */
   if(t.dataset.b !== undefined){
+    /* « RDC gauche » est le nom d'un LOGEMENT, pas un patronyme : la règle
+       des capitales ne le concerne pas, et le crierait. */
+    if(/^logements\.\d+\.nom$/.test(t.dataset.b)) return;
     const bouts = t.dataset.b.split(".");
     const prop = bouts[bouts.length-1];
     const pays = (function(){
@@ -16248,7 +16779,7 @@ document.addEventListener("change", e=>{
   /* un groupe de cases écrit une seule valeur : on relit tout le groupe */
   if(t.dataset && t.dataset.piecechk !== undefined){
     const [i,champ] = t.dataset.piecechk.split(":");
-    const p = (D.pieces || [])[+i];
+    const p = (cibleBien().o.pieces || [])[+i];
     if(p){
       p[champ] = t.checked;
       p.horsHabManuel = true;            // la main l'emporte sur la règle
@@ -16364,7 +16895,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -16443,13 +16974,25 @@ document.addEventListener("click", e=>{
   if(t.dataset.dbien){ ouvrirDetail(); return; }
   if(t.dataset.avis){ actionAvis(t.dataset.avis); return; }
   if(t.dataset.parcdel !== undefined){
-    (D.parcelles || []).splice(+t.dataset.parcdel, 1);
-    autosave(); renderDetail(); majDetail(); return;
+    const cp = cibleParcelles();
+    cp.liste.splice(+t.dataset.parcdel, 1);
+    if(cp.res) saveLists(); else autosave();
+    renderDetail(); majDetail(); return;
   }
   if(t.dataset.piecedel !== undefined){
-    D.pieces.splice(+t.dataset.piecedel, 1);
+    cibleBien().o.pieces.splice(+t.dataset.piecedel, 1);
     numeroterPieces();            /* la dernière chambre reprend son nom nu */
     autosave(); renderDetail(); majDetail(); return;
+  }
+  /* ------------------------------------------------- la fiche du bien */
+  if(t.dataset.bpage){ BIEN.page = t.dataset.bpage; renderDetail(); return; }
+  if(t.dataset.lgadd !== undefined){ ajouterLogement(); return; }
+  if(t.dataset.lgdel !== undefined){ retirerLogement(t.dataset.lgdel); return; }
+  if(t.dataset.occ !== undefined){
+    const [chemin, statut] = t.dataset.occ.split("|");
+    const avant = get(D, chemin + "occupation.statut");
+    set(D, chemin + "occupation.statut", avant === statut ? "" : statut);
+    autosave(); renderDetail(); return;
   }
   if(t.dataset.anndel !== undefined){ supprimerAnnulation(t.dataset.anndel); return; }
   if(t.dataset.aoff){ masquerAlerte(t.dataset.aoff); return; }
@@ -19642,8 +20185,17 @@ function fusionnerCarnet(carnet, a, b, sup){
       if(cote.vierge && entreeDUsine(carnet, v)) return;
       const cle = cleEntree(v);
       if(!cle) return;
+      /* Une fiche retirée ne revient que si elle a été REFAITE depuis. On
+         compare donc la trace du retrait à la date de la FICHE quand elle
+         en porte une — c'est le cas des recherches —, et non à celle du
+         carnet entier : sans cela, n'importe quelle retouche sans rapport,
+         faite ailleurs, suffisait à ressusciter tout ce que l'autre
+         appareil tenait encore. */
       const efface = sup[carnet + "|" + cle] || 0;
-      if(efface && efface > cote.maj) return;
+      const quand = num((v || {}).maj) || cote.maj;
+      /* à la milliseconde près, le retrait l'emporte : on retire une fiche
+         APRÈS l'avoir modifiée, jamais avant */
+      if(efface && efface >= quand) return;
       if(rang[cle] !== undefined){
         if(cote.maj > sortie[rang[cle]].maj) sortie[rang[cle]] = {v, maj: cote.maj};
         return;
@@ -20515,6 +21067,21 @@ function migrate(d){
   out.parcelles = (Array.isArray(d.parcelles) ? d.parcelles : []).filter(Boolean)
     .map(x=> ({prefixe: x.prefixe || "", section: x.section || "", numero: x.numero || "",
                lieudit: x.lieudit || "", contenance: x.contenance || ""}));
+  out.occupation = occupationReprise(d.occupation);
+  /* les logements d'un immeuble : chacun a ses pièces, ses caractéristiques
+     et son occupation, comme un bien à lui seul */
+  out.logements = (Array.isArray(d.logements) ? d.logements : []).filter(Boolean)
+    .map((x, i)=> ({
+      id: x.id || ("lg" + i + Date.now().toString(36)),
+      nom: x.nom || "",
+      detail: Object.assign(JSON.parse(JSON.stringify(base.detail)), x.detail || {}),
+      pieces: (Array.isArray(x.pieces) ? x.pieces : []).filter(Boolean)
+        .map(q=> ({nom:q.nom || "", niveau:q.niveau || "", surface:q.surface || "",
+                   hab:q.hab || "",
+                   horsHab: q.horsHab === undefined
+                     ? PIECE_ANNEXE.test(String(q.nom || "")) : !!q.horsHab,
+                   horsHabManuel: !!q.horsHabManuel, note:q.note || ""})),
+      occupation: occupationReprise(x.occupation)}));
   out.facture = Object.assign(base.facture, d.facture||{});
   out.avis = Object.assign(base.avis, d.avis||{});
   /* le journal des demandes d'avis : chaque envoi garde son heure, sa voie et
@@ -20999,42 +21566,101 @@ const AIDE = [
   "une salle d'eau ou une salle de bain, une seule suffit. Tant que les niveaux ne sont pas "+
   "saisis, l'application ne tranche pas : elle le dit, et le volet « Biens à rapprocher » "+
   "du demandeur vous indique quoi vérifier à la visite."],
- ["La fiche détaillée du bien",
-  "Un bouton en forme de maison, dans l'en-tête du dossier, ouvre la <b>fiche détaillée</b>. "+
-  "Elle se lit en <b>deux colonnes</b>. "+
-  "<b>À gauche</b> : les surfaces et la situation — surface habitable, loi Carrez et terrain "+
-  "sur la première ligne, <b>état général et exposition</b> sur la deuxième ; l'<b>étage</b> "+
-  "et le nombre d'étages ne se demandent que sur un <b>appartement</b>. Puis la distribution "+
-  "et les annexes, <b>sur trois colonnes</b> : les comptes (chambres, salles de bain, salles "+
-  "d'eau, WC) alignés sur une ligne, puis chaque annexe — terrasse, balcon, jardin, cave, "+
-  "garage, parking — sous forme de pastille <b>OUI/NON</b> avec, <b>juste en dessous</b>, sa "+
-  "surface ou son nombre, qui ne s'active qu'une fois la pastille sur OUI. Puis les "+
-  "<b>références cadastrales</b> — autant de parcelles qu'il en faut, avec la contenance "+
-  "totale en m². "+
-  "<b>À droite</b> : le détail <b>pièce par pièce</b>, puis les charges et impôts, puis les "+
-  "équipements. "+
-  "Le détail des pièces <b>remplit la colonne de gauche</b> : nommez-les — « séjour », "+
-  "« chambre », « salle de bain », « WC », « cave », choisis dans une <b>liste "+
-  "déroulante</b> que le bouton <b>+</b> complète pour tous vos dossiers — et la surface "+
-  "habitable, les "+
-  "chambres, les salles de bain, les salles d'eau et les WC se comptent "+
-  "seuls. Les annexes (cave, garage, terrasse, balcon…) ne comptent pas dans la surface "+
-  "habitable. Tant qu'aucune pièce n'est saisie, ces champs se remplissent à la main ; dès "+
-  "qu'il y en a une, ils passent en calculé — deux sources pour un même chiffre finissent "+
-  "toujours par se contredire. "+
-  "La <b>loi Carrez</b> et les <b>charges de copropriété</b> n'apparaissent que si le bien "+
-  "est en copropriété (onglet Général → Le bien → Situation juridique). "+
-  "Le chauffage, le refroidissement et la production d'eau chaude tiennent chacun en "+
-  "<b>un seul menu</b> — « Individuel au gaz », « Pompe à chaleur réversible », "+
-  "« Chauffe-eau thermodynamique » — au lieu du couple nature + énergie d'autrefois ; les "+
-  "anciennes saisies ont été réunies automatiquement. "+
+ ["La fiche du bien : six volets, un sujet par volet",
+  "Le bouton <b>Le bien</b>, dans l'en-tête du dossier, ouvre la fiche. Elle tenait "+
+  "autrefois sur deux colonnes où tout se voyait d'un coup — et où l'on ne trouvait "+
+  "rien ; elle se lit maintenant <b>sujet par sujet</b>, dans l'ordre où l'on décrit un "+
+  "bien à quelqu'un. Le menu de gauche passe de l'un à l'autre. "+
+  "<b>Le type de bien</b> — ce que c'est, sa situation juridique, son âge. La "+
+  "<b>résidence</b> ne se demande qu'en <b>copropriété</b> ou en <b>ASL</b> : ailleurs, "+
+  "il n'y a pas d'immeuble commun à décrire, et la case n'apparaît pas. "+
+  "<b>L'adresse</b> — reprise de la résidence quand il y en a une, à saisir sinon. Le "+
+  "<b>quartier</b> est celui des recherches : la même liste, les mêmes noms, le même "+
+  "contour sur la carte, de sorte qu'un bien ressorte quand un acquéreur cherche "+
+  "« Trinquetaille ». Saisi sur un lot, il remonte sur la résidence et sert à tous ses "+
+  "lots — on ne le tape qu'une fois. "+
+  "<b>Les pièces</b> — le tableau pièce par pièce, avec les niveaux et les deux surfaces. "+
+  "<b>Les caractéristiques</b> — surfaces et situation, distribution et annexes, charges "+
+  "et impôts, équipements : les quatre blocs d'autrefois, réunis. Le <b>nombre de "+
+  "pièces</b> y a retrouvé sa case, et se compte seul dès que les pièces sont détaillées. "+
+  "<b>Le terrain</b> — les références cadastrales et la surface. "+
+  "<b>L'occupation</b> — libre, occupé, loué. "+
+  "Et <b>Argumentaire</b>, inchangé. "+
+  "Tout ce qui s'y trouvait continue d'y être : rien n'a été retiré, seulement rangé."],
+ ["Les pastilles qui se lisent au lieu de se cocher",
+  "En tête des <b>caractéristiques</b>, une rangée de pastilles OUI/NON : <b>Extérieur</b>, "+
+  "<b>Pkg / Garage</b>, puis <b>Rez-de-chaussée</b>, <b>Dernier étage</b>, <b>Terrasse / "+
+  "Balcon</b> et <b>Ascenseur</b> pour un appartement ou un local ; <b>Jardin</b>, "+
+  "<b>Piscine</b>, <b>Terrasse / Balcon</b>, <b>Chambre en RDC</b> et <b>Commodité en "+
+  "RDC</b> pour une maison. "+
+  "<b>Elles ne se cochent pas : elles se lisent.</b> « Extérieur » est vert dès que la "+
+  "terrasse, le balcon ou le jardin l'est ; « Rez-de-chaussée » se lit de l'étage saisi, "+
+  "« Dernier étage » de l'étage comparé au nombre d'étages, « Chambre en RDC » du niveau "+
+  "des chambres au volet des pièces, et l'<b>ascenseur</b> est celui de la résidence. "+
+  "Une case de plus aurait fait une <b>seconde source</b> pour un même fait : un jardin "+
+  "coché plus bas et un « Extérieur : NON » en tête, et plus personne ne sait lequel "+
+  "croire. Survolez une pastille : elle dit d'où elle tient sa réponse. "+
+  "Trois états, comme partout : <b>OUI</b> dès qu'un élément répond oui, <b>NON</b> quand "+
+  "tous ont répondu non, et <b>?</b> tant que rien n'est dit. "+
+  "Seule la <b>piscine</b> se répond à la main : elle ne se déduit de rien."],
+ ["L'état d'occupation, et le bail",
+  "Le volet <b>L'occupation</b> pose la première question d'un acquéreur : le bien est-il "+
+  "<b>libre</b>, <b>occupé par son propriétaire</b>, ou <b>loué</b> ? "+
+  "Les deux premiers n'appellent rien de plus. Le troisième ouvre ce qu'il faut pour en "+
+  "parler sans aller chercher le dossier de gestion : le <b>locataire</b> (civilité, nom, "+
+  "prénom, téléphone, courriel), le <b>type de bail</b> — location vide, meublée, bail "+
+  "mobilité, commercial, saisonnier…, liste modifiable par le <b>+</b> —, les <b>dates de "+
+  "début et de fin</b>, le <b>préavis</b>, le <b>loyer hors charges</b> et la "+
+  "<b>provision pour charges</b>. Le <b>loyer charges comprises</b> s'additionne tout "+
+  "seul, à la frappe. "+
+  "<b>Le préavis compte plus que la fin du bail.</b> C'est lui qui dit si le congé pour "+
+  "vendre a été donné, et donc à quelle date l'acquéreur entrera dans les lieux — un bail "+
+  "qui court jusqu'en 2029 sans préavis donné n'est pas la même affaire."],
+ ["Un immeuble se décrit logement par logement",
+  "Quand le type de bien est <b>Immeuble</b>, la fiche change de forme. Au menu : le type, "+
+  "l'adresse, le terrain, <b>L'immeuble en entier</b>, puis <b>un volet par logement</b>, "+
+  "et <b>+ Un logement</b> pour en ajouter. "+
+  "<b>Chaque logement</b> a son nom — « Rez-de-chaussée gauche », « T2 du 2<sup>e</sup> », "+
+  "« Local commercial » —, ses <b>pièces</b>, ses <b>caractéristiques</b> et son "+
+  "<b>occupation</b>, exactement comme un bien à lui seul. Ses pièces sont les siennes : "+
+  "elles n'entrent pas dans celles d'un autre logement. "+
+  "<b>L'immeuble en entier</b> porte ce qui ne se divise pas. Le tableau des logements "+
+  "donne, pour chacun, sa surface, ses pièces, ses chambres et son occupation, puis le "+
+  "<b>total</b> de l'immeuble. Les <b>charges et impôts</b> ne se trouvent QUE là : ils "+
+  "sont ceux du bâtiment, et les répartir par logement n'aurait pas de sens. Et les "+
+  "pastilles <b>Extérieur</b> et <b>Pkg / Garage</b> passent au vert dès qu'<b>un</b> "+
+  "logement répond oui : un immeuble dont un seul lot a un garage a bien un garage à "+
+  "vendre."],
+ ["Le détail des pièces remplit les caractéristiques",
+  "Nommez les pièces — « séjour », « chambre », « salle de bain », « WC », « cave », "+
+  "choisis dans une <b>liste déroulante</b> que le bouton <b>+</b> complète pour tous vos "+
+  "dossiers — et la surface habitable, le nombre de pièces, les chambres, les salles de "+
+  "bain, les salles d'eau et les WC se comptent seuls au volet des <b>caractéristiques</b>. "+
+  "Les annexes (cave, garage, terrasse, balcon…) ne comptent pas dans la surface "+
+  "habitable : la case <b>hors</b> se coche d'elle-même pour elles. "+
+  "Tant qu'aucune pièce n'est saisie, ces champs se remplissent à la main ; dès qu'il y en "+
+  "a une, ils passent en calculé — deux sources pour un même chiffre finissent toujours "+
+  "par se contredire. "+
+  "La <b>surface au sol</b> se recopie d'elle-même en <b>habitable</b>, et la colonne "+
+  "habitable accepte une valeur moindre pour une pièce mansardée. Le <b>niveau</b> sert "+
+  "aux totaux par étage, et dit si une chambre ou des commodités sont de plain-pied. "+
   "<b>Deux pièces du même nom se numérotent seules</b> : une chambre reste « Chambre » "+
   "tant qu'elle est seule ; dès qu'une deuxième arrive, la première devient « Chambre 1 » "+
   "et la nouvelle « Chambre 2 ». Retirez-en une et celle qui reste reprend son nom nu. "+
-  "Le <b>nombre de pièces</b> n'a plus de case à lui : il se déduit du détail des pièces. "+
-  "Une fois la fenêtre refermée, l'essentiel se lit en une ligne à côté du bouton : "+
-  "« 95 m² · 4 pièces · étage 2 · terrasse ». Ces informations appartiennent au dossier, pas "+
-  "à l'immeuble : deux lots du même immeuble ont chacun la leur."],
+  "La <b>loi Carrez</b> et les <b>charges de copropriété</b> n'apparaissent que si le bien "+
+  "est en copropriété. Le chauffage, le refroidissement et la production d'eau chaude "+
+  "tiennent chacun en <b>un seul menu</b>. "+
+  "Ces informations appartiennent au <b>dossier</b>, pas à l'immeuble : deux lots du même "+
+  "immeuble ont chacun les leurs — à l'exception du quartier et des parcelles, qui sont "+
+  "ceux de la résidence."],
+ ["Les parcelles sont celles de la résidence",
+  "Au volet <b>Le terrain</b>, les <b>références cadastrales</b> : autant de parcelles "+
+  "qu'il en faut, avec la contenance totale en m². "+
+  "Pour un bien qui appartient à une <b>résidence</b>, elles sont celles de la résidence "+
+  "et servent à <b>tous ses lots</b> : les saisir depuis n'importe lequel, c'est les "+
+  "saisir une fois pour toutes. La fiche le dit en toutes lettres pour qu'on ne les "+
+  "ressaisisse pas lot après lot. Pour une maison ou un terrain, elles appartiennent au "+
+  "dossier."],
  ["Tous les dossiers d'un immeuble",
   "Partout où un immeuble est nommé, un bouton compte les dossiers qui s'y rattachent et "+
   "ouvre leur liste : dans l'onglet Général sous la résidence (« Les voir tous ») et au bas "+
@@ -22391,6 +23017,24 @@ const AIDE = [
   "jour avant d'ouvrir l'application sur l'autre poste. Attention avec Google Drive en mode "+
   "« diffusion de fichiers » : Drive remplace le fichier à chaque synchronisation et le lien "+
   "se casse. Passez le dossier en « Refléter les fichiers », ou utilisez la base en ligne."],
+ ["Ce que vous supprimez reste supprimé",
+  "Une recherche, un notaire, un syndic que vous retirez s'en va de la base partagée, et "+
+  "ne revient pas — même si un autre appareil l'avait encore en mémoire. "+
+  "<b>Le départ est immédiat.</b> Jusqu'ici, une liste modifiée n'atteignait la base qu'au "+
+  "prochain enregistrement d'un <i>dossier</i> : si vous passiez la journée dans vos "+
+  "recherches sans ouvrir un mandat, rien ne partait, et la base gardait l'ancienne "+
+  "version. C'est corrigé : toute liste enregistrée part dans les quelques secondes qui "+
+  "suivent, comme un dossier. "+
+  "<b>Le retrait fait foi.</b> Chaque suppression laisse une trace datée, qui voyage avec "+
+  "la base. Une fiche retirée ne revient que si elle a été <b>refaite</b> depuis — pas "+
+  "parce qu'un autre appareil a touché autre chose dans le même carnet."],
+ ["Un dossier où rien n'a été tapé n'est pas un dossier",
+  "« Nouveau », puis rien : la fiche vide ne s'enregistre pas. Elle n'apparaît ni dans "+
+  "<b>Mes dossiers</b>, ni dans les comptes du tableau de bord, ni dans les "+
+  "rapprochements. <b>Dès la première frappe</b> — un numéro de mandat, une adresse, un "+
+  "prix, un nom —, elle devient un dossier comme les autres. "+
+  "Vous pouvez donc cliquer « Nouveau » pour voir, et changer d'avis sans laisser de "+
+  "brouillon derrière vous."],
  ["Sauvegarder",
   "Les dossiers sont conservés dans ce navigateur, sur cet ordinateur. Faites de temps en temps "+
   "« Exporter une sauvegarde (JSON) » depuis l'onglet Listes : ce fichier contient tous vos "+
