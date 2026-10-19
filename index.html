@@ -121,7 +121,22 @@ main{flex:1;min-width:0;max-width:1240px;margin:0 auto;padding:22px 0 80px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
   box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
 .card > h2{margin:0;padding:11px 16px;font-size:12.5px;letter-spacing:.7px;text-transform:uppercase;
-  background:var(--bandeau);color:#fff;font-weight:600;display:flex;align-items:center;gap:8px}
+  background:var(--bandeau);color:#fff;font-weight:600;display:flex;align-items:center;gap:8px;
+  flex-wrap:wrap}
+/* Un bandeau qui porte un NOM PROPRE ne se met pas en capitales : le reste
+   de l'application y gagne sa petite majuscule d'imprimerie, mais
+   « M. THOMAS HILBERT » crie, et le prénom doit se lire « Thomas ». */
+.card > h2.nom{text-transform:none;letter-spacing:.1px;font-size:14px}
+/* Les coordonnées, à la suite du titre : d'une recherche on appelle ou l'on
+   écrit sans descendre d'un étage, et sans une seconde ligne de bandeau. */
+.card > h2 .h2coord{display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-width:0;
+  text-transform:none;letter-spacing:0;font-size:12px;font-weight:500;opacity:.93}
+.card > h2 .h2coord .rcoord{display:inline-flex;align-items:center;gap:4px}
+.card > h2 .h2coord b{font-weight:650}
+.card > h2 .h2coord .addinline{background:rgba(255,255,255,.14);color:#fff;
+  border:1px solid rgba(255,255,255,.3);padding:2px 6px}
+.card > h2 .h2coord .addinline:hover{background:rgba(255,255,255,.3);color:#fff;
+  border-color:rgba(255,255,255,.55)}
 .card > h2 .n{opacity:.55;font-variant-numeric:tabular-nums}
 /* le périmètre comparé, dans le titre du panneau */
 .card > h2 .perim{background:rgba(255,255,255,.14);border-radius:5px;padding:2px 7px;
@@ -150,34 +165,62 @@ main{flex:1;min-width:0;max-width:1240px;margin:0 auto;padding:22px 0 80px}
 .heroin{display:flex;gap:24px;align-items:flex-start;padding:18px 20px 16px;flex-wrap:wrap}
 .heroid{min-width:250px;flex:1}
 .heroid h1{margin:0;font-size:20px;line-height:1.25;letter-spacing:-.2px;font-weight:650}
+/* le type et la surface, au-dessus de l'adresse et dans la même police :
+   un cran plus léger, pour que l'adresse reste la ligne qui porte */
+.heroid .hquoi{font-size:20px;line-height:1.25;letter-spacing:-.2px;font-weight:500;
+  color:var(--ink-2)}
 .heroid .hsub{color:var(--ink-2);font-size:12.5px;margin-top:4px}
-.herochiffres{display:flex;gap:26px;flex-wrap:wrap}
-.hchiffre .lab{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
-  color:var(--ink-3)}
-.hchiffre .val{font-size:18px;font-weight:650;letter-spacing:-.2px;margin-top:1px;
-  font-variant-numeric:tabular-nums}
-.hchiffre .val small{font-size:11.5px;font-weight:500;color:var(--ink-2);letter-spacing:0}
+.herochiffres{display:flex;gap:10px;flex-wrap:wrap}
+/* les trois chiffres sont des boutons : ils ouvrent « Prix et honoraires » */
+.hchiffre{display:block;text-align:left;background:none;border:1px solid transparent;
+  border-radius:9px;padding:4px 10px 5px;margin:-4px -2px;cursor:pointer;color:inherit;
+  font:inherit}
+.hchiffre:hover{background:var(--accent-soft);border-color:#cddaeb}
+.hchiffre:active{background:#e3ebf6}
+.hchiffre .lab{display:block;font-size:10.5px;font-weight:700;letter-spacing:.6px;
+  text-transform:uppercase;color:var(--ink-3)}
+.hchiffre .val{display:block;font-size:18px;font-weight:650;letter-spacing:-.2px;
+  margin-top:1px;font-variant-numeric:tabular-nums}
+/* la charge des honoraires, sous le montant : en regard, elle poussait les
+   trois chiffres à la ligne dès qu'on rétrécissait la fenêtre */
+.hchiffre .note{display:block;font-size:11.5px;font-weight:500;color:var(--ink-2);
+  letter-spacing:0;line-height:1.3}
 .heroact{display:flex;gap:8px;flex-wrap:wrap;align-items:center;width:100%}
 .heroact .xbtn{display:inline-flex;align-items:center;gap:7px}
-/* la frise des quatre étapes */
-.frise{display:flex;border-top:1px solid var(--line-2);background:#f7f9fc}
-.etape{flex:1;padding:10px 15px;position:relative;min-width:118px}
-.etape + .etape{border-left:1px solid var(--line-2)}
+/* La frise des dates clés. Autant d'étapes que le dossier en compte : une
+   grille qui se replie toute seule, les traits venant des interstices d'un
+   pixel. Chaque étape est un bouton — elle mène au champ de sa date. */
+.frise{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));
+  gap:1px;border-top:1px solid var(--line-2);background:var(--line-2)}
+.etape{display:block;width:100%;text-align:left;font:inherit;color:inherit;border:0;
+  padding:10px 15px 11px;position:relative;background:#f7f9fc;cursor:pointer}
+.etape:hover{background:#eef3fa}
 .etape .e1{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;
   letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3)}
 .etape .e1::before{content:"";width:9px;height:9px;border-radius:50%;background:#fff;
   border:2px solid var(--line);flex:0 0 auto}
 .etape .e2{font-size:13.5px;font-weight:600;margin-top:2px;color:var(--ink-3);
   font-variant-numeric:tabular-nums}
+.etape .e3{margin-top:4px;line-height:1}
+.etape .e3.auto{font-size:11px;color:var(--ink-3);font-style:italic}
 .etape.faite .e1{color:var(--accent)}
 .etape.faite .e1::before{background:var(--accent);border-color:var(--accent)}
 .etape.faite .e2{color:var(--ink)}
 .etape.ici{background:var(--accent-soft)}
+.etape.ici:hover{background:#dce7f6}
 .etape.ici .e1{color:var(--accent)}
 .etape.ici .e2{color:var(--navy);font-weight:700}
 .etape.ici::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
   background:var(--accent)}
 .etape.hs .e2{font-style:italic}
+/* une date qui se calcule : on y mène au champ qui la produit, mais la
+   pastille reste creuse — ce n'est pas une étape qu'on franchit */
+.etape.calc .e1::before{background:#fff;border-style:dotted}
+/* la résiliation ferme le dossier : elle se signale, elle ne se célèbre pas */
+.etape.fini{background:#fdf4f4}
+.etape.fini:hover{background:#faeaea}
+.etape.fini .e1,.etape.fini .e2{color:#991b1b}
+.etape.fini .e1::before{background:#ef4444;border-color:#b91c1c}
 
 .tuiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;
   align-items:start}
@@ -236,10 +279,7 @@ main{flex:1;min-width:0;max-width:1240px;margin:0 auto;padding:22px 0 80px}
 .secbox > .spieds .grow{flex:1}
 @media(max-width:820px){
   .tuiles{grid-template-columns:1fr}
-  .frise{flex-wrap:wrap}
-  .etape{flex:1 1 50%;min-width:0}
-  .etape:nth-child(3){border-left:0;border-top:1px solid var(--line-2)}
-  .etape:nth-child(4){border-top:1px solid var(--line-2)}
+  .frise{grid-template-columns:repeat(auto-fit,minmax(132px,1fr))}
   .secbox{max-height:94vh}
   .modal.tiroir .secbox{width:100vw}
 }
@@ -1054,13 +1094,9 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .mddupb .dupnon{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
 .mddupb .dupnon:hover{background:#f1f4f9;color:var(--ink)}
 .tbtn.mini{padding:4px 10px;font-size:12.5px}
-/* le bandeau d'une recherche : les boutons dessus, les coordonnées dessous */
-.rechl1,.rechl2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%}
-.rechl2{margin-top:7px;padding-top:7px;border-top:1px solid var(--line-2);gap:18px}
-.rechl2 .rqui{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
-.rechl2 .rqui b{font-weight:650}
-.rechl2 .rcoord{display:inline-flex;align-items:center;gap:4px;color:var(--ink-2)}
-.rechl2 .rcoord .addinline{padding:2px 6px}
+/* le bandeau d'une recherche : les boutons. Les coordonnées sont montées
+   dans le titre, où elles sont vues sans qu'on les cherche. */
+.rechl1{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%}
 /* les quartiers, deux colonnes de front : les recherchés en bleu, les
    refusés en rouge — les mêmes couleurs que sur la carte */
 .quartduo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -1680,10 +1716,6 @@ table.tdb .puce.resilie{background:#64748b}
 .pjbtn .cnt{background:var(--navy);color:#fff;border-radius:999px;font-size:11px;
   padding:1px 7px;font-weight:700}
 .pjbtn svg{flex:0 0 auto}
-/* le bouton « Contact » : discret comme les autres actions d'une fiche */
-.xbtn.vcf{display:inline-flex;align-items:center;gap:6px}
-.card > h2 .xbtn.vcf{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28);
-  color:#fff}
 /* les cinq tiroirs d'un immeuble, posés sous son titre : on voit d'un
    regard ce que chacun contient, sans ouvrir quoi que ce soit */
 .immtete{flex-wrap:wrap}
@@ -2058,7 +2090,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 19 octobre 2026, 8 h 18">Dossiers de vente</div>
+  <div class="brand" title="Version du 19 octobre 2026, 9 h 30">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2269,7 +2301,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>19 octobre 2026, 8 h 18</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>19 octobre 2026, 9 h 30</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4848,34 +4880,105 @@ function surfaceLisible(){
   return n === null ? "" : n.toLocaleString("fr-FR") + " m²";
 }
 /* ------------------------------------------------ l'en-tête du dossier */
+/* ------------------------------------------------------- LA FRISE
+   Elle montrait quatre étapes figées et ne servait qu'à lire ; une tuile
+   « Dates clés » répétait les mêmes dates à côté. La frise porte désormais
+   TOUTES les dates clés du dossier, chacune cliquable pour la saisir — et
+   la tuile a disparu. Les étapes se règlent sur le dossier : pas de butoir
+   de financement sans condition suspensive, pas de rétractation sans
+   compromis, pas de résiliation sans mandat résilié.
+
+   `cible` dit où la saisie se fait : `top:` un champ du cartouche du haut,
+   `sec:<section>:<champ>` une fenêtre de section et le champ à y ouvrir.
+   `auto` marque une date qui se calcule et ne se saisit pas.            */
+function etapesDossier(){
+  const m = D.mandat || {}, d = D.dates || {}, f = D.fin || {};
+  const l = [];
+  l.push({cle:"mandat", lib:"Mandat" + (m.type ? " " + m.type.toLowerCase() : ""),
+          iso:m.date, cible:"top:mandatDate"});
+  l.push({cle:"offre", lib:"Offre acceptée", iso:d.offre,
+          cible:"sec:dates:dates.offre"});
+  l.push({cle:"compromis", lib:"Compromis", iso:d.compromis,
+          cible:"sec:dates:dates.compromis"});
+  const r = dateRetractation();
+  if(r) l.push({cle:"retract", lib:"Fin de rétractation", iso:r,
+                auto:"calculée : 12 jours après le compromis",
+                cible:"sec:dates:dates.compromis"});
+  if(phaseDates() && f.condSusp !== "Aucun")
+    l.push({cle:"butoirFin", lib:"Butoir financement", iso:d.butoirFin,
+            delai:true, cible:"sec:dates:dates.butoirFin"});
+  if(phaseDates())
+    l.push({cle:"butoirComp", lib:"Butoir compromis", iso:d.butoirComp,
+            delai:true, cible:"sec:dates:dates.butoirComp"});
+  l.push({cle:"acte", lib:"Acte authentique", iso:d.acte,
+          cible:"sec:dates:dates.acte"});
+  if(m.resilie) l.push({cle:"resilie", lib:"Mandat résilié", iso:m.resilieDate,
+                        cible:"sec:bien:mandat.resilieDate"});
+  return l;
+}
 function friseDossier(){
   const t = auj();
-  const etapes = [
-    {lib:"Mandat",           iso:(D.mandat || {}).date},
-    {lib:"Offre acceptée",   iso:(D.dates || {}).offre},
-    {lib:"Compromis",        iso:(D.dates || {}).compromis},
-    {lib:"Acte authentique", iso:(D.dates || {}).acte}
-  ];
+  const etapes = etapesDossier();
+  /* l'étape où l'on en est : la dernière date passée, hors résiliation —
+     un mandat résilié n'est pas une étape franchie, c'est un arrêt */
   let ici = -1;
-  etapes.forEach((e,i)=>{ if(isoValide(e.iso) && e.iso <= t) ici = i; });
+  etapes.forEach((e,i)=>{
+    if(e.cle !== "resilie" && isoValide(e.iso) && e.iso <= t) ici = i; });
   return `<div class="frise">${etapes.map((e,i)=>{
     const faite = isoValide(e.iso) && e.iso <= t;
     const aVenir = isoValide(e.iso) && e.iso > t;
-    const cls = [faite ? "faite" : "", i === ici ? "ici" : "", aVenir ? "hs" : ""]
+    const j = e.delai ? joursAvant(e.iso) : null;
+    const cls = [faite ? "faite" : "", i === ici ? "ici" : "", aVenir ? "hs" : "",
+                 e.cle === "resilie" ? "fini" : "", e.auto ? "calc" : ""]
       .filter(Boolean).join(" ");
-    return `<div class="etape ${cls}"><div class="e1">${esc(e.lib)}</div>
+    const pied = e.auto ? `<div class="e3 auto">${esc(e.auto)}</div>`
+      : j !== null ? `<div class="e3"><span class="chip ${etatEcheance(j)}">${
+          esc(delaiSigneTxt(j))}</span></div>` : "";
+    return `<button type="button" class="etape ${cls}" data-etape="${esc(e.cible)}"
+      title="${esc(e.auto ? e.lib + " — " + e.auto
+                          : "Saisir ou corriger : " + e.lib)}">
+      <div class="e1">${esc(e.lib)}</div>
       <div class="e2">${isoValide(e.iso)
-        ? (aVenir ? "prévu le " : "") + fdate(e.iso) : "à fixer"}</div></div>`;
+        ? (aVenir ? "prévu le " : "") + fdate(e.iso) : "à fixer"}</div>
+      ${pied}</button>`;
   }).join("")}</div>`;
+}
+/* Cliquer une étape mène au champ qui la porte, et non à une fenêtre de plus
+   à parcourir : le cartouche du haut pour la date du mandat, la fenêtre de
+   la section pour les autres — avec le champ ouvert et sélectionné. */
+function ouvrirEtape(cible){
+  const m = String(cible || "").split(":");
+  if(m[0] === "top"){
+    const e = document.getElementById(m[1]);
+    if(!e) return;
+    window.scrollTo({top:0, behavior:"smooth"});
+    setTimeout(()=>{ e.focus(); signaler(e); }, 120);
+    return;
+  }
+  if(m[0] !== "sec") return;
+  /* la fenêtre s'ouvre SUR le champ de l'étape, et le fait voir : on ne
+     force pas l'ouverture du calendrier, qui emporterait le focus */
+  ouvrirSection(m[1], m[2]);
 }
 function heroDossier(){
   const b = D.bien || {}, m = D.mandat || {};
   const adr = adresseBienCourte();
-  const sous = [b.residence, [typeBienLisible(), surfaceLisible()].filter(Boolean).join(" · "),
-    m.type ? "Mandat " + m.type.toLowerCase() + (isoValide(m.date) ? " du " + fdate(m.date) : "")
-           : ""].filter(Boolean).join("  ·  ");
-  const chiffre = (lab, val, note)=> `<div class="hchiffre"><div class="lab">${esc(lab)}</div>
-    <div class="val">${esc(val)}${note ? ` <small>${esc(note)}</small>` : ""}</div></div>`;
+  /* Le type et la surface annoncent le bien AU-DESSUS de son adresse, dans
+     la même police : « Appartement · 68 m² » puis « 12 bd des Lices, ARLES ».
+     Ils étaient en petits caractères gris sous l'adresse, avec le mandat —
+     que la frise porte à présent. Il ne reste sous l'adresse que la
+     résidence, qui n'appartient ni à l'un ni à l'autre. */
+  const quoi = [typeBienLisible(), surfaceLisible()].filter(Boolean).join("  ·  ");
+  const sous = String(b.residence || "").trim();
+  /* Les trois chiffres ouvrent « Prix et honoraires » : c'est là qu'on clique
+     quand on veut changer un prix, et la tuile qui le faisait n'avait rien de
+     plus à dire. La charge des honoraires passe SOUS le montant — en regard,
+     elle poussait les trois chiffres à la ligne sur un écran ordinaire. */
+  const chiffre = (lab, val, note)=> `<button type="button" class="hchiffre"
+      data-sect="prix" title="Prix, honoraires et historique des prix">
+    <span class="lab">${esc(lab)}</span>
+    <span class="val">${esc(val)}</span>
+    ${note ? `<span class="note">${esc(note)}</span>` : ""}</button>`;
   const net = prixNet();
   /* Les trois tiroirs de l'affaire étaient derrière un bouton « Pièces » : un
      clic pour ouvrir le classeur, un second pour le tiroir. Ils sont
@@ -4897,6 +5000,7 @@ function heroDossier(){
   return `<div class="hero">
     <div class="heroin">
       <div class="heroid">
+        ${quoi ? `<div class="hquoi">${esc(quoi)}</div>` : ""}
         <h1>${esc(adr || "Bien non renseigné")}</h1>
         ${sous ? `<div class="hsub">${esc(sous)}</div>` : ""}
         ${(()=>{
@@ -4922,10 +5026,11 @@ function heroDossier(){
 /* --------------------------------------------------------- les tuiles */
 /* chaque tuile résume sa section : quatre lignes au plus, et un pied qui
    dit ce qu'on trouvera derrière */
+/* « Prix et honoraires » et « Dates clés » n'ont plus de tuile : la première
+   s'ouvre en cliquant les chiffres du bandeau, la seconde répétait la frise
+   — qui se saisit maintenant. Les deux fenêtres, elles, sont inchangées. */
 const TUILES_GENERAL = [
   {cle:"bien",     titre:"Le bien"},
-  {cle:"prix",     titre:"Prix et honoraires"},
-  {cle:"dates",    titre:"Dates clés"},
   {cle:"suivi",    titre:"Suivi du dossier"},
   {cle:"copro",    titre:"Infos sur copropriété", si:coproRenseigne},
   {cle:"acqs",     titre:"Demandeurs pour ce bien",
@@ -4946,22 +5051,6 @@ function lignesTuile(cle){
       l("Mandat", "résilié" + (isoValide(D.mandat.resilieDate)
         ? " le " + fdate(D.mandat.resilieDate) : ""));
     else l("Surface", surfaceLisible() || "non renseignée", !surfaceLisible());
-  }
-  if(cle === "prix"){
-    l("Prix FAI", eur0(num(D.prix.fai)), num(D.prix.fai) === null);
-    l("Honoraires", num(D.prix.honoraires) === null ? "—" : eur(num(D.prix.honoraires)) + " TTC",
-      num(D.prix.honoraires) === null);
-    l("Net vendeur", calcValue("@net"), prixNet() === null);
-    l("Taux", calcValue("@taux"), tauxHono() === null);
-  }
-  if(cle === "dates"){
-    const d = D.dates || {};
-    const dt = (lab, iso)=> l(lab, isoValide(iso) ? fdate(iso) : "à fixer", !isoValide(iso));
-    dt("Offre d'achat", d.offre); dt("Compromis", d.compromis);
-    const r = dateRetractation();
-    if(r) l("Rétractation", fdate(r));
-    else dt("Butoir financement", d.butoirFin);
-    dt("Acte authentique", d.acte);
   }
   if(cle === "suivi"){
     l("Vendeur suivi par", D.nego.vendeur || "personne", vide(D.nego.vendeur));
@@ -5012,28 +5101,6 @@ function piedTuile(cle){
     return r ? `<b>Fiche détaillée</b> · ${esc(r.length > 60 ? r.slice(0, 59) + "…" : r)}`
              : `<b>Fiche détaillée</b> · rien de saisi`;
   }
-  if(cle === "prix"){
-    const [txt] = recapValue("@histo");
-    return esc(txt.length > 72 ? txt.slice(0, 71) + "…" : txt);
-  }
-  if(cle === "dates"){
-    /* la prochaine échéance qui reste à tenir ; à défaut, la dernière passée */
-    const d = D.dates || {}, liste = [];
-    if(isoValide(d.butoirFin) && D.fin.condSusp !== "Aucun")
-      liste.push(["Butoir de financement", d.butoirFin]);
-    if(isoValide(d.butoirComp)) liste.push(["Butoir du compromis", d.butoirComp]);
-    const r = dateRetractation();
-    if(r) liste.push(["Fin de rétractation", r]);
-    if(isoValide(d.acte)) liste.push(["Acte authentique", d.acte]);
-    if(!liste.length) return "Aucune échéance en attente.";
-    liste.sort((a,b)=> a[1].localeCompare(b[1]));
-    const t = auj();
-    const suivante = liste.find(x=> x[1] >= t);
-    const [lab, iso] = suivante || liste[liste.length - 1];
-    const j = joursAvant(iso);
-    return `<span class="chip ${etatEcheance(j)}">${esc(delaiSigneTxt(j))}</span>
-      <span>${esc(lab)}${suivante ? "" : " — dépassé"}</span>`;
-  }
   if(cle === "copro"){
     const rest = String(residenceDuBien().restrictions || "").trim();
     return rest ? esc(rest.length > 72 ? rest.slice(0, 71) + "…" : rest)
@@ -5059,11 +5126,6 @@ function piedTuile(cle){
 function tuileAlerte(cle){
   if(cle === "copro") return coproAlerte();
   if(cle === "bien")  return !!D.mandat.resilie;
-  if(cle === "dates"){
-    const d = D.dates || {};
-    return [d.butoirFin, d.butoirComp, dateRetractation()].some(iso=>
-      isoValide(iso) && joursAvant(iso) <= 21);
-  }
   if(cle === "annulees") return true;
   return false;
 }
@@ -5104,7 +5166,9 @@ const SOUS_SECTION = {
   acqs:"Les recherches en cours de votre fichier de demandeurs qui portent sur ce bien, " +
        "avec ce qui ne colle pas tout à fait."
 };
-function ouvrirSection(cle){
+/* `champ` : le champ sur lequel s'ouvrir — c'est ainsi qu'une étape de la
+   frise mène à SA date, et non au premier champ de la fenêtre. */
+function ouvrirSection(cle, champ){
   const sec = SCHEMA_GENERAL.find(x=> x.cle === cle);
   if(!sec) return;
   SECTION_OUVERTE = cle; TIROIR_OUVERT = "";
@@ -5115,8 +5179,13 @@ function ouvrirSection(cle){
   $("#secCorps").innerHTML = carteSection(sec);
   $("#secBox").hidden = false;
   majEcheances(); majDetail(); refreshAllVilles();
-  const premier = $("#secCorps input:not([disabled]),#secCorps select,#secCorps textarea");
-  if(premier) setTimeout(()=> premier.focus(), 40);
+  const vise = champ ? $(`#secCorps [data-b="${champ}"]`) : null;
+  const premier = vise
+    || $("#secCorps input:not([disabled]),#secCorps select,#secCorps textarea");
+  if(premier) setTimeout(()=>{
+    premier.focus();
+    if(vise) signaler(vise.closest(".f") || vise);
+  }, 40);
 }
 function fermerSection(){
   if($("#secBox").hidden) return;
@@ -6763,7 +6832,6 @@ function renderPeople(kind){
     const suj = sujetPersonne(p);
     return `<div class="person" id="pers_${kind}_${i}">
       <header><span class="idx">${i+1}</span><span class="who">${esc(who)}</span>${memeAdr}
-      ${nomPersonne(p) ? boutonCarte("partie:" + kind + ":" + i, who) : ""}
       ${suj ? trombone(suj, "Pièces") : ""}
       ${arr.length>1?`<button class="xbtn" data-del="${kind}:${i}">Supprimer</button>`:""}
       </header><div class="pgrid">${fields}</div></div>`;
@@ -7203,7 +7271,6 @@ function ficheCarnet(k, r, i, apres, sansEntete){
     sansEntete ? "" : `<header>
     <span class="who">${esc(lib || (b.label+" "+(i+1)))}</span>
     ${k === "residences" && lib ? boutonImmeuble(lib, "Ses dossiers") : ""}
-    ${lib && k !== "residences" ? boutonCarte("carnet:" + k + ":" + i, lib) : ""}
     ${lib ? trombone(k === "residences" ? sujetImmeuble(lib)
                                         : sujetPersonne(r), "Pièces") : ""}
     ${lib && r.ppid && CARNETS_REP.indexOf(k) >= 0
@@ -7872,7 +7939,6 @@ function vuePersonneFiche(){
       <div class="grow"></div>
       <button type="button" class="tbtn light" data-actadd="pers:${esc(f.pid)}"
         >+ Créer une action</button>
-      ${boutonCarte("fiche:" + f.pid, nomPersonne(f))}
       ${trombone("personne:" + f.pid, "Pièces")}
     </div>
     <div class="prospshell">
@@ -8141,8 +8207,6 @@ function renderRepertoire(){
             esc((x.d.mandat || {}).num || "—")}${
             lotDe(x.d) ? " · " + esc(lotDe(x.d)) : ""}</em></span>
         <span class="repco">${esc(co || "—")}</span>
-        ${boutonCarte("trouve:" + x.d.id + ":" + x.kind + ":" + x.i,
-                      titrePersonne(x.p))}
         ${trombone(sujetPersonne(x.p), "Pièces")}
         <button type="button" class="xbtn" data-opers="${esc(x.d.id)}:${x.kind}:${x.i}"
           >Voir</button></div>`;
@@ -10978,9 +11042,8 @@ function ligneAcqPourBien(x){
     <span class="rapprix">${r.contact
       ? "vu le " + esc(fdate(r.contact)) : `<span class="muted">jamais vu</span>`}</span>
     <span class="rapec">${pastillesEcarts(x, true)}</span>
-    <span class="rapfin">${boutonCarte("carnet:prospects:" + x.i, x.nom)}
-      <button type="button" class="xbtn" data-ofiche="prospects:${x.i}"
-        >Fiche</button></span></div>`;
+    <span class="rapfin"><button type="button" class="xbtn"
+      data-ofiche="prospects:${x.i}">Fiche</button></span></div>`;
 }
 function carteAcquereursBien(){
   const list = acquereursPourBien();
@@ -11724,13 +11787,6 @@ function bandeauRecherche(i){
   const r = (L.prospects || [])[i] || {};
   const actif = r.actif === undefined || !!r.actif;
   const gens = personnesProspect(r);
-  /* le contact d'une personne : ce que dit sa fiche du répertoire d'abord,
-     ce que porte la recherche à défaut */
-  const contactDe = p=>{
-    const f = p.pid ? fichePersonne(p.pid) : null;
-    return {tel:(f && f.tel1) || p.tel || "", mail:(f && f.email1) || p.email || "",
-            tel2:(f && f.tel2) || "", mail2:(f && f.email2) || ""};
-  };
   return `<div class="rechbar${actif ? "" : " dort"}">
     <div class="rechl1">
       ${gens.filter(p=> p.pid).map(p=> `<button type="button" class="tbtn light mini"
@@ -11747,29 +11803,48 @@ function bandeauRecherche(i){
         data-bookchk="prospects:${i}:actif"${actif ? " checked" : ""}>
         <span>${actif ? "active" : "en sommeil"}</span></label>
     </div>
-    <div class="rechl2">
-      ${gens.length ? gens.map(p=>{
-        const c = contactDe(p);
-        const tel = t=> t ? `<span class="rcoord"><span>${esc(t)}</span>
-          <button type="button" class="addinline contact" data-wa="${esc(t)}"
-            data-pid="${esc(p.pid || "")}" data-rech="${esc(r.id)}"
-            title="Envoyer un message WhatsApp">${IC_MSG}</button></span>` : "";
-        const mel = m=> m ? `<span class="rcoord"><span>${esc(m)}</span>
-          <button type="button" class="addinline contact" data-mail="${esc(m)}"
-            data-pid="${esc(p.pid || "")}" data-rech="${esc(r.id)}"
-            title="Écrire un courriel">${IC_MAIL}</button></span>` : "";
-        const tout = tel(c.tel) + tel(c.tel2) + mel(c.mail) + mel(c.mail2);
-        return `<span class="rqui"><b>${esc(nomPersonneProspect(p) || "(sans nom)")}</b>
-          ${tout || `<em>aucune coordonnée</em>`}</span>`;
-      }).join("") : `<span class="rqui muted">Recherche rattachée à personne</span>`}
-    </div>
   </div>${actif ? "" : `<p class="mdnote" style="margin:0 0 12px">Cette recherche est
     <b>en sommeil</b> : elle ne rapproche plus rien, et les biens qu'elle proposait ont
     quitté la liste. Ses critères sont gardés — recochez la case et tout revient.</p>`}`;
 }
-/* le premier prénom, et lui seul : c'est celui dont on se sert pour parler */
+/* le contact d'une personne : ce que dit sa fiche du répertoire d'abord,
+   ce que porte la recherche à défaut */
+function contactDuDemandeur(p){
+  const f = p && p.pid ? fichePersonne(p.pid) : null;
+  return {tel:(f && f.tel1) || (p || {}).tel || "",
+          mail:(f && f.email1) || (p || {}).email || "",
+          tel2:(f && f.tel2) || "", mail2:(f && f.email2) || ""};
+}
+/* Les coordonnées, posées à la suite du titre de la fiche : le téléphone et
+   le courriel, chacun avec son bouton — WhatsApp, courriel. Le prénom ne
+   précède les coordonnées que s'il y a plusieurs demandeurs ; avec un seul,
+   le titre vient de le nommer. */
+function coordDemandeurs(r){
+  const gens = personnesProspect(r);
+  if(!gens.length) return "";
+  const plus = gens.length > 1;
+  const bouts = gens.map(p=>{
+    const c = contactDuDemandeur(p);
+    const un = (v, attr, titre, ic)=> v
+      ? `<span class="rcoord"><span>${esc(v)}</span>
+         <button type="button" class="addinline contact" ${attr}="${esc(v)}"
+           data-pid="${esc(p.pid || "")}" data-rech="${esc((r || {}).id || "")}"
+           title="${esc(titre)}">${ic}</button></span>` : "";
+    const tout = un(c.tel, "data-wa", "Envoyer un message WhatsApp", IC_MSG)
+      + un(c.tel2, "data-wa", "Envoyer un message WhatsApp", IC_MSG)
+      + un(c.mail, "data-mail", "Écrire un courriel", IC_MAIL)
+      + un(c.mail2, "data-mail", "Écrire un courriel", IC_MAIL);
+    if(!tout) return "";
+    return (plus ? `<b>${esc(prenomUsuel(p) || nomPersonneProspect(p))}</b>` : "") + tout;
+  }).filter(Boolean);
+  return bouts.length ? `<span class="h2coord">${bouts.join("")}</span>` : "";
+}
+/* Le premier prénom, et lui seul : c'est celui dont on se sert pour parler.
+   Il se lit « Thomas » et non « THOMAS », même quand la reprise d'un fichier
+   l'a écrit en capitales — un prénom en capitales crie. */
 function prenomUsuel(p){
-  return String((p || {}).prenom || "").trim().split(/[\s,]+/)[0] || "";
+  const t = String((p || {}).prenom || "").trim().split(/[\s,]+/)[0] || "";
+  return t ? capitaliserMots(t) : "";
 }
 /* « M. Thomas HILBERT », « M. Thomas HILBERT et Mme Claire DURAND » : la
    civilité quand on la connaît, le premier prénom, le nom. */
@@ -11800,7 +11875,6 @@ function vueProspFiche(){
       <div class="grow"></div>
       <button type="button" class="tbtn light" data-actadd="rech:${esc(r.id)}"
         >+ Créer une action</button>
-      ${lib ? boutonCarte("carnet:prospects:" + i, lib) : ""}
       ${lib ? trombone(sujetPersonne(r), "Pièces") : ""}
       <button type="button" class="xbtn sup" data-prospdel="${esc(r.id)}">Supprimer</button>
     </div>
@@ -11824,7 +11898,8 @@ function vueProspFiche(){
         }).join("")}
       </nav>
       <div class="prospcorps" id="prospCorps">
-        <div class="card"><h2>${esc(page.lib)}${qui ? " de " + esc(qui) : ""}${
+        <div class="card"><h2 class="nom">${esc(page.lib)}${qui ? " de " + esc(qui) : ""}${
+          coordDemandeurs(r)}${
           page.cle === "recherche" ? `<span class="h2droite">${
             controlRaw(`prospects:${i}:nomRech`, "list:nomRecherche", r.nomRech || "",
                        `pr${i}`, "data-book")}</span>` : ""}</h2>
@@ -15764,31 +15839,6 @@ function carteDuCarnet(k, r){
   }
   return vcarte({nom:r.nom, fn:r.nom, adr, tels:[{num:r.tel}], emails:[r.email]});
 }
-/* Une partie d'un dossier. On note au passage de quel mandat elle vient :
-   dans un répertoire de plusieurs centaines de fiches, « Vendeur — mandat
-   n° 1051 » vaut toutes les recherches. */
-function cartePersonne(p, role, dossier){
-  if(!p) return "";
-  const morale = estMorale(p);
-  const num = ((dossier || {}).mandat || {}).num || "";
-  const note = [role || "", num ? "mandat n° " + num : "",
-                lotDe(dossier || {}) || ""].filter(Boolean).join(" — ");
-  return vcarte({
-    nom: morale ? (p.raison || "") : (p.nom || ""),
-    /* la carte porte tous les prénoms — c'est l'état civil —, mais le nom
-       affiché n'en garde que le premier : c'est celui qu'on lit dans un
-       carnet d'adresses et dans un message */
-    prenom: morale ? "" : prenomsEtatCivil(p),
-    civilite: morale ? "" : (p.civilite || ""),
-    fn: titrePersonne(p) || nomPersonne(p),
-    org: morale ? (p.raison || "") : "",
-    titre: morale ? "" : (p.profession || ""),
-    adr:{rue:p.adresse, cp:p.cp, ville:p.ville, pays:p.pays},
-    tels:[{num:p.tel1, genre:"CELL"}, {num:p.tel2}],
-    emails:[p.email1, p.email2],
-    note
-  });
-}
 /* Le nom du fichier : celui du contact, nettoyé de ce qui fâche un
    système de fichiers. */
 function nomDeCarte(t){
@@ -15800,46 +15850,17 @@ const IC_CARTE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="t
   stroke-linejoin="round"><rect x="1.6" y="3.2" width="12.8" height="9.6" rx="1.6"/>
   <circle cx="6" cy="7" r="1.6"/><path d="M3.4 11.2c.5-1.2 1.5-1.8 2.6-1.8s2.1.6 2.6 1.8"/>
   <path d="M10.6 6.6h2.2M10.6 9h2.2"/></svg>`;
-/* Ce que le bouton déclenche, selon d'où il vient. */
+/* Il ne reste qu'un emploi : l'export d'un carnet entier, depuis l'onglet
+   Listes. Les boutons « Contact » posés sur chaque fiche ont été retirés —
+   ils encombraient six écrans pour un fichier .vcf que personne n'ouvrait. */
 function enregistrerContact(cible){
   const m = String(cible || "").split(":");
-  if(m[0] === "carnet"){
-    const r = (L[m[1]] || [])[+m[2]];
-    const lib = libelleCarnet(m[1], r);
-    if(!r || !lib){ toast("Fiche sans nom"); return; }
-    enregistrerCarte(carteDuCarnet(m[1], r), nomDeCarte(lib));
-    toast("Carte de visite enregistrée");
-    return;
-  }
-  if(m[0] === "partie"){
-    const p = (D[m[1]] || [])[+m[2]];
-    if(!p){ toast("Fiche introuvable"); return; }
-    enregistrerCarte(cartePersonne(p, m[1] === "vendeurs" ? "Vendeur" : "Acquéreur", D),
-                     nomDeCarte(titrePersonne(p) || nomPersonne(p)));
-    toast("Carte de visite enregistrée");
-    return;
-  }
-  if(m[0] === "trouve"){
-    const d = allDossiers()[m[1]];
-    const p = d && (d[m[2]] || [])[+m[3]];
-    if(!p){ toast("Fiche introuvable"); return; }
-    enregistrerCarte(cartePersonne(p, m[2] === "vendeurs" ? "Vendeur" : "Acquéreur", d),
-                     nomDeCarte(titrePersonne(p) || nomPersonne(p)));
-    toast("Carte de visite enregistrée");
-    return;
-  }
-  if(m[0] === "tout"){
-    const k = m[1], rows = (L[k] || []).filter(r=> r && r.nom);
-    if(!rows.length){ toast("Ce carnet est vide"); return; }
-    enregistrerCarte(rows.map(r=> carteDuCarnet(k, r)),
-                     nomDeCarte(BOOKS[k] ? BOOKS[k].title : k));
-    toast(rows.length + (rows.length > 1 ? " contacts enregistrés" : " contact enregistré"));
-  }
-}
-function boutonCarte(cible, titre){
-  return `<button type="button" class="xbtn vcf" data-vcf="${esc(cible)}"
-    title="Enregistrer ${esc(titre || "ce contact")} dans votre répertoire (fichier .vcf)"
-    >${IC_CARTE}<span>Contact</span></button>`;
+  if(m[0] !== "tout") return;
+  const k = m[1], rows = (L[k] || []).filter(r=> r && r.nom);
+  if(!rows.length){ toast("Ce carnet est vide"); return; }
+  enregistrerCarte(rows.map(r=> carteDuCarnet(k, r)),
+                   nomDeCarte(BOOKS[k] ? BOOKS[k].title : k));
+  toast(rows.length + (rows.length > 1 ? " contacts enregistrés" : " contact enregistré"));
 }
 function fileName(which){
   /* une facture se classe par son numéro, les autres pièces par le mandat */
@@ -16343,7 +16364,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -16414,6 +16435,7 @@ document.addEventListener("click", e=>{
     setTimeout(()=> signaler(document.getElementById("bk_negociateurs_0")), 90);
     return; }
   if(t.dataset.sect){ ouvrirSection(t.dataset.sect); return; }
+  if(t.dataset.etape){ ouvrirEtape(t.dataset.etape); return; }
   if(t.dataset.tir){
     if(!basculerAlerte(t.dataset.tir)) ouvrirTiroirAuj(t.dataset.tir);
     return; }
@@ -20665,19 +20687,51 @@ const AIDE = [
   "plus récente qui donne la mention."],
  ["L'onglet Général : l'en-tête et les tuiles",
   "La page ne montre plus deux colonnes de formulaires. En haut, l'<b>en-tête du dossier</b> : "+
-  "l'adresse du bien, la résidence, le type et le mandat, puis les trois chiffres — prix FAI, "+
-  "honoraires TTC, net vendeur. Dessous, la <b>frise des quatre étapes</b> — mandat, offre, "+
-  "compromis, acte : celles qui sont franchies sont pleines, celle où l'on en est ressort en "+
-  "bleu, une date encore à venir s'écrit « prévu le… ». "+
-  "Puis des <b>tuiles</b>, une par sujet : le bien, le prix, les dates, le suivi, la "+
-  "copropriété, le mobilier. Chacune montre quatre lignes — ce que l'on vient vérifier neuf "+
-  "fois sur dix — et un pied qui dit ce qu'il y a derrière. <b>Un clic sur la tuile ouvre sa "+
-  "fiche</b> dans une fenêtre, où la saisie se fait au calme ; en la fermant, la tuile se met "+
-  "à jour. <kbd>Échap</kbd>, la croix ou un clic à côté ferment la fenêtre. "+
-  "Une tuile qui demande votre attention se souligne d'un <b>trait orange</b> : une échéance "+
-  "sous trois semaines, une restriction de copropriété, un mandat résilié. "+
-  "Les trois boutons de l'en-tête restent à portée : la fiche détaillée du bien, les dossiers "+
-  "de l'immeuble et l'annulation d'une vente en cours."],
+  "le <b>type et la surface</b> du bien, puis son <b>adresse</b> en dessous — les deux de la "+
+  "même taille, le bien s'annonçant avant de se situer — et la résidence sur la ligne "+
+  "suivante s'il y en a une. À droite, les trois chiffres : prix FAI, honoraires TTC, net "+
+  "vendeur. Dessous, la <b>frise des dates clés</b>, décrite à l'article suivant. "+
+  "Puis des <b>tuiles</b>, une par sujet : le bien, le suivi, la copropriété, le mobilier. "+
+  "Chacune montre quatre lignes — ce que l'on vient vérifier neuf fois sur dix — et un pied "+
+  "qui dit ce qu'il y a derrière. <b>Un clic sur la tuile ouvre sa fiche</b> dans une "+
+  "fenêtre, où la saisie se fait au calme ; en la fermant, la tuile se met à jour. "+
+  "<kbd>Échap</kbd>, la croix ou un clic à côté ferment la fenêtre. "+
+  "Une tuile qui demande votre attention se souligne d'un <b>trait orange</b> : une "+
+  "restriction de copropriété, un mandat résilié. "+
+  "Les boutons de l'en-tête restent à portée : la fiche détaillée du bien, les tiroirs de "+
+  "pièces jointes, les dossiers de l'immeuble, la création d'une action et l'annulation d'une "+
+  "vente en cours."],
+ ["La frise des dates clés : elle se lit ET se saisit",
+  "La frise, sous l'en-tête, portait quatre étapes figées et ne servait qu'à lire ; une tuile "+
+  "« Dates clés » répétait les mêmes dates juste à côté. <b>La tuile a disparu</b> : la frise "+
+  "porte maintenant <b>toutes</b> les dates du dossier, et <b>chaque étape se clique</b> pour "+
+  "saisir ou corriger la sienne. La fenêtre s'ouvre <b>sur le bon champ</b>, mis en évidence — "+
+  "pas sur le premier de la liste. "+
+  "<b>Les étapes suivent le dossier.</b> Avant l'offre, les quatre jalons : mandat, offre, "+
+  "compromis, acte. L'offre ou le compromis daté fait apparaître les échéances — <b>fin de "+
+  "rétractation</b>, <b>butoir du compromis</b> —, et le <b>butoir de financement</b> ne "+
+  "s'affiche <i>que</i> s'il y a une condition suspensive : sans prêt, cette case n'a rien à "+
+  "dire et ne s'affiche pas. Un <b>mandat résilié</b> ajoute sa propre étape, en rouge et en "+
+  "dernier. "+
+  "<b>Ce qui se calcule ne se saisit pas.</b> La fin de rétractation est le compromis plus "+
+  "douze jours : sa pastille est creuse et son pied porte « calculée ». La cliquer mène au "+
+  "<b>compromis</b> — la date qui la produit —, puisque c'est là qu'il faut corriger. "+
+  "<b>Ce qu'on lit d'un regard.</b> Une étape franchie est pleine, celle où l'on en est "+
+  "ressort en bleu, une date à venir s'écrit « prévu le… », une date qui manque « à fixer ». "+
+  "Les deux butoirs portent leur <b>délai signé</b> — « + 14 jours », « - 3 jours » en "+
+  "rouge —, qui est l'information utile sur une échéance. "+
+  "Le <b>type du mandat</b> est repris dans la première étape : « Mandat exclusif », avec sa "+
+  "date. La cliquer ne déroule pas de fenêtre — elle remonte au <b>cartouche du haut</b>, où "+
+  "le numéro, le type et la date du mandat se saisissent depuis toujours."],
+ ["Le prix s'ouvre en cliquant les chiffres",
+  "Les trois chiffres de l'en-tête — <b>prix FAI</b>, <b>honoraires TTC</b>, <b>net "+
+  "vendeur</b> — sont des boutons : un clic sur l'un des trois ouvre <b>Prix et "+
+  "honoraires</b>, avec les trois champs, l'<b>historique des prix</b>, la courbe et les "+
+  "calculs. C'est là qu'on clique quand on veut changer un prix, et la tuile qui le faisait "+
+  "n'avait rien de plus à dire : elle a disparu. "+
+  "La mention <b>charge vendeur</b> ou <b>charge acquéreur</b> se lit désormais <b>sous</b> "+
+  "le montant des honoraires, et non à côté : en regard, elle poussait les trois chiffres à "+
+  "la ligne dès qu'on rétrécissait la fenêtre."],
  ["Onglets qui apparaissent avec l'offre",
   "Tant que la date de l'offre n'est pas saisie, les onglets Acquéreurs, Questionnaire notaire "+
   "et Financement restent masqués : ils n'ont pas d'objet avant qu'un acquéreur se manifeste. "+
@@ -21246,22 +21300,20 @@ const AIDE = [
   "d'Instagram. TikTok attend du <b>9:16</b> : il acceptera le vôtre, mais le recadrera ou "+
   "ajoutera des bandes. Si TikTok devient votre réseau principal, dites-le moi, le format "+
   "du clip se change."],
- ["Enregistrer un contact dans votre répertoire",
-  "Sur la fiche de chaque <b>notaire</b>, <b>personne en charge</b>, <b>syndic</b>, "+
-  "<b>négociateur</b>, <b>diagnostiqueur</b> et <b>banque</b> du Répertoire, ainsi que sur "+
-  "chaque <b>vendeur</b> et <b>acquéreur</b> d'un dossier, un bouton <b>Contact</b> "+
-  "enregistre un fichier <b>.vcf</b> — une carte de visite. "+
-  "<b>Sur le téléphone</b>, ouvrez le fichier : le répertoire propose d'ajouter le contact, "+
-  "et il remonte dans vos contacts Google tout seul. "+
-  "<b>Sur l'ordinateur</b>, allez sur <b>contacts.google.com</b> → <b>Importer</b> → "+
-  "choisissez le fichier. "+
+ ["Exporter un carnet vers votre répertoire",
+  "Au bas de chaque carnet du Répertoire — notaires, personnes en charge, syndics, "+
+  "négociateurs, diagnostiqueurs, banques —, « <b>Exporter ce carnet (.vcf)</b> » réunit "+
+  "toutes ses fiches dans un seul fichier de cartes de visite. "+
+  "<b>Sur le téléphone</b>, ouvrez le fichier : le répertoire propose d'ajouter les "+
+  "contacts, et ils remontent dans vos contacts Google tout seuls. <b>Sur l'ordinateur</b>, "+
+  "allez sur <b>contacts.google.com</b> → <b>Importer</b> → choisissez le fichier. "+
   "Y passent le nom et le prénom séparés, la civilité, la fonction, l'organisation, le "+
-  "téléphone, le courriel et l'adresse complète. Pour un vendeur ou un acquéreur, une note "+
-  "rappelle d'où vient la fiche : « Vendeur — mandat n° 1051 — 12 bd des Lices ». "+
-  "<b>Un carnet entier d'un coup</b> : au bas de chaque carnet du Répertoire, "+
-  "« <b>Exporter ce carnet (.vcf)</b> » réunit toutes ses fiches dans un seul fichier, que "+
-  "Google Contacts importe en une fois. Pratique la première fois. "+
-  "<b>Pourquoi un fichier plutôt qu'un envoi direct à Google.</b> Créer la fiche sans rien "+
+  "téléphone, le courriel et l'adresse complète. "+
+  "<b>Les boutons « Contact » posés sur chaque fiche ont été retirés.</b> Ils occupaient une "+
+  "place sur six écrans — fiches de carnet, vendeurs, acquéreurs, demandeurs — pour un "+
+  "fichier d'une seule carte que personne n'ouvrait. L'export du carnet entier, lui, sert "+
+  "vraiment : on le fait une fois, au moment de monter son téléphone. "+
+  "<b>Pourquoi un fichier plutôt qu'un envoi direct à Google.</b> Créer les fiches sans rien "+
   "télécharger demanderait une autorisation permanente d'écrire dans votre répertoire, un "+
   "compte développeur et un écran de consentement Google. Le fichier .vcf fait le même "+
   "travail, <b>hors ligne</b>, sans clé et sans rien qui puisse tomber en panne — et il "+
@@ -21357,15 +21409,21 @@ const AIDE = [
   "classe ensuite ce qui reste."],
  ["La fiche d'une recherche : les volets",
   "<b>Le bandeau bleu</b> dit de qui il s'agit — « <i>La recherche de M. Thomas "+
-  "HILBERT</i> », civilité, premier prénom et nom — et porte à droite l'<b>objet</b> de "+
-  "la recherche, pris dans une liste modifiable : résidence principale, investissement "+
-  "locatif, résidence secondaire. C'est lui qui nomme la recherche partout ailleurs. "+
-  "<b>Le bandeau clair</b>, juste dessous, tient sur deux lignes. En haut les boutons : "+
+  "HILBERT</i> », civilité, premier prénom et nom. Le <b>prénom</b> s'y lit « Thomas » et "+
+  "non « THOMAS », même quand la reprise d'un fichier l'a écrit en capitales : un prénom en "+
+  "capitales crie. À droite, l'<b>objet</b> de la recherche, pris dans une liste "+
+  "modifiable : résidence principale, investissement locatif, résidence secondaire. C'est "+
+  "lui qui nomme la recherche partout ailleurs. "+
+  "<b>Les coordonnées sont dans ce même bandeau</b>, à la suite du nom — téléphones et "+
+  "courriels, lus sur la fiche du répertoire —, chacune avec son bouton : la bulle ouvre "+
+  "<b>WhatsApp</b>, l'enveloppe ouvre votre messagerie. Chaque envoi s'inscrit à "+
+  "l'historique. Avec deux demandeurs, le prénom précède ses coordonnées. Elles "+
+  "occupaient une seconde ligne sous les boutons, qui a été supprimée : une ligne de moins "+
+  "à descendre pour appeler quelqu'un. "+
+  "<b>Le bandeau clair</b>, juste dessous, ne porte plus que les boutons : "+
   "<b>Sa fiche</b> (au répertoire), <b>+ Une personne</b> (un conjoint, avec le même "+
   "contrôle de doublon), <b>Dupliquer</b>, <b>+ 1 recherche</b>, et la case "+
-  "<b>active</b>. En bas les <b>coordonnées</b> — téléphones et courriels, lus sur la "+
-  "fiche du répertoire —, chacune avec son bouton : la bulle ouvre <b>WhatsApp</b>, "+
-  "l'enveloppe ouvre votre messagerie. Chaque envoi s'inscrit à l'historique. "+
+  "<b>active</b>. "+
   "Les volets sont dans l'ordre où l'on travaille : "+
   "<b>La recherche</b> — le type de bien, le prix, les surfaces, le confort, les "+
   "travaux, le DPE et vos observations ; "+
@@ -21736,9 +21794,9 @@ const AIDE = [
   "<b>en vente</b>, une tuile <b>Acquéreurs pour ce bien</b> apparaît dès qu'une recherche "+
   "de votre fichier porte sur lui : elle nomme les personnes et dit, pour chacune, ce qui "+
   "colle ou ce qui ne colle pas tout à fait. En l'ouvrant, vous avez leurs coordonnées, la "+
-  "date de votre dernier contact, le résumé de leur recherche, et deux boutons — "+
-  "<b>Contact</b> pour enregistrer la carte de visite, <b>Fiche</b> pour ouvrir la fiche au "+
-  "Répertoire. La tuile ne s'affiche pas sur un bien passé sous offre ou sous compromis : "+
+  "date de votre dernier contact, le résumé de leur recherche, et un bouton <b>Fiche</b> "+
+  "qui ouvre la recherche. La tuile ne s'affiche pas sur un bien passé sous offre ou sous "+
+  "compromis : "+
   "il n'y a plus d'acquéreur à lui chercher."],
  ["Le plan du bien",
   "La colonne du dossier porte un onglet <b>Plan</b> : la carte Google Maps du bien, "+
