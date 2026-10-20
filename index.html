@@ -329,8 +329,20 @@ textarea{min-height:60px;resize:vertical;font-family:inherit}
 .pf label{font-size:11.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px}
 .pf.wide{grid-column:span 2}
 .pf.plein{grid-column:1/-1}
+/* un couple de bornes : la catégorie, les deux noms, les deux cases */
+.pf.duo{grid-column:span 2}
+.duogrid{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;align-items:end}
+.duolab{font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px;
+  text-align:center}
+.duoc{display:block;min-width:0}
+.duoc input,.duoc select{width:100%;text-align:center}
 .pf.lie input,.pf.lie select{background:var(--accent-soft);color:var(--ink-2);pointer-events:none}
 .pf.lie label{opacity:.6}
+/* une case renseignée se repère d'un coup d'œil : fond bleu pâle, filet plus
+   franc. Rien sur les pastilles, qui ont déjà leur couleur. */
+input.rempli,select.rempli,textarea.rempli{background:#e9f2fe;border-color:#9dc0ec}
+.pf.lie input.rempli,.pf.lie select.rempli{background:var(--accent-soft)}
+body.sanscrol{overflow:hidden}
 .chkline{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;
   color:var(--ink-2);user-select:none}
 .chkline input{width:16px;height:16px;margin:0;accent-color:var(--navy);cursor:pointer}
@@ -1309,6 +1321,65 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .sectcarte .leaflet-container{height:100%;width:100%;font:inherit}
 .sectaide{margin:8px 2px 14px;font-size:12.5px;color:var(--ink-3)}
 .sectaide.actif{color:#9a3412;font-weight:600}
+/* la légende des pastilles : trois couleurs valent mieux qu'un paragraphe */
+.sectleg{display:flex;flex-wrap:wrap;gap:4px 16px;margin:8px 2px 0;font-size:12px;
+  color:var(--ink-2)}
+.sectleg span{display:flex;align-items:center;gap:6px}
+.sectleg .lgp{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+.sectleg .lgp.vert{background:#22c55e;border:2px solid #15803d}
+.sectleg .lgp.orange{background:#fb923c;border:2px solid #c2410c}
+.sectleg .lgp.rouge{background:#ef4444;border:2px solid #b91c1c}
+.sectleg .lgz{width:14px;height:10px;flex:0 0 auto;border:2px solid #1d4ed8;
+  background:rgba(37,99,235,.14)}
+.sectleg .lgz.non{border-color:#b91c1c;background:rgba(239,68,68,.16)}
+/* ------------------------------------------------- la carte en plein écran
+   Le volet du secteur tient dans un seul bloc, et ce bloc sait se déplier
+   sur tout l'écran. En plein écran, la carte prend la colonne de gauche,
+   les quartiers passent en haut à droite, et les listes de tracés défilent
+   sous eux : on dessine et l'on choisit sans quitter la carte des yeux.
+   Le reste — le cercle autour d'une adresse, les notes — reste accessible
+   dans la colonne de droite. */
+.sectpbar{display:none}
+/* Hors plein écran, le bloc est une colonne ordinaire et le cadre latéral
+   s'efface (`display:contents`) : ses enfants reprennent leur place dans la
+   colonne, et les quartiers remontent au-dessus de la carte par `order`.
+   La page ne change donc pas d'un pixel tant qu'on ne déplie pas. */
+.sectplein{display:flex;flex-direction:column}
+.sectplein > .sectcote{display:contents}
+.sectplein > .sectcote > .sectq{order:-1}
+/* Déplié : deux colonnes. À gauche la carte et ses outils, à droite les
+   quartiers puis les listes de tracés, le tout défilant d'un bloc. */
+.sectplein.plein{position:fixed;inset:0;z-index:150;background:var(--bg);
+  padding:10px;gap:8px 12px;overflow:hidden;
+  display:grid;grid-template-columns:minmax(0,1fr) 352px;
+  grid-template-rows:auto auto minmax(0,1fr) auto}
+.sectplein.plein > *{display:none}
+.sectplein.plein > .sectpbar{display:flex;align-items:center;gap:10px;
+  grid-area:1/1/2/3;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:7px 12px;font-size:13px;color:var(--navy)}
+.sectplein.plein > .sectbar{display:flex;grid-area:2/1/3/2;margin:0}
+.sectplein.plein > .sectcarte{display:block;grid-area:3/1/4/2;height:100%}
+.sectplein.plein > .sectleg{display:flex;grid-area:4/1/5/2;margin:0 2px}
+.sectplein.plein > .sectcote{display:block;grid-area:2/2/5/3;overflow:auto;
+  padding-right:4px}
+.sectplein.plein > .sectcote > .mdsect{margin:0 0 10px!important}
+/* le cercle autour d'une adresse tient en cinq colonnes sur la page ; dans
+   une colonne de 352 px, il en tient deux, et son bouton toute la largeur */
+.sectplein.plein > .sectcote > .sectform{margin-bottom:10px;
+  grid-template-columns:1fr 1fr}
+.sectplein.plein > .sectcote > .sectform > .pf:first-child,
+.sectplein.plein > .sectcote > .sectform > .pf:last-child{grid-column:1/-1}
+.sectplein.plein > .sectcote > .sectform > .pf:last-child > label{display:none}
+/* sur une tablette tenue debout, les deux colonnes n'ont pas la place : tout
+   se remet l'un sous l'autre, et c'est la fenêtre entière qui défile. */
+@media(max-width:860px){
+  .sectplein.plein{grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto auto auto;overflow:auto;align-content:start}
+  .sectplein.plein > .sectpbar{grid-area:1/1/2/2;position:sticky;top:0;z-index:2}
+  .sectplein.plein > .sectbar{grid-area:2/1/3/2}
+  .sectplein.plein > .sectcarte{grid-area:3/1/4/2;height:56vh}
+  .sectplein.plein > .sectleg{grid-area:4/1/5/2}
+  .sectplein.plein > .sectcote{grid-area:5/1/6/2;overflow:visible}}
 .sectform{display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr auto;gap:10px 14px;
   align-items:end}
 @media(max-width:900px){.sectform{grid-template-columns:1fr 1fr}}
@@ -2176,7 +2247,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 20 octobre 2026, 11 h 29">Dossiers de vente</div>
+  <div class="brand" title="Version du 20 octobre 2026, 13 h 21">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2387,7 +2458,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>20 octobre 2026, 11 h 29</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>20 octobre 2026, 13 h 21</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4390,6 +4461,29 @@ function communesDesCps(v){
 }
 /* pendant la frappe : les communes se mettent à jour, et le dernier code
    commencé reçoit ses propositions */
+/* --------------------------------------- une case renseignée se repère ---
+   Une fiche de recherche compte une trentaine de cases, et il est rare
+   qu'un demandeur en remplisse plus de dix. Ce sont donc les cases REMPLIES
+   qu'on cherche de l'œil, et elles étaient de la même couleur que les
+   vides. Elles prennent un fond bleu pâle.
+
+   Les pastilles « peu importe / dans l'idéal / impératif » en sont
+   dispensées, et pour une bonne raison : elles portent déjà leur propre
+   couleur, et « peu importe » n'est pas une case vide — c'est une réponse.
+   Les cases à cocher non plus : une case cochée se voit par sa coche.
+   La marque est posée au redessin et à chaque frappe, de sorte qu'elle suit
+   la saisie sans attendre un enregistrement. */
+function marquerRemplis(racine){
+  const z = racine || $("#prospBody");
+  if(!z || !z.querySelectorAll) return;
+  z.querySelectorAll("input,select,textarea").forEach(x=> marquerRempli(x));
+}
+function marquerRempli(x){
+  if(!x || !x.classList) return;
+  const t = (x.type || "").toLowerCase();
+  if(t === "checkbox" || t === "radio" || t === "button" || t === "file") return;
+  x.classList.toggle("rempli", String(x.value == null ? "" : x.value).trim() !== "");
+}
 /* ------------------------------------------------- où écrit un champ ?
    « prospects:3:nego » écrit dans la fiche ; « prospects:3:r1:surfaceMin »
    écrit dans sa DEUXIÈME recherche. Un prospect peut en mener plusieurs —
@@ -12404,12 +12498,17 @@ function renderProspects(){
      quand on l'ouvre : tant qu'on ne la regarde pas, rien ne part */
   if(PROSP.ouvert && PROSP.page === "secteur" && $("#sectCarte"))
     setTimeout(()=> majCarteSecteur(), 30);
-  else if(SECT.carte){
+  else {
     /* en quittant le volet, la carte se referme : elle écoute la fenêtre,
-       et une carte oubliée écoute pour rien */
-    try{ SECT.carte.remove(); }catch(e){}
-    SECT.carte = null;
+       et une carte oubliée écoute pour rien. Le plein écran s'en va avec
+       elle, faute de quoi la page resterait bloquée sans défilement. */
+    if(SECT.plein) pleinEcranSecteur(false);
+    if(SECT.carte){
+      try{ SECT.carte.remove(); }catch(e){}
+      SECT.carte = null;
+    }
   }
+  marquerRemplis(z);
   if(typeof appliquerDroits === "function") appliquerDroits();
 }
 
@@ -12635,6 +12734,37 @@ function blocsPersonnesProspect(i){
       </div></div>`).join("") +
     `<button class="addbtn" data-ppadd="${i}">+ Ajouter une personne</button>`;
 }
+/* ------------------------------------------- les bornes vont par deux -----
+   « Surface min. (m²) » et « Surface max. (m²) » : la catégorie est écrite
+   deux fois, et les deux cases, côte à côte, ne se lisent pourtant pas comme
+   un couple — on hésite une seconde à chaque fois. Elles se groupent donc
+   sur trois lignes : la catégorie une seule fois, puis les deux bornes
+   nommées, puis les deux cases.
+
+   Pour les chambres, la seconde borne n'est pas un maximum mais un idéal :
+   le libellé le dit, la présentation ne change pas. */
+const BORNES = [
+  {de:"prixMin",     a:"budgetSansTravaux", lab:"Prix (€)",     bas:["Mini", "Maxi"]},
+  {de:"surfaceMin",  a:"surfaceMax",        lab:"Surface (m²)", bas:["Mini", "Maxi"]},
+  {de:"chambresMin", a:"chambresIdeal",     lab:"Chambres",     bas:["Mini", "Idéal"]},
+  {de:"terrainMin",  a:"terrainMax",        lab:"Terrain (m²)", bas:["Mini", "Maxi"]}
+];
+function blocBornes(prefixe, i, dans, b, parCle, bo){
+  const case1 = cle=>{
+    const c = parCle[cle];
+    let h = controlRaw(`${prefixe}:${cle}`, c[2], dans[cle] || "", `pr${i}`, "data-book");
+    if(champOff(b, dans, cle))
+      h = h.replace(/<(input|select|textarea|button)\b/g, "$& disabled");
+    return h;
+  };
+  return `<div class="pf duo"><label>${esc(bo.lab)}</label>
+    <div class="duogrid">
+      <span class="duolab">${esc(bo.bas[0])}</span>
+      <span class="duolab">${esc(bo.bas[1])}</span>
+      <span class="duoc">${case1(bo.de)}</span>
+      <span class="duoc">${case1(bo.a)}</span>
+    </div></div>`;
+}
 function champsProspect(i, champs, serre){
   const r = (L.prospects || [])[i] || {}, b = BOOKS.prospects;
   /* tout est sur la ligne désormais : les critères, le secteur, le budget.
@@ -12644,10 +12774,22 @@ function champsProspect(i, champs, serre){
   const parCle = {};
   (b.cols || []).forEach(c=> parCle[c[0]] = c);
   const vus = [];
+  /* les couples de bornes dont les DEUX membres sont de la page, et que le
+     type de bien demandé ne dépareille pas : eux seuls se groupent. */
+  const utile = cle=> champs.indexOf(cle) >= 0 && !!parCle[cle]
+    && (!serre || champSelonType(cle, dans.types));
+  const couples = {};
+  BORNES.forEach(bo=>{
+    if(utile(bo.de) && utile(bo.a)){ couples[bo.de] = bo; couples[bo.a] = "pris"; }
+  });
   champs.forEach(f=>{
     const c = parCle[f];
     if(!c) return;
     let [cle, lab, kd, w] = c;
+    /* la seconde borne a déjà été posée avec la première */
+    if(couples[cle] === "pris") return;
+    if(couples[cle]){ vus.push({html:blocBornes(prefixe, i, dans, b, parCle,
+      couples[cle])}); return; }
     /* le même champ, deux noms : « Bien sans travaux » dans le financement,
        « Prix maxi » à côté du type de bien, où il se lit comme une borne */
     if(serre && cle === "budgetSansTravaux") lab = "Prix maxi";
@@ -13492,7 +13634,23 @@ function rendreImport(){
    LE VOLET « SON SECTEUR » — la carte, et ce qu'on y dessine
    ===================================================================== */
 let SECT = {carte:null, mode:"", pts:[], centre:null, couches:[], cible:null,
-            occupe:false, edit:null, modifie:""};
+            occupe:false, edit:null, modifie:"", plein:false};
+/* Le plein écran n'est qu'une classe sur le bloc du secteur : la carte, les
+   outils et les quartiers ne changent pas de place dans la page, c'est la
+   mise en page qui change. Leaflet, lui, doit être prévenu — il mesure son
+   conteneur une fois et ne le remesure pas tout seul. */
+function pleinEcranSecteur(oui){
+  SECT.plein = !!oui;
+  const z = $("#sectPlein");
+  if(z) z.classList.toggle("plein", SECT.plein);
+  const b = document.querySelector('[data-sectplein="1"]');
+  if(b) b.hidden = SECT.plein;
+  document.body.classList.toggle("sanscrol", SECT.plein);
+  /* deux mesures : l'une tout de suite, l'autre après la transition de mise
+     en page, sans quoi la carte garde la taille qu'elle avait avant. */
+  const revoir = ()=>{ if(SECT.carte) SECT.carte.invalidateSize(); };
+  revoir(); setTimeout(revoir, 60); setTimeout(revoir, 260);
+}
 function zonesDe(rc){ return Array.isArray((rc || {}).zones) ? rc.zones : []; }
 function idZone(){ return "z" + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
 function rechCourante(){
@@ -13538,15 +13696,11 @@ function pageSecteur(i){
                        `pr${i}`, "data-book")}</div>
       </div></div>
 
-    <div class="mdsect" style="margin-top:14px"><h4>Les quartiers</h4>
-      <div class="quartduo">
-        <div class="qcol qoui"><label>Quartiers recherchés</label>
-          ${controlRaw(`prospects:${i}:quartiersOui`, "quartiers", r.quartiersOui || "",
-                       `pr${i}`, "data-book")}</div>
-        <div class="qcol qnon"><label>Quartiers refusés</label>
-          ${controlRaw(`prospects:${i}:quartiersNon`, "quartiers",
-                       r.quartiersNon || "", `pr${i}`, "data-book")}</div>
-      </div></div>
+    <div class="sectplein${SECT.plein ? " plein" : ""}" id="sectPlein">
+    <div class="sectpbar"><b>Le secteur de ${esc(titreRecherche(r))}</b>
+      <span class="grow"></span>
+      <button type="button" class="tbtn light mini" data-sectplein="0">Quitter le plein
+        écran</button></div>
     ${hors ? `<div class="planhors"><b>Pas de connexion internet.</b><br>
       Le fond de carte vient d'OpenStreetMap et les adresses sont repérées par l'API
       adresse de l'État : la carte a besoin du réseau. Les zones déjà posées continuent
@@ -13559,14 +13713,33 @@ function pageSecteur(i){
         cercle</button>
       <button type="button" class="addbtn mini" id="sectFin" data-sectfin="1"
         hidden>Terminer le tracé</button>
-      <span class="grow"></span>
       <button type="button" class="tbtn light mini" data-sectrep="1"${aRepere ? "" :
         " disabled"}>Repérer les biens${aRepere ? " (" + aRepere + ")" : ""}</button>
+      <span class="grow"></span>
+      <button type="button" class="tbtn light mini" data-sectplein="1"${SECT.plein
+        ? " hidden" : ""}>Plein écran</button>
     </div>
     <div class="sectcarte" id="sectCarte"></div>
-    <p class="sectaide" id="sectAide"></p>
+    <div class="sectleg">
+      <span><i class="lgp vert"></i>répond à tous les critères</span>
+      <span><i class="lgp orange"></i>retenu, mais sa fiche ne dit pas tout</span>
+      <span><i class="lgp rouge"></i>en vente, écarté</span>
+      <span><i class="lgz"></i>secteur demandé</span>
+      <span><i class="lgz non"></i>quartier refusé</span>
+    </div>
+    <p class="sectaide" id="sectAide"></p>`}
 
-    <div class="sectform">
+    <div class="sectcote">
+    <div class="mdsect sectq" style="margin-top:14px"><h4>Les quartiers</h4>
+      <div class="quartduo">
+        <div class="qcol qoui"><label>Quartiers recherchés</label>
+          ${controlRaw(`prospects:${i}:quartiersOui`, "quartiers", r.quartiersOui || "",
+                       `pr${i}`, "data-book")}</div>
+        <div class="qcol qnon"><label>Quartiers refusés</label>
+          ${controlRaw(`prospects:${i}:quartiersNon`, "quartiers",
+                       r.quartiersNon || "", `pr${i}`, "data-book")}</div>
+      </div></div>
+    ${hors ? "" : `<div class="sectform">
       <div class="pf"><label for="sectAdr">Cercle autour de cette adresse</label>
         <input type="text" id="sectAdr" placeholder="12 rue des Arènes, 13200 Arles"></div>
       <div class="pf"><label for="sectKm">Rayon en km</label>
@@ -13655,7 +13828,8 @@ function pageSecteur(i){
               ? "" : " disabled"}>Quartiers officiels de ${esc(x.ville)}</button>`)
           .join("") || `<span class="muted">saisissez d'abord un code postal</span>`}
       </div>`}
-    </div>`;
+    </div>
+    </div></div>`;
 }
 /* Les quartiers demandés, en zones : leurs contours, quand ils en ont un.
    C'est ce qui « matérialise » un quartier sur la carte comme le ferait une
@@ -14089,13 +14263,20 @@ function dessinerSecteur(LF, carte, c){
       const v = comparerAcqBien(crit, critBien(d));
       if(v.rejet){ genre = "rouge"; dit = v.rejet; }
       else {
-        genre = "vert";
-        const e = (v.ecarts || []).concat(v.flous || []);
-        dit = e.length ? e.join(" · ") : "tous les critères OK";
+        /* Trois couleurs, parce qu'il y a trois situations et non deux. Vert :
+           la fiche du bien répond à tout ce qui a été demandé. ORANGE : le
+           bien est retenu, mais sa fiche ne dit pas tout — il manque une
+           réponse, et l'on ne peut ni le proposer franchement ni l'écarter.
+           Rouge : il est en vente et écarté. L'orange est un appel à remplir
+           la fiche du bien, pas un défaut du bien. */
+        const f = v.flous || [], e = v.ecarts || [];
+        genre = f.length ? "orange" : "vert";
+        const tout = e.concat(f);
+        dit = tout.length ? tout.join(" · ") : "tous les critères OK";
       }
     }
     const TEINTE = {vert:["#15803d", "#22c55e"], rouge:["#b91c1c", "#ef4444"],
-                    gris:["#94a3b8", "#cbd5e1"]};
+                    orange:["#c2410c", "#fb923c"], gris:["#94a3b8", "#cbd5e1"]};
     /* une classe sur la pastille : elle la distingue d'un contour de même
        teinte — un quartier refusé est rouge comme un bien écarté */
     const m = garde(LF.circleMarker([lat, lon], {radius:7, weight:2,
@@ -14258,9 +14439,8 @@ function majAideSecteur(){
   const z = $("#sectAide");
   if(!z) return;
   const mots = {
-    "": "Cliquez sur « Dessiner un secteur » ou « Poser un cercle ». Les points verts "
-        + "sont les biens en vente qui répondent aux critères, les rouges ceux qui n'y "
-        + "répondent pas — survolez-en un pour savoir pourquoi.",
+    "": "Cliquez sur « Dessiner un secteur » ou « Poser un cercle ». "
+        + "Survolez un point pour savoir ce qui le classe.",
     poly: "Cliquez les sommets du secteur, puis double-cliquez — ou « Terminer » — pour "
         + "le fermer.",
     quartier: "Dessinez le contour du quartier, puis double-cliquez pour le fermer. Il "
@@ -16952,6 +17132,10 @@ function printDoc(){
 /* =========================================================== événements */
 document.addEventListener("input", e=>{
   const t = e.target;
+  /* la marque « renseigné » suit la frappe, lettre à lettre, et avant tout
+     le reste : un champ qui se vide doit perdre sa couleur même si la suite
+     du traitement s'arrête en chemin */
+  if(t.closest && t.closest("#prospBody")) marquerRempli(t);
 
   if(t.dataset.b !== undefined){
     set(D, t.dataset.b, t.value);
@@ -17352,6 +17536,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("change", e=>{
   const t = e.target;
+  if(t.closest && t.closest("#prospBody")) marquerRempli(t);
   /* un groupe de cases écrit une seule valeur : on relit tout le groupe */
   if(t.dataset && t.dataset.piecechk !== undefined){
     const [i,champ] = t.dataset.piecechk.split(":");
@@ -17481,7 +17666,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -17785,6 +17970,10 @@ document.addEventListener("click", e=>{
     if(!sel || !sel.value){ toast("Choisissez d'abord un quartier"); return; }
     SECT.mode = "quartier"; SECT.cible = sel.value; SECT.pts = [];
     majAideSecteur();
+    return;
+  }
+  if(t.dataset.sectplein !== undefined){
+    pleinEcranSecteur(t.dataset.sectplein === "1");
     return;
   }
   if(t.dataset.sectrep !== undefined){
@@ -18236,6 +18425,9 @@ document.addEventListener("keydown", e=>{
   if(!$("#pjBox").hidden){ fermerPieces(); return; }
   if(!$("#detailBox").hidden){ fermerDetail(); return; }
   if(!$("#secBox").hidden){ fermerSection(); return; }
+  /* la carte en plein écran se referme comme une fenêtre — mais après elles,
+     puisqu'elle est en dessous */
+  if(SECT.plein){ pleinEcranSecteur(false); return; }
 });
 
 /* ----------------------------------------------- les gestes des pièces ---
@@ -22717,11 +22909,47 @@ const AIDE = [
   "<b>Une recherche d'avant qui portait plusieurs types</b> les garde en tête de liste, "+
   "tels quels, jusqu'à ce que vous tranchiez : une reprise de données ne doit rien faire "+
   "disparaître en silence. "+
-  "<b>Deux prix</b>, à côté du type : <b>Prix mini</b> et <b>Prix maxi</b>. Le maxi est "+
+  "<b>Deux prix</b>, à côté du type, groupés sous une seule étiquette "+
+  "<b>Prix (€)</b> : <b>Mini</b> à gauche, <b>Maxi</b> à droite. Le maxi est "+
   "le même montant que « Bien sans travaux » du volet financement — un seul chiffre, "+
   "visible aux deux endroits. Le mini écarte ce qui est trop bon marché, avec la même "+
   "tolérance que le plafond : au-delà de 15 % en dessous, le bien ne sort plus, et le "+
   "motif le dit."],
+ ["Les bornes vont par deux",
+  "Les couples de bornes — prix, surface, chambres, terrain — s'écrivaient en deux "+
+  "étiquettes complètes : « Surface min. (m²) » puis « Surface max. (m²) ». La catégorie "+
+  "était dite deux fois, et les deux cases, pourtant voisines, ne se lisaient pas comme "+
+  "un couple. "+
+  "Elles tiennent maintenant sur <b>trois lignes</b> : la <b>catégorie</b> une seule "+
+  "fois — <i>Surface (m²)</i> —, puis les deux bornes nommées — <i>Mini</i> et "+
+  "<i>Maxi</i> —, puis les deux cases. L'œil prend la catégorie d'un coup et ne lit "+
+  "ensuite que les chiffres. "+
+  "Pour les chambres, la seconde borne n'est pas un maximum mais un <b>idéal</b> : le "+
+  "nom le dit, la présentation ne change pas. Un seuil qui n'a pas de pendant — "+
+  "<i>Pièces min.</i> — garde son étiquette entière : il n'y a rien à grouper."],
+ ["Une case renseignée se repère à son fond",
+  "Une fiche de recherche compte une trentaine de cases, et il est rare qu'un demandeur "+
+  "en remplisse plus de dix. Ce sont donc les cases <b>remplies</b> qu'on cherche de "+
+  "l'œil, et elles avaient exactement la couleur des cases vides. "+
+  "Toute case renseignée prend désormais un <b>fond bleu pâle</b>, dans toute la fiche — "+
+  "critères, secteur, financement. La couleur vient <b>à la frappe</b> et s'en va dès "+
+  "qu'on vide la case : elle suit la saisie, elle n'attend pas un enregistrement. "+
+  "Deux exceptions, et pour la même raison : les pastilles <b>peu importe / dans "+
+  "l'idéal / impératif</b> portent déjà leur propre couleur, et « peu importe » n'est pas "+
+  "une case vide — c'est une réponse. Les <b>cases à cocher</b> non plus : une coche se "+
+  "voit."],
+ ["La carte en plein écran",
+  "Le bouton <b>Plein écran</b>, au bout de la barre d'outils du volet <b>Le secteur</b>, "+
+  "déplie la carte sur tout l'écran — et elle n'y va pas seule. À gauche, la carte et ses "+
+  "<b>outils de traçage</b> : dessiner un secteur, poser un cercle, repérer les biens. À "+
+  "droite, une colonne qui défile : le <b>choix des quartiers</b> recherchés et refusés, "+
+  "le cercle autour d'une adresse, la <b>liste des tracés</b> — zones et contours de "+
+  "quartier — avec de quoi les reprendre ou les retirer. "+
+  "On dessine, on coche un quartier, on voit le résultat, sans jamais quitter la carte "+
+  "des yeux ni faire défiler la page. "+
+  "<b>Quitter le plein écran</b> en haut, ou la touche <b>Échap</b>, rend la page. "+
+  "Changer de volet referme aussi. Sur une tablette tenue debout, les deux colonnes se "+
+  "remettent l'une sous l'autre."],
  ["Le secteur : la commune, le quartier, le tracé",
   "Tout ce qui situe la recherche est réuni sur le volet <b>Le secteur</b>, du plus "+
   "large au plus fin. "+
@@ -22915,9 +23143,15 @@ const AIDE = [
   "<b>code postal</b> qui filtre ; dès qu'il y en a une, c'est <b>elle</b> qui décide — "+
   "deux filtres géographiques qui se contredisent ne ramèneraient jamais rien. "+
   "<b>Les pastilles de la carte disent le rapprochement, pas le seul secteur.</b> "+
-  "<b>Vert</b> : le bien répond à la recherche, c'est ce que la liste « Biens à "+
-  "rapprocher » propose. <b>Rouge</b> : le bien est en vente, mais il est écarté. "+
-  "Survolez-en un : l'infobulle donne le mandat, le prix et <b>la raison</b> — « hors "+
+  "Trois couleurs, parce qu'il y a trois situations et non deux. "+
+  "<b>Vert</b> : la fiche du bien répond à tout ce qui a été demandé, c'est ce que la "+
+  "liste « Biens à rapprocher » propose. <b>Orange</b> : le bien est retenu, mais sa "+
+  "fiche <b>ne dit pas tout</b> — la surface manque, les pièces ne sont pas détaillées, "+
+  "le quartier n'est pas renseigné. On ne peut ni le proposer franchement ni l'écarter : "+
+  "l'orange est un appel à compléter la fiche du bien, pas un défaut du bien. "+
+  "<b>Rouge</b> : le bien est en vente, mais il est écarté. "+
+  "Une <b>légende</b> sous la carte les nomme. "+
+  "Survolez un point : l'infobulle donne le mandat, le prix et <b>la raison</b> — « hors "+
   "secteur », « dépasse le budget de 12 000 € », « aucune chambre ». Un bien peut donc "+
   "tomber dans votre zone et sortir rouge pour son prix : le secteur n'est qu'un critère "+
   "parmi les autres. Tant qu'aucun critère n'est saisi, tout reste <b>gris</b> : il n'y a "+
