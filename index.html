@@ -1156,9 +1156,30 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .qcol .multibox{border-radius:9px;padding:8px 10px}
 .qcol .multibox .chkline{gap:6px;margin-right:12px}
 .qcol.qoui > label{color:#1d4ed8}
-.qcol.qoui .multibox{background:#eff6ff;border:1px solid #bfdbfe}
+.qcol.qoui .multibox,.qcol.qoui .qsel{background:#eff6ff;border:1px solid #bfdbfe}
 .qcol.qnon > label{color:#b91c1c}
-.qcol.qnon .multibox{background:#fef2f2;border:1px solid #fecaca}
+.qcol.qnon .multibox,.qcol.qnon .qsel{background:#fef2f2;border:1px solid #fecaca}
+/* le choix des quartiers : une liste déroulante, et dessous ce qu'on a
+   retenu. La place tenue suit le nombre de quartiers CHOISIS, et non le
+   nombre de quartiers connus de la commune. */
+.qsel{border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;gap:7px}
+.qsel > select{width:100%;font:inherit;font-size:12.5px;padding:5px 8px;
+  border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+.qsel > select:disabled{color:var(--ink-3);background:#f6f8fb}
+.qpris{display:flex;flex-wrap:wrap;gap:6px;min-height:22px;align-items:center}
+.qpuce{display:inline-flex;align-items:center;gap:5px;background:#fff;
+  border:1px solid var(--line);border-radius:999px;padding:2px 4px 2px 10px;
+  font-size:12px;line-height:1.3;color:var(--ink)}
+.qcol.qoui .qpuce{border-color:#93c5fd;color:#1e3a8a}
+.qcol.qnon .qpuce{border-color:#fca5a5;color:#7f1d1d}
+.qpx{border:0;background:none;cursor:pointer;color:var(--ink-3);font-size:12px;
+  line-height:1;padding:3px 4px;border-radius:50%}
+.qpx:hover{background:#fee2e2;color:#991b1b}
+/* la liste des quartiers d'une commune, dans l'onglet Listes */
+.qligne{display:flex;align-items:center;gap:9px;padding:5px 0}
+.qligne input[type=text]{flex:1 1 auto;min-width:0}
+.qligne .qtrace{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.qligne .qtrace.a{color:var(--accent);font-weight:600}
 /* les communes d'un code postal qui en couvre plusieurs */
 .cpvilles{display:flex;flex-direction:column;gap:8px}
 .cpv{display:flex;align-items:flex-start;gap:10px}
@@ -2155,7 +2176,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 20 octobre 2026, 10 h 03">Dossiers de vente</div>
+  <div class="brand" title="Version du 20 octobre 2026, 11 h 29">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2366,7 +2387,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>20 octobre 2026, 10 h 03</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>20 octobre 2026, 11 h 29</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3199,7 +3220,13 @@ function loadListesDepuis(v){
   if(!Array.isArray(out.quartiers)) out.quartiers = [];
   const vusQ = {};
   out.quartiers = out.quartiers.filter(q=> q && String(q.nom || "").trim())
-    .map(q=> ({ville: String(q.ville || "").trim(), nom: String(q.nom).trim(),
+    .map(q=> ({/* Un identifiant DÉDUIT de la commune et du nom. Sans lui, la
+                  fusion reconnaissait un quartier à son seul nom : « Centre »
+                  à Arles et « Centre » à Tarascon n'en faisaient qu'un, et
+                  supprimer l'un effaçait l'autre. Déduit et non tiré au sort,
+                  deux appareils arrivent au même. */
+               id: "q:" + fold(q.ville || "") + "|" + fold(q.nom),
+               ville: String(q.ville || "").trim(), nom: String(q.nom).trim(),
                /* le contour dessiné sur la carte, s'il y en a un */
                contour: Array.isArray(q.contour) ? q.contour : [],
                /* d'où il vient : tracé à la main, ou repris de l'INSEE —
@@ -4379,6 +4406,25 @@ function cibleBook(path){
   }
   return {k:k, i:i, fiche:fiche, obj:fiche, f:p[2], rech:-1};
 }
+/* Le choix des quartiers passe par une liste déroulante et des pastilles,
+   et non plus par un pavé de cases : les deux gestes — ajouter, retirer —
+   écrivent le même champ, de la même façon que le faisait la case. */
+function valeurQuartiers(path){
+  const cb = cibleBook(path);
+  return cb ? (cb.obj[cb.f] || "") : "";
+}
+function poserQuartiers(path, liste){
+  const cb = cibleBook(path);
+  if(!cb) return;
+  const k = cb.k, i = String(cb.i), f = cb.f;
+  const out = (liste || []).map(x=> String(x || "").trim()).filter(Boolean)
+    .filter((x, n, t)=> t.indexOf(x) === n);
+  noterMajFiche(k, i, cb.obj[f], out.join(", "), libelleChampProspect(f));
+  cb.obj[f] = out.join(", ");
+  saveLists();
+  if(k === "prospects" && pageActive() === "prospects") renderProspects();
+  majRapprochements();
+}
 function majCpsVu(champ){
   const zone = champ.parentElement
     ? champ.parentElement.querySelector(`[data-cpsvu="${champ.dataset.book}"]`) : null;
@@ -4746,21 +4792,35 @@ function controlBase(path,kind,v,grp,attr){
   /* --------------------------------------------- plusieurs quartiers -----
      Recherchés ou refusés : des cases, prises dans la liste de la commune —
      tapés à la main, deux orthographes ne se rapprocheraient de rien. */
+  /* Un pavé de cases prenait la hauteur d'une commune entière pour trois
+     quartiers cochés. On choisit donc dans une LISTE DÉROULANTE, et les
+     quartiers retenus se lisent dessous, un par pastille, chacune avec sa
+     croix. La place tenue ne dépend plus du nombre de quartiers connus,
+     mais du nombre de quartiers choisis — ce qui est le bon ordre. */
   if(kind==="quartiers"){
     const villes = villesDuContexte(path, attr);
     const choix = quartiersDeVilles(villes);
     const pris = listeMulti(v);
-    /* une valeur déjà choisie reste cochable même si la commune a changé */
+    /* une valeur déjà choisie reste listée même si la commune a changé */
     pris.forEach(x=>{ if(choix.indexOf(x) < 0) choix.unshift(x); });
+    const reste = choix.filter(o=> pris.indexOf(o) < 0);
     const plus = `<button type="button" class="lienbtn" data-addq="${esc(path)}"
       data-attr="${attr}">+ ajouter un quartier</button>`;
     if(!choix.length) return `<div class="multibox vide"><span class="muted">${
       villes.length ? "Aucun quartier connu pour " + esc(villes.slice(0,3).join(", "))
                     : "Saisissez d'abord les codes postaux"}.</span>${plus}</div>`;
-    return `<div class="multibox">` + choix.map(o=>
-      `<label class="chkline"><input type="checkbox" data-bmulti="${esc(path)}"` +
-      ` value="${esc(o)}"${pris.indexOf(o) >= 0 ? " checked" : ""}>` +
-      `<span>${esc(o)}</span></label>`).join("") + `</div>` + plus;
+    return `<div class="qsel">
+      <select data-qadd="${esc(path)}" data-attr="${esc(attr)}"${
+        reste.length ? "" : " disabled"}>
+        <option value="">${reste.length ? "— en ajouter un —"
+          : "— tous sont déjà choisis —"}</option>${
+        reste.map(o=> `<option>${esc(o)}</option>`).join("")}</select>
+      <div class="qpris">${pris.length ? pris.map((o, k)=>
+        `<span class="qpuce"><span>${esc(o)}</span>
+          <button type="button" class="qpx" data-qdel="${esc(path)}|${k}"
+            title="Retirer ${esc(o)} de cette recherche">✕</button></span>`).join("")
+        : `<span class="muted">aucun quartier retenu</span>`}</div>
+      ${plus}</div>`;
   }
   /* ------------------------------------- les communes d'un code postal ---
      Un code postal en couvre souvent plusieurs : 13150 vaut pour Tarascon,
@@ -8872,19 +8932,122 @@ function villesDesQuartiers(){
   });
   return out.sort(triFr);
 }
+/* ------------------------------------- supprimer un quartier, PARTOUT ----
+   Un quartier n'est pas qu'un nom dans une liste. Il est coché sur des
+   recherches, inscrit sur la fiche de biens, et il porte parfois un tracé.
+   Le retirer de la liste sans toucher au reste laissait des références à un
+   quartier qui n'existe plus : elles ne rapprochent rien, et personne ne les
+   voit. La suppression se fait donc d'un seul geste, et la fenêtre dit
+   d'avance ce qu'elle va toucher. */
+function quartierDe(ville, nom){
+  return (L.quartiers || []).filter(q=> q && fold(q.ville) === fold(ville)
+                                      && fold(q.nom) === fold(nom))[0] || null;
+}
+function usagesQuartier(ville, nom){
+  const out = {recherches:[], biens:[], contour:0};
+  (L.prospects || []).forEach(r=>{
+    if(!r) return;
+    const dedans = ["quartiersOui","quartiersNon"].some(f=>
+      listeMulti(r[f]).some(x=> fold(x) === fold(nom)));
+    if(dedans) out.recherches.push(libelleAcquereur(r) || "une recherche");
+  });
+  const all = allDossiers();
+  Object.keys(all).forEach(id=>{
+    const b = all[id].bien || {};
+    if(fold(b.quartier) === fold(nom) && fold(b.ville) === fold(ville))
+      out.biens.push((all[id].mandat || {}).num || "sans numéro");
+  });
+  const q = quartierDe(ville, nom);
+  out.contour = q && Array.isArray(q.contour) ? q.contour.length : 0;
+  return out;
+}
+/* `neuf` vide : on supprime. `neuf` renseigné : on renomme — et la référence
+   suit, au lieu de pointer dans le vide. */
+function remplacerQuartierPartout(ville, nom, neuf){
+  const n = {recherches:0, biens:0};
+  (L.prospects || []).forEach(r=>{
+    if(!r) return;
+    ["quartiersOui","quartiersNon"].forEach(f=>{
+      const l = listeMulti(r[f]);
+      if(!l.some(x=> fold(x) === fold(nom))) return;
+      r[f] = l.map(x=> fold(x) === fold(nom) ? neuf : x).filter(Boolean)
+        .filter((x, k, t)=> t.indexOf(x) === k).join(", ");
+      n.recherches++;
+    });
+  });
+  const q = quartierDe(ville, nom);
+  if(q && !neuf) noterRetraitListe("quartiers", q);
+  if(neuf){ if(q){ noterRetraitListe("quartiers", q); q.nom = neuf;
+                   q.id = "q:" + fold(q.ville) + "|" + fold(neuf);
+                   oublierRetraitListe("quartiers", q); } }
+  else L.quartiers = (L.quartiers || []).filter(x=> x !== q);
+  saveLists();
+  const all = allDossiers();
+  Object.keys(all).forEach(id=>{
+    const b = all[id].bien || {};
+    if(fold(b.quartier) !== fold(nom) || fold(b.ville) !== fold(ville)) return;
+    b.quartier = neuf; n.biens++;
+    if(D && D.id === id) D.bien.quartier = neuf;
+  });
+  if(n.biens){
+    try{ localStorage.setItem(LS_DOSS, JSON.stringify(all)); }catch(e){}
+    if(typeof syncDiffere === "function") syncDiffere();
+  }
+  return n;
+}
+function ouvrirSuppressionQuartier(cle){
+  const [ville, nom] = String(cle).split("|");
+  const u = usagesQuartier(ville, nom);
+  const dit = [];
+  if(u.contour) dit.push("son <b>tracé</b> de " + u.contour + " points");
+  if(u.recherches.length) dit.push("<b>" + u.recherches.length + " recherche"
+    + (u.recherches.length > 1 ? "s" : "") + "</b> qui le cochent ("
+    + esc(u.recherches.slice(0, 4).join(", "))
+    + (u.recherches.length > 4 ? "…" : "") + ")");
+  if(u.biens.length) dit.push("<b>" + u.biens.length + " bien"
+    + (u.biens.length > 1 ? "s" : "") + "</b> dont la fiche le porte (mandat n° "
+    + esc(u.biens.slice(0, 4).join(", n° "))
+    + (u.biens.length > 4 ? "…" : "") + ")");
+  popup({titre:"Supprimer ce quartier ?", genre:"erreur",
+    corps:`<p style="margin:0 0 10px"><b>${esc(nom)}</b> à ${esc(ville)} sera retiré de la
+        liste des quartiers.</p>
+      ${dit.length ? `<p style="margin:0 0 10px">Seront effacés avec lui :</p>
+        <ul style="margin:0 0 10px;padding-left:20px">${dit.map(x=>
+          `<li>${x}</li>`).join("")}</ul>` : `<p class="muted" style="margin:0 0 10px">Il
+        n'est utilisé nulle part : rien d'autre ne sera touché.</p>`}
+      <p class="muted" style="margin:0">Les recherches et les biens concernés restent
+        intacts : seul le quartier en est retiré.</p>`,
+    boutons:[{lib:"Annuler"}, {lib:"Supprimer partout", primaire:true, action:()=>{
+      const n = remplacerQuartierPartout(ville, nom, "");
+      renderCarnets(); renderProspects(); renderAll(); majRapprochements();
+      redessinerLaCarte();
+      toast("Quartier supprimé" + (n.recherches || n.biens
+        ? " — " + n.recherches + " recherche(s), " + n.biens + " bien(s) mis à jour" : ""));
+    }}]});
+}
 function carteQuartiers(){
   const villes = villesDesQuartiers();
   const plie = estPlie("l_quartiers", false);
+  const ligne = q=> `<div class="qligne">
+    <input type="text" data-qnom="${esc(q.ville + "|" + q.nom)}" value="${esc(q.nom)}">
+    <span class="qtrace${(q.contour || []).length ? " a" : ""}">${
+      (q.contour || []).length ? (q.contour.length + " points"
+        + (q.source ? " · " + esc(q.source) : "")) : "sans tracé"}</span>
+    <button type="button" class="xbtn sup" data-qsupp="${esc(q.ville + "|" + q.nom)}"
+      >Supprimer</button></div>`;
   return `<div class="listcard">
     <h3 class="pliable" data-pli="l_quartiers">${chevron(plie)}Quartiers, par commune
       <span class="cnt">${(L.quartiers || []).length}</span></h3>
     <div class="plibody"${plie ? ' style="display:none"' : ''}>
       <p class="muted" style="margin:0 0 8px">Un quartier par ligne, sous sa commune. Ils ne
         sont proposés que sur les biens et les recherches de cette commune. Pour une commune
-        qui n'est pas encore là, passez par le <b>+</b> du champ « Quartier » d'un bien.</p>
+        qui n'est pas encore là, passez par le <b>+</b> du champ « Quartier » d'un bien.
+        <b>Renommer</b> un quartier ici le renomme partout où il est employé ;
+        <b>Supprimer</b> le retire de la liste, efface son tracé et le décroche des
+        recherches et des biens qui le portaient — la fenêtre dit d'avance lesquels.</p>
       ${villes.length ? villes.map(v=> `<label class="qville">${esc(v)}</label>
-        <textarea data-quartiers="${esc(v)}">${
-          esc(quartiersDeVilles([v]).join("\n"))}</textarea>`).join("")
+        ${(L.quartiers || []).filter(q=> q && fold(q.ville) === fold(v))
+          .sort((a,b)=> triFr(a.nom, b.nom)).map(ligne).join("")}`).join("")
         : `<p class="muted" style="margin:0">Aucun quartier pour l'instant.</p>`}
     </div></div>`;
 }
@@ -16905,16 +17068,7 @@ document.addEventListener("input", e=>{
     saveLists();
     return;
   }
-  if(t.dataset.quartiers !== undefined){
-    /* la commune se réécrit d'un bloc : ce qui n'y figure plus en est sorti */
-    const ville = t.dataset.quartiers;
-    const apres = t.value.split("\n").map(s=> s.trim()).filter(Boolean);
-    L.quartiers = (L.quartiers || []).filter(q=> fold((q || {}).ville) !== fold(ville));
-    apres.forEach(n=>{ if(n) L.quartiers.push({ville: ville, nom: n}); });
-    saveLists();
-    t.style.height = "auto"; t.style.height = Math.max(90, t.scrollHeight + 4) + "px";
-    return;
-  }
+
   if(t.dataset.pfiltre !== undefined){
     PROSP.f = PROSP.f || {};
     PROSP.f[t.dataset.pfiltre] = t.value;
@@ -17129,6 +17283,34 @@ document.addEventListener("focusout", e=>{
   }
 });
 
+/* Renommer un quartier dans l'onglet Listes. On attend la sortie du champ :
+   réagir à la frappe renommerait le quartier à chaque lettre, et le tri de la
+   liste ferait sauter le curseur hors du champ. */
+document.addEventListener("focusout", e=>{
+  const t = e.target;
+  if(!t.dataset || t.dataset.qnom === undefined) return;
+  const [ville, ancien] = String(t.dataset.qnom).split("|");
+  const neuf = String(t.value || "").trim();
+  if(!neuf){                                   // un nom vide ne supprime pas
+    t.value = ancien;
+    toast("Un quartier a besoin d'un nom — pour l'effacer, « Supprimer »");
+    return;
+  }
+  if(neuf === ancien) return;
+  const deja = (L.quartiers || []).some(q=> q && fold(q.ville) === fold(ville)
+    && fold(q.nom) === fold(neuf) && fold(q.nom) !== fold(ancien));
+  if(deja){
+    t.value = ancien;
+    toast("« " + neuf + " » existe déjà à " + ville);
+    return;
+  }
+  const n = remplacerQuartierPartout(ville, ancien, neuf);
+  renderCarnets(); renderProspects(); renderAll(); majRapprochements();
+  redessinerLaCarte();
+  toast("Quartier renommé" + (n.recherches || n.biens
+    ? " — " + n.recherches + " recherche(s), " + n.biens + " bien(s) suivent" : ""));
+});
+
 document.addEventListener("focusout", e=>{
   const b = e.target.dataset ? e.target.dataset.b : null;
   if(!b || !b.startsWith("diags.")) return;
@@ -17185,6 +17367,15 @@ document.addEventListener("change", e=>{
       }
       autosave(); rafraichirDepuisPieces(); majDetail();
     }
+    return;
+  }
+  /* la liste déroulante des quartiers : choisir en ajoute un */
+  if(t.dataset && t.dataset.qadd !== undefined){
+    const val = t.value;
+    t.value = "";
+    if(!val) return;
+    poserQuartiers(t.dataset.qadd, listeMulti(valeurQuartiers(t.dataset.qadd))
+      .concat([val]));
     return;
   }
   if(t.dataset && t.dataset.bmulti !== undefined){
@@ -17289,7 +17480,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -17430,6 +17621,17 @@ document.addEventListener("click", e=>{
   }
   if(t.dataset.addlist){ openAdd(t.dataset.addlist, t.dataset.target, t.dataset.attr); return; }
   if(t.dataset.addq !== undefined){ ouvrirAjoutQuartier(t.dataset.addq, t.dataset.attr); return; }
+  /* la croix d'une pastille : ce quartier sort de CETTE recherche, et de
+     rien d'autre — le supprimer pour de bon se fait dans l'onglet Listes */
+  if(t.dataset.qdel !== undefined){
+    const n = t.dataset.qdel.lastIndexOf("|");
+    const path = t.dataset.qdel.slice(0, n), k = +t.dataset.qdel.slice(n + 1);
+    const l = listeMulti(valeurQuartiers(path));
+    l.splice(k, 1);
+    poserQuartiers(path, l);
+    return;
+  }
+  if(t.dataset.qsupp !== undefined){ ouvrirSuppressionQuartier(t.dataset.qsupp); return; }
   if(t.dataset.search){ openSearch(t.dataset.search, t.dataset.target, t.dataset.attr); return; }
   if(t.dataset.pick !== undefined){
     const {target, attr} = modalCtx;
@@ -22531,7 +22733,13 @@ const AIDE = [
   "Sur la carte, la commune est cernée d'un trait bleu tireté. "+
   "<b>2. Les quartiers</b>, en deux colonnes au-dessus de la carte : les "+
   "<b>recherchés</b> à gauche, sur fond bleu comme les zones de la carte, les "+
-  "<b>refusés</b> à droite, sur fond rouge. Un quartier recherché <b>remplace</b> le "+
+  "<b>refusés</b> à droite, sur fond rouge. Chaque colonne est une <b>liste "+
+  "déroulante</b> : on y prend un quartier, il descend juste dessous en "+
+  "<b>pastille</b>, et la liste ne propose plus que ceux qui restent. Une croix sur la "+
+  "pastille le retire. La place tenue à l'écran ne dépend donc plus du nombre de "+
+  "quartiers que vous connaissez, mais du nombre que vous avez retenus — et une commune "+
+  "entière de quartiers ne pousse plus la carte en bas de page. "+
+  "Un quartier recherché <b>remplace</b> le "+
   "dessin de sa commune et se matérialise à sa place ; un quartier refusé se dessine en "+
   "rouge. Un quartier ne se dessine que s'il a un <b>contour</b> : on le trace une fois, "+
   "au bas du volet, et il sert ensuite à toutes les recherches. "+
@@ -22560,6 +22768,25 @@ const AIDE = [
   "<b>Deux conditions</b> : le contour de la commune doit avoir été chargé — ouvrez la "+
   "carte une fois —, et le découpage IRIS n'existe que pour les communes d'une "+
   "certaine taille. Pour un village, l'application vous le dira au lieu d'inventer."],
+ ["Renommer ou supprimer un quartier, partout à la fois",
+  "La liste des quartiers vit dans l'onglet <b>Listes</b>, carte <b>« Quartiers, par "+
+  "commune »</b> : une ligne par quartier, rangée sous sa commune. Chaque ligne porte "+
+  "son <b>nom, modifiable</b>, une mention qui dit s'il a un <b>tracé</b> et d'où il "+
+  "vient, et un bouton <b>Supprimer</b>. "+
+  "<b>Renommer</b> — corriger une faute, passer de « Trinquetaille » à "+
+  "« Trinquetaille-Nord » — renomme le quartier <b>partout où il sert</b> : dans les "+
+  "recherches qui le demandent ou le refusent, sur la fiche des biens qui le portent, et "+
+  "sur son tracé. Rien ne pointe plus dans le vide. Deux quartiers de la même commune ne "+
+  "peuvent pas porter le même nom, et un nom vidé ne supprime rien : l'ancien revient, "+
+  "et l'application vous dit pourquoi. "+
+  "<b>Supprimer</b> l'efface d'un seul geste : de la liste, de son <b>tracé</b>, des "+
+  "<b>recherches</b> qui le cochaient et de la <b>fiche des biens</b> qui l'inscrivaient. "+
+  "La fenêtre dit d'avance ce qu'elle va toucher — combien de recherches, quels mandats, "+
+  "combien de points de contour — et rien ne bouge avant votre clic. Les recherches et "+
+  "les biens, eux, restent intacts : seul le quartier en est retiré. "+
+  "Le même quartier dans <b>deux communes différentes</b> reste deux quartiers "+
+  "distincts : un « Centre » à Arles n'est pas celui de Tarascon, et renommer l'un ne "+
+  "touche pas l'autre."],
  ["D'où viennent les contours de commune",
   "Du <b>découpage administratif officiel</b> : <b>geo.api.gouv.fr</b> pour les "+
   "communes, <b>data.geopf.fr</b> (l'IGN) pour les quartiers IRIS — deux services de "+
