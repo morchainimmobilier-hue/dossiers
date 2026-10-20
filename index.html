@@ -1278,14 +1278,29 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .jbien{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3)}
 /* le secteur sur la carte */
 .sectbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 10px}
+/* Leaflet range ses calques à des z-index de 400 à 700, dans le contexte
+   de la page : une fenêtre à 200 passait donc DERRIÈRE la carte. On
+   enferme la carte dans son propre contexte d'empilement, à zéro, et tout
+   ce qui s'ouvre repasse devant — sans toucher aux calques de Leaflet, qui
+   gardent leur ordre entre eux. */
 .sectcarte{height:440px;border:1px solid var(--line);border-radius:10px;overflow:hidden;
-  background:#eef2f7}
+  background:#eef2f7;position:relative;z-index:0;isolation:isolate}
 .sectcarte .leaflet-container{height:100%;width:100%;font:inherit}
 .sectaide{margin:8px 2px 14px;font-size:12.5px;color:var(--ink-3)}
 .sectaide.actif{color:#9a3412;font-weight:600}
 .sectform{display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr auto;gap:10px 14px;
   align-items:end}
 @media(max-width:900px){.sectform{grid-template-columns:1fr 1fr}}
+/* les poignées d'un tracé en cours de reprise : assez grosses pour le
+   doigt, et d'une couleur qui ne se confond avec aucun secteur */
+.poignee{display:block;width:16px;height:16px;border-radius:50%;background:#f59e0b;
+  border:2px solid #b45309;box-shadow:0 1px 4px rgba(0,0,0,.35);cursor:grab}
+.poignee:active{cursor:grabbing}
+.poignee.c{border-radius:4px}
+.poignee.r{background:#fff}
+.seczone.ouvert{border-color:#e3b891;background:#fffaf3}
+.seczone .szsrc{display:block;font-style:normal;font-size:11px;color:var(--ink-3)}
+.tbtn.mini.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .seczones{display:flex;flex-direction:column;gap:7px}
 .seczone{display:flex;align-items:center;gap:10px;border:1px solid var(--line-2);
   border-radius:8px;padding:7px 11px;background:#fff;font-size:13px}
@@ -2140,7 +2155,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 20 octobre 2026, 8 h 30">Dossiers de vente</div>
+  <div class="brand" title="Version du 20 octobre 2026, 10 h 03">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2351,7 +2366,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>20 octobre 2026, 8 h 30</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>20 octobre 2026, 10 h 03</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2704,7 +2719,8 @@ const LISTS_DEFAULT = {
                  "Contemporain (1975 - 1990)","Récent (1990 à ce jour)",
                  "Caractère","Moderne","Atypique"],
   niveauTravaux:["Décoration seule","Second œuvre","Gros travaux"],
-  etageApt:     ["R.D.C.","R.D.J.","Dernier étage"],
+  /* « R.D.J. » disait la même chose que « R.D.C. » : une seule case */
+  etageApt:     ["R.D.C.","Dernier étage"],
   modeFinancement:["Prêt total","Prêt partiel","Prêt relais","Vente d'un bien",
                    "Aucun financement"],
   reponseBanque:["OUI","NON","Rendez-vous pris"],
@@ -3107,7 +3123,18 @@ function plusHautPdi(){
   }
   return haut;
 }
+/* Vrai quand la lecture a changé la FORME des fiches : une base restée à
+   l'ancienne forme imbriquée, ou une recherche retirée qu'on vient de ne
+   pas reconstruire. Tant que cette forme dort quelque part, elle revient à
+   chaque lecture : on réécrit donc aussitôt, ici et dans la base. */
+let APLATI = false;
 let L = loadLists();
+if(APLATI){
+  try{ localStorage.setItem(LS_LISTS, JSON.stringify(L)); }catch(e){}
+  try{ localStorage.setItem("mi_majlistes_v1", String(Date.now())); }catch(e){}
+  /* la base reçoit la forme à plat dès que la page est en état de parler */
+  setTimeout(()=>{ if(typeof syncDiffere === "function") syncDiffere(); }, 4000);
+}
 
 /* état plié / déplié des listes, mémorisé d'une session à l'autre */
 /* Les volets dépliables.
@@ -3174,7 +3201,11 @@ function loadListesDepuis(v){
   out.quartiers = out.quartiers.filter(q=> q && String(q.nom || "").trim())
     .map(q=> ({ville: String(q.ville || "").trim(), nom: String(q.nom).trim(),
                /* le contour dessiné sur la carte, s'il y en a un */
-               contour: Array.isArray(q.contour) ? q.contour : []}))
+               contour: Array.isArray(q.contour) ? q.contour : [],
+               /* d'où il vient : tracé à la main, ou repris de l'INSEE —
+                  la liste des tracés le dit, et c'est bon à savoir avant
+                  d'y toucher */
+               source: String(q.source || "").trim()}))
     .filter(q=>{ const c = fold(q.ville) + "|" + fold(q.nom);
                  if(vusQ[c]) return false; vusQ[c] = true; return true; });
   /* « Fin du mandat sans renouvellement » disait trop : un mandat prend fin,
@@ -3252,6 +3283,15 @@ function loadListesDepuis(v){
        la reprise affaiblirait une demande déjà formulée. Les deux anciennes
        clés sont retirées : laissées là, elles reviendraient relever la
        nouvelle au prochain chargement. */
+    /* « R.D.J. » faisait doublon avec « R.D.C. » : la case disparaît, et ce
+       qui était coché passe sur celle qui reste. */
+    const sansRdj = v=> listeMulti(v).map(t=> t === "R.D.J." ? "R.D.C." : t)
+      .filter((t,k,l)=> l.indexOf(t) === k).join(", ");
+    if(/R\.D\.J\./.test(String(x.etagesApt || ""))) x.etagesApt = sansRdj(x.etagesApt);
+    (Array.isArray(x.recherches) ? x.recherches : []).forEach(rc=>{
+      if(rc && /R\.D\.J\./.test(String(rc.etagesApt || "")))
+        rc.etagesApt = sansRdj(rc.etagesApt);
+    });
     const fusionPdi = plusHautPdi(x.stationnementPdi, x.parkingPdi, x.garagePdi);
     if(fusionPdi) x.stationnementPdi = fusionPdi;
     delete x.parkingPdi; delete x.garagePdi;
@@ -3267,6 +3307,12 @@ function loadListesDepuis(v){
     if(!Array.isArray(x.recherches) || !x.recherches.length){
       const r0 = rechercheNeuve();
       CHAMPS_RECHERCHE.forEach(f=>{ if(x[f] !== undefined && x[f] !== "") r0[f] = x[f]; });
+      /* LE SECTEUR AUSSI. `zones` n'est pas dans CHAMPS_RECHERCHE — c'est un
+         tableau, pas un champ de saisie —, et il était donc oublié ici : la
+         recherche naissait avec un secteur vide, l'aplatissement le
+         recopiait sur la ligne, et tout tracé disparaissait au rechargement
+         suivant. Un secteur dessiné ne survivait pas à la nuit. */
+      if(Array.isArray(x.zones) && x.zones.length) r0.zones = x.zones;
       /* une fiche close le reste : sa recherche naît en sommeil */
       r0.actif = x.actif === undefined ? true : !!x.actif;
       x.recherches = [r0];
@@ -3318,18 +3364,34 @@ function loadListesDepuis(v){
      leur côté arrivent au même identifiant, et la fusion n'en fait pas
      six lignes.
      ------------------------------------------------------------------ */
+  /* UNE RECHERCHE SUPPRIMÉE NE DOIT PAS RENAÎTRE D'ICI.
+     L'identifiant d'une ligne née de l'aplatissement est DÉDUIT de la fiche
+     et de la recherche imbriquée, et c'est sur cet identifiant-là que porte
+     la trace du retrait. On la consultait partout SAUF ici — et comme une
+     base restée à l'ancienne forme garde ses `recherches[]` imbriquées, la
+     recherche effacée était reconstruite à chaque lecture, inlassablement.
+     C'est tout le mystère de « TEST » qui revenait. */
+  const retires = supprimesListes();
+  const retire = id=> !!retires["prospects|" + id];
   const plat = [];
   out.prospects.forEach(x=>{
     if(!x) return;
     const l = Array.isArray(x.recherches) ? x.recherches.filter(Boolean) : [];
-    if(!l.length){ delete x.recherches; plat.push(x); return; }
+    if(!l.length){
+      delete x.recherches;
+      if(!retire(x.id)) plat.push(x);
+      else APLATI = true;
+      return;
+    }
     /* le modèle des copies est pris AVANT de servir la première recherche :
        sans quoi la deuxième hériterait du nom de la première */
     const socle = l.length > 1 ? JSON.parse(JSON.stringify(x)) : null;
     l.forEach((rc, k)=>{
+      const idLigne = k === 0 ? x.id : (x.id + "~" + (rc.id || ("r" + k)));
+      if(retire(idLigne)){ APLATI = true; return; }
       const ligne = k === 0 ? x : JSON.parse(JSON.stringify(socle));
       if(k > 0){
-        ligne.id = x.id + "~" + (rc.id || ("r" + k));
+        ligne.id = idLigne;
         ligne.suivis = []; ligne.refus = []; ligne.journal = [];
       }
       CHAMPS_RECHERCHE.forEach(f=>{
@@ -3338,12 +3400,19 @@ function loadListesDepuis(v){
            fiche. Un blanc ne doit donc pas effacer ce que la ligne a déjà. */
         if(String(rc[f]) !== "" || ligne[f] === undefined) ligne[f] = rc[f];
       });
-      ligne.zones = Array.isArray(rc.zones) ? rc.zones : [];
+      /* un secteur vide ne doit pas effacer celui que la ligne porte déjà —
+         même règle que pour le budget, deux lignes plus haut. Chaque ligne
+         reçoit sa COPIE : deux recherches nées de la même fiche ne doivent
+         pas partager le même tableau. */
+      ligne.zones = Array.isArray(rc.zones) && rc.zones.length
+        ? JSON.parse(JSON.stringify(rc.zones))
+        : (Array.isArray(ligne.zones) ? JSON.parse(JSON.stringify(ligne.zones)) : []);
       /* le nom d'une recherche a sa clé à lui : `nom` sert encore de nom de
          famille sur les bases restées en arrière, on ne le lui prend pas */
       ligne.nomRech = rc.nom || String(ligne.nomRech || "");
       ligne.actif = rc.actif === undefined ? true : !!rc.actif;
       delete ligne.recherches;
+      if(l.length > 1 || k > 0) APLATI = true;
       plat.push(ligne);
     });
   });
@@ -13260,7 +13329,7 @@ function rendreImport(){
    LE VOLET « SON SECTEUR » — la carte, et ce qu'on y dessine
    ===================================================================== */
 let SECT = {carte:null, mode:"", pts:[], centre:null, couches:[], cible:null,
-            occupe:false};
+            occupe:false, edit:null, modifie:""};
 function zonesDe(rc){ return Array.isArray((rc || {}).zones) ? rc.zones : []; }
 function idZone(){ return "z" + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
 function rechCourante(){
@@ -13353,14 +13422,48 @@ function pageSecteur(i){
 
     <div class="mdsect"><h4>Les zones de cette recherche ${zones.length
       ? `<span class="mdetat lu">${zones.length}</span>` : ""}</h4>
-      ${zones.length ? `<div class="seczones">${zones.map(z=> `<div class="seczone">
+      ${zones.length ? `<div class="seczones">${zones.map(z=> {
+        const ouvert = (SECT.edit || {}).zone === z.id;
+        return `<div class="seczone${ouvert ? " ouvert" : ""}">
         <span class="szg ${esc(z.genre)}"></span>
         <span>${esc(titreZone(z))}</span>
         <span class="grow"></span>
+        <button type="button" class="tbtn light mini${ouvert ? " on" : ""}"
+          data-sectedit="${esc(z.id)}">${ouvert ? "Terminer" : "Modifier"}</button>
         <button type="button" class="xbtn sup" data-sectdel="${esc(z.id)}">Retirer</button>
-        </div>`).join("")}</div>`
+        </div>`; }).join("")}</div>
+        ${(SECT.edit || {}).zone ? `<p class="dnote" style="margin:8px 0 0">Tirez les
+          <b>poignées orange</b> sur la carte pour déplacer les sommets — ou, pour un
+          cercle, son centre et son rayon. Tout s'enregistre au fur et à mesure, et les
+          biens rapprochés suivent. « Terminer » referme la modification.</p>` : ""}`
       : `<p class="muted" style="margin:0">Aucune zone : le rapprochement s'en tient aux
          codes postaux de la recherche.</p>`}
+    </div>
+
+    <div class="mdsect"><h4>Les tracés de quartier ${quartiers.length
+      ? `<span class="mdetat lu">${quartiers.length}</span>` : ""}</h4>
+      <p class="muted" style="margin:0 0 8px">Ces contours ne sont pas à cette recherche :
+        ils sont dans vos listes et servent à <b>toutes</b>. Les reprendre ici les reprend
+        partout — sur les autres recherches comme dans le rapprochement.</p>
+      ${quartiers.length ? `<div class="seczones">${quartiers.map(q=>{
+        const cle = q.ville + "|" + q.nom;
+        const ouvert = (SECT.edit || {}).q === cle;
+        return `<div class="seczone${ouvert ? " ouvert" : ""}">
+          <span class="szg quartier"></span>
+          <span>${esc(q.nom)} — ${esc(q.ville)}
+            <em class="szsrc">${esc(q.source ? q.source
+              : "tracé à la main")} · ${(q.contour || []).length} points</em></span>
+          <span class="grow"></span>
+          <button type="button" class="tbtn light mini${ouvert ? " on" : ""}"
+            data-sectqedit="${esc(cle)}">${ouvert ? "Terminer" : "Modifier"}</button>
+          <button type="button" class="xbtn sup" data-sectqdel="${esc(cle)}"
+            >Effacer le contour</button>
+        </div>`; }).join("")}</div>
+        ${(SECT.edit || {}).q ? `<p class="dnote" style="margin:8px 0 0">Tirez les
+          <b>poignées orange</b> pour reprendre le contour. Il est enregistré au fur et à
+          mesure, <b>pour toutes vos recherches</b>.</p>` : ""}`
+      : `<p class="muted" style="margin:0">Aucun quartier de cette recherche n'a encore de
+         contour.</p>`}
     </div>
 
     <div class="mdsect"><h4>Les contours des quartiers</h4>
@@ -13855,6 +13958,138 @@ function dessinerSecteur(LF, carte, c){
       garde(LF.circle(SECT.centre, {radius:SECT.rayonVu, color:"#b45309",
         weight:2, dashArray:"5,5", fill:false})).addTo(carte);
   }
+  /* la zone en cours de modification, et ses poignées */
+  poserPoignees(LF, carte, c, garde);
+}
+
+/* =====================================================================
+   MODIFIER UN TRACÉ
+   ---------------------------------------------------------------------
+   Un secteur se dessinait une fois, et se refaisait entièrement dès qu'un
+   sommet tombait dix mètres trop loin. On peut désormais le reprendre :
+   chaque sommet porte une poignée qui se déplace à la souris ou au doigt,
+   et le tracé suit. Cela vaut pour les secteurs dessinés à la main, pour
+   les cercles — dont on déplace le centre et le rayon — et pour les
+   CONTOURS DE QUARTIER, tracés à la main comme repris de l'INSEE.
+
+   Un contour de quartier n'appartient pas à la recherche : il est dans les
+   listes, et sert à tout le monde. Le modifier ici le modifie donc
+   PARTOUT — sur les autres recherches, dans le rapprochement, sur la carte
+   de chaque fiche. C'est voulu, et la fenêtre le dit.
+   ===================================================================== */
+function poigneeIcone(LF, genre){
+  return LF.divIcon({className:"", iconSize:[16, 16], iconAnchor:[8, 8],
+    html:'<span class="poignee ' + genre + '"></span>'});
+}
+/* ce qui est en cours de modification : une zone de la recherche, ou un
+   quartier des listes */
+function enModification(){
+  const e = SECT.edit;
+  if(!e) return null;
+  if(e.zone){
+    const z = zonesDe((rechCourante() || {}).rc).filter(x=> x.id === e.zone)[0];
+    return z ? {genre:"zone", z:z} : null;
+  }
+  if(e.q){
+    const [ville, nom] = String(e.q).split("|");
+    const q = (L.quartiers || []).filter(x=> x && x.ville === ville && x.nom === nom)[0];
+    return q && (q.contour || []).length > 2 ? {genre:"quartier", q:q} : null;
+  }
+  return null;
+}
+function poserPoignees(LF, carte, c, garde){
+  const e = enModification();
+  if(!e) return;
+  /* le tracé modifié ressort du reste : on travaille dessus */
+  const vif = {color:"#b45309", weight:3, fillColor:"#f59e0b", fillOpacity:.10};
+  if(e.genre === "quartier"){
+    const pts = e.q.contour;
+    const trace = garde(LF.polygon(pts, vif)).addTo(carte);
+    pts.forEach((pt, k)=>{
+      const m = garde(LF.marker(pt, {draggable:true, icon:poigneeIcone(LF, "q"),
+        keyboard:false, zIndexOffset:1000})).addTo(carte);
+      m.on("drag", ev=>{
+        const l = ev.target.getLatLng();
+        pts[k] = [l.lat, l.lng];
+        trace.setLatLngs(pts);
+      });
+      m.on("dragend", ()=>{ enregistrerQuartierModifie(e.q); });
+    });
+    return;
+  }
+  const z = e.z;
+  if(z.genre === "cercle"){
+    const centre = [+z.lat, +z.lon];
+    const cercle = garde(LF.circle(centre, Object.assign({radius:num(z.rayon) || 0}, vif)))
+      .addTo(carte);
+    const poigneeRayon = ()=> LF.latLng(centre[0],
+      centre[1] + (num(z.rayon) || 0) / (111320 * Math.cos(centre[0] * Math.PI / 180)));
+    const mc = garde(LF.marker(centre, {draggable:true, icon:poigneeIcone(LF, "c"),
+      keyboard:false, zIndexOffset:1000})).addTo(carte);
+    const mr = garde(LF.marker(poigneeRayon(), {draggable:true,
+      icon:poigneeIcone(LF, "r"), keyboard:false, zIndexOffset:1000})).addTo(carte);
+    mc.on("drag", ev=>{
+      const l = ev.target.getLatLng();
+      centre[0] = l.lat; centre[1] = l.lng;
+      cercle.setLatLng(l); mr.setLatLng(poigneeRayon());
+    });
+    mc.on("dragend", ()=>{
+      z.lat = centre[0]; z.lon = centre[1];
+      /* un cercle déplacé n'est plus « autour de telle adresse » */
+      if(z.libelle && z.adresse) z.libelle = "cercle déplacé à la main";
+      enregistrerZoneModifiee(c, "cercle déplacé");
+    });
+    mr.on("drag", ev=>{
+      const l = ev.target.getLatLng();
+      const d = distanceM(centre[0], centre[1], l.lat, l.lng);
+      z.rayon = Math.max(20, Math.round(d));
+      cercle.setRadius(z.rayon);
+    });
+    mr.on("dragend", ()=>{
+      /* le rayon n'est plus celui d'un temps de trajet */
+      z.minutes = ""; z.mode = z.mode || "";
+      enregistrerZoneModifiee(c, "rayon repris à la main");
+    });
+    return;
+  }
+  const pts = Array.isArray(z.points) ? z.points : [];
+  if(pts.length < 3) return;
+  const trace = garde(LF.polygon(pts, vif)).addTo(carte);
+  pts.forEach((pt, k)=>{
+    const m = garde(LF.marker(pt, {draggable:true, icon:poigneeIcone(LF, "p"),
+      keyboard:false, zIndexOffset:1000})).addTo(carte);
+    m.on("drag", ev=>{
+      const l = ev.target.getLatLng();
+      pts[k] = [l.lat, l.lng];
+      trace.setLatLngs(pts);
+    });
+    m.on("dragend", ()=> enregistrerZoneModifiee(c, "sommet déplacé"));
+  });
+}
+/* Enregistrer sans redessiner la page : on est en train de tirer un point,
+   et un redessin complet rendrait la poignée injouable. La carte, elle, se
+   met à jour toute seule pendant le glissement. */
+function enregistrerZoneModifiee(c, quoi){
+  if(!c) return;
+  SECT.modifie = quoi || "zone reprise";
+  saveLists();
+  majRapprochements();
+}
+function enregistrerQuartierModifie(q){
+  SECT.modifie = "contour de " + q.nom + " repris";
+  saveLists();
+  majRapprochements();
+}
+/* On quitte la modification : c'est là qu'on inscrit l'historique — une
+   ligne par geste aurait rempli le journal de vingt lignes identiques. */
+function finirModification(){
+  const c = rechCourante();
+  if(SECT.modifie && c){
+    noterJournal(c.r, "Secteur : tracé repris", SECT.modifie);
+    noterMajFiche("prospects", String(c.i), 0, 1, null);
+    saveLists();
+  }
+  SECT.edit = null; SECT.modifie = "";
 }
 function majAideSecteur(){
   const z = $("#sectAide");
@@ -17055,7 +17290,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -17306,8 +17541,41 @@ document.addEventListener("click", e=>{
     const c = rechCourante();
     if(!c) return;
     const z = zonesDe(c.rc).filter(x=> x.id === t.dataset.sectdel)[0];
+    if((SECT.edit || {}).zone === t.dataset.sectdel) finirModification();
     poserZones(c, zonesDe(c.rc).filter(x=> x.id !== t.dataset.sectdel),
       {titre:"Secteur : zone retirée", det:z ? titreZone(z) : ""});
+    return;
+  }
+  /* ------------------------------------------- reprendre un tracé */
+  if(t.dataset.sectedit){
+    const dejaLa = (SECT.edit || {}).zone === t.dataset.sectedit;
+    finirModification();
+    if(!dejaLa){ SECT.edit = {zone:t.dataset.sectedit}; SECT.mode = ""; }
+    renderProspects();
+    return;
+  }
+  if(t.dataset.sectqedit){
+    const dejaLa = (SECT.edit || {}).q === t.dataset.sectqedit;
+    finirModification();
+    if(!dejaLa){ SECT.edit = {q:t.dataset.sectqedit}; SECT.mode = ""; }
+    renderProspects();
+    return;
+  }
+  if(t.dataset.sectqdel){
+    const [ville, nom] = String(t.dataset.sectqdel).split("|");
+    const q = (L.quartiers || []).filter(x=> x && x.ville === ville && x.nom === nom)[0];
+    if(!q) return;
+    popup({titre:"Effacer ce contour ?", genre:"erreur",
+      corps:`<p style="margin:0">Le tracé de <b>${esc(nom)}</b> à ${esc(ville)} sera
+        effacé — <b>pour toutes vos recherches</b>. Le quartier reste dans la liste et
+        peut être retracé ; seules les recherches qui le cochent cesseront de le
+        matérialiser sur la carte.</p>`,
+      boutons:[{lib:"Annuler"}, {lib:"Effacer le contour", primaire:true, action:()=>{
+        if((SECT.edit || {}).q === t.dataset.sectqdel){ SECT.edit = null; SECT.modifie = ""; }
+        q.contour = []; delete q.source;
+        saveLists(); renderProspects(); majRapprochements();
+        toast("Contour effacé");
+      }}]});
     return;
   }
   if(t.dataset.sectqdraw !== undefined){
@@ -17397,7 +17665,10 @@ document.addEventListener("click", e=>{
         noterRetraitListe("prospects", L.prospects[i]);
         L.prospects.splice(i, 1);
         saveLists(); PROSP.ouvert = ""; renderProspects();
-        toast("Demandeur supprimé");
+        /* une suppression ne se met pas en file d'attente : elle part
+           maintenant, pendant qu'on est encore devant l'écran */
+        if(typeof syncEnregistrer === "function") syncEnregistrer(true);
+        toast("Recherche supprimée");
       }}]});
     return; }
   if(t.dataset.suivicherche !== undefined){
@@ -19211,7 +19482,19 @@ $("#fileImp").onchange = ev=>{
   r.onload = ()=>{
     try{
       const d = JSON.parse(r.result);
-      if(d.listes){ L = Object.assign(JSON.parse(JSON.stringify(LISTS_DEFAULT)), d.listes); saveLists(); }
+      if(d.listes){
+        /* Restaurer est un acte VOLONTAIRE : ce que la sauvegarde contient
+           doit revenir, même si on l'avait retiré depuis. On oublie donc
+           les traces de retrait de tout ce qu'elle rapporte — sans quoi la
+           restauration se serait fait manger en silence. Et l'on passe par
+           la lecture normale, qui met les fiches à la forme du jour. */
+        Object.keys(d.listes).forEach(k=>{
+          if(Array.isArray(d.listes[k]))
+            d.listes[k].forEach(v=> oublierRetraitListe(k, v));
+        });
+        L = loadListesDepuis(d.listes);
+        saveLists();
+      }
       if(d.dossiers){ const all = Object.assign(allDossiers(), d.dossiers);
         localStorage.setItem(LS_DOSS, JSON.stringify(all)); }
       toast("Sauvegarde restaurée"); renderCarnets(); renderDossiers(); rebuildSelects();
@@ -20446,12 +20729,14 @@ function adopter(m){
     /* les pièces en file d'attente n'ont pas voyagé : elles restent à nous */
     PIECES = fusionnerPieces(PIECES, m.pieces || {});
     ecrirePieces();
+    /* les traces de retrait D'ABORD : l'aplatissement des listes les
+       consulte, et il tourne juste en dessous */
+    if(m.listesSupprimes) ecrireSupprimesListes(m.listesSupprimes);
     if(m.listes){
       L = loadListesDepuis(m.listes);
       localStorage.setItem(LS_LISTS, JSON.stringify(L));
       localStorage.setItem(LS_MAJL, String(m.majListes || Date.now()));
     }
-    if(m.listesSupprimes) ecrireSupprimesListes(m.listesSupprimes);
     /* un notaire peut avoir été renommé sur l'autre poste */
     recalerNotairesDossiers();
     /* l'échange a eu lieu : ce poste connaît désormais la base */
@@ -22369,6 +22654,25 @@ const AIDE = [
   "de la frappe : quitter un volet n'a jamais rien effacé, et y revenir retrouve tout, y "+
   "compris un champ à moitié rempli. "+
   "Le chemin se remonte marche par marche : autant de retours que d'allers."],
+ ["Reprendre un tracé sans le refaire",
+  "Un secteur se dessinait une fois, et se refaisait <b>entièrement</b> dès qu'un sommet "+
+  "tombait dix mètres trop loin. On peut désormais le reprendre. "+
+  "Sous la carte, deux listes. <b>Les zones de cette recherche</b> : chaque tracé, chaque "+
+  "cercle, avec <b>Modifier</b> et <b>Retirer</b>. Et <b>Les tracés de quartier</b> : les "+
+  "contours des quartiers de cette recherche, qu'ils aient été dessinés à la main ou "+
+  "repris du découpage de l'INSEE — la ligne le dit, avec le nombre de points. "+
+  "<b>Modifier</b> pose une <b>poignée orange sur chaque sommet</b>. Tirez-la à la souris "+
+  "ou au doigt : le tracé suit, et tout s'enregistre au fur et à mesure — les biens "+
+  "rapprochés se remettent à jour en même temps. Pour un <b>cercle</b>, deux poignées : "+
+  "son <b>centre</b> et son <b>rayon</b>. <b>Terminer</b> referme la modification, et "+
+  "l'historique en garde <b>une</b> ligne, quel que soit le nombre de gestes. "+
+  "<b>Un contour de quartier n'appartient pas à la recherche.</b> Il est dans vos listes "+
+  "et sert à <b>toutes</b> : le reprendre ici le reprend partout — sur les autres "+
+  "recherches, dans le rapprochement, sur chaque carte. C'est voulu, et la fenêtre le "+
+  "rappelle. <b>Effacer le contour</b> l'efface de même pour tout le monde ; le quartier, "+
+  "lui, reste dans la liste et peut être retracé. "+
+  "Un cercle dont on déplace le centre cesse d'être « autour de telle adresse », et un "+
+  "rayon tiré à la main cesse d'être un temps de trajet : la ligne de la liste le dit."],
  ["Le secteur sur la carte",
   "Un acquéreur ne cherche pas « dans le 13200 ». Il cherche <b>à dix minutes à pied du "+
   "centre</b>, <b>entre la gare et les arènes</b>, <b>pas de l'autre côté du Rhône</b>. "+
@@ -23222,10 +23526,27 @@ const AIDE = [
   "jour avant d'ouvrir l'application sur l'autre poste. Attention avec Google Drive en mode "+
   "« diffusion de fichiers » : Drive remplace le fichier à chaque synchronisation et le lien "+
   "se casse. Passez le dossier en « Refléter les fichiers », ou utilisez la base en ligne."],
+ ["Une recherche supprimée qui revenait",
+  "Si une recherche effacée revenait obstinément — « TEST », par exemple —, voici ce qui "+
+  "se passait, et c'est réglé. "+
+  "Les fiches d'avant portaient <b>plusieurs recherches dans une seule fiche</b>. "+
+  "L'application les met à plat à chaque lecture — une ligne par recherche —, et donne à "+
+  "chaque ligne un identifiant <b>déduit</b> de la fiche et de la recherche. C'est sur cet "+
+  "identifiant-là que porte la trace du retrait... et c'était le seul endroit où elle "+
+  "n'était pas consultée. Tant qu'une fiche à l'ancienne forme dormait quelque part — dans "+
+  "la base en ligne, ou sur un appareil resté en arrière —, la recherche effacée était "+
+  "donc <b>reconstruite à chaque ouverture</b>. "+
+  "La mise à plat consulte désormais les retraits, et la forme à plat est <b>réécrite "+
+  "aussitôt</b>, ici et dans la base : l'ancienne forme cesse de circuler, et le problème "+
+  "ne peut plus se reposer. "+
+  "<b>Et si vous restaurez une sauvegarde</b> qui contient cette recherche, elle revient : "+
+  "restaurer est un acte volontaire, et ce que vous rapportez vous est rendu."],
  ["Ce que vous supprimez reste supprimé",
   "Une recherche, un notaire, un syndic que vous retirez s'en va de la base partagée, et "+
   "ne revient pas — même si un autre appareil l'avait encore en mémoire. "+
-  "<b>Le départ est immédiat.</b> Jusqu'ici, une liste modifiée n'atteignait la base qu'au "+
+  "<b>Le départ est immédiat.</b> Une suppression part <b>sur-le-champ</b>, sans attendre "+
+  "l'accalmie de quatre secondes des autres enregistrements : on ferme souvent l'écran "+
+  "juste après. Jusqu'ici, une liste modifiée n'atteignait la base qu'au "+
   "prochain enregistrement d'un <i>dossier</i> : si vous passiez la journée dans vos "+
   "recherches sans ouvrir un mandat, rien ne partait, et la base gardait l'ancienne "+
   "version. C'est corrigé : toute liste enregistrée part dans les quelques secondes qui "+
