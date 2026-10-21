@@ -1939,6 +1939,79 @@ table.tdb .puce.resilie{background:#64748b}
 .drow .t b{display:block;color:var(--navy)}
 .drow .t span{color:var(--ink-3);font-size:12.5px}
 .drow.cur{background:var(--accent-soft)}
+/* ------------------------------------------- le tableau « Mes dossiers »
+   Une hauteur de ligne FIXE : une liste dont les lignes respirent au
+   rythme des photos se parcourt deux fois moins vite. */
+.drow2{display:flex;align-items:stretch;gap:14px;height:84px;
+  border-bottom:1px solid var(--line-2);padding:0 14px 0 0;background:#fff;
+  border-left:4px solid transparent}
+.drow2:last-child{border-bottom:0}
+.drow2.cur{background:var(--accent-soft)}
+/* le stade, au bord : la couleur des pastilles de toujours */
+.drow2.vente{border-left-color:#2563eb}
+.drow2.offre{border-left-color:#d97706}
+.drow2.compromis{border-left-color:#7c3aed}
+.drow2.vendu{border-left-color:#16a34a}
+.drow2.resilie{border-left-color:#9ca3af}
+/* la photo se RECADRE pour tenir la hauteur : elle n'est jamais étirée */
+.drow2 .dph{flex:0 0 118px;height:100%;background:#eef2f7 center/cover no-repeat}
+.drow2 .dph.vide{display:flex;align-items:center;justify-content:center;
+  font-size:10.5px;color:#aab4c4;text-align:center;letter-spacing:.3px;
+  background:repeating-linear-gradient(135deg,#f1f5f9 0 8px,#e8eef6 8px 16px)}
+.dcol{display:flex;flex-direction:column;justify-content:center;gap:1px;
+  min-width:0;font-size:12.5px;color:var(--ink-3);padding:10px 0}
+.dcol b{font-size:14px;color:var(--navy);line-height:1.2;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.dtyp{flex:0 0 190px}
+.dsurf{flex:0 0 140px}
+.dico{flex:0 0 auto;flex-direction:row;align-items:center;gap:8px}
+/* la pastille du mandat : sa couleur dit le type, donc l'intérêt */
+.mdt{display:inline-block;align-self:flex-start;margin-top:2px;font-size:11px;
+  font-weight:600;border-radius:20px;padding:1px 9px;border:1px solid}
+.mdt.ex{background:#dcfce7;border-color:#86efac;color:#166534}
+.mdt.semi{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.mdt.del{background:#ede9fe;border-color:#c4b5fd;color:#5b21b6}
+.mdt.simp{background:#f1f5f9;border-color:#cbd5e1;color:#475569}
+.mdt.autre{background:#e0f2fe;border-color:#bae6fd;color:#075985}
+/* les repères qui parlent au survol */
+.dbul{position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;border:1px solid var(--line);
+  background:#fff;color:var(--ink-2);cursor:pointer;padding:0}
+.dbul.off{color:var(--ink-3);background:#f8fafc;cursor:default}
+.dbul:not(.off):hover{background:var(--accent-soft);border-color:#bfdbfe;
+  color:var(--navy)}
+.dbul.act{align-self:center;flex:0 0 auto}
+[data-bulle]{position:relative}
+[data-bulle]::after{content:attr(data-bulle);position:absolute;bottom:calc(100% + 6px);
+  left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;
+  font-size:12px;font-weight:400;line-height:1.35;letter-spacing:0;
+  text-transform:none;padding:6px 9px;border-radius:7px;white-space:pre-line;
+  max-width:260px;width:max-content;text-align:left;box-shadow:var(--shadow-2);
+  opacity:0;pointer-events:none;transition:opacity .12s;z-index:60}
+[data-bulle]:hover::after{opacity:1}
+.drow2 > .grow{flex:1 1 auto}
+.dpile{display:flex;flex-direction:column;justify-content:center;gap:4px;
+  flex:0 0 auto}
+.dmini{display:flex;align-items:center;justify-content:center;width:30px;height:26px;
+  border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink-2);
+  cursor:pointer;padding:0}
+.dmini:hover{background:var(--accent-soft);border-color:#bfdbfe;color:var(--navy)}
+.dmini.sup{color:#b91c1c;border-color:#fecaca;background:#fef2f2}
+.dmini.sup:hover{background:#fee2e2;border-color:#fca5a5}
+/* le menu des actions : une liste de genres, en grille */
+.menuact{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.menuact button{display:flex;align-items:center;gap:8px;text-align:left;font:inherit;
+  font-size:13.5px;background:#fff;border:1px solid var(--line);border-radius:9px;
+  padding:9px 12px;cursor:pointer;color:var(--ink)}
+.menuact button:hover{background:var(--accent-soft);border-color:#bfdbfe;
+  color:var(--navy)}
+.menuact button.fort{border-color:#bfdbfe;background:var(--accent-soft);
+  color:var(--navy);font-weight:600}
+@media(max-width:860px){
+  .drow2{height:auto;flex-wrap:wrap;padding:0 10px 10px 0}
+  .drow2 .dph{flex:0 0 96px;height:96px}
+  .dtyp,.dsurf{flex:1 1 auto}
+  .menuact{grid-template-columns:1fr}}
 
 .aide h4{margin:18px 0 5px;color:var(--navy);font-size:13.5px}
 .aide h4:first-child{margin-top:0}
@@ -2348,7 +2421,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 21 octobre 2026, 20 h 13">Dossiers de vente</div>
+  <div class="brand" title="Version du 21 octobre 2026, 21 h 27">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2562,7 +2635,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>21 octobre 2026, 20 h 13</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>21 octobre 2026, 21 h 27</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5546,7 +5619,7 @@ function heroDossier(){
     trombone(sujetBien(D), "Photos"),
     String(b.residence || "").trim() ? trombone(sujetImmeuble(b.residence), "Documents immeubles") : "",
     String(b.residence || "").trim() ? boutonImmeuble(b.residence, "Dossiers de l'immeuble") : "",
-    `<button type="button" class="xbtn" data-actadd="bien:${esc(D.id)}">${
+    `<button type="button" class="xbtn" data-menuact="bien:${esc(D.id)}">${
       IC_ACTION}<span>Créer une action</span></button>`,
     venteEnCours() ? `<button type="button" class="xbtn" data-annul="1">Annuler la vente</button>` : ""
   ]).filter(Boolean).join("");
@@ -9077,7 +9150,37 @@ function blocHistorique(filtre){
    Tout ce que l'application déclenche elle-même s'inscrit tout seul. Le
    reste — un appel, une visite, un mot échangé sur le pas de la porte —
    se note ici, en trois champs. */
-function ouvrirCreerAction(cible){
+/* ------------------------------------------- le menu des actions ---------
+   « Créer une action » ouvrait d'emblée un formulaire où le genre était à
+   choisir dans une liste déroulante, au milieu de cinq autres champs. Or
+   le genre est la PREMIÈRE question, et souvent la seule qui compte : on
+   sait en cliquant si l'on note un appel ou si l'on organise une visite.
+   Le bouton ouvre donc la liste des genres, et chacun mène où il faut —
+   « Visite du bien » à la fenêtre du rendez-vous, les autres au
+   formulaire, le genre déjà choisi. */
+function dossierDeCible(cible){
+  const [quoi, cle] = String(cible || "").split(":");
+  return quoi === "bien" ? cle : "";
+}
+function ouvrirMenuAction(cible){
+  const idDoss = dossierDeCible(cible);
+  const d = idDoss ? (dossiersVivants().filter(x=> x.id === idDoss)[0] || null) : null;
+  const genres = (L.genreAction || []).filter(Boolean);
+  popup({titre:"Créer une action", large:true,
+    corps:`<p class="muted" style="margin:0 0 12px">${d
+        ? "Sur le bien <b>n° " + esc((d.mandat || {}).num || "—") + "</b> — "
+          + esc(bienDe(d)) + ". " : ""}Que s'est-il passé ?</p>
+      <div class="menuact">${genres.map(g=>{
+        const visite = fold(g) === fold("Visite du bien") && !!d;
+        return `<button type="button" class="${visite ? "fort" : ""}"
+          data-acgo="${esc(cible)}|${esc(g)}">${visite ? IC_AGENDA + " " : ""}${esc(g)}${
+          visite ? " — ouvre le rendez-vous" : ""}</button>`;
+      }).join("")}</div>
+      <p class="muted" style="margin:12px 0 0">Les genres se modifient dans l'onglet
+        <b>Listes</b>, carte « Genres d'action ».</p>`,
+    boutons:[{lib:"Fermer"}]});
+}
+function ouvrirCreerAction(cible, genre){
   const [quoi, cle] = String(cible || "").split(":");
   /* trois points de départ : une personne, un bien, une recherche. Depuis
      une recherche, l'action porte sur le demandeur qui la mène. */
@@ -9115,7 +9218,8 @@ function ouvrirCreerAction(cible){
         <div class="pf"><label for="acGenre">Genre</label>
           <span class="withadd"><select id="acGenre" data-acgenre="acGenre">${(L.genreAction
             || []).map(g=>
-            `<option>${esc(g)}</option>`).join("")}</select>
+            `<option${fold(g) === fold(genre || "") ? " selected" : ""}>${esc(g)}</option>`)
+            .join("")}</select>
           <button type="button" class="addinline" data-addlist="list:genreAction"
             data-target="acGenre" data-attr="data-acgenre" title="Ajouter un genre"
             >+</button></span></div>
@@ -9910,46 +10014,130 @@ function parNumeroDecroissant(a, b){
   if(isFinite(nx) && isFinite(ny) && nx !== ny) return ny - nx;
   return y.localeCompare(x, "fr", {numeric:true});
 }
+/* =====================================================================
+   « MES DOSSIERS » — UN SEUL TABLEAU
+   ---------------------------------------------------------------------
+   Les dossiers étaient rangés en cinq cartes repliables, une par stade.
+   On ouvrait donc cinq fois pour retrouver un mandat dont on ne savait
+   plus où il en était. Ils tiennent maintenant dans UN tableau, tous
+   statuts confondus, et c'est la ligne elle-même qui dit le stade : un
+   filet de couleur à son bord gauche, et le mot au survol.
+
+   Quatre colonnes, et rien d'autre :
+     1. la première PHOTO du bien ;
+     2. le TYPE, le PRIX, et la pastille du mandat — sa couleur dit le
+        type de mandat, de l'exclusif (vert) au simple (gris) ;
+     3. la SURFACE, les pièces, les chambres ;
+     4. deux repères qui parlent au survol : le PROPRIÉTAIRE (un clic
+        ouvre sa fiche) et l'ADRESSE.
+
+   La hauteur d'une ligne est FIXE. Une liste dont les lignes changent de
+   hauteur selon qu'il y a une photo ou non se parcourt deux fois moins
+   vite : l'œil perd le rythme. La photo s'y adapte en se recadrant, et
+   non en s'étirant.
+   ===================================================================== */
+const H_LIGNE_DOSSIER = 84;
+/* L'intérêt d'un mandat, du plus fort au plus faible. Il ne s'agit pas de
+   juger un vendeur : un exclusif se défend autrement qu'un simple, et la
+   liste doit le dire d'un coup d'œil quand on choisit par quoi commencer
+   sa journée. Un type ajouté à la main prend la teinte neutre. */
+const TEINTE_MANDAT = {
+  "exclusif":       {cls:"ex",   lib:"mandat exclusif — le plus fort"},
+  "semi-exclusif":  {cls:"semi", lib:"mandat semi-exclusif"},
+  "delegation":     {cls:"del",  lib:"délégation de mandat"},
+  "simple":         {cls:"simp", lib:"mandat simple — le moins fort"}
+};
+function teinteMandat(type){
+  return TEINTE_MANDAT[fold(type || "")] || {cls:"autre", lib: type || "mandat"};
+}
+const IC_PROPRIO = `<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+  stroke-linejoin="round"><circle cx="8" cy="5.2" r="2.6"/>
+  <path d="M2.8 13.8c0-2.6 2.3-4.2 5.2-4.2s5.2 1.6 5.2 4.2"/></svg>`;
+const IC_ADRESSE = `<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M2.4 7.2 8 2.6l5.6 4.6"/>
+  <path d="M3.9 8.4v4.9h8.2V8.4"/></svg>`;
+const IC_PLUSACT = `<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M8 3.2v9.6M3.2 8h9.6"/></svg>`;
+const IC_OUVRIR = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M6 10 11 5"/><path d="M6.6 4.8H11.2V9.4"/>
+  <path d="M12.6 9.6v2.8H3.6V3.4h2.8"/></svg>`;
+const IC_POUBELLE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+  stroke-linejoin="round"><path d="M3 4.4h10"/><path d="M6.4 4.4V3h3.2v1.4"/>
+  <path d="M4.3 4.4l.6 8.2h6.2l.6-8.2"/><path d="M6.8 6.6v3.8M9.2 6.6v3.8"/></svg>`;
+
 function renderDossiers(){
-  const items = dossiersVivants().sort((x,y)=>(y.maj||0)-(x.maj||0));
-  /* ordre voulu : les dossiers qui bougent d'abord, les vendus en dernier */
-  /* l'ordre suit la vie du dossier : en vente, sous offre, sous compromis, vendu */
-  const GROUPES = [
-    {cle:"vente",     lib:"EN VENTE",       ouvert:true},
-    {cle:"offre",     lib:"SOUS OFFRE",     ouvert:true},
-    {cle:"compromis", lib:"SOUS COMPROMIS", ouvert:true},
-    {cle:"vendu",     lib:"VENDU",          ouvert:false},
-    {cle:"resilie",   lib:"MANDAT RÉSILIÉ", ouvert:false}
-  ];
-  const par = {offre:[], compromis:[], vente:[], vendu:[], resilie:[]};
-  items.forEach(d=> par[stade(d).cls].push(d));
-  Object.keys(par).forEach(k=> par[k].sort(parNumeroDecroissant));
-
+  /* l'ordre reste celui de la vie d'un dossier — ce qui bouge d'abord, les
+     vendus et les résiliés au bas —, mais sans couper le tableau */
+  const ordre = {vente:0, offre:1, compromis:2, vendu:3, resilie:4};
+  const items = dossiersVivants().slice().sort((a, b)=>{
+    const oa = ordre[stade(a).cls], ob = ordre[stade(b).cls];
+    if(oa !== ob) return oa - ob;
+    return parNumeroDecroissant(a, b);
+  });
+  const photos = [];
   const ligne = d=>{
-    const adr = [d.bien&&d.bien.adresse, d.bien&&d.bien.cp, d.bien&&d.bien.ville]
-                .filter(Boolean).join(" ");
-    const dt = d.maj ? new Date(d.maj).toLocaleString("fr-FR") : "";
-    const r = (d.mandat && d.mandat.num) || d.ref || "";
-    return `<div class="drow${d.id===D.id?" cur":""}">
-      <div class="t"><b>${r ? "Mandat n° "+esc(r) : "(mandat sans numéro)"}</b>
-        <span>${esc(adr || "—")} · modifié le ${esc(dt)}</span></div>
-      <button class="xbtn" data-open="${d.id}">Ouvrir</button>
-      <button class="xbtn" data-dossdel="${d.id}">Supprimer</button></div>`;
+    const b = d.bien || {}, s = stade(d);
+    const c = critBien(d);
+    const ph = photoPrincipale(d.id);
+    if(ph) photos.push(ph);
+    const m = teinteMandat((d.mandat || {}).type);
+    const num = (d.mandat || {}).num || d.ref || "";
+    const prop = (d.vendeurs || []).filter(x=> x && !personneVide(x))
+      .map(x=> titrePersonne(x)).filter(Boolean);
+    const adr = [b.adresse, [b.cp, b.ville].filter(Boolean).join(" ")]
+      .filter(Boolean).join(", ");
+    const compte = (n, un, plus)=> n === null || n === undefined ? ""
+      : n + " " + (n > 1 ? (plus || un + "s") : un);
+    return `<div class="drow2 ${s.cls}${d.id === D.id ? " cur" : ""}"
+      data-dstade="${esc(s.lib)}">
+      <div class="dph${ph ? " pjimg" : " vide"}"${ph
+        ? ` data-pjvig="${esc(ph.id)}"` : ""}>${ph ? "" : "sans photo"}</div>
+      <div class="dcol dtyp">
+        <b>${esc(c.type || "Bien")}</b>
+        <span>${c.fai === null ? "prix à saisir" : esc(eur(c.fai))}</span>
+        <span class="mdt ${m.cls}" data-bulle="${esc(m.lib)}">${
+          num ? "n° " + esc(num) : "sans n°"}</span>
+      </div>
+      <div class="dcol dsurf">
+        <b>${c.surface === null ? "—" : esc(m2txt(c.surface))}</b>
+        <span>${esc(compte(c.pieces, "pièce") || "pièces à saisir")}</span>
+        <span>${esc(compte(c.chambres, "chambre") || "chambres à saisir")}</span>
+      </div>
+      <div class="dcol dico">
+        ${prop.length ? `<button type="button" class="dbul" data-oproprio="${esc(d.id)}"
+            data-bulle="${esc(prop.join(" et "))}"
+            aria-label="Propriétaire : ${esc(prop.join(" et "))}">${IC_PROPRIO}</button>`
+          : `<span class="dbul off" data-bulle="propriétaire à saisir"
+              aria-label="propriétaire à saisir">${IC_PROPRIO}</span>`}
+        <span class="dbul${adr ? "" : " off"}" data-bulle="${esc(adr
+          || "adresse à saisir")}" aria-label="${esc(adr || "adresse à saisir")}"
+          >${IC_ADRESSE}</span>
+      </div>
+      <span class="grow"></span>
+      <button type="button" class="dbul act" data-menuact="bien:${esc(d.id)}"
+        data-bulle="Créer une action" aria-label="Créer une action">${IC_PLUSACT}</button>
+      <div class="dpile">
+        <button type="button" class="dmini" data-open="${esc(d.id)}"
+          data-bulle="Ouvrir le dossier" aria-label="Ouvrir le dossier">${IC_OUVRIR}</button>
+        <button type="button" class="dmini sup" data-dossdel="${esc(d.id)}"
+          data-bulle="Supprimer le dossier" aria-label="Supprimer le dossier"
+          >${IC_POUBELLE}</button>
+      </div>
+    </div>`;
   };
-
-  const html = GROUPES.filter(g=>par[g.cle].length).map(g=>{
-    const plie = estPlie("d_"+g.cle, !g.ouvert);
-    return `<div class="card">
-      <h2 class="pliable" data-pli="d_${g.cle}">
-        <span class="chev${plie?"":" ouvert"}">▸</span>
-        <span class="puce ${g.cle}"></span>${g.lib}
-        <span class="cnt">${par[g.cle].length}</span></h2>
-      <div class="plibody"${plie?' style="display:none"':''}>
-        <div class="dlist">${par[g.cle].map(ligne).join("")}</div></div></div>`;
-  }).join("");
-
-  $("#dossierList").innerHTML = html ||
-    `<div class="card"><div class="body muted">Aucun dossier enregistré.</div></div>`;
+  $("#dossierList").innerHTML = items.length
+    ? `<div class="card"><h2>Tous les dossiers
+        <span class="cnt">${items.length}</span></h2>
+      <div class="dlist">${items.map(ligne).join("")}</div></div>`
+    : `<div class="card"><div class="body muted">Aucun dossier enregistré.</div></div>`;
+  /* les vignettes se peignent après coup : lire un fichier prend un instant,
+     et la liste ne doit pas attendre */
+  setTimeout(()=> photos.forEach(p=> peindreVignette(p)), 30);
 }
 
 /* =====================================================================
@@ -12621,17 +12809,22 @@ function dessinerRechercheRdv(q){
     : `<p class="muted" style="margin:4px 0 0">Personne de ce nom au répertoire.
        Le bouton <b>+ Nouveau contact</b> en crée un.</p>`;
 }
+/* `i` est l'indice de la recherche qui demande la visite. Il peut être
+   nul : une visite s'organise aussi depuis le bien lui-même, sans
+   demandeur attitré — le propriétaire et l'agent suffisent à en faire un
+   rendez-vous, et l'on ajoute qui l'on veut à la main. */
 function ouvrirVisite(i, id){
-  const r = (L.prospects || [])[+i];
+  const r = (i === null || i === undefined || +i < 0)
+    ? null : (L.prospects || [])[+i];
   const d = dossierDuBien(id);
-  if(!r || !d){ toast("Bien introuvable"); return; }
+  if(!d){ toast("Bien introuvable"); return; }
   const lieux = lieuxDeVisite(d);
   const demain = new Date(Date.now() + 86400000);
   const jour = demain.getFullYear() + "-"
     + String(demain.getMonth() + 1).padStart(2, "0") + "-"
     + String(demain.getDate()).padStart(2, "0");
-  RDV = {gens: participantsParDefaut(d, r), dossier: d.id, recherche: r.id,
-         mode: ""};
+  RDV = {gens: participantsParDefaut(d, r), dossier: d.id,
+         recherche: (r || {}).id || "", mode: ""};
   popup({titre:"Organiser une visite", large:true,
     corps:`<div class="rdvbox">
       <div class="pf plein"><label for="rdvTitre">Intitulé du rendez-vous</label>
@@ -12683,7 +12876,7 @@ function ouvrirVisite(i, id){
         par WhatsApp.</p>
     </div>`,
     boutons:[{lib:"Annuler"}, {lib:"Créer le rendez-vous", primaire:true, action:()=>{
-      creerVisite(+i, d, {
+      creerVisite(r ? +i : -1, d, {
         titre:   ($("#rdvTitre") || {}).value || "",
         lieu:    ($("#rdvLieu") || {}).value || "",
         adresse: ($("#rdvAdresse") || {}).value || "",
@@ -12743,7 +12936,7 @@ function texteDuRdv(d, gens){
   return l.join("\n");
 }
 async function creerVisite(i, d, f, gens){
-  const r = (L.prospects || [])[i];
+  const r = i >= 0 ? (L.prospects || [])[i] : null;
   const b = bornesRdv(f.date, f.heure, f.duree);
   if(!b){ toast("Il manque la date ou l'heure du rendez-vous"); return; }
   const titre = String(f.titre || "").trim() || ("Visite " + intituleBien(d));
@@ -12971,7 +13164,7 @@ function renderHistoBien(){
         proposés ou écartés par les demandeurs. Rien n'est saisi deux fois — tout cela
         s'inscrit tout seul, à mesure.</p>
       <div class="fbtns" style="margin:0 0 12px">
-        <button type="button" class="addbtn" data-actadd="bien:${esc(D.id)}"
+        <button type="button" class="addbtn" data-menuact="bien:${esc(D.id)}"
           >+ Créer une action</button>
         <span class="muted" style="font-size:12.5px">Un appel du vendeur, un artisan
           passé, un mot du voisin : ce qui n'est pas écrit se perd.</span>
@@ -19048,7 +19241,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvncreer],[data-rdvann],[data-annvieux],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvncreer],[data-rdvann],[data-annvieux],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],[data-proposer],[data-visite],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -19297,6 +19490,27 @@ document.addEventListener("click", e=>{
     return;
   }
   if(t.dataset.actadd){ ouvrirCreerAction(t.dataset.actadd); return; }
+  if(t.dataset.menuact !== undefined){ ouvrirMenuAction(t.dataset.menuact); return; }
+  if(t.dataset.acgo !== undefined){
+    const k = String(t.dataset.acgo).lastIndexOf("|");
+    const cible = t.dataset.acgo.slice(0, k), genre = t.dataset.acgo.slice(k + 1);
+    fermerPopup();
+    const idDoss = dossierDeCible(cible);
+    /* la visite d'un bien n'est pas une ligne d'historique à écrire : c'est
+       un rendez-vous à poser. Elle s'inscrira d'elle-même ensuite. */
+    if(idDoss && fold(genre) === fold("Visite du bien")) ouvrirVisite(-1, idDoss);
+    else ouvrirCreerAction(cible, genre);
+    return;
+  }
+  /* le propriétaire d'un bien, depuis la liste des dossiers */
+  if(t.dataset.oproprio !== undefined){
+    const d = dossiersVivants().filter(x=> x.id === t.dataset.oproprio)[0];
+    if(!d) return;
+    const k = (d.vendeurs || []).findIndex(x=> x && !personneVide(x));
+    if(k < 0){ toast("Aucun propriétaire saisi sur ce dossier"); return; }
+    ouvrirPersonne(d.id + ":vendeurs:" + k);
+    return;
+  }
   /* ------------------------------------------------- le secteur sur la carte */
   if(t.dataset.sectmode){
     SECT.mode = SECT.mode === t.dataset.sectmode ? "" : t.dataset.sectmode;
@@ -19580,12 +19794,29 @@ document.addEventListener("click", e=>{
       localStorage.setItem(LS_CUR,D.id);
       renderAll(); activerOnglet("avis"); toast("Dossier ouvert"); } return; }
   if(t.dataset.dossdel){
-    if(!confirm("Supprimer définitivement ce dossier ?")) return;
-    const all=allDossiers(); delete all[t.dataset.dossdel];
-    localStorage.setItem(LS_DOSS, JSON.stringify(all));
-    noterSuppression(t.dataset.dossdel);
-    if(D.id===t.dataset.dossdel){ D = blankDossier(); renderAll(); }
-    renderDossiers(); toast("Dossier supprimé"); return;
+    /* une suppression de dossier se confirme dans une vraie fenêtre, qui
+       dit CE QU'ON SUPPRIME : un « êtes-vous sûr ? » sans le numéro du
+       mandat ni l'adresse ne protège de rien. */
+    const id = t.dataset.dossdel;
+    const d = dossiersVivants().filter(x=> x.id === id)[0];
+    const quoi = d ? ("n° " + ((d.mandat || {}).num || "—") + " — " + bienDe(d)) : id;
+    const nRdv = rdvDe({dossier:id, vivants:true}).length;
+    popup({titre:"Supprimer ce dossier ?", genre:"erreur",
+      corps:`<p style="margin:0 0 10px">Le dossier <b>${esc(quoi)}</b> sera supprimé
+          <b>définitivement</b>, sur cet appareil comme dans la base partagée.</p>
+        <p style="margin:0 0 10px">Ses <b>pièces jointes</b> restent dans votre Drive,
+          et l'historique du demandeur garde la trace de ce qui a été fait — mais la
+          fiche, elle, ne revient pas.</p>
+        ${nRdv ? `<p class="alerte" style="margin:0">Attention : ${nRdv} rendez-vous
+          à venir y est attaché. Il restera dans votre agenda Google.</p>` : ""}`,
+      boutons:[{lib:"Ne rien faire"}, {lib:"Supprimer", primaire:true, action:()=>{
+        const all = allDossiers(); delete all[id];
+        localStorage.setItem(LS_DOSS, JSON.stringify(all));
+        noterSuppression(id);
+        if(D.id === id){ D = blankDossier(); renderAll(); }
+        renderDossiers(); toast("Dossier supprimé");
+      }}]});
+    return;
   }
 });
 
@@ -25355,10 +25586,46 @@ const AIDE = [
   "civilités, énergies, motifs de résiliation… —, la fiche de l'agence (logo, mentions, RIB, "+
   "bandeau des factures), la base partagée et les sauvegardes. Les carnets d'adresses sont "+
   "passés au Répertoire, les immeubles à leur page."],
- ["Mes dossiers",
-  "Les dossiers sont rangés par statut — sous offre, sous compromis, en vente, vendus — et "+
-  "chaque groupe s'ouvre ou se referme d'un clic sur son titre. Les vendus sont repliés par "+
-  "défaut."],
+ ["Mes dossiers : un seul tableau",
+  "Tous les dossiers y sont, <b>quel que soit leur statut</b> : plus de cartes à déplier "+
+  "une à une pour retrouver un mandat dont on ne sait plus où il en est. L'ordre reste "+
+  "celui de la vie d'un dossier — en vente, sous offre, sous compromis, vendu, résilié —, "+
+  "et à l'intérieur de chaque stade, du plus grand numéro de mandat au plus petit. "+
+  "<b>Le stade se lit au bord gauche de la ligne</b> : un filet de couleur, et le mot au "+
+  "survol. "+
+  "<b>Quatre colonnes.</b> "+
+  "<b>1.</b> La <b>première photo</b> du bien — celle marquée comme principale, à défaut "+
+  "la première des pièces jointes. "+
+  "<b>2.</b> Le <b>type</b>, le <b>prix</b>, et la <b>pastille du mandat</b>, dont la "+
+  "couleur dit le type : <b>vert</b> pour l'exclusif, le plus fort ; <b>ambre</b> pour le "+
+  "semi-exclusif ; <b>violet</b> pour une délégation ; <b>gris</b> pour le simple, le "+
+  "moins fort. Un type que vous ajouteriez prend une teinte neutre. "+
+  "<b>3.</b> La <b>surface</b>, le nombre de <b>pièces</b>, le nombre de "+
+  "<b>chambres</b> — comptés sur le détail des pièces, comme partout ailleurs. "+
+  "<b>4.</b> Deux repères qui parlent au survol : le <b>propriétaire</b> (un clic ouvre "+
+  "sa fiche dans le dossier) et l'<b>adresse</b> du bien. "+
+  "<b>La hauteur des lignes est fixe.</b> Une liste dont les lignes respirent au rythme "+
+  "des photos se parcourt deux fois moins vite : l'œil perd le rythme. La photo s'y "+
+  "adapte en se <b>recadrant</b>, jamais en s'étirant. "+
+  "<b>Au bout de la ligne</b> : <b>Créer une action</b>, puis deux icônes superposées — "+
+  "<b>ouvrir</b> le dossier et le <b>supprimer</b>. La suppression demande confirmation "+
+  "dans une fenêtre qui dit <b>quel</b> dossier part, ce qui en reste (les pièces du "+
+  "Drive, l'historique du demandeur) et s'il lui est attaché un rendez-vous à venir."],
+ ["Créer une action : la liste des genres",
+  "Le bouton <b>Créer une action</b> — sur la ligne d'un dossier comme sur la fiche d'un "+
+  "bien — ouvre d'abord la <b>liste des genres</b> : appel téléphonique, courriel, "+
+  "message WhatsApp, visite du bien, estimation, note… C'est la première question qu'on "+
+  "se pose, et souvent la seule qui compte ; elle était jusqu'ici une liste déroulante "+
+  "au milieu de cinq autres champs. "+
+  "Un genre ordinaire ouvre le formulaire habituel, <b>le genre déjà choisi</b> : il ne "+
+  "reste que la date et ce qui s'est passé. "+
+  "<b>« Visite du bien » ne mène pas au même endroit</b> : il ouvre la fenêtre du "+
+  "<b>rendez-vous</b>, la même que « Organiser une visite » depuis une recherche. Le "+
+  "propriétaire y est d'office ; on ajoute les autres participants à la main, depuis le "+
+  "répertoire ou en les créant. Une visite organisée depuis un bien n'a pas de demandeur "+
+  "attitré — et c'est parfois exactement ce qu'on veut : faire visiter à un confrère, à "+
+  "un artisan, à un expert. "+
+  "Les genres se modifient dans l'onglet <b>Listes</b>, carte « Genres d'action »."],
  ["Négociateurs : fiche, portrait et commission",
   "Carnet « Négociateurs », au <b>Répertoire</b>. Cochez « Appartient à l'agence "+
   "Manaranche » pour pouvoir saisir le pourcentage de commission ; sans cette case, le "+
