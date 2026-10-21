@@ -1373,10 +1373,21 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .rolvide{font-size:11.5px;color:var(--ink-3);font-style:italic}
 .drsub .rolp{margin-right:4px}
 .seczone .szg.clos{background:var(--line-2)}
-.histbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+/* Les commandes d'un historique tiennent sur UNE ligne : le genre, la
+   recherche, le sens du tri, et le compte. Elles passaient à la ligne dès
+   que la colonne se resserrait, et prenaient deux hauteurs de champ
+   au-dessus de ce qu'on était venu lire. */
+.histbar{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin:0 0 10px}
 .histbar select,.histbar input{background:var(--field);border:1px solid var(--field-line);
-  border-radius:8px;padding:6px 10px;font:inherit;font-size:13px}
-.histbar input{flex:1;min-width:160px}
+  border-radius:8px;padding:5px 9px;font:inherit;font-size:12.5px;min-width:0}
+.histbar select{flex:0 1 auto;max-width:34%}
+.histbar input{flex:1 1 auto;min-width:90px}
+.histbar .lienbtn{flex:0 0 auto;white-space:nowrap}
+.histbar > span.muted{flex:0 0 auto;white-space:nowrap}
+/* sur un téléphone, deux lignes valent mieux qu'un champ de deux
+   centimètres : on laisse alors le repli se faire */
+@media(max-width:620px){.histbar{flex-wrap:wrap}
+  .histbar select{max-width:none;flex:1 1 40%}}
 .jbien{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3)}
 /* le secteur sur la carte */
 .sectbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 10px}
@@ -2337,7 +2348,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 21 octobre 2026, 18 h 08">Dossiers de vente</div>
+  <div class="brand" title="Version du 21 octobre 2026, 20 h 13">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2361,7 +2372,7 @@ table.tdb .puce.resilie{background:#64748b}
   <div class="rechbox">
     <div class="rechhead">
       <input type="text" id="rechDossInput" autocomplete="off"
-        placeholder="Numéro de mandat, adresse, nom, ville, prix, immeuble, notaire…">
+        placeholder="Mandat, adresse, nom, ville, prix, immeuble, notaire, demandeur, liste…">
       <button class="tbtn light" id="rechDossFermer">Fermer</button>
     </div>
     <div class="rechdosslist" id="rechDossList"></div>
@@ -2551,7 +2562,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>21 octobre 2026, 18 h 08</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>21 octobre 2026, 20 h 13</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3294,6 +3305,11 @@ function noterAction(o){
   const act = {id:idAction(), t:t, qui:qui, pid:a.pid || "", role:a.role || "",
                genre:a.genre || "Note", texte:a.texte || "",
                dossier:a.dossier || "", recherche:a.recherche || "",
+               /* l'identifiant du rendez-vous dont cette action est l'ombre,
+                  s'il y en a un : c'est lui qui permet, dans l'histoire d'un
+                  bien, de ne pas dire deux fois la même visite — et de ne pas
+                  faire disparaître celles d'avant, qui n'en ont pas */
+               rdv:a.rdv || "",
                groupe:a.groupe || ""};
   L.actions.push(act);
   return act;
@@ -3330,11 +3346,11 @@ function journalDe(r){
     .map(a=> ({t:a.t, qui:a.qui, quoi:a.genre, det:a.texte, groupe:a.groupe}))
     .sort((x, y)=> (x.t || 0) - (y.t || 0));
 }
-function noterJournal(r, quoi, det, groupe, dossier){
+function noterJournal(r, quoi, det, groupe, dossier, rdv){
   if(!r) return;
   noterAction({pid: premierPidProspect(r), role:"demandeur", recherche: r.id,
                genre: quoi, texte: det || "", groupe: groupe || "",
-               dossier: dossier || ""});
+               dossier: dossier || "", rdv: rdv || ""});
 }
 
 /* Les trois niveaux d'une pastille de recherche. Déclarés ici, et non plus
@@ -8982,44 +8998,74 @@ function champsFichePersonne(f){
    la liste. Rien n'est purgé — on cherche, on ne jette pas. */
 /* Le même bloc sert au répertoire et à la fiche d'une recherche : le filtre
    et la recherche redessinent celle des deux qui est à l'écran. */
+/* Quelle ligne du temps est sous les yeux ? Celle d'un bien a ses propres
+   filtres ; la fiche d'un demandeur et celle d'une personne partagent les
+   leurs, comme avant. */
+function etatHisto(){
+  return pageActive() === "histobien" ? HISTOB : PERS;
+}
 function redessinerHistorique(){
-  if(pageActive() === "prospects") renderProspects();
+  if(pageActive() === "histobien") renderHistoBien();
+  else if(pageActive() === "prospects") renderProspects();
   else renderRepertoire();
 }
-function blocHistorique(filtre){
-  const l = actionsDe(filtre).filter(a=>{
-    if(PERS.fg && a.genre !== PERS.fg) return false;
-    if(PERS.fq){
-      const mots = fold(PERS.fq).split(/\s+/).filter(Boolean);
-      const texte = fold([a.genre, a.texte, a.qui, bienDeAction(a)].join(" "));
-      if(!mots.every(m=> texte.includes(m))) return false;
-    }
-    return true;
-  });
-  const genres = (L.actions || []).filter(a=> !filtre.pid || a.pid === filtre.pid)
-    .map(a=> a.genre).filter((g,i,t2)=> g && t2.indexOf(g) === i).sort(triFr);
+/* ------------------------------------------- la barre d'un historique ---
+   Les mêmes commandes partout où il y a une ligne du temps : un genre, une
+   recherche en toutes lettres, un sens de tri. Elles tiennent sur UNE
+   ligne — trois commandes et un compteur n'ont pas à prendre deux hauteurs
+   de champ au-dessus de ce qu'on est venu lire. */
+const TRIS_HISTO = [["recent", "du plus récent"], ["ancien", "du plus ancien"]];
+function barreHisto(etat, genres, n, quoi){
   return `<div class="histbar">
       <select data-fgenre><option value="">Tous les genres</option>${genres.map(g=>
-        `<option${g === PERS.fg ? " selected" : ""}>${esc(g)}</option>`).join("")}</select>
-      <input type="text" data-fq value="${esc(PERS.fq)}"
+        `<option${g === etat.fg ? " selected" : ""}>${esc(g)}</option>`).join("")}</select>
+      <input type="text" data-fq value="${esc(etat.fq || "")}"
         placeholder="Chercher dans l'historique…">
-      ${PERS.fg || PERS.fq ? `<button type="button" class="lienbtn" data-fraz
+      <select data-ftri>${TRIS_HISTO.map(([v, lib])=>
+        `<option value="${v}"${v === (etat.tri || "recent") ? " selected" : ""}
+          >${esc(lib)}</option>`).join("")}</select>
+      ${etat.fg || etat.fq ? `<button type="button" class="lienbtn" data-fraz
         >Effacer</button>` : ""}
       <div class="grow"></div>
-      <span class="muted" style="font-size:12px">${l.length} action${
-        l.length > 1 ? "s" : ""}</span>
-    </div>` +
+      <span class="muted" style="font-size:12px">${n} ${esc(quoi || "ligne")}${
+        n > 1 ? "s" : ""}</span>
+    </div>`;
+}
+/* le crible commun : le genre, puis les mots, où qu'ils soient */
+function passeHisto(etat, genre, texte){
+  if(etat.fg && genre !== etat.fg) return false;
+  if(etat.fq){
+    const mots = fold(etat.fq).split(/\s+/).filter(Boolean);
+    const t = fold(String(texte || ""));
+    if(!mots.every(m=> t.includes(m))) return false;
+  }
+  return true;
+}
+function blocHistorique(filtre){
+  const l = actionsDe(filtre).filter(a=>
+    passeHisto(PERS, a.genre, [a.genre, a.texte, a.qui, bienDeAction(a)].join(" ")));
+  if((PERS.tri || "recent") === "ancien") l.reverse();
+  const genres = (L.actions || []).filter(a=> !filtre.pid || a.pid === filtre.pid)
+    .map(a=> a.genre).filter((g,i,t2)=> g && t2.indexOf(g) === i).sort(triFr);
+  return barreHisto(PERS, genres, l.length, "action") +
     (l.length ? `<div class="jtable">${l.map(a=>{
       const d = new Date(a.t || 0);
       const heure = isNaN(d.getTime()) ? "" :
         ("0" + d.getHours()).slice(-2) + " h " + ("0" + d.getMinutes()).slice(-2);
       const bien = bienDeAction(a);
+      /* une visite d'avant les rendez-vous gardés : elle s'annule ici, et
+         l'on dira qu'il faut l'effacer à la main dans l'agenda */
+      const vieux = /^Visite organisée/.test(a.genre || "")
+        && !(a.rdv && rdvParId(a.rdv)) ? a.id : "";
       return `<div class="jrow${a.genre === "Note" ? " note" : ""}">
         <span class="jquand">${esc(fdate(jourDe(a.t)))}<em>${esc(heure)}</em></span>
         <span class="jqui">${esc(a.qui || "—")}</span>
         <span class="jquoi"><b>${esc(a.genre || "")}</b>${
           a.texte ? " " + esc(a.texte) : ""}${
-          bien ? ` <em class="jbien">${esc(bien)}</em>` : ""}</span></div>`;
+          bien ? ` <em class="jbien">${esc(bien)}</em>` : ""}</span>
+        ${vieux ? `<span class="grow"></span>
+          <button type="button" class="xbtn sup" data-annvieux="${esc(vieux)}"
+            >Annuler</button>` : ""}</div>`;
     }).join("")}</div>`
       : `<p class="muted" style="margin:0">${PERS.fg || PERS.fq
           ? "Aucune action ne répond à ces filtres."
@@ -9296,7 +9342,7 @@ function carteQuartiers(){
         + (q.source ? " · " + esc(q.source) : "")) : "sans tracé"}</span>
     <button type="button" class="xbtn sup" data-qsupp="${esc(q.ville + "|" + q.nom)}"
       >Supprimer</button></div>`;
-  return `<div class="listcard">
+  return `<div class="listcard" id="lc_quartiers">
     <h3 class="pliable" data-pli="l_quartiers">${chevron(plie)}Quartiers, par commune
       <span class="cnt">${(L.quartiers || []).length}</span></h3>
     <div class="plibody"${plie ? ' style="display:none"' : ''}>
@@ -9399,7 +9445,7 @@ function carteCourriels(){
     <label>Message</label>
     <textarea data-courriel="${i}:corps" rows="7">${esc(m.corps)}</textarea>
   </div>`;
-  return `<div class="listcard toute">
+  return `<div class="listcard toute" id="lc_courriels">
     <h3 class="pliable" data-pli="l_courriels">${chevron(plie)}Modèles de courriels
       <span class="cnt">${l.length}</span></h3>
     <div class="plibody"${plie ? ' style="display:none"' : ''}>
@@ -9447,7 +9493,7 @@ function renderListes(){
 
   $("#simpleLists").innerHTML = Object.keys(LIST_LABELS).map(k=>{
     const plie = estPlie("l_"+k, false);
-    return `<div class="listcard">
+    return `<div class="listcard" id="lc_${k}">
       <h3 class="pliable" data-pli="l_${k}">${chev(plie)}${esc(LIST_LABELS[k])}
         <span class="cnt">${(L[k]||[]).length}</span></h3>
       <div class="plibody"${plie?' style="display:none"':''}>
@@ -9599,12 +9645,59 @@ function toutesLesPersonnes(){
   });
   return out;
 }
+/* Toutes les fiches de tous les carnets. Le libellé passe par
+   `libelleCarnet`, et non plus par le seul champ `nom` : une recherche
+   d'acquéreur n'a pas de `nom` — elle a un demandeur et un objet —, et se
+   trouvait donc exclue de la loupe. Un carnet qui naîtra demain avec une
+   autre façon de se nommer y entrera de lui-même, pourvu qu'il dise son
+   libellé là où les autres le disent. */
 function toutesLesFiches(){
   const out = [];
   Object.keys(BOOKS).forEach(carnet=>{
-    (L[carnet] || []).forEach((r,i)=>{ if(r && (r.nom || "").trim()) out.push({carnet, i, r}); });
+    (L[carnet] || []).forEach((r,i)=>{
+      if(r && String(libelleCarnet(carnet, r) || "").trim())
+        out.push({carnet, i, r});
+    });
   });
   return out;
+}
+/* Le répertoire des personnes est une liste comme les autres, et n'était
+   pas cherché : seules les personnes ATTACHÉES à un dossier l'étaient. Une
+   fiche créée au répertoire et pas encore rattachée restait introuvable. */
+/* Les listes simples — types de mandat, motifs de refus, quartiers,
+   modèles de courriels — ne sont ni des dossiers ni des fiches, mais on y
+   cherche comme ailleurs : « où est déclaré Trinquetaille ? » est une
+   question qu'on se pose. On rend la liste qui le contient, et le clic y
+   mène, dépliée. */
+function chercherDansLesListes(q){
+  const mots = fold(q).split(/\s+/).filter(Boolean);
+  if(!mots.length) return [];
+  const out = [];
+  const voir = (cle, titre, valeurs)=>{
+    const gardes = valeurs.filter(v=> mots.every(m=> fold(v).includes(m)));
+    if(gardes.length) out.push({cle, titre, valeurs: gardes});
+  };
+  Object.keys(LIST_LABELS).forEach(k=>
+    voir(k, LIST_LABELS[k], (L[k] || []).map(x=> String(x))));
+  voir("quartiers", "Quartiers, par commune",
+    (L.quartiers || []).filter(Boolean).map(x=> x.nom + " — " + x.ville));
+  voir("courriels", "Modèles de courriels",
+    (L.courriels || []).filter(Boolean).map(x=>
+      [x.nom, x.objet, x.corps].filter(Boolean).join(" · ")));
+  return out;
+}
+function ouvrirListe(cle){
+  fermerRecherche();
+  PLIS["l_" + cle] = false; savePlis();
+  activerOnglet("listes");
+  autosize();
+  setTimeout(()=> signaler(document.getElementById("lc_" + cle)), 80);
+}
+function chercherFichesPersonnes(q){
+  const mots = fold(q).split(/\s+/).filter(Boolean);
+  if(!mots.length) return [];
+  return (L.personnes || []).filter(f=> f && f.pid
+    && mots.every(m=> textePersonne(f).includes(m)));
 }
 function chercherPersonnes(q){
   const mots = fold(q).split(/\s+/).filter(Boolean);
@@ -9668,6 +9761,8 @@ function majRechDossiers(q){
     return out + esc(t.slice(pos));
   };
   const pers = chercherPersonnes(q), fiches = chercherFiches(q);
+  const repert = chercherFichesPersonnes(q);
+  const listes = chercherDansLesListes(q);
   const section = (titre, n, html)=> !n ? "" :
     `<div class="rsect"><span>${esc(titre)}</span><b>${n}</b></div>` + html;
   const corpsDossiers = res.length
@@ -9701,26 +9796,68 @@ function majRechDossiers(q){
     </button>`;
   }).join("");
 
-  /* une fiche de carnet s'ouvre sur sa page — Immeubles ou Répertoire —,
-     dépliée et signalée */
-  const corpsFiches = fiches.slice(0,25).map(x=>{
-    const b = BOOKS[x.carnet], r = x.r;
-    const det = b.cols.map(([f,lab,kd])=> (kd === "sep" || f === "nom") ? "" :
-      (r[f] ? String(r[f]) : "")).filter(Boolean).slice(0,4).join("  ·  ");
-    return `<button type="button" class="rdoss" data-ofiche="${esc(x.carnet)}:${x.i}">
-      <span class="rnum">${esc(b.label)}</span>
-      <span class="rdet">${surl(r.nom)}<em>${surl(det || "—")}</em></span>
-      <span class="nat"><span class="nature vente">Carnet</span></span>
+  /* une fiche du répertoire des personnes */
+  const corpsRepert = repert.slice(0,25).map(f=>{
+    const det = [f.fonction, adrPers(f), f.tel1, f.email1].filter(Boolean)
+      .join("  ·  ");
+    return `<button type="button" class="rdoss" data-vpers="${esc(f.pid)}">
+      <span class="rnum">Personne</span>
+      <span class="rdet">${surl(titrePersonne(f) || nomUsuel(f) || "—")}
+        <em>${surl(det || "—")}</em></span>
+      <span class="nat"><span class="nature avenir">Répertoire</span></span>
     </button>`;
   }).join("");
 
-  const total = res.length + pers.length + fiches.length;
+  /* Les fiches de carnet, rangées PAR CARNET. Elles l'étaient toutes
+     ensemble sous « Fiches des carnets » ; dès que les recherches
+     d'acquéreurs y sont entrées, mêler une recherche et un notaire sous un
+     même titre n'avait plus de sens. Chaque carnet prend donc sa section,
+     et un carnet créé plus tard en prend une sans qu'on y touche. */
+  const parCarnet = {};
+  fiches.forEach(x=>{ (parCarnet[x.carnet] = parCarnet[x.carnet] || []).push(x); });
+  const corpsFiches = Object.keys(parCarnet).map(k=>{
+    const b = BOOKS[k], l = parCarnet[k];
+    return section(b.title, l.length, l.slice(0, 25).map(x=>{
+      const r = x.r;
+      /* le détail d'une fiche : ce qu'elle a de lisible. Une case cochée
+         s'écrivait « true » au milieu de la ligne, et un prix sans espace
+         ni euro ne se lisait pas. */
+      const det = (b.cols || []).map(([f, lab, kd])=>{
+        if(kd === "sep" || kd === "check" || kd === "portrait" || f === "nom") return "";
+        const v = r[f];
+        if(v === undefined || v === null || v === "" || v === true || v === false)
+          return "";
+        if(kd === "money"){ const n2 = num(v); return n2 === null ? "" : eur(n2); }
+        return String(v);
+      }).filter(Boolean).slice(0, 4).join("  ·  ");
+      return `<button type="button" class="rdoss" data-ofiche="${esc(k)}:${x.i}">
+        <span class="rnum">${esc(b.label)}</span>
+        <span class="rdet">${surl(libelleCarnet(k, r))}<em>${surl(det || "—")}</em></span>
+        <span class="nat"><span class="nature vente">${esc(k === "prospects"
+          ? "Recherche" : "Carnet")}</span></span>
+      </button>`;
+    }).join(""));
+  }).join("");
+
+  /* les listes : une ligne par liste, avec ce qu'elle contient de cherché */
+  const corpsListes = listes.slice(0, 12).map(x=> `<button type="button" class="rdoss"
+      data-oliste="${esc(x.cle)}">
+      <span class="rnum">Liste</span>
+      <span class="rdet">${esc(x.titre)}<em>${surl(x.valeurs.slice(0, 6).join("  ·  "))
+        }${x.valeurs.length > 6 ? "  ·  +" + (x.valeurs.length - 6) : ""}</em></span>
+      <span class="nat"><span class="nature avenir">Listes</span></span>
+    </button>`).join("");
+
+  const total = res.length + pers.length + repert.length + fiches.length
+              + listes.length;
   $("#rechDossList").innerHTML = total
     ? section("Dossiers", res.length, corpsDossiers) +
       section("Vendeurs et acquéreurs", pers.length, corpsPers) +
-      section("Fiches des carnets", fiches.length, corpsFiches)
+      section("Répertoire des personnes", repert.length, corpsRepert) +
+      corpsFiches +
+      section("Dans vos listes", listes.length, corpsListes)
     : `<p class="rvide">Rien ne contient « ${esc(q)} » — ni dossier, ni personne,
-        ni fiche de carnet.</p>`;
+        ni recherche, ni fiche de carnet.</p>`;
 }
 
 /* ------------------------------------------------- ouvrir une fiche ----- */
@@ -12631,8 +12768,8 @@ async function creerVisite(i, d, f, gens){
     const quand = b.debut.toLocaleDateString("fr-FR") + " à "
       + b.debut.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"});
     if(r) noterJournal(r, "Visite organisée", nomCourtBien(d.id) + " — le "
-      + quand + " · " + ou, "", d.id);
-    else noterAction({genre:"Visite organisée", dossier:d.id,
+      + quand + " · " + ou, "", d.id, fiche.id);
+    else noterAction({genre:"Visite organisée", dossier:d.id, rdv:fiche.id,
       texte:"le " + quand + " · " + ou});
     saveLists();
     renderApresReponse();
@@ -12775,14 +12912,21 @@ function prixDuBien(d){
 /* la ligne du temps : actions, rendez-vous, prix, dates clés, mêlés */
 function ligneDuTempsBien(d){
   const out = [];
-  /* Les actions « Visite organisée » et « Visite annulée » sont l'ombre du
-     rendez-vous lui-même, qui est juste en dessous avec sa date, ses
-     participants et son bouton : les deux lignes diraient la même chose. On
-     garde le rendez-vous, et l'on reporte sur lui qui l'a posé et quand. */
-  actionsDe({dossier:d.id}).filter(a=> !/^Visite /.test(a.genre || ""))
+  /* Une action « Visite organisée » est l'ombre du rendez-vous lui-même,
+     qui est juste en dessous avec sa date, ses participants et son bouton :
+     les deux lignes diraient la même chose. On écarte donc l'ombre —
+     MAIS SEULEMENT quand le rendez-vous existe, c'est-à-dire quand l'action
+     porte son identifiant. Les visites organisées avant que l'application
+     ne garde les rendez-vous n'en ont pas : les écarter les faisait
+     disparaître de l'histoire du bien, où elles sont justement ce qu'on
+     vient y chercher. */
+  actionsDe({dossier:d.id}).filter(a=> !(a.rdv && rdvParId(a.rdv)))
     .forEach(a=> out.push({
       t: a.t || 0, jour: jourDe(a.t), qui: a.qui || "", quoi: a.genre || "",
-      det: a.texte || "", genre: a.genre === "Note" ? "note" : ""}));
+      det: a.texte || "", genre: a.genre === "Note" ? "note" : "",
+      /* une visite d'avant se marque annulée à la main : son événement
+         Google nous est inconnu, on le dira */
+      vieux: /^Visite organisée/.test(a.genre || "") ? a.id : ""}));
   rdvDe({dossier:d.id}).forEach(x=>{
     const t = new Date(x.debut).getTime() || x.cree || 0;
     const pose = x.cree ? "posé le " + fdate(jourDe(x.cree)) : "";
@@ -12803,14 +12947,23 @@ function jourEnT(iso){
   const d = isoValide(iso) ? new Date(iso + "T12:00:00") : null;
   return d && !isNaN(d.getTime()) ? d.getTime() : 0;
 }
+/* l'état des filtres de CETTE ligne du temps : elle a les siens, pour que
+   chercher dans l'histoire d'un bien ne défasse pas le filtre posé sur
+   l'historique d'un demandeur qu'on vient de quitter */
+let HISTOB = {fg:"", fq:"", tri:"recent"};
 function renderHistoBien(){
   const z = $("#histoBienBody");
   if(!z) return;
-  const l = ligneDuTempsBien(D);
+  const tout = ligneDuTempsBien(D);
+  const l = tout.filter(x=> passeHisto(HISTOB, x.quoi,
+    [x.quoi, x.det, x.qui].join(" ")));
+  if((HISTOB.tri || "recent") === "ancien") l.reverse();
+  const genres = tout.map(x=> x.quoi)
+    .filter((g, i, t)=> g && t.indexOf(g) === i).sort(triFr);
   const rdvs = rdvDe({dossier:D.id});
   const aVenir = rdvs.filter(x=> !x.annule && rdvAVenir(x));
   z.innerHTML = `<div class="card"><h2>La vie de ce bien
-      <span class="cnt">${l.length}</span></h2>
+      <span class="cnt">${tout.length}</span></h2>
     <div class="body">
       <p class="muted" style="margin-top:0">Tout ce qui a été fait sur ce bien, du plus
         récent au plus ancien : les <b>actions</b> notées à la main, les <b>visites</b>,
@@ -12826,6 +12979,7 @@ function renderHistoBien(){
       ${aVenir.length ? `<p class="mdnote" style="margin:0 0 12px"><b>${aVenir.length}
         rendez-vous à venir</b> — ${esc(aVenir.map(x=> quandRdv(x)).join(", "))}. Il se
         lit en tête de la liste, et s'annule depuis sa ligne.</p>` : ""}
+      ${barreHisto(HISTOB, genres, l.length, "ligne")}
       ${l.length ? `<div class="jtable">${l.map(x=> `<div class="jrow${
           x.genre === "note" ? " note" : ""}${x.genre === "off" ? " off" : ""}">
         <span class="jquand">${esc(x.jour ? fdate(x.jour) : "—")}</span>
@@ -12834,10 +12988,14 @@ function renderHistoBien(){
         ${x.rdv ? `<span class="grow"></span>
           <button type="button" class="xbtn sup" data-rdvann="${esc(x.rdv)}"
             >Annuler</button>` : ""}
+        ${x.vieux ? `<span class="grow"></span>
+          <button type="button" class="xbtn sup" data-annvieux="${esc(x.vieux)}"
+            >Annuler</button>` : ""}
         </div>`).join("")}</div>`
-        : `<p class="muted" style="margin:0">Rien encore. L'histoire de ce bien
-           commencera à la première action, au premier changement de prix ou à la
-           première visite.</p>`}
+        : `<p class="muted" style="margin:0">${HISTOB.fg || HISTOB.fq
+           ? "Rien ne répond à ces filtres."
+           : "Rien encore. L'histoire de ce bien commencera à la première action, au "
+             + "premier changement de prix ou à la première visite."}</p>`}
     </div></div>`;
   if(typeof appliquerDroits === "function") appliquerDroits();
 }
@@ -12942,9 +13100,16 @@ function ouvrirAnnulationRdv(id){
   if(!x){ toast("Rendez-vous introuvable"); return; }
   if(x.annule){ toast("Ce rendez-vous est déjà annulé"); return; }
   const gens = x.gens || [];
-  popup({titre:"Annuler ce rendez-vous ?", genre:"erreur", large:true,
+  const passe = !rdvAVenir(x);
+  popup({titre: passe ? "Annuler ce rendez-vous passé ?" : "Annuler ce rendez-vous ?",
+    genre:"erreur", large:true,
     corps:`<p style="margin:0 0 10px"><b>${esc(x.titre)}</b><br>
         ${esc(quandRdv(x))}${x.lieu ? " · " + esc(x.lieu) : ""}</p>
+      ${passe ? `<p class="alerte" style="margin:0 0 10px"><b>Ce rendez-vous est déjà
+        passé : il a normalement eu lieu.</b> L'annuler maintenant le retire de votre
+        agenda et l'inscrit comme annulé dans les deux historiques — ce qui se dit d'une
+        visite qui ne s'est pas faite. Si elle a bien eu lieu, mieux vaut la laisser et
+        noter ce qu'elle a donné par <b>+ Créer une action</b>.</p>` : ""}
       <p style="margin:0 0 10px">Il sera <b>retiré de votre agenda Google</b> et marqué
         annulé ici. L'historique du bien et celui du demandeur en gardent la trace.</p>
       ${gens.length ? `<p style="margin:0 0 6px"><b>Prévenir les participants ?</b></p>
@@ -12997,13 +13162,51 @@ async function annulerRdv(id, motif, choix){
   const r = (L.prospects || []).filter(p=> p && p.id === x.recherche)[0];
   const det = nomCourtBien(x.dossier) + " — du " + quand
     + (x.motif ? " · " + x.motif : "") + " · " + dit;
-  if(r) noterJournal(r, "Visite annulée", det, "", x.dossier);
-  else noterAction({genre:"Visite annulée", dossier:x.dossier, texte:det});
+  if(r) noterJournal(r, "Visite annulée", det, "", x.dossier, x.id);
+  else noterAction({genre:"Visite annulée", dossier:x.dossier, rdv:x.id,
+    texte:det});
   saveLists();
   confirmationsRdv(x, "annulation");
   renderApresReponse();
   if(pageActive() === "histobien") renderHistoBien();
   toast("Rendez-vous annulé");
+}
+/* ---------------------------------- une visite d'avant les rendez-vous
+   Organisée quand l'application ne les gardait pas encore, elle n'existe
+   que comme ligne d'historique : son événement Google nous est inconnu, et
+   nous ne pouvons pas le supprimer à sa place. On le dit — et l'on inscrit
+   l'annulation, qui est le reste de ce qu'on peut faire. */
+function ouvrirAnnulationVieille(idAction){
+  const a = (L.actions || []).filter(x=> x && x.id === idAction)[0];
+  if(!a){ toast("Action introuvable"); return; }
+  const r = (L.prospects || []).filter(p=> p && p.id === a.recherche)[0];
+  popup({titre:"Annuler cette visite ?", genre:"erreur",
+    corps:`<p style="margin:0 0 10px"><b>${esc(a.genre)}</b> — ${esc(a.texte || "")}<br>
+        <span class="muted">notée le ${esc(fdate(jourDe(a.t)))}</span></p>
+      <p class="alerte" style="margin:0 0 10px"><b>Cette visite date d'avant que
+        l'application ne garde les rendez-vous</b> : son événement dans Google Agenda
+        nous est inconnu, et nous ne pouvons pas l'y supprimer à votre place. Il faudra
+        l'effacer à la main dans votre agenda.</p>
+      ${/^Visite/.test(a.genre || "") && jourDe(a.t) <= auj()
+        ? `<p style="margin:0 0 10px">Elle est d'ailleurs <b>déjà passée : elle a
+           normalement eu lieu</b>. L'annuler ici dit qu'elle ne s'est pas faite.</p>`
+        : ""}
+      <p style="margin:0 0 10px">L'annulation sera inscrite aux deux historiques, celui
+        du bien et celui du demandeur.</p>
+      <div class="pf plein"><label for="annvMotif">Motif (facultatif)</label>
+        <input type="text" id="annvMotif" placeholder="Le demandeur s'est désisté"></div>`,
+    boutons:[{lib:"Ne rien faire"},
+      {lib:"Inscrire l'annulation", primaire:true, action:()=>{
+        const motif = String(($("#annvMotif") || {}).value || "").trim();
+        const det = (a.texte || "") + (motif ? " · " + motif : "")
+          + " · à retirer à la main de l'agenda";
+        if(r) noterJournal(r, "Visite annulée", det, "", a.dossier);
+        else noterAction({genre:"Visite annulée", dossier:a.dossier, texte:det});
+        saveLists();
+        renderApresReponse();
+        if(pageActive() === "histobien") renderHistoBien();
+        toast("Annulation inscrite — pensez à l'effacer dans Google Agenda");
+      }}]});
 }
 /* ------------------------------------- le bloc des rendez-vous, réutilisé */
 function blocRdv(filtre, titre){
@@ -18409,7 +18612,7 @@ document.addEventListener("input", e=>{
     return;
   }
   if(t.dataset.fq !== undefined){
-    PERS.fq = t.value;
+    etatHisto().fq = t.value;
     redessinerHistorique();
     const c = $("[data-fq]");
     if(c){ c.focus(); c.setSelectionRange(c.value.length, c.value.length); }
@@ -18816,7 +19019,10 @@ $("#memeNotaire").addEventListener("change", e=>{
 
 document.addEventListener("change", e=>{
   if(e.target && e.target.dataset && e.target.dataset.fgenre !== undefined){
-    PERS.fg = e.target.value; redessinerHistorique(); return;
+    etatHisto().fg = e.target.value; redessinerHistorique(); return;
+  }
+  if(e.target && e.target.dataset && e.target.dataset.ftri !== undefined){
+    etatHisto().tri = e.target.value; redessinerHistorique(); return;
   }
   const t = e.target;
   const carnet = t.dataset.bookyn !== undefined;
@@ -18842,7 +19048,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvncreer],[data-rdvann],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvncreer],[data-rdvann],[data-annvieux],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],[data-proposer],[data-visite],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -19061,8 +19267,10 @@ document.addEventListener("click", e=>{
     toast("Fiche créée");
     return;
   }
-  if(t.dataset.fraz !== undefined){ PERS.fg = ""; PERS.fq = "";
+  if(t.dataset.fraz !== undefined){ const h = etatHisto(); h.fg = ""; h.fq = "";
     redessinerHistorique(); return; }
+  if(t.dataset.annvieux !== undefined){
+    ouvrirAnnulationVieille(t.dataset.annvieux); return; }
   if(t.dataset.perstri !== undefined){ PERS.tri = t.dataset.perstri;
     renderRepertoire(); return; }
   /* de la fiche d'une personne à sa fiche de carnet, et retour */
@@ -19080,6 +19288,7 @@ document.addEventListener("click", e=>{
     }, 60);
     return;
   }
+  if(t.dataset.oliste !== undefined){ ouvrirListe(t.dataset.oliste); return; }
   if(t.dataset.vpers){
     empilerFenetre();
     PERS.ouvert = t.dataset.vpers; PERS.onglet = "ident";
@@ -23798,13 +24007,20 @@ const AIDE = [
   "Rien n'est perdu : chaque annulation s'inscrit dans la carte <b>Ventes annulées</b>, avec "+
   "son stade, ses dates, le client, le négociateur et le notaire de l'époque, et une note "+
   "que l'on peut compléter à tout moment. Le nom du client reste trouvable par la loupe."],
- ["La loupe cherche aussi les fiches",
-  "La loupe du bandeau ne se limite plus aux dossiers : elle range ses résultats en trois "+
-  "familles — les <b>dossiers</b>, les <b>vendeurs et acquéreurs</b> de tous les dossiers, et "+
-  "les <b>fiches des carnets</b> (immeubles, syndics, notaires, négociateurs, "+
-  "diagnostiqueurs, banques). Un clic ouvre la fiche là où elle se saisit : la page s'affiche, "+
-  "la carte défile sous les yeux et clignote un instant. Le dossier en cours de saisie est "+
-  "cherché tel qu'il est à l'écran, sans attendre l'enregistrement."],
+ ["La loupe cherche dans tout",
+  "La loupe du bandeau cherche dans <b>tout ce que l'application contient</b>, et range ses "+
+  "résultats par famille : les <b>dossiers</b> ; les <b>vendeurs et acquéreurs</b> de tous "+
+  "les dossiers ; le <b>répertoire des personnes</b>, y compris les fiches qui ne sont "+
+  "encore rattachées à aucun dossier ; <b>chaque carnet</b> sous son propre titre — "+
+  "immeubles, notaires, personnes en charge, syndics, négociateurs, diagnostiqueurs, "+
+  "banques, et les <b>recherches d'acquéreurs</b>, qu'on trouve par le nom du demandeur "+
+  "comme par le reste ; et enfin <b>vos listes</b> elles-mêmes — « où est déclaré "+
+  "Trinquetaille ? » trouve la carte des quartiers, et le clic y mène, dépliée. "+
+  "Un clic ouvre la fiche là où elle se saisit : la page s'affiche, la carte défile sous "+
+  "les yeux et clignote un instant. Le dossier en cours de saisie est cherché tel qu'il "+
+  "est à l'écran, sans attendre l'enregistrement. "+
+  "<b>Un carnet créé plus tard y entrera de lui-même</b> : la loupe parcourt les carnets "+
+  "tels qu'ils sont déclarés, sans liste à tenir à jour de son côté."],
  ["Les personnes en charge d'un dossier",
   "Elles ont leur carnet au <b>Répertoire</b> : nom, fonction, téléphone, courriel. Elles ne "+
   "sont <b>rattachées à aucune étude</b> — une même personne peut suivre des dossiers pour "+
@@ -24928,10 +25144,26 @@ const AIDE = [
   "séparément, par courriel ou par WhatsApp : le message d'excuse s'ouvre déjà écrit. Et "+
   "elle laisse noter un <b>motif</b>, gardé à l'historique — six mois plus tard, c'est ce "+
   "qui dit si le demandeur s'était désisté ou si c'est le vendeur qui avait reporté. "+
+  "<b>Une visite déjà passée s'annule aussi</b>, et la fenêtre le dit autrement : elle a "+
+  "normalement eu lieu, et l'annuler écrit qu'elle ne s'est pas faite. Si elle a bien eu "+
+  "lieu, mieux vaut la laisser et noter ce qu'elle a donné par <b>+ Créer une action</b>. "+
+  "<b>Les visites organisées avant que l'application ne garde les rendez-vous</b> — "+
+  "celles d'avant cette version — n'existent que comme ligne d'historique : leur "+
+  "événement dans Google Agenda nous est inconnu. Elles portent tout de même un bouton "+
+  "<b>Annuler</b>, qui inscrit l'annulation dans les deux historiques et vous dit "+
+  "clairement qu'il faudra effacer l'événement à la main dans votre agenda. "+
   "<b>Si l'agenda ne répond pas</b>, le rendez-vous est quand même marqué annulé ici et "+
   "les participants peuvent être prévenus ; l'application vous dit alors franchement "+
   "qu'il faudra le supprimer à la main dans Google Agenda. Mieux vaut le savoir que de "+
   "le croire effacé."],
+ ["Chercher et trier dans un historique",
+  "Tous les historiques — celui d'un demandeur, celui d'une personne au répertoire, celui "+
+  "d'un bien — portent la même barre, sur <b>une seule ligne</b> : le <b>genre</b> "+
+  "d'action, une <b>recherche en toutes lettres</b>, et le <b>sens du tri</b> (du plus "+
+  "récent, ou du plus ancien). Le compte des lignes retenues se lit à droite, et "+
+  "<b>Effacer</b> rend la liste entière. "+
+  "Chaque historique garde ses propres filtres : chercher dans l'histoire d'un bien ne "+
+  "défait pas celui qu'on avait posé sur la fiche d'un demandeur."],
  ["L'historique d'un bien : la vie de la vente",
   "Le volet <b>Historique</b> d'un dossier rassemble, du plus récent au plus ancien, "+
   "<b>tout ce qui a été fait sur ce bien</b> : les <b>actions</b> notées à la main, les "+
