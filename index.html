@@ -581,6 +581,11 @@ table.grid-t td .ynb{min-width:48px;padding:3px 9px;font-size:11.5px}
 .listgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 @media(max-width:1000px){.listgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.listgrid{grid-template-columns:1fr}}
+/* une carte qui porte des textes entiers a besoin de toute la largeur :
+   trois colonnes conviennent à des listes de mots, pas à des courriels */
+.listcard.toute{grid-column:1/-1}
+.listcard.toute .crmod{max-width:none}
+.listcard.toute .plibody{display:block}
 .listcard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);
   box-shadow:var(--shadow);padding:12px 14px}
 .listcard h3{margin:0;font-size:12.5px;color:var(--navy);text-transform:uppercase;
@@ -696,6 +701,32 @@ table.envois tr.repondu td.emode b{color:#166534}
 .repnon{background:#f1f5f9;color:#64748b;border-radius:999px;padding:1px 8px;
   font-size:10.5px;font-weight:700}
 .raprow.refuse{opacity:.6}
+/* « proposé le 12/03 » : pour ne pas proposer deux fois le même bien en
+   croyant le faire pour la première */
+.rapdit{display:inline-block;font-size:11px;color:#92400e;background:#fef3c7;
+  border:1px solid #fcd34d;border-radius:20px;padding:1px 8px;margin:2px 0 0}
+/* les deux fenêtres d'action, sur un bien rapproché */
+.propo .pf,.rdvbox .pf{margin-bottom:10px}
+.propo input[type="text"],.propo select,.propo textarea,
+.rdvbox input,.rdvbox select{width:100%;background:var(--field);
+  border:1px solid var(--field-line);border-radius:8px;padding:7px 10px;font:inherit;
+  font-size:13.5px}
+.propo textarea{min-height:200px;resize:vertical;line-height:1.5}
+.rdvbox{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 14px;
+  align-items:start}
+.rdvbox > .plein{grid-column:1/-1}
+.rdvbox .pf.wide{grid-column:span 3}
+.rdvbox input:disabled{background:var(--accent-soft);color:var(--ink-2)}
+.rdvgens{display:flex;flex-wrap:wrap;gap:8px 26px}
+/* le nom d'une personne n'est pas une étiquette de champ : ni capitales,
+   ni interlettrage */
+.rdvgens label{display:flex;align-items:flex-start;gap:7px;font-size:13.5px;
+  text-transform:none;letter-spacing:0;color:var(--ink);cursor:pointer}
+.rdvgens label input{width:auto;flex:0 0 auto;margin-top:2px}
+.rdvgens em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);
+  text-transform:none;letter-spacing:0}
+@media(max-width:700px){.rdvbox{grid-template-columns:1fr 1fr}
+  .rdvbox .pf.wide{grid-column:1/-1}}
 .raprow.suivi{box-shadow:inset 3px 0 0 #16a34a}
 /* la carte d'Aujourd'hui range autrement : le prix et les écarts d'abord,
    le détail du bien ensuite — on y vient pour savoir s'il faut répondre */
@@ -1405,6 +1436,27 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .secqadd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px}
 .secqadd select{background:var(--field);border:1px solid var(--field-line);
   border-radius:8px;padding:6px 10px;font:inherit;font-size:13px}
+/* la bibliothèque de courriels, dans l'onglet Listes */
+.crmods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:900px){.crmods{grid-template-columns:1fr}}
+.crmod{border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;
+  background:#fff}
+.crmod header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.crmod .crnom{flex:1;font-weight:600;color:var(--navy);background:var(--field);
+  border:1px solid var(--field-line);border-radius:8px;padding:6px 10px;font:inherit}
+.crmod > label{display:block;font-size:11px;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--ink-3);margin:8px 0 3px}
+.crmod input[type="text"],.crmod textarea{width:100%;background:var(--field);
+  border:1px solid var(--field-line);border-radius:8px;padding:7px 10px;font:inherit;
+  font-size:13px}
+.crmod textarea{min-height:120px;resize:vertical;line-height:1.5}
+.crmots{margin-top:10px;font-size:12.5px}
+.crmots summary{cursor:pointer;color:var(--accent)}
+.crmots > div{columns:2;column-gap:24px;margin-top:8px}
+.crmots p{margin:0 0 3px;break-inside:avoid;color:var(--ink-2)}
+.crmots code{background:var(--accent-soft);border-radius:4px;padding:1px 4px;
+  font-size:12px;color:var(--navy)}
+@media(max-width:700px){.crmots > div{columns:1}}
 /* l'historique d'un prospect */
 .jtable{border:1px solid var(--line-2);border-radius:10px;overflow:hidden}
 .jrow{display:flex;gap:12px;align-items:baseline;padding:7px 12px;font-size:13px;
@@ -2247,7 +2299,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 20 octobre 2026, 13 h 21">Dossiers de vente</div>
+  <div class="brand" title="Version du 20 octobre 2026, 15 h 58">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2458,7 +2510,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>20 octobre 2026, 13 h 21</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>20 octobre 2026, 15 h 58</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2705,6 +2757,50 @@ const LISTS_DEFAULT = {
                "Terrain constructible","Terrain non constructible","Autre"],
   /* ce que la recherche vise — elle en porte le nom */
   nomRecherche:["Résidence principale","Investissement locatif","Résidence secondaire"],
+  /* ------------------------------------- la bibliothèque de courriels ----
+     Les modèles de messages envoyés aux demandeurs. Ce ne sont que des
+     points de départ : chacun se modifie, s'ajoute, se supprime depuis
+     l'onglet Listes, et le texte est encore modifiable au moment de
+     l'envoi. Les mots entre doubles accolades sont remplacés par ce que
+     disent le bien, le demandeur et la fiche agence — voir MOTS_COURRIEL. */
+  courriels: [
+    {id:"c-proposition", nom:"Proposition d'un bien",
+     objet:"{{type}} à {{ville}} — {{surface}}, {{prix}}",
+     corps:"Bonjour {{civilite}} {{nom}},\n\n"
+       + "Je pense avoir trouvé un bien qui correspond à votre recherche : "
+       + "un {{typeMin}} de {{surface}} à {{ville}}, au prix de {{prix}}.\n\n"
+       + "Vous en trouverez la présentation complète en pièce jointe, avec "
+       + "les photos.\n\n"
+       + "Dites-moi ce que vous en pensez : si le bien vous intéresse, je "
+       + "vous propose de le visiter dans les prochains jours.\n\n"
+       + "Bien à vous,\n{{nego}}\n{{negotel}}\n{{agence}}"},
+    {id:"c-relance", nom:"Relance après une proposition",
+     objet:"Suite à ma proposition — {{type}} à {{ville}}",
+     corps:"Bonjour {{civilite}} {{nom}},\n\n"
+       + "Je me permets de revenir vers vous au sujet du {{typeMin}} de "
+       + "{{surface}} à {{ville}} que je vous ai adressé.\n\n"
+       + "Souhaitez-vous le visiter ? Je reste à votre disposition pour "
+       + "convenir d'un rendez-vous, ou pour en chercher d'autres si "
+       + "celui-ci ne vous convient pas — dites-moi simplement ce qui vous "
+       + "a retenu.\n\n"
+       + "Bien à vous,\n{{nego}}\n{{negotel}}\n{{agence}}"},
+    {id:"c-visite", nom:"Confirmation d'une visite",
+     objet:"Visite du {{date}} à {{heure}} — {{type}} à {{ville}}",
+     corps:"Bonjour {{civilite}} {{nom}},\n\n"
+       + "Je vous confirme notre rendez-vous le {{date}} à {{heure}} pour "
+       + "la visite du {{typeMin}} de {{surface}} à {{ville}}.\n\n"
+       + "Rendez-vous {{lieu}}.\n\n"
+       + "La fiche du bien est en pièce jointe. À tout à l'heure — en cas "
+       + "d'imprévu, joignez-moi au {{negotel}}.\n\n"
+       + "Bien à vous,\n{{nego}}\n{{agence}}"},
+    {id:"c-apresvisite", nom:"Après la visite",
+     objet:"Après votre visite — {{type}} à {{ville}}",
+     corps:"Bonjour {{civilite}} {{nom}},\n\n"
+       + "Merci pour le temps que vous m'avez accordé aujourd'hui.\n\n"
+       + "Quel sentiment gardez-vous de ce {{typeMin}} ? N'hésitez pas à me "
+       + "dire franchement ce qui vous a plu et ce qui vous a retenu : cela "
+       + "m'aidera à vous proposer la suite.\n\n"
+       + "Bien à vous,\n{{nego}}\n{{negotel}}\n{{agence}}"}],
   /* Les quartiers, par commune. Un quartier n'existe que dans SA ville —
      « Trinquetaille » ne veut rien dire à Saint-Martin-de-Crau —, d'où un
      couple {ville, nom} et non une liste de mots. Elle part VIDE et se
@@ -3306,6 +3402,16 @@ function loadListesDepuis(v){
                source: String(q.source || "").trim()}))
     .filter(q=>{ const c = fold(q.ville) + "|" + fold(q.nom);
                  if(vusQ[c]) return false; vusQ[c] = true; return true; });
+  /* les modèles de courriels : un nom, un objet, un corps. Un modèle sans
+     nom n'est pas une fiche, c'est un oubli — on l'écarte. L'identifiant
+     sert à la fusion entre appareils : sans lui, renommer un modèle en
+     créerait un second à la synchronisation suivante. */
+  if(!Array.isArray(out.courriels)) out.courriels = [];
+  out.courriels = out.courriels.filter(x=> x && (String(x.nom || "").trim()
+      || String(x.objet || "").trim() || String(x.corps || "").trim()))
+    .map(x=> ({id: String(x.id || "").trim() || idCourriel(),
+               nom: String(x.nom || "").trim(),
+               objet: String(x.objet || ""), corps: String(x.corps || "")}));
   /* « Fin du mandat sans renouvellement » disait trop : un mandat prend fin,
      qu'on le renouvelle ou non — et le renouvellement se lit désormais dans
      le dossier qui le reprend. La liste enregistrée suit le nouveau libellé,
@@ -4412,9 +4518,15 @@ function majDepot(){
 function prixActe(dossier){ const x=(dossier||D).prix||{};
   const p=num(x.fai), h=num(x.honoraires);
   if(p===null) return null; return x.charge==="Acquéreur" ? p-(h||0) : p; }
-function tauxHono(){
-  const h = num(D.prix.honoraires);
-  const base = D.prix.charge === "Acquéreur" ? prixNet() : num(D.prix.fai);
+/* Ces lectures servaient la seule fiche ouverte. La fiche de présentation
+   d'un bien se compose maintenant pour un dossier QUELCONQUE — celui qu'on
+   propose à un demandeur depuis sa recherche —, sans l'ouvrir : chacune
+   prend donc le dossier en argument, et retombe sur le dossier ouvert quand
+   on ne lui en donne pas. Aucun appel existant n'en est changé. */
+function tauxHono(dossier){
+  const d = dossier || D;
+  const h = num(d.prix.honoraires);
+  const base = d.prix.charge === "Acquéreur" ? prixNet(d) : num(d.prix.fai);
   if(!h || !base) return null;
   return h / base * 100;
 }
@@ -5245,8 +5357,8 @@ function adresseBienCourte(){
   add(b.adresse); add(b.adresse2); add(b.cp); add(b.ville);
   return bouts.join(" ");
 }
-function typeBienLisible(){
-  const b = D.bien || {};
+function typeBienLisible(dossier){
+  const b = (dossier || D).bien || {};
   return b.type === "Autre" ? (b.typeAutre || "Autre") : (b.type || "");
 }
 function surfaceLisible(){
@@ -5766,8 +5878,8 @@ const ARGU_GROUPES = [
   {cle:"amb",   titre:"Atmosphère",          liste:ARGU_AMB},
   {cle:"cible", titre:"À qui il s'adresse",  liste:ARGU_CIBLE}
 ];
-function arguCoches(groupe){
-  const a = (D.argu || {})[groupe] || {};
+function arguCoches(groupe, dossier){
+  const a = ((dossier || D).argu || {})[groupe] || {};
   const def = ARGU_GROUPES.filter(g=> g.cle === groupe)[0];
   return def ? def.liste.filter(([k])=> !!a[k]) : [];
 }
@@ -5790,7 +5902,8 @@ const DETAIL_D = [
 /* La loi Carrez et les charges de copropriété n'ont de sens que sur un lot de
    copropriété : les montrer ailleurs, c'est inviter à les remplir pour rien.
    L'étage, lui, ne veut rien dire ailleurs que sur un appartement. */
-function estCoproBien(){ return (D.bien || {}).sitJur === "Copropriété"; }
+function estCoproBien(dossier){
+  return ((dossier || D).bien || {}).sitJur === "Copropriété"; }
 function estAppartement(){ return (D.bien || {}).type === "Appartement"; }
 
 /* --------------------------------- ce que le détail des pièces apprend ---
@@ -6803,7 +6916,8 @@ const COPRO_POINTS = [
   ["efp",         "EFP dans les charges"]
 ];
 const COPRO_ALERTE = ["saisonniere", "clim", "efp"];
-function residenceDuBien(){ return book("residences", (D.bien || {}).residence); }
+function residenceDuBien(dossier){
+  return book("residences", ((dossier || D).bien || {}).residence); }
 /* la carte ne vaut d'être montrée que si l'immeuble dit quelque chose */
 function coproRenseigne(){
   const r = residenceDuBien();
@@ -9145,6 +9259,112 @@ function carteQuartiers(){
         : `<p class="muted" style="margin:0">Aucun quartier pour l'instant.</p>`}
     </div></div>`;
 }
+/* =====================================================================
+   LA BIBLIOTHÈQUE DE COURRIELS
+   ---------------------------------------------------------------------
+   Proposer un bien, relancer, confirmer une visite : ce sont trois ou
+   quatre messages qu'on récrit chaque fois, et qu'on récrit un peu moins
+   bien à mesure que la journée avance. Ils deviennent des MODÈLES, rangés
+   dans l'onglet Listes comme le reste : on les modifie, on en ajoute, on
+   en supprime.
+
+   Les mots entre doubles accolades sont remplacés au moment de l'envoi.
+   Ce n'est pas un langage : c'est une liste fermée, écrite sous la carte,
+   et un mot inconnu est laissé tel quel plutôt que remplacé par du vide —
+   une faute de frappe se voit alors au lieu de trouer la phrase.
+   ===================================================================== */
+const MOTS_COURRIEL = [
+  ["civilite",  "la civilité du demandeur — M., Mme"],
+  ["prenom",    "son prénom"],
+  ["nom",       "son nom"],
+  ["type",      "le type du bien — Appartement"],
+  ["typeMin",   "le type en minuscules, pour le milieu d'une phrase"],
+  ["surface",   "la surface — 78 m²"],
+  ["prix",      "le prix affiché — 249 000 €"],
+  ["ville",     "la commune du bien"],
+  ["quartier",  "son quartier, s'il est renseigné"],
+  ["adresse",   "l'adresse du bien"],
+  ["mandat",    "le numéro du mandat"],
+  ["bien",      "l'intitulé complet — Appartement 78 m² 249 000 € — Mandat 1105"],
+  ["date",      "la date du rendez-vous, quand il y en a un"],
+  ["heure",     "son heure"],
+  ["lieu",      "le lieu du rendez-vous"],
+  ["nego",      "le négociateur qui suit le bien"],
+  ["negotel",   "son téléphone"],
+  ["negomail",  "son courriel"],
+  ["agence",    "le nom de l'agence"]
+];
+function idCourriel(){
+  return "cr" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+}
+/* ce que les doubles accolades valent, pour un bien et un demandeur donnés */
+function motsDuCourriel(d, pers, extra){
+  const c = critBien(d), o = donneesPubli(d);
+  const nego = book("negociateurs", o.negociateur);
+  const p = pers || {};
+  return Object.assign({
+    civilite: p.civilite || "",
+    prenom:   prenomUsuel(p) || p.prenom || "",
+    nom:      p.nom || "",
+    type:     c.type || "bien",
+    typeMin:  (c.type || "bien").toLowerCase(),
+    surface:  c.surface === null ? "" : m2txt(c.surface),
+    prix:     c.fai === null ? "" : eur(c.fai),
+    ville:    c.ville || "",
+    quartier: c.quartier || "",
+    adresse:  c.adresse || "",
+    mandat:   c.mandat || "",
+    bien:     intituleBien(d),
+    date:"", heure:"", lieu:"",
+    nego:     nego.nom || o.negociateur || "",
+    negotel:  nego.tel || "",
+    negomail: nego.email || "",
+    agence:   (L.agence || {}).nom || ""
+  }, extra || {});
+}
+/* Le remplacement. Un mot inconnu reste écrit tel quel : mieux vaut un
+   « {{prenon}} » bien visible dans le brouillon qu'un trou silencieux. */
+function remplirCourriel(txt, mots){
+  return String(txt == null ? "" : txt).replace(/\{\{(\w+)\}\}/g,
+    (tout, mot)=> mots[mot] !== undefined ? mots[mot] : tout);
+}
+function courrielsDisponibles(){
+  return (L.courriels || []).filter(Boolean);
+}
+/* ------------------------------------------- la carte de l'onglet Listes */
+function carteCourriels(){
+  const plie = estPlie("l_courriels", true);
+  const l = courrielsDisponibles();
+  const bloc = (m, i)=> `<div class="crmod">
+    <header><input type="text" data-courriel="${i}:nom" value="${esc(m.nom)}"
+        class="crnom" placeholder="Nom du modèle">
+      <span class="grow"></span>
+      <button type="button" class="xbtn sup" data-courrdel="${i}">Supprimer</button>
+    </header>
+    <label>Objet</label>
+    <input type="text" data-courriel="${i}:objet" value="${esc(m.objet)}">
+    <label>Message</label>
+    <textarea data-courriel="${i}:corps" rows="7">${esc(m.corps)}</textarea>
+  </div>`;
+  return `<div class="listcard toute">
+    <h3 class="pliable" data-pli="l_courriels">${chevron(plie)}Modèles de courriels
+      <span class="cnt">${l.length}</span></h3>
+    <div class="plibody"${plie ? ' style="display:none"' : ''}>
+      <p class="muted" style="margin:0 0 8px">Les messages envoyés aux demandeurs depuis
+        le volet <b>Biens à rapprocher</b> d'une recherche. Le texte reste modifiable
+        au moment de l'envoi : ce qui est ici n'est qu'un point de départ.</p>
+      ${l.length ? `<div class="crmods">${l.map(bloc).join("")}</div>`
+        : `<p class="muted" style="margin:0">Aucun modèle.</p>`}
+      <div class="fbtns" style="margin-top:10px">
+        <button type="button" class="addbtn" data-courradd="1">+ Ajouter un modèle</button>
+      </div>
+      <details class="crmots"><summary>Les mots remplacés automatiquement</summary>
+        <div>${MOTS_COURRIEL.map(([m, quoi])=>
+          `<p><code>{{${esc(m)}}}</code> ${esc(quoi)}</p>`).join("")}</div>
+      </details>
+    </div></div>`;
+}
+
 /* --------------------------------------- les vitesses, dans l'onglet Listes
    Elles ne servent qu'à une chose : convertir « 5 minutes à pied » en un
    rayon. Ce sont des vitesses de porte à porte, pas des performances —
@@ -9179,7 +9399,7 @@ function renderListes(){
         <span class="cnt">${(L[k]||[]).length}</span></h3>
       <div class="plibody"${plie?' style="display:none"':''}>
         <textarea data-list="${k}">${esc((L[k]||[]).join("\n"))}</textarea></div></div>`;
-  }).join("") + carteQuartiers() + carteVitesses();
+  }).join("") + carteQuartiers() + carteCourriels() + carteVitesses();
 
   const a = L.agence;
   $("#agenceBox").innerHTML =
@@ -11832,15 +12052,22 @@ const IC_REPROP = `<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="
   stroke-linejoin="round"><path d="M3.4 8a4.6 4.6 0 1 0 1.5-3.4"/>
   <path d="M2.6 2.9v3h3"/></svg>`;
 function boutonsReponse(i, id, etat){
+  /* Proposer et Visiter sont là quel que soit l'état : on propose un bien
+     déjà au suivi, on organise une seconde visite d'un bien déjà vu. Seul
+     « écarter » dépend de l'état, parce qu'il EST l'état. */
+  const actions = `<button type="button" class="ricone" data-proposer="${i}|${esc(id)}"
+      title="Proposer ce bien au demandeur par courriel">${IC_ENVOI}</button>
+    <button type="button" class="ricone" data-visite="${i}|${esc(id)}"
+      title="Organiser une visite">${IC_AGENDA}</button>`;
   if(etat === "suivi")
-    return `<span class="repok">suivi</span>
+    return `<span class="repok">suivi</span>${actions}
       <button type="button" class="ricone sup" data-suividel="${i}|${esc(id)}"
         title="Retirer du suivi">${IC_NON}</button>`;
   if(etat === "refuse")
-    return `<span class="repnon">refusé</span>
+    return `<span class="repnon">refusé</span>${actions}
       <button type="button" class="ricone" data-reproposer="${i}|${esc(id)}"
         title="Reproposer ce bien">${IC_REPROP}</button>`;
-  return `<button type="button" class="ricone oui" data-suivre="${i}|${esc(id)}"
+  return actions + `<button type="button" class="ricone oui" data-suivre="${i}|${esc(id)}"
       title="Mettre au suivi de ce demandeur">${IC_OK}</button>
     <button type="button" class="ricone sup" data-refuser="${i}|${esc(id)}"
       title="Refuser ce bien">${IC_NON}</button>`;
@@ -11870,13 +12097,394 @@ function ligneRapproBien(b, i, etat, ou){
           + (o.adresse ? " · " + esc(o.adresse) : "")}</em></span>`;
   const quoi = `<span class="rapquoi">${esc(resumeBien(o)) || "—"}</span>`;
   const prix = `<span class="rapprix">${o.fai === null ? "—" : esc(eur(o.fai))}</span>`;
-  const ec = `<span class="rapec">${pastillesEcarts(b)}</span>`;
+  const dejaDit = (i === undefined || i === null) ? ""
+    : diteProposition((L.prospects || [])[+i], o.id);
+  const ec = `<span class="rapec">${pastillesEcarts(b)}${dejaDit
+    ? `<span class="rapdit" title="Ce bien a déjà été proposé à ce demandeur">${
+        esc(dejaDit)}</span>` : ""}</span>`;
   const fin = `<span class="rapfin">${i === undefined || i === null ? ""
       : boutonsReponse(i, o.id, etat || "")}
       <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></span>`;
   return `<div class="raprow${auj ? " auj" : ""}${etat ? " " + etat : ""}">` +
     (auj ? qui + prix + ec + quoi + fin : qui + quoi + prix + ec + fin) + `</div>`;
 }
+
+/* =====================================================================
+   DEUX ACTIONS DE PLUS SUR UN BIEN RAPPROCHÉ
+   ---------------------------------------------------------------------
+   Écarter existait. S'y ajoutent PROPOSER — un courriel au demandeur, la
+   fiche du bien en pièce jointe — et VISITER — un rendez-vous dans
+   l'agenda Google.
+
+   Sur la pièce jointe, il faut être franc : le standard `mailto:`, qui
+   ouvre Outlook avec le message déjà écrit, ne sait PAS attacher un
+   fichier. Aucun logiciel n'y peut rien, ce n'est pas une limite
+   d'Outlook. La fiche est donc téléchargée d'abord, et il reste un geste :
+   la glisser dans le message. En échange, le courriel part de votre
+   adresse professionnelle et les réponses vous reviennent là où vous
+   travaillez — ce qui valait bien ce geste.
+
+   Le texte est aussi mis dans le presse-papiers : Outlook sous Windows
+   tronque les adresses `mailto:` longues, et un message coupé au milieu
+   serait pire qu'un message à recoller.
+   ===================================================================== */
+const IC_ENVOI = `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+  <rect x="1.8" y="3.4" width="12.4" height="9.2" rx="1.4"/>
+  <path d="M2.2 4.4 8 8.8l5.8-4.4"/></svg>`;
+const IC_AGENDA = `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+  <rect x="2" y="3.2" width="12" height="11" rx="1.4"/>
+  <path d="M2 6.4h12M5.4 1.8v2.6M10.6 1.8v2.6"/></svg>`;
+
+/* le demandeur à qui l'on écrit : la première personne de la recherche qui
+   ait une adresse, à défaut la première tout court */
+function destinatairesRecherche(r){
+  return personnesProspect(r || {}).map(p=>{
+    const f = p.pid ? fichePersonne(p.pid) : null;
+    const mail = (f && (f.email1 || f.email2)) || p.email || "";
+    const tel  = (f && (f.tel1 || f.tel2)) || p.tel || "";
+    return {p, nom: nomPersonneProspect(p) || titrePersonne(p) || "le demandeur",
+            email: String(mail || "").trim(), tel: String(tel || "").trim()};
+  });
+}
+function dossierDuBien(id){
+  const all = allDossiers();
+  return all[id] ? migrate(JSON.parse(JSON.stringify(all[id]))) : null;
+}
+/* ---------------------------------------------------- PROPOSER UN BIEN */
+function ouvrirProposition(i, id){
+  const r = (L.prospects || [])[+i];
+  const d = dossierDuBien(id);
+  if(!r || !d){ toast("Bien introuvable"); return; }
+  const gens = destinatairesRecherche(r);
+  const avec = gens.filter(x=> x.email);
+  const modeles = courrielsDisponibles();
+  if(!modeles.length){
+    popup({titre:"Aucun modèle de courriel", genre:"erreur",
+      corps:`<p style="margin:0">La bibliothèque est vide. Ajoutez-en un dans
+        l'onglet <b>Listes</b>, carte « Modèles de courriels ».</p>`});
+    return;
+  }
+  const mots = motsDuCourriel(d, (avec[0] || gens[0] || {}).p || {});
+  const m0 = modeles[0];
+  popup({titre:"Proposer ce bien", large:true,
+    corps:`<div class="propo">
+      <p class="mdnote" style="margin:0 0 10px"><b>${esc(intituleBien(d))}</b><br>
+        ${esc([mots.adresse, [critBien(d).cp, mots.ville].filter(Boolean).join(" ")]
+          .filter(Boolean).join(" · "))}</p>
+      <div class="pf"><label>À qui</label>
+        ${avec.length ? `<select id="propoQui">${avec.map((x, k)=>
+            `<option value="${k}">${esc(x.nom)} — ${esc(x.email)}</option>`).join("")
+          }</select>`
+        : `<p class="alerte" style="margin:0">Aucune adresse électronique au
+            répertoire pour ${esc(gens.map(x=> x.nom).join(" ni "))}. Le message sera
+            préparé sans destinataire : vous l'ajouterez dans votre messagerie.</p>`}
+      </div>
+      <div class="pf"><label for="propoMod">Modèle</label>
+        <select id="propoMod">${modeles.map((m, k)=>
+          `<option value="${k}">${esc(m.nom || "sans nom")}</option>`).join("")}</select>
+      </div>
+      <div class="pf"><label for="propoObjet">Objet</label>
+        <input type="text" id="propoObjet" value="${esc(remplirCourriel(m0.objet, mots))}">
+      </div>
+      <div class="pf"><label for="propoCorps">Message</label>
+        <textarea id="propoCorps" rows="12">${esc(remplirCourriel(m0.corps, mots))}</textarea>
+      </div>
+      <p class="muted" style="margin:8px 0 0">La <b>fiche du bien</b> est téléchargée en
+        PDF au moment de l'envoi : glissez-la dans le message. Le texte est aussi copié
+        dans le presse-papiers, au cas où votre messagerie raccourcirait l'objet ou le
+        corps.</p>
+    </div>`,
+    boutons:[{lib:"Annuler"}, {lib:"Préparer le message", primaire:true, action:()=>{
+      const qui = $("#propoQui");
+      const dest = avec.length ? avec[+(qui ? qui.value : 0)] : null;
+      envoyerProposition(+i, d, dest, ($("#propoObjet") || {}).value || "",
+                         ($("#propoCorps") || {}).value || "");
+    }}]});
+  /* changer de modèle réécrit l'objet et le corps — mais pas ce qu'on vient
+     d'y modifier à la main sans prévenir : on le demande. */
+  const sel = $("#propoMod");
+  if(sel) sel.onchange = ()=>{
+    const m = modeles[+sel.value] || {};
+    $("#propoObjet").value = remplirCourriel(m.objet, mots);
+    $("#propoCorps").value = remplirCourriel(m.corps, mots);
+  };
+  const quiSel = $("#propoQui");
+  if(quiSel) quiSel.onchange = ()=>{
+    const x = avec[+quiSel.value];
+    if(!x) return;
+    const m = modeles[+(($("#propoMod") || {}).value || 0)] || {};
+    const m2 = motsDuCourriel(d, x.p);
+    $("#propoObjet").value = remplirCourriel(m.objet, m2);
+    $("#propoCorps").value = remplirCourriel(m.corps, m2);
+  };
+}
+async function envoyerProposition(i, d, dest, objet, corps){
+  const r = (L.prospects || [])[i];
+  toast("Composition de la fiche…");
+  let fichier = "";
+  try{
+    const blob = await ficheBienPdf(d);
+    fichier = nomFichierFiche(d);
+    download(blob, fichier);
+  }catch(e){
+    toast("La fiche n'a pas pu être composée : " + e.message);
+  }
+  copierAvis(corps, "Le message");
+  const url = "mailto:" + encodeURIComponent((dest || {}).email || "")
+    + "?subject=" + encodeURIComponent(objet)
+    + "&body=" + encodeURIComponent(corps);
+  /* une adresse mailto trop longue est refusée en silence par Windows : on
+     n'envoie alors que l'objet, le corps restant dans le presse-papiers */
+  ouvrirMailto(url.length > 1800
+    ? "mailto:" + encodeURIComponent((dest || {}).email || "")
+      + "?subject=" + encodeURIComponent(objet)
+    : url);
+  noterProposition(r, d.id);
+  noterJournal(r, "Bien proposé", nomCourtBien(d.id)
+    + ((dest || {}).email ? " — à " + dest.email : "")
+    + (fichier ? " · fiche jointe" : ""), "", d.id);
+  saveLists();
+  renderApresReponse();
+}
+/* quand un bien a été proposé, et à qui : la ligne le dit, pour qu'on ne
+   propose pas deux fois le même bien en croyant le faire pour la première */
+/* la seule ligne qui quitte l'application : elle est isolée pour que le
+   banc d'essai puisse la regarder passer sans ouvrir de messagerie */
+function ouvrirMailto(url){ window.location.href = url; }
+function propositionsDe(r){
+  return (r && typeof r.proposes === "object" && r.proposes) ? r.proposes : {};
+}
+function noterProposition(r, id){
+  if(!r) return;
+  if(typeof r.proposes !== "object" || !r.proposes) r.proposes = {};
+  r.proposes[id] = Date.now();
+}
+function diteProposition(r, id){
+  const t = propositionsDe(r)[id];
+  return t ? "proposé le " + new Date(t).toLocaleDateString("fr-FR") : "";
+}
+
+/* ------------------------------------------------- ORGANISER UNE VISITE
+   Le rendez-vous se prépare ici et se pose dans l'agenda Google par le
+   script déployé dans votre Drive — celui qui porte déjà la base et les
+   pièces jointes. Il y met le demandeur en invité et la fiche du bien en
+   pièce jointe, ce qu'aucune adresse de page ne sait faire.
+
+   Quand le script n'est pas joignable — pas de réseau, pas de base
+   connectée, version pas encore republiée —, on ne perd pas la saisie :
+   la page Google Agenda s'ouvre, déjà remplie, et il reste à enregistrer.
+   Un filet, pas une seconde voie. */
+const DUREE_VISITE = 45;
+function lieuxDeVisite(d){
+  const c = critBien(d), ag = L.agence || {};
+  return [
+    {cle:"place",  lib:"Sur place",   adresse:[c.adresse, [c.cp, c.ville]
+       .filter(Boolean).join(" ")].filter(Boolean).join(", ")},
+    {cle:"agence", lib:"À l'agence",  adresse:[ag.nom, ag.adresse]
+       .filter(Boolean).join(", ")},
+    {cle:"autre",  lib:"Autre",       adresse:""}
+  ];
+}
+function finDeVisite(heure, duree){
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(heure || ""));
+  const n = num(duree);
+  if(!m || n === null) return "";
+  const t = (+m[1]) * 60 + (+m[2]) + Math.round(n);
+  const h = Math.floor(t / 60) % 24, mi = t % 60;
+  return String(h).padStart(2, "0") + ":" + String(mi).padStart(2, "0");
+}
+function ouvrirVisite(i, id){
+  const r = (L.prospects || [])[+i];
+  const d = dossierDuBien(id);
+  if(!r || !d){ toast("Bien introuvable"); return; }
+  const gens = destinatairesRecherche(r);
+  const lieux = lieuxDeVisite(d);
+  const demain = new Date(Date.now() + 86400000);
+  const jour = demain.getFullYear() + "-"
+    + String(demain.getMonth() + 1).padStart(2, "0") + "-"
+    + String(demain.getDate()).padStart(2, "0");
+  popup({titre:"Organiser une visite", large:true,
+    corps:`<div class="rdvbox">
+      <div class="pf plein"><label for="rdvTitre">Intitulé du rendez-vous</label>
+        <input type="text" id="rdvTitre" value="${esc("Visite " + intituleBien(d))}">
+      </div>
+      <div class="pf"><label for="rdvLieu">Lieu du rendez-vous</label>
+        <select id="rdvLieu">${lieux.map(x=>
+          `<option value="${x.cle}">${esc(x.lib)}</option>`).join("")}</select>
+      </div>
+      <div class="pf wide"><label for="rdvAdresse">Adresse</label>
+        <input type="text" id="rdvAdresse" value="${esc(lieux[0].adresse)}">
+      </div>
+      <div class="pf"><label for="rdvDate">Date</label>
+        <input type="date" id="rdvDate" value="${jour}"></div>
+      <div class="pf"><label for="rdvHeure">Heure de début</label>
+        <input type="time" id="rdvHeure" value="10:00"></div>
+      <div class="pf"><label for="rdvDuree">Durée (minutes)</label>
+        <input type="text" id="rdvDuree" inputmode="numeric" value="${DUREE_VISITE}"></div>
+      <div class="pf"><label>Fin</label>
+        <input type="text" id="rdvFin" value="${finDeVisite("10:00", DUREE_VISITE)}"
+          disabled></div>
+      <div class="pf plein"><label>Personnes associées</label>
+        ${gens.length ? `<div class="rdvgens">${gens.map((x, k)=>
+          `<label class="chkline"><input type="checkbox" data-rdvqui="${k}" checked>
+            <span>${esc(x.nom)}<em>${esc([x.email, x.tel].filter(Boolean)
+              .join("  ·  ") || "aucune coordonnée au répertoire")}</em></span>
+          </label>`).join("")}</div>`
+        : `<p class="muted" style="margin:0">Aucune personne saisie sur cette
+            recherche.</p>`}
+      </div>
+      <p class="muted plein" style="margin:4px 0 0">La <b>fiche du bien</b> en PDF est
+        jointe au rendez-vous. Les personnes cochées qui ont une adresse électronique
+        reçoivent l'invitation de Google ; les autres sont nommées dans le
+        rendez-vous, avec leurs coordonnées.</p>
+    </div>`,
+    boutons:[{lib:"Annuler"}, {lib:"Créer le rendez-vous", primaire:true, action:()=>{
+      const pris = gens.filter((x, k)=> {
+        const c = document.querySelector(`[data-rdvqui="${k}"]`);
+        return c && c.checked;
+      });
+      creerVisite(+i, d, {
+        titre:   ($("#rdvTitre") || {}).value || "",
+        lieu:    ($("#rdvLieu") || {}).value || "",
+        adresse: ($("#rdvAdresse") || {}).value || "",
+        date:    ($("#rdvDate") || {}).value || "",
+        heure:   ($("#rdvHeure") || {}).value || "",
+        duree:   ($("#rdvDuree") || {}).value || DUREE_VISITE
+      }, pris);
+    }}]});
+  /* le lieu commande l'adresse : « Sur place » et « À l'agence » la
+     remplissent, « Autre » la laisse à saisir */
+  const sel = $("#rdvLieu"), adr = $("#rdvAdresse");
+  if(sel) sel.onchange = ()=>{
+    const x = lieux.filter(y=> y.cle === sel.value)[0];
+    if(!x) return;
+    adr.value = x.adresse;
+    adr.readOnly = false;
+    if(x.cle === "autre") adr.focus();
+  };
+  const maj = ()=>{
+    const f = $("#rdvFin");
+    if(f) f.value = finDeVisite(($("#rdvHeure") || {}).value,
+                                ($("#rdvDuree") || {}).value) || "—";
+  };
+  ["rdvHeure", "rdvDuree"].forEach(k=>{
+    const z = $("#" + k);
+    if(z){ z.oninput = maj; z.onchange = maj; }
+  });
+}
+/* les deux bouts d'un rendez-vous, en ISO local — Google lit le décalage */
+function bornesRdv(date, heure, duree){
+  if(!date || !heure) return null;
+  const debut = new Date(date + "T" + heure + ":00");
+  if(isNaN(debut.getTime())) return null;
+  const n = num(duree);
+  const fin = new Date(debut.getTime() + (n === null ? DUREE_VISITE : n) * 60000);
+  return {debut, fin};
+}
+function versGoogle(dt){
+  const p = n=> String(n).padStart(2, "0");
+  return dt.getUTCFullYear() + p(dt.getUTCMonth() + 1) + p(dt.getUTCDate()) + "T"
+    + p(dt.getUTCHours()) + p(dt.getUTCMinutes()) + "00Z";
+}
+function texteDuRdv(d, gens){
+  const c = critBien(d);
+  const l = ["Visite organisée depuis Dossiers de vente.",
+             intituleBien(d),
+             [c.adresse, [c.cp, c.ville].filter(Boolean).join(" ")]
+               .filter(Boolean).join(", ")];
+  if(gens.length){
+    l.push("", "Demandeur" + (gens.length > 1 ? "s" : "") + " :");
+    gens.forEach(x=> l.push("  " + [x.nom, x.email, x.tel].filter(Boolean)
+      .join("  ·  ")));
+  }
+  return l.join("\n");
+}
+async function creerVisite(i, d, f, gens){
+  const r = (L.prospects || [])[i];
+  const b = bornesRdv(f.date, f.heure, f.duree);
+  if(!b){ toast("Il manque la date ou l'heure du rendez-vous"); return; }
+  const titre = String(f.titre || "").trim() || ("Visite " + intituleBien(d));
+  const texte = texteDuRdv(d, gens);
+  const invites = gens.map(x=> x.email).filter(Boolean);
+
+  let piece = null;
+  try{
+    const blob = await ficheBienPdf(d);
+    piece = {nom: nomFichierFiche(d), type:"application/pdf",
+             data: await blobEnB64(blob)};
+  }catch(e){ /* un rendez-vous sans fiche vaut mieux que pas de rendez-vous */ }
+
+  const noter = (ou)=>{
+    noterJournal(r, "Visite organisée", nomCourtBien(d.id) + " — le "
+      + b.debut.toLocaleDateString("fr-FR") + " à "
+      + b.debut.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"})
+      + " · " + ou, "", d.id);
+    saveLists();
+    renderApresReponse();
+  };
+  if(WEB){
+    try{
+      toast("Création du rendez-vous…");
+      const rep = await webAppel({action:"agenda", titre, lieu: f.adresse,
+        texte, debut: b.debut.toISOString(), fin: b.fin.toISOString(),
+        invites, piece});
+      if(rep && rep.ok){
+        noter("agenda Google");
+        popup({titre:"Rendez-vous créé",
+          corps:`<p style="margin:0 0 8px">« <b>${esc(titre)}</b> » est dans votre
+            agenda Google, le <b>${esc(b.debut.toLocaleDateString("fr-FR"))}</b> à
+            <b>${esc(b.debut.toLocaleTimeString("fr-FR",
+              {hour:"2-digit", minute:"2-digit"}))}</b>.</p>
+            ${invites.length ? `<p style="margin:0 0 8px">Invitation envoyée à
+              ${esc(invites.join(", "))}.</p>` : ""}
+            <p class="muted" style="margin:0">${piece
+              ? (rep.jointe ? "La fiche du bien y est jointe."
+                : "La fiche du bien est déposée dans votre Drive, et le rendez-vous "
+                  + "en donne le lien.")
+              : "La fiche du bien n'a pas pu être composée."}</p>
+            ${rep.lien ? `<p style="margin:8px 0 0"><a href="${esc(rep.lien)}"
+              target="_blank" rel="noopener">Ouvrir le rendez-vous</a></p>` : ""}`});
+        return;
+      }
+      throw new Error((rep && rep.erreur) || "réponse inattendue");
+    }catch(e){
+      /* le filet : la page Google Agenda, déjà remplie */
+      ouvrirAgendaGoogle(titre, f.adresse, texte, b, invites);
+      noter("page Google Agenda");
+      popup({titre:"Le script n'a pas pu créer le rendez-vous", genre:"erreur",
+        corps:`<p style="margin:0 0 8px">${esc(String(e.message || e))}</p>
+          <p style="margin:0 0 8px">La page <b>Google Agenda</b> s'est ouverte à la
+          place, déjà remplie : il vous reste à cliquer sur « Enregistrer ».</p>
+          <p class="muted" style="margin:0">Par cette voie, la fiche du bien ne peut
+          pas être jointe. Si cela se répète, republiez le script depuis l'onglet
+          <b>Listes</b> → « Base partagée » : la création d'un rendez-vous demande la
+          version 11 au moins.</p>`});
+      return;
+    }
+  }
+  ouvrirAgendaGoogle(titre, f.adresse, texte, b, invites);
+  noter("page Google Agenda");
+}
+function ouvrirAgendaGoogle(titre, lieu, texte, b, invites){
+  const u = "https://calendar.google.com/calendar/render?action=TEMPLATE"
+    + "&text=" + encodeURIComponent(titre)
+    + "&dates=" + versGoogle(b.debut) + "/" + versGoogle(b.fin)
+    + "&details=" + encodeURIComponent(texte)
+    + "&location=" + encodeURIComponent(lieu || "")
+    + (invites.length ? "&add=" + encodeURIComponent(invites.join(",")) : "");
+  window.open(u, "_blank", "noopener");
+}
+function blobEnB64(blob){
+  return new Promise((res, rej)=>{
+    const f = new FileReader();
+    f.onload = ()=> res(String(f.result).split(",")[1] || "");
+    f.onerror = ()=> rej(new Error("lecture impossible"));
+    f.readAsDataURL(blob);
+  });
+}
+
 /* -------------------------------------------- le volet « Biens à rapprocher »
    Trois temps : ce qui attend une réponse, ce qu'on a déjà pris au suivi, ce
    qu'on a refusé — et, replié, pourquoi les autres ne sortent pas. */
@@ -17136,6 +17744,15 @@ document.addEventListener("input", e=>{
      le reste : un champ qui se vide doit perdre sa couleur même si la suite
      du traitement s'arrête en chemin */
   if(t.closest && t.closest("#prospBody")) marquerRempli(t);
+  /* un modèle de courriel : on écrit dedans, il s'enregistre. Au fil de la
+     frappe — un modèle à moitié écrit qu'on perdrait en changeant d'onglet
+     serait une mauvaise surprise. */
+  if(t.dataset && t.dataset.courriel !== undefined){
+    const [i, champ] = String(t.dataset.courriel).split(":");
+    const m = (L.courriels || [])[+i];
+    if(m){ m[champ] = t.value; saveLists(); }
+    return;
+  }
 
   if(t.dataset.b !== undefined){
     set(D, t.dataset.b, t.value);
@@ -17666,10 +18283,10 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
-    "[data-refuser],[data-reproposer],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
+    "[data-refuser],[data-reproposer],[data-proposer],[data-visite],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
   if(!t) return;
 
   /* Un trombone peut vivre DANS un titre repliable — c'est le cas sur la page
@@ -17972,6 +18589,31 @@ document.addEventListener("click", e=>{
     majAideSecteur();
     return;
   }
+  if(t.dataset.courradd !== undefined){
+    if(!Array.isArray(L.courriels)) L.courriels = [];
+    L.courriels.push({id:idCourriel(), nom:"Nouveau modèle", objet:"", corps:""});
+    saveLists();
+    PLIS["l_courriels"] = false;
+    renderListes();
+    const z = document.querySelector('[data-courriel="'
+      + (L.courriels.length - 1) + ':nom"]');
+    if(z){ z.focus(); z.select(); }
+    return;
+  }
+  if(t.dataset.courrdel !== undefined){
+    const i = +t.dataset.courrdel, m = (L.courriels || [])[i];
+    if(!m) return;
+    popup({titre:"Supprimer ce modèle ?", genre:"erreur",
+      corps:`<p style="margin:0">« <b>${esc(m.nom || "sans nom")}</b> » sera retiré de
+        la bibliothèque. Les messages déjà envoyés ne sont pas touchés.</p>`,
+      boutons:[{lib:"Annuler"}, {lib:"Supprimer", primaire:true, action:()=>{
+        noterRetraitListe("courriels", m);
+        L.courriels.splice(i, 1);
+        saveLists(); renderListes();
+        toast("Modèle supprimé");
+      }}]});
+    return;
+  }
   if(t.dataset.sectplein !== undefined){
     pleinEcranSecteur(t.dataset.sectplein === "1");
     return;
@@ -18078,6 +18720,14 @@ document.addEventListener("click", e=>{
     noterJournal(L.prospects[+i], "Bien retiré du suivi", nomCourtBien(id), "", id);
     saveLists();
     renderApresReponse();
+    return; }
+  if(t.dataset.proposer){
+    const [i, id] = t.dataset.proposer.split("|");
+    ouvrirProposition(+i, id);
+    return; }
+  if(t.dataset.visite){
+    const [i, id] = t.dataset.visite.split("|");
+    ouvrirVisite(+i, id);
     return; }
   if(t.dataset.refuser){
     const [i, id] = t.dataset.refuser.split("|");
@@ -19919,13 +20569,26 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 10
+ * Base en ligne pour « Dossiers de vente »  —  version 11
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
- * Cette version 10 reconnaît une fiche de carnet à son IDENTIFIANT quand
+ * Cette version 11 sait poser un RENDEZ-VOUS DE VISITE dans votre agenda
+ * Google : titre, lieu, horaire, le demandeur en invité, et la fiche du
+ * bien en pièce jointe. Elle demande donc une autorisation de plus —
+ * l'accès à votre agenda —, que Google vous redemandera à la première
+ * utilisation. Tant que vous n'organisez pas de visite depuis
+ * l'application, rien ne change.
+ *
+ * POUR QUE LA FICHE SOIT UNE VRAIE PIÈCE JOINTE du rendez-vous, et non
+ * un lien dans sa description, activez le service avancé de l'agenda :
+ * dans l'éditeur du script, « Services » (+) → « Google Calendar API »
+ * → Ajouter. Sans cela tout fonctionne, mais la fiche est déposée dans
+ * votre Drive et le rendez-vous en donne l'adresse.
+ *
+ * La version 10 reconnaissait une fiche de carnet à son IDENTIFIANT quand
  * elle en porte un, et non plus à son seul nom. C'est ce qu'exige le
  * nouveau fichier des acquéreurs : deux personnes peuvent s'appeler
  * pareil et chercher deux biens différents, et aucune ne doit effacer
@@ -19996,7 +20659,14 @@ const SCRIPT_GOOGLE = `/**
  *  → crayon → Version « Nouvelle version » → « Déployer ». L'adresse ne change
  *  pas, et vos dossiers sont intacts. Sans cette republication, Google
  *  continue de servir l'ancien code et les pièces jointes ne partiront pas.
+ *  En venant d'une version antérieure à la 11, la première visite créée
+ *  déclenchera une nouvelle demande d'autorisation (votre agenda) :
+ *  acceptez-la, c'est votre propre script qui la demande.
  */
+
+/** La version de CE script. L'application la lit et vous prévient quand le
+ *  script déployé dans votre Drive est plus ancien qu'elle ne l'attend. */
+const VERSION_SCRIPT = 11;
 
 /** Mot de passe partagé — mettez le vôtre, et le même dans l'application. */
 const CLE = 'changez-moi';
@@ -20053,6 +20723,7 @@ function doPost(e) {
      besoin du verrou, et un envoi de plusieurs méga-octets ne doit pas bloquer
      l'enregistrement des dossiers pendant ce temps. */
   try {
+    if (q.action === 'agenda')          return sortie(agendaCreer(q));
     if (q.action === 'piece_envoi')     return sortie(pieceEnvoi(q));
     if (q.action === 'piece_lire')      return sortie(pieceLire(q));
     if (q.action === 'piece_renommer')  return sortie(pieceRenommer(q));
@@ -20247,6 +20918,83 @@ function pieceEnvoi(q) {
   return { ok: true, drive: f.getId(), nom: nom, taille: f.getSize() };
 }
 
+/* ------------------------------------------------------------- Agenda
+ *
+ * Un rendez-vous de visite, posé dans l'agenda de celui qui a déployé ce
+ * script. Trois choses s'y jouent :
+ *
+ *  · les INVITÉS — les adresses du demandeur, à qui Google envoie son
+ *    invitation ;
+ *  · la PIÈCE JOINTE — la fiche du bien en PDF. CalendarApp ne sait pas
+ *    attacher ; le service avancé « Google Calendar API », lui, sait le
+ *    faire à partir d'un fichier du Drive. On l'essaie, et s'il n'est pas
+ *    activé dans le projet, on se rabat sur le LIEN du fichier écrit dans
+ *    la description : la fiche est alors à un clic, ce qui vaut mieux
+ *    qu'un échec ;
+ *  · le LIEU, qui est une adresse : Google Agenda la rend cliquable, et
+ *    le téléphone y trouve son itinéraire.
+ *
+ * { titre, lieu, texte, debut(ISO), fin(ISO), invites[], piece{nom,type,data} }
+ *   -> { ok, lien, jointe }
+ */
+function agendaCreer(q) {
+  const debut = new Date(q.debut), fin = new Date(q.fin);
+  if (isNaN(debut.getTime()) || isNaN(fin.getTime()))
+    return { erreur: 'dates du rendez-vous illisibles' };
+  const titre = String(q.titre || 'Visite');
+  const invites = (q.invites || []).filter(function (x) { return !!x; });
+
+  /* la fiche, d'abord : son lien peut entrer dans la description */
+  let fichier = null;
+  if (q.piece && q.piece.data) {
+    try {
+      const blob = Utilities.newBlob(Utilities.base64Decode(q.piece.data),
+        q.piece.type || 'application/pdf', nettoieNom(q.piece.nom) || 'Fiche.pdf');
+      const dossier = dossierChemin(['Fiches de visite']);
+      blob.setName(nomLibre(dossier, q.piece.nom || 'Fiche.pdf'));
+      fichier = dossier.createFile(blob);
+    } catch (err) { fichier = null; }
+  }
+  let texte = String(q.texte || '');
+  if (fichier) texte += '\n\nFiche du bien : ' + fichier.getUrl();
+
+  /* la voie complète : le service avancé, qui sait joindre un fichier */
+  if (fichier && typeof Calendar !== 'undefined' && Calendar.Events) {
+    try {
+      const ev = Calendar.Events.insert({
+        summary: titre,
+        location: String(q.lieu || ''),
+        description: texte,
+        start: { dateTime: debut.toISOString() },
+        end:   { dateTime: fin.toISOString() },
+        attendees: invites.map(function (m) { return { email: m }; }),
+        attachments: [{
+          fileUrl: fichier.getUrl(),
+          title: fichier.getName(),
+          mimeType: 'application/pdf'
+        }]
+      }, 'primary', { supportsAttachments: true, sendUpdates: 'all' });
+      return { ok: true, lien: ev.htmlLink || '', jointe: true };
+    } catch (err) {
+      /* service avancé non activé : on continue par la voie simple */
+    }
+  }
+  const cal = CalendarApp.getDefaultCalendar();
+  const ev = cal.createEvent(titre, debut, fin, {
+    description: texte,
+    location: String(q.lieu || ''),
+    guests: invites.join(','),
+    sendInvites: invites.length > 0
+  });
+  return { ok: true, lien: lienEvenement(ev, cal), jointe: false };
+}
+function lienEvenement(ev, cal) {
+  try {
+    return 'https://calendar.google.com/calendar/u/0/r/eventedit/'
+      + Utilities.base64Encode(ev.getId().split('@')[0] + ' '
+          + cal.getId()).replace(/=+$/, '');
+  } catch (err) { return ''; }
+}
 /** { drive } -> { ok, data(base64), type, nom } */
 function pieceLire(q) {
   const f = DriveApp.getFileById(q.drive);
@@ -20606,7 +21354,7 @@ function portier(q, action) {
 function etatServeur(q) {
   const base = lireComptes();
   const c = base.comptes.length ? quiEst(base, q.jeton) : null;
-  return { ok: true, version: 10, comptes: base.comptes.length,
+  return { ok: true, version: VERSION_SCRIPT, comptes: base.comptes.length,
            profil: c ? publicCompte(c) : null };
 }
 
@@ -20849,6 +21597,13 @@ function mdpProvisoire(){
 
 
 let WEB = null, WEB_MAJ = 0, WEB_ETAT = "", WEB_MSG = "";
+/* La version du script attendue par CETTE page, et celle que le script
+   déployé annonce. Un script resté en arrière ne se voyait pas : il
+   répondait normalement, et seule la fonction nouvelle échouait, plus tard,
+   sans qu'on sache pourquoi. Il se dit maintenant à l'écran. */
+const SCRIPT_ATTENDU = 11;
+let WEB_VERSION = null;
+let WEB_VOIR_SCRIPT = false;
 /* ce qui a été tapé dans le formulaire, pour ne pas le perdre en cas d'échec */
 let WEB_SAISIE = {url:"", cle:""};
 function chargerReglageWeb(){
@@ -21341,6 +22096,8 @@ async function interrogerServeur(){
   if(!WEB) { SERRURE_ACTIVE = false; return; }
   try{
     const d = await webAppel({action:"etat", jeton: (SEANCE || {}).jeton || ""});
+    /* une version absente est une version d'avant qu'on les compte */
+    WEB_VERSION = num(d.version) === null ? 0 : num(d.version);
     SERRURE_ACTIVE = (d.comptes || 0) > 0;
     if(SERRURE_ACTIVE && !d.profil) poserSeance(null);
     else if(d.profil && SEANCE) { SEANCE.profil = d.profil; poserSeance(SEANCE); }
@@ -21626,11 +22383,27 @@ function renderFichier(){
       ? `<span class="fetat ko">injoignable${WEB_MSG ? " — " + esc(WEB_MSG) : ""}</span>`
       : `<span class="fetat ok">connectée${WEB_MAJ
           ? " — " + new Date(WEB_MAJ).toLocaleTimeString("fr-FR") : ""}</span>`;
+    /* la version du script déployé, et ce qu'il faut en faire */
+    const vieux = WEB_VERSION !== null && WEB_VERSION < SCRIPT_ATTENDU;
+    const dire = WEB_VERSION === null
+      ? `<span class="muted">version du script inconnue — la base n'a pas encore
+         répondu</span>`
+      : vieux
+        ? `<div class="alerte" style="margin:10px 0"><b>Votre script est en version ${
+            WEB_VERSION || "antérieure à 10"}, l'application en attend ${SCRIPT_ATTENDU}.</b>
+            Les fonctions ajoutées depuis ne marcheront pas — à commencer par les
+            <b>rendez-vous de visite</b> dans votre agenda. Recopiez le script ci-dessous
+            dans votre projet, remettez votre clé, puis republiez :
+            <b>Déployer → Gérer les déploiements → crayon → Nouvelle version</b>.</div>`
+        : `<span class="muted">script en version ${WEB_VERSION} — à jour</span>`;
     z.innerHTML = `<div class="fligne"><b>Base en ligne</b> ${etat}</div>
       <p class="muted" style="margin-top:0">${esc(WEB.url)}</p>
+      <p style="margin:2px 0 0;font-size:12.5px">${dire}</p>
       <div class="fbtns">
         <button class="addbtn" id="wEnreg">Enregistrer dans la base</button>
         <button class="tbtn light" id="wCharger">Reprendre depuis la base</button>
+        <button class="tbtn light${vieux ? " on" : ""}" id="wScriptVoir">${vieux
+          ? "Mettre à jour le script" : "Voir le script"}</button>
         <button class="tbtn light" id="wModif">Modifier l'adresse…</button>
         <button class="xbtn" id="wDetacher">Détacher</button>
       </div>
@@ -21639,7 +22412,11 @@ function renderFichier(){
       à renouveler.</p>`;
     $("#wEnreg").onclick    = ()=>webEnregistrer(false);
     $("#wCharger").onclick  = ()=>webCharger(false);
+    $("#wScriptVoir").onclick = ()=>{ WEB_SAISIE = {url:WEB.url, cle:WEB.cle};
+                                      WEB_VOIR_SCRIPT = true;
+                                      WEB_ETAT = "form"; renderFichier(); };
     $("#wModif").onclick    = ()=>{ WEB_SAISIE = {url:WEB.url, cle:WEB.cle};
+                                    WEB_VOIR_SCRIPT = false;
                                     WEB_ETAT = "form"; renderFichier(); };
     $("#wDetacher").onclick = webDetacher;
     if(WEB_ETAT === "form") formulaireWeb(z, WEB.url, WEB.cle);
@@ -21782,8 +22559,9 @@ function formulaireWeb(z, url, cle){
       <button class="addbtn" id="wValider">Connecter</button>
       <button class="tbtn light" id="wAnnuler">Annuler</button>
     </div>
-    <details class="wnotice"><summary>Comment obtenir cette adresse ? (une seule fois,
-      dix minutes)</summary>
+    <details class="wnotice" id="wNotice"${WEB_VOIR_SCRIPT ? " open" : ""}><summary>Le
+      script à coller dans Google Apps Script — version ${SCRIPT_ATTENDU}
+      ${WEB ? "" : "(installation : une seule fois, dix minutes)"}</summary>
       <ol>
         <li>Ouvrez <b>script.google.com</b> et créez un <b>Nouveau projet</b>.</li>
         <li>Effacez tout le contenu de <code>Code.gs</code> et collez le script ci-dessous
@@ -21811,6 +22589,11 @@ function formulaireWeb(z, url, cle){
       <pre id="wScript">${esc(SCRIPT_GOOGLE)}</pre>
     </details>`;
   z.appendChild(bloc);
+  if(WEB_VOIR_SCRIPT){
+    WEB_VOIR_SCRIPT = false;
+    const n = $("#wNotice");
+    if(n) setTimeout(()=> n.scrollIntoView({behavior:"smooth", block:"start"}), 60);
+  }
   $("#wValider").onclick = async ()=>{
     const b = $("#wValider"); b.disabled = true; b.textContent = "Connexion…";
     WEB_SAISIE = {url: $("#wUrl").value, cle: $("#wCle").value};
@@ -23316,8 +24099,11 @@ const AIDE = [
   "souvent ce qui manque le plus six mois plus tard."],
  ["Répondre à un bien rapproché",
   "Le volet <b>Biens à rapprocher</b> range les biens en trois : <b>sans réponse</b>, "+
-  "<b>déjà au suivi</b>, <b>refusés</b>. Deux icônes sur chaque ligne : la coche le met au "+
-  "<b>suivi du demandeur</b>, la croix l'<b>écarte</b>. "+
+  "<b>déjà au suivi</b>, <b>refusés</b>. Quatre icônes sur chaque ligne : "+
+  "l'<b>enveloppe</b> propose le bien au demandeur par courriel, le <b>calendrier</b> "+
+  "organise sa visite, la <b>coche</b> le met au <b>suivi du demandeur</b>, la "+
+  "<b>croix</b> l'<b>écarte</b>. Les deux premières sont là quel que soit l'état du "+
+  "bien : on propose un bien déjà au suivi, on organise une seconde visite. "+
   "Écarter ouvre une petite fenêtre : la <b>date</b> — celle du jour, modifiable, car on "+
   "saisit souvent le lendemain — et le <b>motif</b>. "+
   "<b>La liste des motifs se complète sur place</b> : le bouton <b>+</b> à droite du menu "+
@@ -23335,6 +24121,98 @@ const AIDE = [
   "regard et n'existe plus. Les mêmes icônes figurent sur la carte d'<b>Aujourd'hui</b>, "+
   "pour répondre sans ouvrir la fiche. Et la colonne <b>Sans réponse</b> de la liste des "+
   "recherches compte, pour chacune, ce qui attend encore votre avis."],
+ ["Proposer un bien par courriel",
+  "L'<b>enveloppe</b>, sur la ligne d'un bien rapproché, ouvre une fenêtre : le "+
+  "destinataire (pris au répertoire), un <b>modèle de message</b>, l'objet et le texte, "+
+  "tous deux modifiables avant l'envoi. Changer de modèle récrit les deux. "+
+  "Au clic sur <b>Préparer le message</b>, trois choses se passent : la <b>fiche du "+
+  "bien</b> en PDF est téléchargée, le texte est copié dans le <b>presse-papiers</b>, et "+
+  "votre <b>logiciel de courrier</b> s'ouvre avec le destinataire, l'objet et le message "+
+  "déjà écrits. "+
+  "<b>Il reste un geste : glisser le PDF dans le message.</b> Et il faut être franc sur "+
+  "la raison — le standard qui ouvre votre messagerie (<i>mailto</i>) ne sait pas "+
+  "attacher un fichier. Aucun logiciel n'y peut rien, ce n'est pas une limite d'Outlook. "+
+  "En échange, le message part de <b>votre adresse professionnelle</b> et les réponses "+
+  "vous reviennent là où vous travaillez. "+
+  "Le texte est aussi dans le presse-papiers parce qu'Outlook, sous Windows, "+
+  "<b>tronque les messages très longs</b> : si le vôtre arrive coupé, un collage le "+
+  "remet entier. "+
+  "L'envoi s'inscrit à l'<b>historique</b> du demandeur, et la ligne du bien porte "+
+  "désormais « <b>proposé le …</b> » : on ne propose pas deux fois le même bien en "+
+  "croyant le faire pour la première."],
+ ["Les modèles de courriels",
+  "Ils vivent dans l'onglet <b>Listes</b>, carte « <b>Modèles de courriels</b> ». Quatre "+
+  "sont livrés — proposer un bien, relancer, confirmer une visite, revenir après la "+
+  "visite —, et ce ne sont que des points de départ : chacun se <b>modifie</b>, on en "+
+  "<b>ajoute</b>, on en <b>supprime</b>. "+
+  "Les mots entre <b>doubles accolades</b> sont remplacés à l'envoi par ce que disent le "+
+  "bien, le demandeur et la fiche agence : <code>{{civilite}}</code>, "+
+  "<code>{{nom}}</code>, <code>{{type}}</code>, <code>{{surface}}</code>, "+
+  "<code>{{prix}}</code>, <code>{{ville}}</code>, <code>{{nego}}</code>… La liste "+
+  "complète se déplie au bas de la carte. "+
+  "Un mot mal orthographié n'est <b>pas</b> remplacé par du vide : il reste écrit tel "+
+  "quel dans le brouillon, où il se voit — un trou silencieux dans une phrase serait "+
+  "bien pire."],
+ ["La fiche de présentation du bien, en PDF",
+  "C'est la pièce qu'on joint à une proposition, et celle qu'on emporte à une visite. "+
+  "Elle se compose <b>sans ouvrir le dossier du bien</b>, depuis la recherche du "+
+  "demandeur, et tient en une à trois pages : "+
+  "l'<b>en-tête</b> de l'agence ; le <b>type et la surface</b>, l'adresse, le quartier et "+
+  "le numéro de mandat ; le <b>prix</b> avec la charge des honoraires et, s'ils sont à "+
+  "l'acquéreur, le taux et le prix hors honoraires ; la <b>photo principale</b> ; les "+
+  "<b>points essentiels</b> en deux colonnes — surfaces, pièces, étage, exposition, "+
+  "état, chauffage, annexes, copropriété, charges, taxe foncière ; les <b>deux "+
+  "étiquettes du DPE</b> avec les dépenses annuelles estimées ; le <b>mot du "+
+  "négociateur</b>, tiré de l'argumentaire du bien ; puis les <b>photos</b> et les "+
+  "<b>mentions légales</b>. "+
+  "<b>Dix photos au plus</b> : au-delà, le courriel ne passe plus et personne ne regarde "+
+  "la onzième. Celles du bien d'abord, la principale en tête, puis celles de l'immeuble. "+
+  "Chacune est redessinée et recomprimée : une fiche de dix photos pèse moins d'un "+
+  "méga-octet. "+
+  "Les <b>mentions légales</b> sont exactement celles de l'annonce — arrêté du 10 "+
+  "janvier 2017, loi Climat, loi ALUR —, au mot près : une fiche et une annonce qui se "+
+  "contrediraient seraient pires que pas de fiche du tout. Ce qui manque au dossier "+
+  "manque donc aussi ici, et se voit. "+
+  "Le PDF est <b>fabriqué par l'application elle-même</b>, sans rien envoyer nulle part : "+
+  "il s'ouvre partout de la même façon, y compris hors ligne."],
+ ["Où trouver le script, et savoir s'il est à jour",
+  "Le script est <b>dans l'application</b> : onglet <b>Listes</b>, carte « <b>Base "+
+  "partagée entre plusieurs ordinateurs</b> », bouton <b>Voir le script</b> — ou "+
+  "<b>Mettre à jour le script</b> s'il y a lieu. Le pavé se déplie, et le bouton "+
+  "<b>Copier le script</b> le met dans le presse-papiers d'un clic. "+
+  "<b>L'application sait quelle version vous avez déployée</b> : le script la lui dit à "+
+  "chaque échange. Une ligne grise sous l'adresse le confirme quand tout va bien ; sinon "+
+  "un avertissement rouge nomme les deux versions — la vôtre et celle attendue — et "+
+  "rappelle ce qui ne marchera pas. "+
+  "<b>Pour mettre à jour</b> : ouvrez votre projet sur <b>script.google.com</b>, effacez "+
+  "tout le contenu de <code>Code.gs</code>, collez le script, <b>remettez votre clé</b> à "+
+  "la ligne <code>CLE</code>, enregistrez, puis <b>Déployer → Gérer les déploiements → "+
+  "crayon → Version : Nouvelle version → Déployer</b>. L'adresse ne change pas et vos "+
+  "dossiers sont intacts. Sans cette dernière étape, Google continue de servir l'ancien "+
+  "code."],
+ ["Organiser une visite, dans votre agenda Google",
+  "Le <b>calendrier</b>, sur la ligne d'un bien, ouvre la fenêtre du rendez-vous. "+
+  "L'<b>intitulé</b> est proposé — <i>Visite Appartement 78 m² 249 000 € — Mandat "+
+  "1105</i> — et reste modifiable. Le <b>lieu</b> se choisit : <b>Sur place</b> (l'adresse "+
+  "du bien), <b>À l'agence</b> (celle de la fiche agence), ou <b>Autre</b>, à saisir. La "+
+  "<b>durée</b> part à 45 minutes et se change ; la fin suit. Le <b>demandeur</b> est "+
+  "associé au rendez-vous avec ses coordonnées, et reçoit l'invitation de Google s'il a "+
+  "une adresse. "+
+  "<b>Créer le rendez-vous</b> le pose dans votre agenda par le <b>script déployé dans "+
+  "votre Drive</b> — celui qui porte déjà la base et les pièces jointes. La fiche du bien "+
+  "y est jointe. "+
+  "<b>Deux conditions.</b> Le script doit être en <b>version 11</b> au moins : "+
+  "recollez-le depuis l'onglet <b>Listes</b> → « Base partagée », et acceptez la nouvelle "+
+  "autorisation (votre agenda) que Google demandera à la première visite. Et pour que la "+
+  "fiche soit une <b>vraie pièce jointe</b> plutôt qu'un lien dans la description, "+
+  "activez le service avancé : dans l'éditeur du script, <b>Services</b> (+) → "+
+  "<b>Google Calendar API</b> → Ajouter. "+
+  "<b>Si le script ne répond pas</b> — pas de réseau, version pas encore republiée —, "+
+  "rien n'est perdu : la page <b>Google Agenda</b> s'ouvre déjà remplie, titre, lieu, "+
+  "horaire et invité compris, et il reste à cliquer sur « Enregistrer ». Par cette voie "+
+  "seulement, la fiche ne peut pas être jointe. "+
+  "Le rendez-vous s'inscrit à l'<b>historique</b> du demandeur, en disant par quelle voie "+
+  "il a été créé."],
  ["Le négociateur et la date de mise à jour",
   "Une recherche neuve est <b>rattachée au négociateur connecté</b> — ou, s'il n'y a pas "+
   "de comptes, au seul négociateur de l'agence. Le champ, au volet <b>Objectif et "+
@@ -25279,6 +26157,592 @@ function enEtat(etat, feminin){
   return "en " + e.toLowerCase();
 }
 
+/* =====================================================================
+   UN ÉCRIVAIN DE PDF, À LA MAIN
+   ---------------------------------------------------------------------
+   Il fallait un vrai fichier PDF — pas une page à imprimer, pas un
+   document Word : un fichier qu'on joint à un courriel et qui s'ouvre
+   partout de la même façon. Deux voies s'offraient : embarquer une
+   bibliothèque de plus (trois cents kilo-octets dans un fichier qui en
+   fait déjà deux mille cinq cents), ou écrire le peu de PDF dont nous
+   avons besoin. C'est la seconde qui est prise, et elle tient en trois
+   cents lignes, parce qu'un PDF simple est un format simple :
+
+     · un en-tête, une suite d'objets numérotés, une table des positions
+       de ces objets (xref), une queue qui dit où est la table ;
+     · le texte en POLICES STANDARD — Helvetica, Helvetica-Bold — que
+       tout lecteur possède : rien à embarquer, rien à incorporer ;
+     · les photos en JPEG, recopiées telles quelles dans le fichier
+       (filtre DCTDecode) : le JPEG est déjà comprimé, le PDF sait le
+       lire sans le décoder.
+
+   Deux difficultés, et leurs réponses :
+
+   LES ACCENTS. Les polices standard se lisent en WinAnsi, qui est le
+   Latin-1 sauf de 0x80 à 0x9F, où Windows a logé l'euro, les guillemets
+   courbes, les tirets longs. Une table de conversion s'en charge ; ce
+   qu'elle ne sait pas rendre est remplacé plutôt que d'écrire un
+   caractère au hasard.
+
+   LA LARGEUR DU TEXTE. Pour couper une ligne au bon endroit, il faut
+   savoir combien chaque lettre mesure. Les largeurs d'Helvetica sont
+   une table connue, donnée ici pour l'ASCII ; une lettre accentuée a
+   exactement la largeur de sa lettre nue — « é » mesure comme « e » —,
+   ce qui permet de s'en tirer avec une table courte et juste.
+   ===================================================================== */
+
+/* largeurs Helvetica et Helvetica-Bold, en millièmes de corps, de l'espace
+   au tilde (32 à 126) */
+const PDF_W_REG = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,
+  556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,
+  667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,
+  722,667,944,667,667,611,278,278,278,469,556,333,
+  556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,
+  556,500,722,500,500,500,334,260,334,584];
+const PDF_W_BOLD = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,
+  556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,
+  722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,
+  722,667,944,667,667,611,333,278,333,584,556,333,
+  556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,
+  611,556,778,556,556,500,389,280,389,584];
+/* ce que WinAnsi loge entre 0x80 et 0x9F, et que le Latin-1 n'a pas */
+const PDF_HAUT = {"€":128, "‚":130, "ƒ":131, "„":132, "…":133, "†":134, "‡":135,
+  "ˆ":136, "‰":137, "Š":138, "‹":139, "Œ":140, "Ž":142, "‘":145, "’":146, "“":147,
+  "”":148, "•":149, "–":150, "—":151, "˜":152, "™":153, "š":154, "›":155, "œ":156,
+  "ž":158, "Ÿ":159};
+/* la lettre nue d'une lettre accentuée : sa largeur est la même */
+const PDF_NU = {"à":"a","â":"a","ä":"a","á":"a","ã":"a","å":"a","é":"e","è":"e",
+  "ê":"e","ë":"e","î":"i","ï":"i","í":"i","ì":"i","ô":"o","ö":"o","ò":"o","ó":"o",
+  "õ":"o","ù":"u","û":"u","ü":"u","ú":"u","ç":"c","ñ":"n","ÿ":"y","ý":"y",
+  "À":"A","Â":"A","Ä":"A","Á":"A","Ã":"A","Å":"A","É":"E","È":"E","Ê":"E","Ë":"E",
+  "Î":"I","Ï":"I","Í":"I","Ì":"I","Ô":"O","Ö":"O","Ò":"O","Ó":"O","Õ":"O",
+  "Ù":"U","Û":"U","Ü":"U","Ú":"U","Ç":"C","Ñ":"N","Ÿ":"Y"};
+/* les quelques signes hors ASCII dont la largeur ne se déduit pas */
+const PDF_W_AUTRE = {"€":556, "’":191, "‘":191, "“":333, "”":333, "–":556, "—":1000,
+  "…":1000, "«":556, "»":556, "°":400, "·":278, "²":365, "œ":944, "Œ":1000,
+  "æ":889, "Æ":1000, "ß":611, "±":584, "×":584, "÷":584, "£":556, "¢":556,
+  "¤":556, "§":556, "©":737, "®":737, "µ":556, "¶":537, "¼":834, "½":834, "¾":834};
+const PDF_W_AUTRE_B = {"€":556, "’":238, "‘":238, "“":500, "”":500, "–":556,
+  "—":1000, "…":1000, "«":556, "»":556, "°":400, "·":278, "²":365, "œ":944,
+  "Œ":1000, "æ":889, "Æ":1000, "ß":611};
+
+/* la largeur d'un texte, en points, pour un corps donné */
+function pdfLargeur(txt, corps, gras){
+  const t = PDF_W_AUTRE, tb = PDF_W_AUTRE_B;
+  let n = 0;
+  for(const ch of String(txt == null ? "" : txt).replace(PDF_ESPACES, " ")){
+    const autre = gras ? (tb[ch] !== undefined ? tb[ch] : t[ch]) : t[ch];
+    if(autre !== undefined){ n += autre; continue; }
+    const nu = PDF_NU[ch] || ch;
+    const c = nu.charCodeAt(0);
+    n += (c >= 32 && c <= 126) ? (gras ? PDF_W_BOLD : PDF_W_REG)[c - 32]
+                               : (gras ? PDF_W_BOLD : PDF_W_REG)[0];
+  }
+  return n * corps / 1000;
+}
+/* le texte, en octets WinAnsi, échappé pour une chaîne PDF */
+/* les espaces insécables : « 249 000 € » s'écrit en français avec une espace
+   FINE insécable (U+202F), que toLocaleString pose d'elle-même et que le
+   Latin-1 ne connaît pas. Elles deviennent des espaces ordinaires — sinon
+   le prix s'imprimait « 249?000 € ». */
+const PDF_ESPACES = /[\u00a0\u2007\u2009\u202f\u2060]/g;
+function pdfChaine(txt){
+  let out = "";
+  for(const ch of String(txt == null ? "" : txt).replace(PDF_ESPACES, " ")){
+    let c = PDF_HAUT[ch];
+    if(c === undefined){
+      c = ch.charCodeAt(0);
+      /* hors Latin-1 : on remplace par la lettre nue, ou par un point
+         d'interrogation — jamais par un caractère pris au hasard */
+      if(c > 255) c = (PDF_NU[ch] || "?").charCodeAt(0);
+    }
+    if(c === 40 || c === 41 || c === 92) out += "\\";        // ( ) \
+    out += String.fromCharCode(c);
+  }
+  return out;
+}
+/* couper un texte à une largeur donnée, en respectant les retours à la ligne
+   déjà écrits : on ne coupe qu'entre les mots, et un mot trop long est coupé
+   plutôt que de déborder */
+function pdfCouper(txt, largeur, corps, gras){
+  const out = [];
+  String(txt == null ? "" : txt).split(/\n/).forEach(para=>{
+    const mots = para.split(/\s+/).filter(Boolean);
+    if(!mots.length){ out.push(""); return; }
+    let ligne = "";
+    mots.forEach(mot=>{
+      const essai = ligne ? ligne + " " + mot : mot;
+      if(pdfLargeur(essai, corps, gras) <= largeur){ ligne = essai; return; }
+      if(ligne){ out.push(ligne); ligne = mot; }
+      else {
+        /* un mot seul plus large que la colonne : on le coupe */
+        let bout = "";
+        for(const ch of mot){
+          if(pdfLargeur(bout + ch, corps, gras) > largeur && bout){
+            out.push(bout); bout = ch;
+          } else bout += ch;
+        }
+        ligne = bout;
+      }
+      if(pdfLargeur(ligne, corps, gras) > largeur){ out.push(ligne); ligne = ""; }
+    });
+    if(ligne) out.push(ligne);
+  });
+  return out;
+}
+
+/* ------------------------------------------------- le document lui-même
+   Une page est un flux de commandes, écrites au fil de l'eau. Les images
+   sont rangées à part et nommées /Im1, /Im2… dans la page qui les porte. */
+function pdfDoc(largeur, hauteur){
+  return {
+    L: largeur || 595.28, H: hauteur || 841.89,
+    pages: [], images: [], flux: null, ims: null,
+    /* ouvrir une page */
+    page(){ this.flux = []; this.ims = []; this.pages.push({c:this.flux, im:this.ims});
+            return this; },
+    /* revenir écrire sur une page déjà composée — le pied de page ne peut
+       s'écrire qu'une fois le nombre total de pages connu */
+    surPage(n){ this.flux = this.pages[n].c; this.ims = this.pages[n].im;
+                return this; },
+    brut(s){ this.flux.push(s); return this; },
+    /* un rectangle plein */
+    pave(x, y, l, h, couleur){
+      const [r, v, b] = couleur;
+      this.flux.push(r.toFixed(3) + " " + v.toFixed(3) + " " + b.toFixed(3) + " rg");
+      this.flux.push(x.toFixed(2) + " " + (this.H - y - h).toFixed(2) + " "
+        + l.toFixed(2) + " " + h.toFixed(2) + " re f");
+      return this;
+    },
+    trait(x1, y1, x2, y2, ep, couleur){
+      const [r, v, b] = couleur;
+      this.flux.push(r.toFixed(3) + " " + v.toFixed(3) + " " + b.toFixed(3) + " RG");
+      this.flux.push(ep.toFixed(2) + " w " + x1.toFixed(2) + " "
+        + (this.H - y1).toFixed(2) + " m " + x2.toFixed(2) + " "
+        + (this.H - y2).toFixed(2) + " l S");
+      return this;
+    },
+    /* le texte : x, y en haut-gauche de la ligne de base */
+    texte(x, y, txt, corps, gras, couleur){
+      const [r, v, b] = couleur || [0, 0, 0];
+      this.flux.push("BT " + r.toFixed(3) + " " + v.toFixed(3) + " " + b.toFixed(3)
+        + " rg /" + (gras ? "F2" : "F1") + " " + corps + " Tf "
+        + x.toFixed(2) + " " + (this.H - y).toFixed(2) + " Td ("
+        + pdfChaine(txt) + ") Tj ET");
+      return this;
+    },
+    centre(x, l, y, txt, corps, gras, couleur){
+      return this.texte(x + (l - pdfLargeur(txt, corps, gras)) / 2, y, txt,
+                        corps, gras, couleur);
+    },
+    droite(xFin, y, txt, corps, gras, couleur){
+      return this.texte(xFin - pdfLargeur(txt, corps, gras), y, txt,
+                        corps, gras, couleur);
+    },
+    /* une image JPEG déjà encodée : {o: octets, l: largeur, h: hauteur} */
+    image(img, x, y, l, h){
+      let n = this.images.indexOf(img);
+      if(n < 0){ this.images.push(img); n = this.images.length - 1; }
+      const nom = "Im" + (n + 1);
+      if(this.ims.indexOf(nom) < 0) this.ims.push(nom);
+      this.flux.push("q " + l.toFixed(2) + " 0 0 " + h.toFixed(2) + " "
+        + x.toFixed(2) + " " + (this.H - y - h).toFixed(2) + " cm /" + nom
+        + " Do Q");
+      return this;
+    }
+  };
+}
+/* la mise en octets : c'est ici que le fichier prend forme */
+function pdfOctets(doc, titre){
+  const parts = [];                     // chaînes (Latin-1) ou Uint8Array
+  let taille = 0;
+  const pousse = x=>{
+    parts.push(x);
+    taille += typeof x === "string" ? x.length : x.length;
+  };
+  const objets = [];                    // position de chaque objet
+  const obj = corps=>{
+    objets.push(taille);
+    pousse(objets.length + " 0 obj\n" + corps + "\nendobj\n");
+    return objets.length;
+  };
+  pousse("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+
+  /* 1 catalogue, 2 pages : leurs numéros sont réservés d'avance */
+  objets.push(0); objets.push(0);        // places gardées
+  const nFont1 = objets.length + 1;
+  objets.push(taille);
+  pousse(nFont1 + " 0 obj\n<</Type/Font/Subtype/Type1/BaseFont/Helvetica"
+    + "/Encoding/WinAnsiEncoding>>\nendobj\n");
+  const nFont2 = objets.length + 1;
+  objets.push(taille);
+  pousse(nFont2 + " 0 obj\n<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold"
+    + "/Encoding/WinAnsiEncoding>>\nendobj\n");
+
+  const nImg = doc.images.map(img=>{
+    const n = objets.length + 1;
+    objets.push(taille);
+    pousse(n + " 0 obj\n<</Type/XObject/Subtype/Image/Width " + img.l
+      + "/Height " + img.h + "/ColorSpace/DeviceRGB/BitsPerComponent 8"
+      + "/Filter/DCTDecode/Length " + img.o.length + ">>\nstream\n");
+    pousse(img.o);
+    pousse("\nendstream\nendobj\n");
+    return n;
+  });
+
+  const nPages = [];
+  doc.pages.forEach(pg=>{
+    const flux = pg.c.join("\n");
+    const nFlux = objets.length + 1;
+    objets.push(taille);
+    pousse(nFlux + " 0 obj\n<</Length " + flux.length + ">>\nstream\n" + flux
+      + "\nendstream\nendobj\n");
+    const xo = pg.im.map(nom=> "/" + nom + " "
+      + nImg[+nom.slice(2) - 1] + " 0 R").join(" ");
+    const n = objets.length + 1;
+    objets.push(taille);
+    pousse(n + " 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 "
+      + doc.L.toFixed(2) + " " + doc.H.toFixed(2) + "]"
+      + "/Resources<</Font<</F1 " + nFont1 + " 0 R/F2 " + nFont2 + " 0 R>>"
+      + (xo ? "/XObject<<" + xo + ">>" : "") + ">>"
+      + "/Contents " + nFlux + " 0 R>>\nendobj\n");
+    nPages.push(n);
+  });
+
+  /* les deux objets réservés, écrits maintenant qu'on connaît les pages */
+  objets[0] = taille;
+  pousse("1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n");
+  objets[1] = taille;
+  pousse("2 0 obj\n<</Type/Pages/Kids[" + nPages.map(n=> n + " 0 R").join(" ")
+    + "]/Count " + nPages.length + ">>\nendobj\n");
+  const nInfo = objets.length + 1;
+  objets.push(taille);
+  pousse(nInfo + " 0 obj\n<</Title(" + pdfChaine(titre || "Fiche")
+    + ")/Producer(Dossiers de vente)>>\nendobj\n");
+
+  const xref = taille;
+  let t = "xref\n0 " + (objets.length + 1) + "\n0000000000 65535 f \n";
+  objets.forEach(p=> t += String(p).padStart(10, "0") + " 00000 n \n");
+  t += "trailer\n<</Size " + (objets.length + 1) + "/Root 1 0 R/Info "
+     + nInfo + " 0 R>>\nstartxref\n" + xref + "\n%%EOF\n";
+  pousse(t);
+
+  const out = new Uint8Array(taille);
+  let i = 0;
+  parts.forEach(x=>{
+    if(typeof x === "string"){
+      for(let k = 0; k < x.length; k++) out[i++] = x.charCodeAt(k) & 255;
+    } else { out.set(x, i); i += x.length; }
+  });
+  return out;
+}
+/* une image de la page, prête pour le PDF : redessinée en JPEG à la taille
+   utile, parce qu'une photo d'appareil fait huit méga-octets et qu'un
+   courriel n'en veut pas. */
+function pdfImageDepuis(im, maxPx){
+  const max = maxPx || 1100;
+  let l = im.naturalWidth || im.width, h = im.naturalHeight || im.height;
+  if(!l || !h) return null;
+  const k = Math.min(1, max / Math.max(l, h));
+  l = Math.max(1, Math.round(l * k)); h = Math.max(1, Math.round(h * k));
+  const c = document.createElement("canvas");
+  c.width = l; c.height = h;
+  const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, l, h);
+  g.drawImage(im, 0, 0, l, h);
+  const b64 = c.toDataURL("image/jpeg", 0.82).split(",")[1] || "";
+  const bin = atob(b64);
+  const o = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+  return {o, l, h};
+}
+
+
+/* =====================================================================
+   LA FICHE DE PRÉSENTATION D'UN BIEN, EN PDF
+   ---------------------------------------------------------------------
+   C'est la pièce qu'on joint au courriel d'une proposition, et celle
+   qu'on emporte à une visite. Elle se compose pour un dossier QUELCONQUE,
+   sans l'ouvrir : on la demande depuis la recherche d'un demandeur, où le
+   bien n'est qu'une ligne d'une liste.
+
+   Elle ne réinvente rien : les données sont celles de `donneesPubli`, les
+   mentions légales celles de `mentionsPubli` — les mêmes que l'annonce,
+   au mot près. Une fiche et une annonce qui se contrediraient seraient
+   pires que pas de fiche du tout.
+
+   Dix photos au plus : au-delà, le courriel ne passe plus, et personne ne
+   regarde la onzième. Chacune est redessinée à 1100 pixels et réencodée en
+   JPEG — une fiche de dix photos pèse alors moins d'un méga-octet.
+   ===================================================================== */
+const FICHE_MAX_PHOTOS = 10;
+const PDF_NAVY  = [0.078, 0.188, 0.361];
+const PDF_ENCRE = [0.059, 0.102, 0.169];
+const PDF_GRIS  = [0.471, 0.518, 0.604];
+const PDF_FILET = [0.827, 0.859, 0.906];
+const PDF_FOND  = [0.933, 0.953, 0.976];
+const DPE_TEINTE = {A:[0.192,0.596,0.204], B:[0.200,0.800,0.192],
+  C:[0.796,0.988,0.204], D:[0.984,0.996,0.024], E:[0.984,0.800,0.020],
+  F:[0.988,0.600,0.208], G:[0.988,0.008,0.020]};
+
+/* les photos du bien, puis celles de son immeuble, la principale en tête */
+function photosDeLaFiche(d){
+  const ph = photosDe(sujetBien(d)).slice();
+  ph.sort((a, b)=> (b.principale ? 1 : 0) - (a.principale ? 1 : 0));
+  const nom = String((d.bien || {}).residence || "").trim();
+  const imm = nom ? piecesDe(sujetImmeuble(nom), "Photos").filter(p=> p.photo) : [];
+  return ph.concat(imm).slice(0, FICHE_MAX_PHOTOS);
+}
+async function imagesDeLaFiche(d){
+  const out = [];
+  for(const p of photosDeLaFiche(d)){
+    let u = null;
+    try{
+      const b = (await blobDeLaPiece(p, false)) || (await blobDeLaPiece(p, true));
+      if(!b) continue;
+      u = URL.createObjectURL(b);
+      const im = await imageDepuis(u);
+      if(im){ const x = pdfImageDepuis(im, 1100); if(x) out.push(x); }
+    }catch(e){ /* une photo illisible ne doit pas emporter la fiche */ }
+    finally{ if(u) URL.revokeObjectURL(u); }
+  }
+  return out;
+}
+/* l'intitulé court d'un bien : « Appartement 29 m² 120 000 € — Mandat 1105 ».
+   Il sert au titre de la fiche, au nom du fichier et à l'objet du
+   rendez-vous — un seul endroit pour une seule façon de nommer. */
+function intituleBien(d){
+  const c = critBien(d);
+  return [c.type || "Bien",
+          c.surface === null ? "" : m2txt(c.surface),
+          c.fai === null ? "" : eur(c.fai)].filter(Boolean).join(" ")
+    + (c.mandat ? " — Mandat " + c.mandat : "");
+}
+function nomFichierFiche(d){
+  const c = critBien(d);
+  return ("Fiche " + [c.type || "bien", c.ville || "", c.mandat ? "mandat "
+    + c.mandat : ""].filter(Boolean).join(" - ") + ".pdf")
+    .replace(/[\\/:*?"<>|]/g, "-");
+}
+/* ce que la fiche énumère, dans l'ordre où on le lit */
+function pointsDeLaFiche(d){
+  const o = donneesPubli(d), c = critBien(d), out = [];
+  const dit = (lib, val)=>{ if(val !== "" && val !== null && val !== undefined)
+    out.push([lib, String(val)]); };
+  dit("Type de bien", o.type);
+  dit("Surface habitable", o.surface === null ? null : m2txt(o.surface));
+  if(o.copro) dit("Surface loi Carrez", o.carrez === null ? null : m2txt(o.carrez));
+  dit("Terrain", o.terrain === null ? null : m2txt(o.terrain));
+  dit("Nombre de pièces", c.pieces === null ? null : c.pieces);
+  dit("Dont chambres", c.chambres === null ? null : c.chambres);
+  dit("Salles de bains", o.sdb === null ? null : o.sdb);
+  dit("Salles d'eau", o.sdEau === null ? null : o.sdEau);
+  dit("WC", o.wc === null ? null : o.wc);
+  dit("Étage", o.etage ? o.etage + (o.etages ? " sur " + o.etages : "") : null);
+  if(o.copro) dit("Ascenseur", o.ascenseur ? "oui" : "non");
+  dit("Exposition", o.exposition);
+  dit("État général", o.etat);
+  dit("Chauffage", o.chauffage);
+  dit("Climatisation", o.froid);
+  dit("Année de construction", c.annee === null ? null : c.annee);
+  dit("Annexes", o.annexes.length ? o.annexes.join(", ") : null);
+  if(o.copro){
+    dit("Copropriété", o.lots === null ? "oui"
+      : o.lots + " lot" + (o.lots > 1 ? "s" : ""));
+    dit("Charges annuelles", o.charges === null ? null : eur(o.charges));
+  }
+  dit("Taxe foncière", o.taxe === null ? null : eur(o.taxe));
+  return out;
+}
+/* le texte de présentation : l'argumentaire du négociateur, qui dit ce que
+   la fiche technique ne sait pas dire. Rien d'inventé ici — s'il est vide,
+   le paragraphe ne s'imprime pas. */
+function texteDeLaFiche(d){
+  const o = donneesPubli(d), bouts = [];
+  if(o.caractRes) bouts.push(o.caractRes);
+  if(o.coup) bouts.push(o.coup);
+  if(o.prox.length) bouts.push("À proximité : " + o.prox.join(", ") + ".");
+  if(o.ambPlus.length) bouts.push("Atouts : " + o.ambPlus.join(", ") + ".");
+  if(o.travaux) bouts.push("Travaux à prévoir : " + o.travaux + ".");
+  if(o.plusDit) bouts.push(o.plusDit);
+  return bouts.join("\n\n");
+}
+/* ------------------------------------------------------- la composition */
+async function ficheBienPdf(d){
+  const o = donneesPubli(d), c = critBien(d);
+  const nego = book("negociateurs", o.negociateur);
+  const ag = L.agence || {};
+  const images = await imagesDeLaFiche(d);
+  const logo = ag.logo ? pdfImageDepuis(await imageDepuis(ag.logo), 400) : null;
+
+  const doc = pdfDoc();
+  const M = 38, LARG = doc.L - 2 * M;
+  const piedDePage = (p, n, total)=>{
+    p.trait(M, doc.H - 44, doc.L - M, doc.H - 44, 0.6, PDF_FILET);
+    p.texte(M, doc.H - 32, [nego.nom || o.negociateur || "",
+      nego.tel || "", nego.email || ""].filter(Boolean).join("  ·  "),
+      7.5, false, PDF_GRIS);
+    p.texte(M, doc.H - 22, (ag.nom || "") + (ag.adresse ? " — " + ag.adresse : ""),
+      7.5, false, PDF_GRIS);
+    p.droite(doc.L - M, doc.H - 22, "Document non contractuel  ·  page " + n
+      + " / " + total, 7.5, false, PDF_GRIS);
+  };
+
+  /* ------------------------------------------------------------ page 1 */
+  const p = doc.page();
+  let y = M;
+  if(logo){
+    const h = Math.min(42, 120 * logo.h / logo.l);
+    p.image(logo, M, y, h * logo.l / logo.h, h);
+  }
+  p.droite(doc.L - M, y + 12, ag.nom || "", 9, true, PDF_NAVY);
+  if(ag.adresse) p.droite(doc.L - M, y + 23, ag.adresse, 7.5, false, PDF_GRIS);
+  y += 54;
+  p.trait(M, y, doc.L - M, y, 1.4, PDF_NAVY);
+  y += 24;
+
+  /* le titre : ce qu'on vend, et où */
+  const titre = [o.type, o.surface === null ? "" : m2txt(o.surface)]
+    .filter(Boolean).join(" — ");
+  p.texte(M, y, titre, 20, true, PDF_NAVY);
+  y += 17;
+  const ou = [c.adresse || "", [o.cp, o.ville].filter(Boolean).join(" "),
+              o.quartier ? "quartier " + o.quartier : ""].filter(Boolean)
+             .join("  ·  ");
+  p.texte(M, y, ou, 10, false, PDF_GRIS);
+  y += 10;
+  if(o.mandat) p.texte(M, y + 10, "Mandat n° " + o.mandat, 8.5, false, PDF_GRIS);
+
+  /* le prix, à droite, et ce qui l'accompagne */
+  const prix = o.fai === null ? "Prix sur demande" : eur(o.fai);
+  p.droite(doc.L - M, y - 7, prix, 20, true, PDF_ENCRE);
+  const sous = o.fai === null ? "" : (o.charge === "Acquéreur"
+    ? "honoraires inclus, charge acquéreur" + (o.taux === null ? ""
+        : " (" + o.taux.toLocaleString("fr-FR", {minimumFractionDigits:2,
+            maximumFractionDigits:2}) + " % TTC)")
+    : "honoraires inclus, charge vendeur");
+  if(sous) p.droite(doc.L - M, y + 6, sous, 8, false, PDF_GRIS);
+  if(o.charge === "Acquéreur" && o.net !== null)
+    p.droite(doc.L - M, y + 17, "soit " + eur(o.net) + " hors honoraires",
+             8, false, PDF_GRIS);
+  y += 28;
+
+  /* la photo principale */
+  if(images.length){
+    const h = 248, cadre = {x:M, y, l:LARG, h};
+    p.pave(cadre.x, cadre.y, cadre.l, cadre.h, PDF_FOND);
+    const im = images[0];
+    const k = Math.min(cadre.l / im.l, cadre.h / im.h);
+    const l2 = im.l * k, h2 = im.h * k;
+    p.image(im, cadre.x + (cadre.l - l2) / 2, cadre.y + (cadre.h - h2) / 2, l2, h2);
+    y += h + 20;
+  } else y += 6;
+
+  /* les points essentiels, en deux colonnes */
+  const pts = pointsDeLaFiche(d);
+  if(pts.length){
+    p.texte(M, y, "LES POINTS ESSENTIELS", 9, true, PDF_NAVY);
+    y += 12;
+    const colL = (LARG - 22) / 2;
+    const moitie = Math.ceil(pts.length / 2);
+    let bas = y;
+    [pts.slice(0, moitie), pts.slice(moitie)].forEach((col, n)=>{
+      const x = M + n * (colL + 22);
+      let yy = y;
+      col.forEach(([lib, val])=>{
+        p.texte(x, yy + 8, lib, 8.5, false, PDF_GRIS);
+        p.droite(x + colL, yy + 8, val, 8.5, true, PDF_ENCRE);
+        p.trait(x, yy + 12, x + colL, yy + 12, 0.4, PDF_FILET);
+        yy += 15;
+      });
+      bas = Math.max(bas, yy);
+    });
+    y = bas + 10;
+  }
+
+  /* les deux étiquettes du DPE */
+  if(o.dpeDu && (o.dpeE || o.dpeG)){
+    p.texte(M, y + 8, "DIAGNOSTIC DE PERFORMANCE ÉNERGÉTIQUE", 9, true, PDF_NAVY);
+    y += 14;
+    const badge = (x, lettre, lib)=>{
+      const t = DPE_TEINTE[String(lettre || "").toUpperCase()] || PDF_FILET;
+      p.pave(x, y, 34, 26, t);
+      p.centre(x, 34, y + 19, String(lettre || "?").toUpperCase(), 15, true,
+               PDF_ENCRE);
+      p.texte(x + 40, y + 11, lib, 8, false, PDF_GRIS);
+      p.texte(x + 40, y + 22, lettre ? "classe " + lettre : "non renseignée",
+              8.5, true, PDF_ENCRE);
+    };
+    badge(M, o.dpeE, "Consommation d'énergie");
+    badge(M + LARG / 2, o.dpeG, "Émissions de gaz à effet de serre");
+    y += 32;
+    if(o.coutMin !== null && o.coutMax !== null){
+      p.texte(M, y + 8, "Dépenses annuelles d'énergie estimées : " + eur(o.coutMin)
+        + " à " + eur(o.coutMax) + " par an.", 8, false, PDF_GRIS);
+      y += 12;
+    }
+    y += 8;
+  }
+
+  /* la présentation, s'il y en a une */
+  const txt = texteDeLaFiche(d);
+  if(txt){
+    const reste = doc.H - 70 - y;
+    if(reste > 60){
+      p.texte(M, y + 8, "LE MOT DU NÉGOCIATEUR", 9, true, PDF_NAVY);
+      y += 16;
+      const lignes = pdfCouper(txt, LARG, 9.5, false);
+      lignes.slice(0, Math.floor((reste - 24) / 12)).forEach(l=>{
+        p.texte(M, y + 9, l, 9.5, false, PDF_ENCRE); y += 12;
+      });
+    }
+  }
+  /* ------------------------------------------------- les autres photos */
+  const suite = images.slice(1);
+  const parPage = 6;
+  const pagesPhoto = [];
+  for(let i = 0; i < suite.length; i += parPage)
+    pagesPhoto.push(suite.slice(i, i + parPage));
+  pagesPhoto.forEach(lot=>{
+    const q = doc.page();
+    q.texte(M, M + 10, "LES PHOTOS — " + (o.type || "bien") + (o.ville
+      ? ", " + o.ville : ""), 9, true, PDF_NAVY);
+    q.trait(M, M + 18, doc.L - M, M + 18, 0.8, PDF_FILET);
+    const l = (LARG - 14) / 2, h = 150;
+    lot.forEach((im, i)=>{
+      const x = M + (i % 2) * (l + 14);
+      const yy = M + 32 + Math.floor(i / 2) * (h + 14);
+      q.pave(x, yy, l, h, PDF_FOND);
+      const k = Math.min(l / im.l, h / im.h);
+      q.image(im, x + (l - im.l * k) / 2, yy + (h - im.h * k) / 2,
+              im.l * k, im.h * k);
+    });
+  });
+
+  /* ------------------------------------------------ les mentions légales
+     Elles tiennent au bas de la première page quand la place y est — une
+     page de plus pour six lignes serait du papier perdu —, et prennent une
+     page à elles quand la fiche en compte déjà plusieurs. */
+  const mentions = pdfCouper(mentionsPubli(d), LARG, 8.5, false);
+  const besoin = mentions.length * 11 + 48;
+  if(doc.pages.length === 1 && doc.H - 60 - y > besoin){
+    y += 14;
+  } else {
+    doc.page();
+    y = M;
+  }
+  doc.texte(M, y + 10, "MENTIONS LÉGALES", 9, true, PDF_NAVY);
+  y += 20;
+  mentions.forEach(l=>{ doc.texte(M, y, l, 8.5, false, PDF_ENCRE); y += 11; });
+  doc.texte(M, y + 10, "Les informations portées sur cette fiche sont données à "
+    + "titre indicatif et n'ont pas de valeur contractuelle.", 8, false, PDF_GRIS);
+
+  const total = doc.pages.length;
+  doc.pages.forEach((pg, i)=> piedDePage(doc.surPage(i), i + 1, total));
+  return new Blob([pdfOctets(doc, "Fiche " + (o.type || "bien"))],
+                  {type:"application/pdf"});
+}
+
 /* ======================================================== PUBLICATIONS ===
    Composer une annonce pour les réseaux sociaux à partir du dossier
    ---------------------------------------------------------------------------
@@ -25324,16 +26788,17 @@ function dePubli(graine){
 }
 
 /* ------------------------------------------------- ce que le dossier dit */
-function donneesPubli(){
-  const b = D.bien || {}, det = D.detail || {}, r = residenceDuBien();
-  const dpe = (D.diags || []).filter(d=> d.nom === "DPE")[0] || {};
+function donneesPubli(dossier){
+  const D2 = dossier || D;
+  const b = D2.bien || {}, det = D2.detail || {}, r = residenceDuBien(D2);
+  const dpe = (D2.diags || []).filter(d=> d.nom === "DPE")[0] || {};
   const m2 = v => num(v);
   const o = {
-    type: typeBienLisible() || "Bien",
+    type: typeBienLisible(D2) || "Bien",
     ville: b.ville || "",
     cp: b.cp || "",
     residence: b.residence || "",
-    copro: estCoproBien(),
+    copro: estCoproBien(D2),
     surface: m2(det.surface),
     carrez: m2(det.carrez),
     terrain: m2(det.terrain),
@@ -25349,15 +26814,15 @@ function donneesPubli(){
     charges: num(det.charges),
     taxe: num(det.taxe),
     annexes: [],
-    fai: num((D.prix || {}).fai),
-    honoraires: num((D.prix || {}).honoraires),
-    charge: (D.prix || {}).charge || "",
-    net: prixNet(),
-    taux: tauxHono(),
+    fai: num((D2.prix || {}).fai),
+    honoraires: num((D2.prix || {}).honoraires),
+    charge: (D2.prix || {}).charge || "",
+    net: prixNet(D2),
+    taux: tauxHono(D2),
     /* un bien dispensé de DPE n'a pas de classe à annoncer : on ne la
        remplace pas par « … », on n'en parle pas */
-    dpeDu: dpeExige(),
-    dispense: motifDispenseDpe(),
+    dpeDu: dpeExige(D2),
+    dispense: motifDispenseDpe(D2),
     dpeE: dpe.dpeEnergie || "", dpeG: dpe.dpeGes || "",
     coutMin: num(dpe.dpeCoutMin), coutMax: num(dpe.dpeCoutMax),
 
@@ -25366,17 +26831,17 @@ function donneesPubli(){
     piscine: r.piscine === "OUI",
     parkingColl: r.parkingColl === "OUI",
     procedure: String(r.restrictions || "").trim(),
-    negociateur: D.nego && D.nego.vendeur ? D.nego.vendeur : "",
-    mandat: (D.mandat || {}).num || "",
+    negociateur: D2.nego && D2.nego.vendeur ? D2.nego.vendeur : "",
+    mandat: (D2.mandat || {}).num || "",
     /* l'argumentaire : ce que le négociateur a vu, et que la fiche technique
        ne sait pas dire */
-    prox:   arguCoches("prox").map(x=> x[2]),
-    adj:    arguCoches("amb").filter(x=> x[2] === "adj"),
-    ambPlus:arguCoches("amb").filter(x=> x[2] === "atout").map(x=> x[3]),
-    cible:  arguCoches("cible").map(x=> x[2]),
-    coup:    String((D.argu || {}).coup || "").trim(),
-    travaux: String((D.argu || {}).travaux || "").trim(),
-    plusDit: String((D.argu || {}).plus || "").trim(),
+    prox:   arguCoches("prox", D2).map(x=> x[2]),
+    adj:    arguCoches("amb", D2).filter(x=> x[2] === "adj"),
+    ambPlus:arguCoches("amb", D2).filter(x=> x[2] === "atout").map(x=> x[3]),
+    cible:  arguCoches("cible", D2).map(x=> x[2]),
+    coup:    String((D2.argu || {}).coup || "").trim(),
+    travaux: String((D2.argu || {}).travaux || "").trim(),
+    plusDit: String((D2.argu || {}).plus || "").trim(),
     /* saisis une fois sur la fiche de l'immeuble, repris par tous ses lots */
     quartier:  String(r.quartier || "").trim(),
     caractRes: String(r.caractere || "").trim()
@@ -25433,8 +26898,8 @@ function manquePubli(){
 }
 
 /* ------------------------------------------------- les mentions légales */
-function mentionsPubli(){
-  const o = donneesPubli(), L2 = [];
+function mentionsPubli(dossier){
+  const o = donneesPubli(dossier), L2 = [];
   const q = v => v === null ? "…" : eur(v);
 
   if(o.charge === "Acquéreur"){
