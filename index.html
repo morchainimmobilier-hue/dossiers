@@ -717,6 +717,10 @@ table.envois tr.repondu td.emode b{color:#166534}
 .rdvbox > .plein{grid-column:1/-1}
 .rdvbox .pf.wide{grid-column:span 3}
 .rdvbox input:disabled{background:var(--accent-soft);color:var(--ink-2)}
+/* l'heure : deux listes déroulantes, séparées par les deux points */
+.rdvhm{display:flex;align-items:center;gap:6px}
+.rdvhm select{flex:1;min-width:0}
+.rdvhm span{color:var(--ink-3);font-weight:600}
 .rdvgens{display:flex;flex-wrap:wrap;gap:8px 26px}
 /* le nom d'une personne n'est pas une étiquette de champ : ni capitales,
    ni interlettrage */
@@ -2299,7 +2303,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 20 octobre 2026, 15 h 58">Dossiers de vente</div>
+  <div class="brand" title="Version du 21 octobre 2026, 16 h 53">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2510,7 +2514,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>20 octobre 2026, 15 h 58</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>21 octobre 2026, 16 h 53</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -12277,6 +12281,35 @@ function diteProposition(r, id){
    la page Google Agenda s'ouvre, déjà remplie, et il reste à enregistrer.
    Un filet, pas une seconde voie. */
 const DUREE_VISITE = 45;
+/* L'heure du rendez-vous se saisissait dans un champ `type="time"`. Le
+   sélecteur du navigateur s'ouvrait DANS la fenêtre, qui défile : la liste
+   des heures se trouvait coupée, et l'on ne pouvait pas remonter avant
+   l'heure proposée. Deux listes déroulantes à la place : toutes les heures
+   de la journée, les minutes de cinq en cinq. Elles s'ouvrent par-dessus
+   tout, se manœuvrent au doigt sur une tablette, et il n'y a plus rien à
+   deviner sur ce que le navigateur voudra bien afficher. */
+const MINUTES_RDV = 5;
+function optionsHeures(choisie){
+  let out = "";
+  for(let h = 0; h < 24; h++){
+    const v = String(h).padStart(2, "0");
+    out += `<option value="${v}"${v === choisie ? " selected" : ""}>${v} h</option>`;
+  }
+  return out;
+}
+function optionsMinutes(choisie){
+  let out = "";
+  for(let m = 0; m < 60; m += MINUTES_RDV){
+    const v = String(m).padStart(2, "0");
+    out += `<option value="${v}"${v === choisie ? " selected" : ""}>${v}</option>`;
+  }
+  return out;
+}
+function heureChoisie(){
+  const h = ($("#rdvHeure") || {}).value || "";
+  const m = ($("#rdvMin") || {}).value || "";
+  return h && m ? h + ":" + m : "";
+}
 function lieuxDeVisite(d){
   const c = critBien(d), ag = L.agence || {};
   return [
@@ -12320,7 +12353,9 @@ function ouvrirVisite(i, id){
       <div class="pf"><label for="rdvDate">Date</label>
         <input type="date" id="rdvDate" value="${jour}"></div>
       <div class="pf"><label for="rdvHeure">Heure de début</label>
-        <input type="time" id="rdvHeure" value="10:00"></div>
+        <div class="rdvhm"><select id="rdvHeure">${optionsHeures("10")}</select>
+          <span>:</span>
+          <select id="rdvMin">${optionsMinutes("00")}</select></div></div>
       <div class="pf"><label for="rdvDuree">Durée (minutes)</label>
         <input type="text" id="rdvDuree" inputmode="numeric" value="${DUREE_VISITE}"></div>
       <div class="pf"><label>Fin</label>
@@ -12350,7 +12385,7 @@ function ouvrirVisite(i, id){
         lieu:    ($("#rdvLieu") || {}).value || "",
         adresse: ($("#rdvAdresse") || {}).value || "",
         date:    ($("#rdvDate") || {}).value || "",
-        heure:   ($("#rdvHeure") || {}).value || "",
+        heure:   heureChoisie(),
         duree:   ($("#rdvDuree") || {}).value || DUREE_VISITE
       }, pris);
     }}]});
@@ -12366,10 +12401,10 @@ function ouvrirVisite(i, id){
   };
   const maj = ()=>{
     const f = $("#rdvFin");
-    if(f) f.value = finDeVisite(($("#rdvHeure") || {}).value,
+    if(f) f.value = finDeVisite(heureChoisie(),
                                 ($("#rdvDuree") || {}).value) || "—";
   };
-  ["rdvHeure", "rdvDuree"].forEach(k=>{
+  ["rdvHeure", "rdvMin", "rdvDuree"].forEach(k=>{
     const z = $("#" + k);
     if(z){ z.oninput = maj; z.onchange = maj; }
   });
@@ -12455,17 +12490,51 @@ async function creerVisite(i, d, f, gens){
       noter("page Google Agenda");
       popup({titre:"Le script n'a pas pu créer le rendez-vous", genre:"erreur",
         corps:`<p style="margin:0 0 8px">${esc(String(e.message || e))}</p>
-          <p style="margin:0 0 8px">La page <b>Google Agenda</b> s'est ouverte à la
-          place, déjà remplie : il vous reste à cliquer sur « Enregistrer ».</p>
-          <p class="muted" style="margin:0">Par cette voie, la fiche du bien ne peut
-          pas être jointe. Si cela se répète, republiez le script depuis l'onglet
-          <b>Listes</b> → « Base partagée » : la création d'un rendez-vous demande la
-          version 11 au moins.</p>`});
+          ${quoiFaireAgenda(e)}
+          <p style="margin:12px 0 0">En attendant, la page <b>Google Agenda</b> s'est
+          ouverte, déjà remplie : il vous reste à cliquer sur « Enregistrer ». Par cette
+          voie seulement, la fiche du bien ne peut pas être jointe.</p>`});
       return;
     }
   }
   ouvrirAgendaGoogle(titre, f.adresse, texte, b, invites);
   noter("page Google Agenda");
+}
+/* Ce qu'il faut faire, selon ce que le script a répondu. Trois causes très
+   différentes se cachaient derrière un seul message : un script resté en
+   arrière, un script à jour mais pas encore autorisé, et le reste. Donner
+   le mauvais conseil fait perdre un quart d'heure à chaque fois. */
+function quoiFaireAgenda(e){
+  const msg = String((e && e.message) || e || "");
+  const autor = /permission|autoris|does not have permission|calendar/i.test(msg);
+  if(autor) return `<p style="margin:0 0 8px"><b>Il ne manque qu'une autorisation, et
+      elle se donne en trente secondes.</b> Une application web déployée s'exécute avec
+      les droits que vous lui avez donnés, et elle n'a aucun moyen de vous en demander de
+      nouveaux : il n'y a personne devant l'écran. L'accès à votre agenda doit donc être
+      accordé <b>depuis l'éditeur du script</b>.</p>
+    <ol style="margin:0 0 8px;padding-left:20px">
+      <li>Ouvrez votre projet sur <b>script.google.com</b>.</li>
+      <li>En haut, dans la liste des fonctions, choisissez <b>autoriser</b>.</li>
+      <li>Cliquez <b>▶ Exécuter</b>, et acceptez l'écran d'autorisation
+        (« Paramètres avancés » → « Accéder à … » : c'est votre propre script).</li>
+      <li>Revenez ici et refaites le rendez-vous. <b>Rien à redéployer</b> :
+        l'autorisation vaut pour le script, pas pour un déploiement.</li>
+    </ol>
+    ${WEB_VERSION !== null && WEB_VERSION < SCRIPT_ATTENDU
+      ? `<p class="alerte" style="margin:0">Et votre script est encore en version
+         ${WEB_VERSION || "antérieure à 10"} : collez d'abord la version
+         ${SCRIPT_ATTENDU}, sans quoi l'autorisation ne servira à rien.</p>`
+      : `<p class="muted" style="margin:0">Votre script est bien en version
+         ${WEB_VERSION || SCRIPT_ATTENDU} : il n'y a que l'autorisation à donner.</p>`}`;
+  if(WEB_VERSION !== null && WEB_VERSION < SCRIPT_ATTENDU)
+    return `<p class="alerte" style="margin:0">Votre script est en version
+      ${WEB_VERSION || "antérieure à 10"}, et les rendez-vous demandent la version
+      ${SCRIPT_ATTENDU}. Onglet <b>Listes</b> → « Base partagée » →
+      <b>Mettre à jour le script</b>.</p>`;
+  return `<p class="muted" style="margin:0">Votre script est en version
+    ${WEB_VERSION === null ? "inconnue" : (WEB_VERSION || "antérieure à 10")}, et
+    l'application en attend ${SCRIPT_ATTENDU}. Si le message ci-dessus ne vous dit rien,
+    vérifiez le déploiement depuis l'onglet <b>Listes</b> → « Base partagée ».</p>`;
 }
 function ouvrirAgendaGoogle(titre, lieu, texte, b, invites){
   const u = "https://calendar.google.com/calendar/render?action=TEMPLATE"
@@ -20575,6 +20644,14 @@ const SCRIPT_GOOGLE = `/**
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
  * sort de votre compte.
  *
+ * ►►► APRÈS AVOIR COLLÉ CETTE VERSION, LANCEZ LA FONCTION « autoriser »
+ *     UNE FOIS DEPUIS L'ÉDITEUR (liste des fonctions en haut, puis ▶ Exécuter).
+ *     Google vous demandera alors l'accès à votre agenda, et c'est le seul
+ *     moment où il peut vous le demander : une application web déployée n'a
+ *     pas d'écran pour poser la question — elle échoue, simplement, avec un
+ *     message « The script does not have permission to perform that action ».
+ *     Déployer une nouvelle version NE SUFFIT PAS.
+ *
  * Cette version 11 sait poser un RENDEZ-VOUS DE VISITE dans votre agenda
  * Google : titre, lieu, horaire, le demandeur en invité, et la fiche du
  * bien en pièce jointe. Elle demande donc une autorisation de plus —
@@ -20956,7 +21033,7 @@ function agendaCreer(q) {
     } catch (err) { fichier = null; }
   }
   let texte = String(q.texte || '');
-  if (fichier) texte += '\n\nFiche du bien : ' + fichier.getUrl();
+  if (fichier) texte += '\\n\\nFiche du bien : ' + fichier.getUrl();
 
   /* la voie complète : le service avancé, qui sait joindre un fichier */
   if (fichier && typeof Calendar !== 'undefined' && Calendar.Events) {
@@ -21361,6 +21438,33 @@ function etatServeur(q) {
 function sortie(o) {
   return ContentService.createTextOutput(JSON.stringify(o))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/** ►►► À LANCER UNE FOIS depuis l'éditeur après avoir collé cette version.
+ *
+ *  Choisissez « autoriser » dans la liste des fonctions, en haut de
+ *  l'éditeur, puis ▶ Exécuter. Google affiche l'écran des autorisations :
+ *  acceptez-le. L'avertissement « application non vérifiée » est normal,
+ *  c'est votre propre script — « Paramètres avancés » puis « Accéder à … ».
+ *
+ *  Pourquoi c'est nécessaire : une application web déployée s'exécute avec
+ *  les autorisations que VOUS lui avez données, et elle n'a aucun moyen de
+ *  vous en demander de nouvelles — il n'y a personne devant l'écran. Tant
+ *  que l'agenda n'est pas autorisé, la création d'un rendez-vous échoue sur
+ *  « The script does not have permission to perform that action ».
+ *
+ *  Il n'y a rien à redéployer après : l'autorisation vaut pour le script,
+ *  pas pour un déploiement en particulier.
+ */
+function autoriser() {
+  const cal = CalendarApp.getDefaultCalendar();
+  const nb = cal.getEventsForDay(new Date()).length;
+  const dossier = racinePieces();
+  Logger.log("Agenda : " + cal.getName() + " — " + nb + " evenement(s) ce jour");
+  Logger.log("Pieces : " + dossier.getUrl());
+  Logger.log("Base   : " + fichierBase().getUrl());
+  Logger.log("Tout est autorise. Revenez a l'application.");
+  return true;
 }
 
 /** Facultatif : lancez cette fonction une fois depuis l'éditeur pour vérifier
@@ -22575,6 +22679,9 @@ function formulaireWeb(z, url, cle){
         <li>Autorisez l'accès quand Google le demande. L'avertissement « application non
             vérifiée » est normal : c'est votre propre script. Cliquez « Paramètres
             avancées » puis « Accéder à … ».</li>
+        <li>De retour dans l'éditeur, choisissez la fonction <b>autoriser</b> dans la
+            liste du haut et cliquez <b>▶ Exécuter</b> : cela donne au script l'accès à
+            votre <b>agenda</b>, que le déploiement seul ne demande pas.</li>
         <li>Copiez l'<b>URL de l'application Web</b> (elle finit par <code>/exec</code>) et
             collez-la ci-dessus, avec votre clé.</li>
         <li>Sur le second ordinateur : la même adresse et la même clé.</li>
@@ -22585,6 +22692,14 @@ function formulaireWeb(z, url, cle){
         enregistrez, puis <b>Déployer → Gérer les déploiements → crayon → Version :
         Nouvelle version → Déployer</b>. L'adresse ne change pas et vos dossiers sont
         intacts.</p>
+      <p class="alerte" style="margin:0 0 10px"><b>Puis, une fois seulement :
+        choisissez la fonction <code>autoriser</code> en haut de l'éditeur et cliquez
+        ▶ Exécuter.</b> Google demande alors les autorisations nouvelles — pour la
+        version ${SCRIPT_ATTENDU}, l'accès à votre agenda — et c'est le seul moment où
+        il peut les demander : une application web déployée n'a pas d'écran pour poser
+        la question, elle échoue simplement sur « <i>The script does not have permission
+        to perform that action</i> ». Redéployer n'y change rien ; lancer
+        <code>autoriser</code> une fois, oui.</p>
       <button class="tbtn light" id="wCopier">Copier le script</button>
       <pre id="wScript">${esc(SCRIPT_GOOGLE)}</pre>
     </details>`;
@@ -24189,7 +24304,10 @@ const AIDE = [
   "la ligne <code>CLE</code>, enregistrez, puis <b>Déployer → Gérer les déploiements → "+
   "crayon → Version : Nouvelle version → Déployer</b>. L'adresse ne change pas et vos "+
   "dossiers sont intacts. Sans cette dernière étape, Google continue de servir l'ancien "+
-  "code."],
+  "code. "+
+  "<b>Et si la version ajoute une capacité nouvelle</b> — l'agenda, pour la 11 —, "+
+  "lancez une fois la fonction <b>autoriser</b> depuis l'éditeur : c'est elle qui "+
+  "déclenche la demande d'autorisation, que le déploiement ne demande pas."],
  ["Organiser une visite, dans votre agenda Google",
   "Le <b>calendrier</b>, sur la ligne d'un bien, ouvre la fenêtre du rendez-vous. "+
   "L'<b>intitulé</b> est proposé — <i>Visite Appartement 78 m² 249 000 € — Mandat "+
@@ -24201,11 +24319,21 @@ const AIDE = [
   "<b>Créer le rendez-vous</b> le pose dans votre agenda par le <b>script déployé dans "+
   "votre Drive</b> — celui qui porte déjà la base et les pièces jointes. La fiche du bien "+
   "y est jointe. "+
-  "<b>Deux conditions.</b> Le script doit être en <b>version 11</b> au moins : "+
-  "recollez-le depuis l'onglet <b>Listes</b> → « Base partagée », et acceptez la nouvelle "+
-  "autorisation (votre agenda) que Google demandera à la première visite. Et pour que la "+
-  "fiche soit une <b>vraie pièce jointe</b> plutôt qu'un lien dans la description, "+
-  "activez le service avancé : dans l'éditeur du script, <b>Services</b> (+) → "+
+  "<b>Trois conditions, à faire une seule fois.</b> "+
+  "<b>1.</b> Le script doit être en <b>version 11</b> au moins : recollez-le depuis "+
+  "l'onglet <b>Listes</b> → « Base partagée » → <b>Mettre à jour le script</b>, remettez "+
+  "votre clé, enregistrez et republiez. L'application vous dit d'elle-même quelle version "+
+  "est déployée. "+
+  "<b>2.</b> Dans l'éditeur du script, choisissez la fonction <b>autoriser</b> dans la "+
+  "liste du haut et cliquez <b>▶ Exécuter</b> : Google demande alors l'accès à votre "+
+  "agenda. <b>C'est le seul moment où il peut le demander.</b> Une application web "+
+  "déployée s'exécute avec les droits qu'on lui a donnés et n'a pas d'écran pour en "+
+  "réclamer de nouveaux — sans cette étape, la création d'un rendez-vous échoue sur "+
+  "« <i>The script does not have permission to perform that action</i> », et redéployer "+
+  "n'y change rien. Il n'y a rien à redéployer après, en revanche : l'autorisation vaut "+
+  "pour le script. "+
+  "<b>3.</b> Pour que la fiche soit une <b>vraie pièce jointe</b> plutôt qu'un lien dans "+
+  "la description, activez le service avancé : dans l'éditeur, <b>Services</b> (+) → "+
   "<b>Google Calendar API</b> → Ajouter. "+
   "<b>Si le script ne répond pas</b> — pas de réseau, version pas encore republiée —, "+
   "rien n'est perdu : la page <b>Google Agenda</b> s'ouvre déjà remplie, titre, lieu, "+
