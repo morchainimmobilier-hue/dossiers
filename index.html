@@ -705,6 +705,12 @@ table.envois tr.repondu td.emode b{color:#166534}
    croyant le faire pour la première */
 .rapdit{display:inline-block;font-size:11px;color:#92400e;background:#fef3c7;
   border:1px solid #fcd34d;border-radius:20px;padding:1px 8px;margin:2px 0 0}
+/* la visite à venir, sur la ligne du bien : un clic l'annule */
+.rapvis{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:11px;
+  color:#1e3a8a;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;
+  padding:1px 9px;margin:2px 0 0;cursor:pointer}
+.rapvis:hover{background:#dbeafe;border-color:#93c5fd}
+.rapvis svg{flex:0 0 auto}
 /* les deux fenêtres d'action, sur un bien rapproché */
 .propo .pf,.rdvbox .pf{margin-bottom:10px}
 .propo input[type="text"],.propo select,.propo textarea,
@@ -721,14 +727,42 @@ table.envois tr.repondu td.emode b{color:#166534}
 .rdvhm{display:flex;align-items:center;gap:6px}
 .rdvhm select{flex:1;min-width:0}
 .rdvhm span{color:var(--ink-3);font-weight:600}
-.rdvgens{display:flex;flex-wrap:wrap;gap:8px 26px}
-/* le nom d'une personne n'est pas une étiquette de champ : ni capitales,
-   ni interlettrage */
-.rdvgens label{display:flex;align-items:flex-start;gap:7px;font-size:13.5px;
-  text-transform:none;letter-spacing:0;color:var(--ink);cursor:pointer}
-.rdvgens label input{width:auto;flex:0 0 auto;margin-top:2px}
-.rdvgens em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);
-  text-transform:none;letter-spacing:0}
+/* les participants : une ligne chacun — qui, à quel titre, invité ou non,
+   et prévenu par quelle voie */
+.rdvgens{display:flex;flex-direction:column;gap:6px}
+.rdvgen{display:grid;grid-template-columns:minmax(0,1fr) 140px auto 150px auto;
+  gap:10px;align-items:center;border:1px solid var(--line-2);border-radius:8px;
+  padding:6px 10px;background:#fff}
+.rdvgen.court{grid-template-columns:minmax(0,1fr) 150px}
+.rdvqui{min-width:0;font-size:13.5px;line-height:1.3}
+.rdvqui b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rdvgen em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3);
+  text-transform:none;letter-spacing:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.rdvgen select{font-size:12.5px;padding:5px 8px}
+.rdvgen label{display:flex;align-items:center;gap:6px;font-size:12.5px;
+  text-transform:none;letter-spacing:0;color:var(--ink-2);cursor:pointer}
+.rdvgen label input{width:auto;flex:0 0 auto}
+.rdvadd{display:flex;gap:10px;align-items:center;margin-top:8px}
+.rdvadd input{flex:1}
+.rdvtrouves{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.rdvtrouve{display:block;width:100%;text-align:left;background:var(--accent-soft);
+  border:1px solid #bfdbfe;border-radius:8px;padding:5px 10px;font:inherit;
+  font-size:13px;cursor:pointer;color:var(--ink)}
+.rdvtrouve:hover{background:#dbeafe}
+.rdvtrouve em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.rdvneuf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
+  margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:8px;
+  align-items:center}
+/* `display:grid` l'emporte sur l'attribut `hidden` du navigateur : sans
+   cette ligne, le bloc ne se refermerait jamais. */
+.rdvneuf[hidden]{display:none}
+.rdvneuf .chkline{grid-column:span 2;font-size:12.5px;text-transform:none;
+  letter-spacing:0;color:var(--ink-2);display:flex;align-items:center;gap:7px}
+.rdvneuf .chkline input{width:auto;flex:0 0 auto}
+@media(max-width:820px){
+  .rdvgen{grid-template-columns:minmax(0,1fr) 1fr;gap:6px}
+  .rdvneuf{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.rdvbox{grid-template-columns:1fr 1fr}
   .rdvbox .pf.wide{grid-column:1/-1}}
 .raprow.suivi{box-shadow:inset 3px 0 0 #16a34a}
@@ -2303,7 +2337,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 21 octobre 2026, 16 h 53">Dossiers de vente</div>
+  <div class="brand" title="Version du 21 octobre 2026, 18 h 08">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2369,6 +2403,7 @@ table.tdb .puce.resilie{background:#64748b}
   <button class="mitem" data-mgo="pieces">Pièces jointes <b id="cntPJ"></b></button>
   <button class="mitem" data-mgo="publications">Publications</button>
   <button class="mitem" data-mgo="avis">Avis</button>
+  <button class="mitem" data-mgo="histobien">Historique</button>
 </nav>
 
 <main>
@@ -2455,6 +2490,8 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-avis"><div id="avisBody"></div></div>
 
+  <div class="panel" id="p-histobien"><div id="histoBienBody"></div></div>
+
   <div class="panel" id="p-listes">
     <div class="listbar">
       <p class="muted">Listes communes à tous vos dossiers, conservées dans ce navigateur.
@@ -2514,7 +2551,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>21 octobre 2026, 16 h 53</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>21 octobre 2026, 18 h 08</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3406,6 +3443,16 @@ function loadListesDepuis(v){
                source: String(q.source || "").trim()}))
     .filter(q=>{ const c = fold(q.ville) + "|" + fold(q.nom);
                  if(vusQ[c]) return false; vusQ[c] = true; return true; });
+  /* Les rendez-vous posés dans l'agenda. On les garde ici — et non dans le
+     seul agenda Google — pour trois raisons : les montrer partout où le
+     bien et la recherche paraissent, savoir qui était invité quand il faut
+     prévenir d'une annulation, et pouvoir effacer l'événement dans l'agenda
+     sans aller le chercher à la main. */
+  if(!Array.isArray(out.rdv)) out.rdv = [];
+  out.rdv = out.rdv.filter(x=> x && x.id).map(x=> Object.assign({
+    id:"", dossier:"", recherche:"", titre:"", lieu:"", debut:"", fin:"",
+    gens:[], ev:"", voie:"", cree:0, par:"", annule:0, motif:""}, x,
+    {gens: Array.isArray(x.gens) ? x.gens.filter(Boolean) : []}));
   /* les modèles de courriels : un nom, un objet, un corps. Un modèle sans
      nom n'est pas une fiche, c'est un oubli — on l'écarte. L'identifiant
      sert à la fusion entre appareils : sans lui, renommer un modèle en
@@ -7438,7 +7485,8 @@ const ONGLETS_SANS_MANDAT = ["aujourdhui","tdb","dossiers","prospects","immeuble
 /* Les pages du dossier ouvert ne sont plus dans la barre du haut : elles
    tiennent dans une colonne à gauche, toutes visibles d'un coup. */
 const ONGLETS_DOSSIER = ["general","plan","vendeurs","acquereurs","notaires","financement",
-  "diagnostics","questionnaire","divers","documents","pieces","publications","avis"];
+  "diagnostics","questionnaire","divers","documents","pieces","publications","avis",
+  "histobien"];
 let PAGE = "aujourdhui";
 function pageActive(){ return PAGE; }
 function libelleOnglet(p){
@@ -7513,6 +7561,7 @@ function activerOnglet(p){
   if(p==="pieces")     renderPagePieces();
   if(p==="publications") renderPublications();
   if(p==="avis")       renderAvis();
+  if(p==="histobien")  renderHistoBien();
   if(p==="dossiers")   renderDossiers();
   if(p==="prospects"){ renderProspects(); autosize(); }
   if(p==="tdb")        renderTdb();
@@ -12101,11 +12150,18 @@ function ligneRapproBien(b, i, etat, ou){
           + (o.adresse ? " · " + esc(o.adresse) : "")}</em></span>`;
   const quoi = `<span class="rapquoi">${esc(resumeBien(o)) || "—"}</span>`;
   const prix = `<span class="rapprix">${o.fai === null ? "—" : esc(eur(o.fai))}</span>`;
-  const dejaDit = (i === undefined || i === null) ? ""
-    : diteProposition((L.prospects || [])[+i], o.id);
+  const rech = (i === undefined || i === null) ? null : (L.prospects || [])[+i];
+  const dejaDit = rech ? diteProposition(rech, o.id) : "";
+  /* la visite à venir se lit sur la ligne, et s'annule d'un clic : c'est là
+     qu'on la cherche, pas dans un onglet à part */
+  const visite = rech ? rdvDe({dossier:o.id, recherche:rech.id, vivants:true})
+    .filter(rdvAVenir)[0] : null;
   const ec = `<span class="rapec">${pastillesEcarts(b)}${dejaDit
     ? `<span class="rapdit" title="Ce bien a déjà été proposé à ce demandeur">${
-        esc(dejaDit)}</span>` : ""}</span>`;
+        esc(dejaDit)}</span>` : ""}${visite
+    ? `<button type="button" class="rapvis" data-rdvann="${esc(visite.id)}"
+        title="Cliquer pour annuler ce rendez-vous">${IC_AGENDA} visite le ${
+        esc(quandRdv(visite))}</button>` : ""}</span>`;
   const fin = `<span class="rapfin">${i === undefined || i === null ? ""
       : boutonsReponse(i, o.id, etat || "")}
       <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></span>`;
@@ -12273,13 +12329,18 @@ function diteProposition(r, id){
 /* ------------------------------------------------- ORGANISER UNE VISITE
    Le rendez-vous se prépare ici et se pose dans l'agenda Google par le
    script déployé dans votre Drive — celui qui porte déjà la base et les
-   pièces jointes. Il y met le demandeur en invité et la fiche du bien en
-   pièce jointe, ce qu'aucune adresse de page ne sait faire.
+   pièces jointes. Il y met les participants en invités et la fiche du bien
+   en pièce jointe, ce qu'aucune adresse de page ne sait faire.
 
    Quand le script n'est pas joignable — pas de réseau, pas de base
    connectée, version pas encore republiée —, on ne perd pas la saisie :
    la page Google Agenda s'ouvre, déjà remplie, et il reste à enregistrer.
-   Un filet, pas une seconde voie. */
+   Un filet, pas une seconde voie.
+
+   Le rendez-vous est AUSSI gardé dans les listes. Pas par méfiance envers
+   l'agenda : parce qu'il faut pouvoir le montrer sur la recherche comme sur
+   le bien, savoir qui y était invité le jour où l'on annule, et retrouver
+   l'événement dans l'agenda pour l'en retirer. */
 const DUREE_VISITE = 45;
 /* L'heure du rendez-vous se saisissait dans un champ `type="time"`. Le
    sélecteur du navigateur s'ouvrait DANS la fenêtre, qui défile : la liste
@@ -12289,6 +12350,14 @@ const DUREE_VISITE = 45;
    tout, se manœuvrent au doigt sur une tablette, et il n'y a plus rien à
    deviner sur ce que le navigateur voudra bien afficher. */
 const MINUTES_RDV = 5;
+/* Les qualités d'un participant. Elles ne servent pas à classer : elles
+   servent à ce que celui qui ouvre le rendez-vous sur son téléphone sache
+   QUI il va trouver sur place, et à quel titre. */
+const QUALITES_RDV = ["Demandeur", "Propriétaire", "Négociateur", "Notaire",
+  "Diagnostiqueur", "Artisan", "Expert", "Autre"];
+/* ce qu'on envoie à un participant, et par quelle voie */
+const ENVOIS_RDV = [["", "ne pas prévenir"], ["mail", "par courriel"],
+                    ["wa", "par WhatsApp"]];
 function optionsHeures(choisie){
   let out = "";
   for(let h = 0; h < 24; h++){
@@ -12328,16 +12397,104 @@ function finDeVisite(heure, duree){
   const h = Math.floor(t / 60) % 24, mi = t % 60;
   return String(h).padStart(2, "0") + ":" + String(mi).padStart(2, "0");
 }
+/* ------------------------------------------------------- les participants
+   Trois viennent d'eux-mêmes : les demandeurs de la recherche, et le ou les
+   PROPRIÉTAIRES du bien — ceux-là systématiquement, parce qu'un rendez-vous
+   de visite sans le numéro du vendeur est un rendez-vous qu'on ne peut pas
+   décaler. Les autres s'ajoutent à la main, pris au répertoire ou créés. */
+function qualiteSelon(role){
+  return role === "vendeur" ? "Propriétaire"
+       : role === "demandeur" ? "Demandeur" : "Autre";
+}
+function participantDe(p, qualite, pid){
+  const f = pid ? fichePersonne(pid) : null;
+  return {
+    pid: pid || "",
+    nom: titrePersonne(p) || nomPersonneProspect(p) || "",
+    qualite: qualite || "Autre",
+    tel:   String((f && (f.tel1 || f.tel2)) || p.tel1 || p.tel || "").trim(),
+    email: String((f && (f.email1 || f.email2)) || p.email1 || p.email || "").trim(),
+    invite: true, envoi: ""
+  };
+}
+function participantsParDefaut(d, r){
+  const out = [];
+  personnesProspect(r || {}).forEach(p=>
+    out.push(participantDe(p, "Demandeur", p.pid)));
+  /* le propriétaire, toujours : c'est lui qu'on appelle si l'on a dix
+     minutes de retard */
+  (d.vendeurs || []).forEach(p=>{
+    if(personneVide(p)) return;
+    const x = participantDe(p, "Propriétaire", p.pid);
+    /* il n'est pas invité par défaut dans l'agenda du demandeur — ses
+       coordonnées, elles, sont dans le rendez-vous quoi qu'il arrive */
+    x.invite = false;
+    out.push(x);
+  });
+  return out;
+}
+/* l'état de la fenêtre pendant qu'elle est ouverte */
+let RDV = {gens:[], dossier:"", recherche:"", mode:""};
+function ligneParticipant(x, k){
+  return `<div class="rdvgen">
+    <div class="rdvqui"><b>${esc(x.nom || "sans nom")}</b>
+      <em>${esc([x.tel, x.email].filter(Boolean).join("  ·  ")
+        || "aucune coordonnée")}</em></div>
+    <select data-rdvqual="${k}">${QUALITES_RDV.map(q=>
+      `<option${q === x.qualite ? " selected" : ""}>${esc(q)}</option>`).join("")}
+      </select>
+    <label class="chkline" title="L'inviter dans l'agenda Google (il reçoit
+      l'invitation de Google à son adresse)"><input type="checkbox"
+      data-rdvinv="${k}"${x.invite ? " checked" : ""}${x.email ? "" : " disabled"}>
+      <span>invité</span></label>
+    <select data-rdvenvoi="${k}"${x.email || x.tel ? "" : " disabled"}>${
+      ENVOIS_RDV.map(([v, lib])=>
+        `<option value="${v}"${v === x.envoi ? " selected" : ""}>${esc(lib)}</option>`)
+      .join("")}</select>
+    <button type="button" class="xbtn sup" data-rdvdel="${k}">Retirer</button>
+  </div>`;
+}
+function dessinerParticipants(){
+  const z = $("#rdvGens");
+  if(!z) return;
+  z.innerHTML = RDV.gens.length
+    ? RDV.gens.map(ligneParticipant).join("")
+    : `<p class="muted" style="margin:0">Aucun participant.</p>`;
+}
+function ajouterParticipant(x){
+  RDV.gens.push(x);
+  dessinerParticipants();
+}
+/* la recherche au répertoire, dans la fenêtre : on tape trois lettres, on
+   clique un nom, il entre avec ses coordonnées */
+function dessinerRechercheRdv(q){
+  const z = $("#rdvTrouves");
+  if(!z) return;
+  const mots = fold(q || "").split(/\s+/).filter(Boolean);
+  if(!mots.length){ z.innerHTML = ""; return; }
+  const deja = {};
+  RDV.gens.forEach(g=>{ if(g.pid) deja[g.pid] = 1; });
+  const l = (L.personnes || []).filter(f=> f && !deja[f.pid]
+      && mots.every(m=> fold(textePersonne(f)).includes(m)))
+    .slice(0, 8);
+  z.innerHTML = l.length ? l.map(f=> `<button type="button" class="rdvtrouve"
+      data-rdvpers="${esc(f.pid)}"><b>${esc(titrePersonne(f) || "sans nom")}</b>
+      <em>${esc([f.tel1, f.email1].filter(Boolean).join("  ·  ")
+        || "aucune coordonnée")}</em></button>`).join("")
+    : `<p class="muted" style="margin:4px 0 0">Personne de ce nom au répertoire.
+       Le bouton <b>+ Nouveau contact</b> en crée un.</p>`;
+}
 function ouvrirVisite(i, id){
   const r = (L.prospects || [])[+i];
   const d = dossierDuBien(id);
   if(!r || !d){ toast("Bien introuvable"); return; }
-  const gens = destinatairesRecherche(r);
   const lieux = lieuxDeVisite(d);
   const demain = new Date(Date.now() + 86400000);
   const jour = demain.getFullYear() + "-"
     + String(demain.getMonth() + 1).padStart(2, "0") + "-"
     + String(demain.getDate()).padStart(2, "0");
+  RDV = {gens: participantsParDefaut(d, r), dossier: d.id, recherche: r.id,
+         mode: ""};
   popup({titre:"Organiser une visite", large:true,
     corps:`<div class="rdvbox">
       <div class="pf plein"><label for="rdvTitre">Intitulé du rendez-vous</label>
@@ -12361,25 +12518,34 @@ function ouvrirVisite(i, id){
       <div class="pf"><label>Fin</label>
         <input type="text" id="rdvFin" value="${finDeVisite("10:00", DUREE_VISITE)}"
           disabled></div>
-      <div class="pf plein"><label>Personnes associées</label>
-        ${gens.length ? `<div class="rdvgens">${gens.map((x, k)=>
-          `<label class="chkline"><input type="checkbox" data-rdvqui="${k}" checked>
-            <span>${esc(x.nom)}<em>${esc([x.email, x.tel].filter(Boolean)
-              .join("  ·  ") || "aucune coordonnée au répertoire")}</em></span>
-          </label>`).join("")}</div>`
-        : `<p class="muted" style="margin:0">Aucune personne saisie sur cette
-            recherche.</p>`}
+      <div class="pf plein"><label>Participants</label>
+        <div class="rdvgens" id="rdvGens"></div>
+        <div class="rdvadd">
+          <input type="text" id="rdvRech" data-rdvrech="1" autocomplete="off"
+            placeholder="Chercher au répertoire — nom, téléphone, courriel…">
+          <button type="button" class="tbtn light mini" data-rdvneuf="1"
+            >+ Nouveau contact</button>
+        </div>
+        <div id="rdvTrouves" class="rdvtrouves"></div>
+        <div id="rdvNeuf" class="rdvneuf" hidden>
+          <input type="text" id="rdvNnom" placeholder="Nom et prénom">
+          <input type="text" id="rdvNtel" placeholder="Téléphone">
+          <input type="text" id="rdvNmail" placeholder="Courriel">
+          <select id="rdvNqual">${QUALITES_RDV.map(q=>
+            `<option${q === "Autre" ? " selected" : ""}>${esc(q)}</option>`)
+            .join("")}</select>
+          <label class="chkline"><input type="checkbox" id="rdvNrep" checked>
+            <span>l'ajouter au répertoire</span></label>
+          <button type="button" class="addbtn mini" data-rdvncreer="1">Ajouter</button>
+        </div>
       </div>
       <p class="muted plein" style="margin:4px 0 0">La <b>fiche du bien</b> en PDF est
-        jointe au rendez-vous. Les personnes cochées qui ont une adresse électronique
-        reçoivent l'invitation de Google ; les autres sont nommées dans le
-        rendez-vous, avec leurs coordonnées.</p>
+        jointe au rendez-vous, et les coordonnées de chacun sont écrites dedans, avec
+        sa qualité. Les <b>invités</b> reçoivent l'invitation de Google ; la dernière
+        colonne envoie en plus une <b>confirmation</b> de votre part, par courriel ou
+        par WhatsApp.</p>
     </div>`,
     boutons:[{lib:"Annuler"}, {lib:"Créer le rendez-vous", primaire:true, action:()=>{
-      const pris = gens.filter((x, k)=> {
-        const c = document.querySelector(`[data-rdvqui="${k}"]`);
-        return c && c.checked;
-      });
       creerVisite(+i, d, {
         titre:   ($("#rdvTitre") || {}).value || "",
         lieu:    ($("#rdvLieu") || {}).value || "",
@@ -12387,8 +12553,9 @@ function ouvrirVisite(i, id){
         date:    ($("#rdvDate") || {}).value || "",
         heure:   heureChoisie(),
         duree:   ($("#rdvDuree") || {}).value || DUREE_VISITE
-      }, pris);
+      }, RDV.gens.slice());
     }}]});
+  dessinerParticipants();
   /* le lieu commande l'adresse : « Sur place » et « À l'agence » la
      remplissent, « Autre » la laisse à saisir */
   const sel = $("#rdvLieu"), adr = $("#rdvAdresse");
@@ -12423,17 +12590,19 @@ function versGoogle(dt){
   return dt.getUTCFullYear() + p(dt.getUTCMonth() + 1) + p(dt.getUTCDate()) + "T"
     + p(dt.getUTCHours()) + p(dt.getUTCMinutes()) + "00Z";
 }
+/* ------------------------------------------- ce que le rendez-vous raconte
+   Rien que les gens. Le titre dit déjà le bien, son type, sa surface, son
+   prix et son mandat ; le champ « lieu » dit l'adresse. Les répéter dans la
+   description, c'était écrire trois fois la même chose et noyer la seule
+   information qu'on y cherche vraiment sur le pas de la porte : qui vient,
+   à quel titre, et à quel numéro on le joint. */
 function texteDuRdv(d, gens){
-  const c = critBien(d);
-  const l = ["Visite organisée depuis Dossiers de vente.",
-             intituleBien(d),
-             [c.adresse, [c.cp, c.ville].filter(Boolean).join(" ")]
-               .filter(Boolean).join(", ")];
-  if(gens.length){
-    l.push("", "Demandeur" + (gens.length > 1 ? "s" : "") + " :");
-    gens.forEach(x=> l.push("  " + [x.nom, x.email, x.tel].filter(Boolean)
-      .join("  ·  ")));
-  }
+  const l = [];
+  (gens || []).forEach(x=>{
+    const co = [x.tel, x.email].filter(Boolean).join(" — ");
+    l.push((x.qualite || "Participant") + " : " + (x.nom || "sans nom")
+      + (co ? " — " + co : ""));
+  });
   return l.join("\n");
 }
 async function creerVisite(i, d, f, gens){
@@ -12442,7 +12611,7 @@ async function creerVisite(i, d, f, gens){
   if(!b){ toast("Il manque la date ou l'heure du rendez-vous"); return; }
   const titre = String(f.titre || "").trim() || ("Visite " + intituleBien(d));
   const texte = texteDuRdv(d, gens);
-  const invites = gens.map(x=> x.email).filter(Boolean);
+  const invites = gens.filter(x=> x.invite && x.email).map(x=> x.email);
 
   let piece = null;
   try{
@@ -12451,13 +12620,23 @@ async function creerVisite(i, d, f, gens){
              data: await blobEnB64(blob)};
   }catch(e){ /* un rendez-vous sans fiche vaut mieux que pas de rendez-vous */ }
 
+  const fiche = {id: idRdv(), dossier: d.id, recherche: (r || {}).id || "",
+    titre, lieu: f.adresse, debut: b.debut.toISOString(), fin: b.fin.toISOString(),
+    gens: gens.map(x=> Object.assign({}, x)), ev:"", voie:"",
+    cree: Date.now(), par: quiSuisJe(), annule: 0, motif:""};
+
   const noter = (ou)=>{
-    noterJournal(r, "Visite organisée", nomCourtBien(d.id) + " — le "
-      + b.debut.toLocaleDateString("fr-FR") + " à "
-      + b.debut.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"})
-      + " · " + ou, "", d.id);
+    if(!Array.isArray(L.rdv)) L.rdv = [];
+    L.rdv.push(fiche);
+    const quand = b.debut.toLocaleDateString("fr-FR") + " à "
+      + b.debut.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"});
+    if(r) noterJournal(r, "Visite organisée", nomCourtBien(d.id) + " — le "
+      + quand + " · " + ou, "", d.id);
+    else noterAction({genre:"Visite organisée", dossier:d.id,
+      texte:"le " + quand + " · " + ou});
     saveLists();
     renderApresReponse();
+    if(pageActive() === "histobien") renderHistoBien();
   };
   if(WEB){
     try{
@@ -12466,7 +12645,9 @@ async function creerVisite(i, d, f, gens){
         texte, debut: b.debut.toISOString(), fin: b.fin.toISOString(),
         invites, piece});
       if(rep && rep.ok){
+        fiche.ev = rep.ev || ""; fiche.voie = rep.voie || "";
         noter("agenda Google");
+        confirmationsRdv(fiche, "creation");
         popup({titre:"Rendez-vous créé",
           corps:`<p style="margin:0 0 8px">« <b>${esc(titre)}</b> » est dans votre
             agenda Google, le <b>${esc(b.debut.toLocaleDateString("fr-FR"))}</b> à
@@ -12488,6 +12669,7 @@ async function creerVisite(i, d, f, gens){
       /* le filet : la page Google Agenda, déjà remplie */
       ouvrirAgendaGoogle(titre, f.adresse, texte, b, invites);
       noter("page Google Agenda");
+      confirmationsRdv(fiche, "creation");
       popup({titre:"Le script n'a pas pu créer le rendez-vous", genre:"erreur",
         corps:`<p style="margin:0 0 8px">${esc(String(e.message || e))}</p>
           ${quoiFaireAgenda(e)}
@@ -12499,6 +12681,7 @@ async function creerVisite(i, d, f, gens){
   }
   ouvrirAgendaGoogle(titre, f.adresse, texte, b, invites);
   noter("page Google Agenda");
+  confirmationsRdv(fiche, "creation");
 }
 /* Ce qu'il faut faire, selon ce que le script a répondu. Trois causes très
    différentes se cachaient derrière un seul message : un script resté en
@@ -12545,14 +12728,304 @@ function ouvrirAgendaGoogle(titre, lieu, texte, b, invites){
     + (invites.length ? "&add=" + encodeURIComponent(invites.join(",")) : "");
   window.open(u, "_blank", "noopener");
 }
-function blobEnB64(blob){
-  return new Promise((res, rej)=>{
-    const f = new FileReader();
-    f.onload = ()=> res(String(f.result).split(",")[1] || "");
-    f.onerror = ()=> rej(new Error("lecture impossible"));
-    f.readAsDataURL(blob);
+
+
+/* =====================================================================
+   L'HISTOIRE D'UN BIEN
+   ---------------------------------------------------------------------
+   Le demandeur avait son historique ; le bien n'avait rien. On savait
+   donc, six mois plus tard, ce qu'un client avait dit — et pas ce qu'on
+   avait fait du bien : à qui il avait été proposé, qui l'avait visité,
+   quand le prix avait baissé, pourquoi il avait été refusé.
+
+   Rien n'est inventé pour cela : tout existait déjà, éparpillé. Les
+   ACTIONS portent depuis toujours l'identifiant du dossier ; l'HISTORIQUE
+   DES PRIX est dans le dossier ; les DATES CLÉS aussi ; les RENDEZ-VOUS
+   sont désormais gardés. On les rassemble sur une même ligne du temps,
+   la plus récente en haut, et c'est tout.
+   ===================================================================== */
+function etapesDuBien(d){
+  const out = [];
+  const dt = d.dates || {}, m = d.mandat || {};
+  const pose = (iso, quoi, det)=>{
+    if(!isoValide(iso)) return;
+    out.push({jour:iso, quoi, det: det || ""});
+  };
+  pose(m.date, "Mandat signé", [m.num ? "n° " + m.num : "", m.type]
+    .filter(Boolean).join(" · "));
+  pose(m.resilieDate, "Mandat résilié", m.resilieMotif || "");
+  pose(dt.offre, "Offre acceptée", "");
+  pose(dt.compromis, "Compromis signé", "");
+  pose(dt.butoirPret, "Date butoir du financement", "");
+  pose(dt.acte, "Acte authentique", "");
+  return out;
+}
+function prixDuBien(d){
+  const l = Array.isArray((d.prix || {}).histo) ? d.prix.histo : [];
+  return l.filter(x=> x && (x.date || x.fai)).map((x, k)=>{
+    const av = l[k - 1];
+    const n = num(x.fai), p = av ? num(av.fai) : null;
+    const ecart = (n !== null && p !== null && n !== p)
+      ? (n < p ? " — baisse de " + eur(p - n) : " — hausse de " + eur(n - p)) : "";
+    return {jour: x.date || "", quoi: k === 0 ? "Prix au départ" : "Prix modifié",
+            det: (n === null ? "" : eur(n)) + ecart
+                 + (x.note ? " · " + x.note : "")};
   });
 }
+/* la ligne du temps : actions, rendez-vous, prix, dates clés, mêlés */
+function ligneDuTempsBien(d){
+  const out = [];
+  /* Les actions « Visite organisée » et « Visite annulée » sont l'ombre du
+     rendez-vous lui-même, qui est juste en dessous avec sa date, ses
+     participants et son bouton : les deux lignes diraient la même chose. On
+     garde le rendez-vous, et l'on reporte sur lui qui l'a posé et quand. */
+  actionsDe({dossier:d.id}).filter(a=> !/^Visite /.test(a.genre || ""))
+    .forEach(a=> out.push({
+      t: a.t || 0, jour: jourDe(a.t), qui: a.qui || "", quoi: a.genre || "",
+      det: a.texte || "", genre: a.genre === "Note" ? "note" : ""}));
+  rdvDe({dossier:d.id}).forEach(x=>{
+    const t = new Date(x.debut).getTime() || x.cree || 0;
+    const pose = x.cree ? "posé le " + fdate(jourDe(x.cree)) : "";
+    out.push({t, jour: jourDe(t), qui: x.par || "",
+      quoi: x.annule ? "Visite annulée" : (rdvAVenir(x) ? "Visite prévue" : "Visite"),
+      det: [x.lieu, (x.gens || []).map(g=> (g.qualite || "") + " "
+              + (g.nom || "")).join(", "), x.motif ? "motif : " + x.motif : "",
+            pose].filter(Boolean).join(" · "),
+      genre: x.annule ? "off" : "", rdv: x.annule ? "" : x.id});
+  });
+  prixDuBien(d).forEach(x=> out.push({t: jourEnT(x.jour), jour: x.jour,
+    qui: "", quoi: x.quoi, det: x.det, genre:"prix"}));
+  etapesDuBien(d).forEach(x=> out.push({t: jourEnT(x.jour), jour: x.jour,
+    qui: "", quoi: x.quoi, det: x.det, genre:"etape"}));
+  return out.sort((a, b)=> (b.t || 0) - (a.t || 0));
+}
+function jourEnT(iso){
+  const d = isoValide(iso) ? new Date(iso + "T12:00:00") : null;
+  return d && !isNaN(d.getTime()) ? d.getTime() : 0;
+}
+function renderHistoBien(){
+  const z = $("#histoBienBody");
+  if(!z) return;
+  const l = ligneDuTempsBien(D);
+  const rdvs = rdvDe({dossier:D.id});
+  const aVenir = rdvs.filter(x=> !x.annule && rdvAVenir(x));
+  z.innerHTML = `<div class="card"><h2>La vie de ce bien
+      <span class="cnt">${l.length}</span></h2>
+    <div class="body">
+      <p class="muted" style="margin-top:0">Tout ce qui a été fait sur ce bien, du plus
+        récent au plus ancien : les <b>actions</b> notées à la main, les <b>visites</b>,
+        les <b>changements de prix</b>, les <b>dates clés</b> du mandat, et les biens
+        proposés ou écartés par les demandeurs. Rien n'est saisi deux fois — tout cela
+        s'inscrit tout seul, à mesure.</p>
+      <div class="fbtns" style="margin:0 0 12px">
+        <button type="button" class="addbtn" data-actadd="bien:${esc(D.id)}"
+          >+ Créer une action</button>
+        <span class="muted" style="font-size:12.5px">Un appel du vendeur, un artisan
+          passé, un mot du voisin : ce qui n'est pas écrit se perd.</span>
+      </div>
+      ${aVenir.length ? `<p class="mdnote" style="margin:0 0 12px"><b>${aVenir.length}
+        rendez-vous à venir</b> — ${esc(aVenir.map(x=> quandRdv(x)).join(", "))}. Il se
+        lit en tête de la liste, et s'annule depuis sa ligne.</p>` : ""}
+      ${l.length ? `<div class="jtable">${l.map(x=> `<div class="jrow${
+          x.genre === "note" ? " note" : ""}${x.genre === "off" ? " off" : ""}">
+        <span class="jquand">${esc(x.jour ? fdate(x.jour) : "—")}</span>
+        <span class="jqui">${esc(x.qui || "—")}</span>
+        <span class="jquoi"><b>${esc(x.quoi)}</b>${x.det ? " " + esc(x.det) : ""}</span>
+        ${x.rdv ? `<span class="grow"></span>
+          <button type="button" class="xbtn sup" data-rdvann="${esc(x.rdv)}"
+            >Annuler</button>` : ""}
+        </div>`).join("")}</div>`
+        : `<p class="muted" style="margin:0">Rien encore. L'histoire de ce bien
+           commencera à la première action, au premier changement de prix ou à la
+           première visite.</p>`}
+    </div></div>`;
+  if(typeof appliquerDroits === "function") appliquerDroits();
+}
+
+/* =====================================================================
+   LES RENDEZ-VOUS GARDÉS : les montrer, les annuler, prévenir
+   ===================================================================== */
+function idRdv(){
+  return "rv" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+}
+function rdvDe(filtre){
+  const f = filtre || {};
+  return (L.rdv || []).filter(x=>{
+    if(!x) return false;
+    if(f.dossier && x.dossier !== f.dossier) return false;
+    if(f.recherche && x.recherche !== f.recherche) return false;
+    if(f.vivants && x.annule) return false;
+    return true;
+  }).sort((a, b)=> String(a.debut).localeCompare(String(b.debut)));
+}
+function rdvParId(id){ return (L.rdv || []).filter(x=> x && x.id === id)[0] || null; }
+function quandRdv(x){
+  const d = new Date(x.debut);
+  if(isNaN(d.getTime())) return "date inconnue";
+  return d.toLocaleDateString("fr-FR") + " à "
+    + d.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"});
+}
+function rdvAVenir(x){
+  const d = new Date(x.fin || x.debut);
+  return !isNaN(d.getTime()) && d.getTime() > Date.now();
+}
+/* le texte d'une confirmation ou d'une annulation, pour un participant */
+function motsDuRdv(x, pers){
+  const d = dossierDuBien(x.dossier) || {bien:{}, mandat:{}, prix:{}, detail:{}};
+  const deb = new Date(x.debut);
+  return motsDuCourriel(d, {civilite:"", nom:(pers || {}).nom || "",
+      prenom:"", tel:(pers || {}).tel || "", email:(pers || {}).email || ""},
+    {nom: (pers || {}).nom || "",
+     civilite: "",
+     date: isNaN(deb.getTime()) ? "" : deb.toLocaleDateString("fr-FR"),
+     heure: isNaN(deb.getTime()) ? "" : deb.toLocaleTimeString("fr-FR",
+       {hour:"2-digit", minute:"2-digit"}),
+     lieu: x.lieu || ""});
+}
+function modeleNomme(bout){
+  const l = courrielsDisponibles();
+  return l.filter(m=> fold(m.nom || "").indexOf(fold(bout)) >= 0)[0] || null;
+}
+/* Prévenir les participants. Le courriel passe par le logiciel de courrier
+   — une seule fenêtre pour tous les destinataires cochés —, WhatsApp par
+   une page par numéro, puisque wa.me ne sait parler qu'à une personne. Les
+   fenêtres s'ouvrent l'une après l'autre, doucement : les ouvrir toutes
+   d'un coup, le navigateur en bloque la moitié. */
+function confirmationsRdv(x, genre){
+  const gens = (x.gens || []).filter(g=> g.envoi);
+  if(!gens.length) return;
+  const annule = genre === "annulation";
+  const mod = modeleNomme(annule ? "annul" : "confirmation");
+  const mails = gens.filter(g=> g.envoi === "mail" && g.email);
+  const was   = gens.filter(g=> g.envoi === "wa" && g.tel);
+  if(mails.length){
+    const mots = motsDuRdv(x, mails[0]);
+    const objet = annule
+      ? "Annulation de notre rendez-vous du " + mots.date
+      : remplirCourriel((mod || {}).objet || "Confirmation de notre rendez-vous",
+                        mots);
+    const corps = annule
+      ? texteAnnulation(mots)
+      : remplirCourriel((mod || {}).corps || texteConfirmation(mots), mots);
+    ouvrirMailto("mailto:" + encodeURIComponent(mails.map(g=> g.email).join(","))
+      + "?subject=" + encodeURIComponent(objet)
+      + "&body=" + encodeURIComponent(corps));
+  }
+  was.forEach((g, k)=> setTimeout(()=>{
+    const mots = motsDuRdv(x, g);
+    const t = annule ? texteAnnulation(mots) : texteConfirmation(mots);
+    window.open("https://wa.me/" + numeroWa(g.tel) + "?text="
+      + encodeURIComponent(t), "_blank", "noopener");
+  }, 400 * k));
+  if(mails.length || was.length)
+    toast((annule ? "Annulation" : "Confirmation") + " : "
+      + (mails.length + was.length) + " message(s) préparé(s)");
+}
+function texteConfirmation(m){
+  return "Bonjour " + (m.nom || "") + ",\n\n"
+    + "Je vous confirme notre rendez-vous le " + m.date + " à " + m.heure
+    + " pour la visite du " + m.typeMin + " de " + m.surface + " à " + m.ville
+    + ".\n\nRendez-vous " + (m.lieu || "sur place") + ".\n\n"
+    + "À tout à l'heure — en cas d'imprévu, joignez-moi au " + m.negotel + ".\n\n"
+    + m.nego + "\n" + m.agence;
+}
+function texteAnnulation(m){
+  return "Bonjour " + (m.nom || "") + ",\n\n"
+    + "Je suis au regret d'annuler notre rendez-vous du " + m.date + " à "
+    + m.heure + " pour la visite du " + m.typeMin + " à " + m.ville + ".\n\n"
+    + "Je reviens vers vous pour convenir d'une autre date.\n\n"
+    + "Avec mes excuses,\n" + m.nego + "\n" + m.negotel + "\n" + m.agence;
+}
+/* ------------------------------------------------------- l'annulation */
+function ouvrirAnnulationRdv(id){
+  const x = rdvParId(id);
+  if(!x){ toast("Rendez-vous introuvable"); return; }
+  if(x.annule){ toast("Ce rendez-vous est déjà annulé"); return; }
+  const gens = x.gens || [];
+  popup({titre:"Annuler ce rendez-vous ?", genre:"erreur", large:true,
+    corps:`<p style="margin:0 0 10px"><b>${esc(x.titre)}</b><br>
+        ${esc(quandRdv(x))}${x.lieu ? " · " + esc(x.lieu) : ""}</p>
+      <p style="margin:0 0 10px">Il sera <b>retiré de votre agenda Google</b> et marqué
+        annulé ici. L'historique du bien et celui du demandeur en gardent la trace.</p>
+      ${gens.length ? `<p style="margin:0 0 6px"><b>Prévenir les participants ?</b></p>
+        <div class="rdvgens">${gens.map((g, k)=> `<div class="rdvgen court">
+          <div class="rdvqui"><b>${esc(g.nom || "sans nom")}</b>
+            <em>${esc(g.qualite || "")}${g.tel || g.email
+              ? " · " + esc([g.tel, g.email].filter(Boolean).join("  ·  ")) : ""}</em>
+          </div>
+          <select data-annenvoi="${k}"${g.email || g.tel ? "" : " disabled"}>${
+            ENVOIS_RDV.map(([v, lib])=> `<option value="${v}"${
+              v === (g.envoi || "") ? " selected" : ""}>${esc(lib)}</option>`).join("")
+            }</select></div>`).join("")}</div>`
+        : ""}
+      <div class="pf plein" style="margin-top:10px"><label for="annMotif">Motif
+        (facultatif, gardé à l'historique)</label>
+        <input type="text" id="annMotif" placeholder="Le demandeur s'est désisté"></div>`,
+    boutons:[{lib:"Ne rien faire"},
+      {lib:"Annuler le rendez-vous", primaire:true, action:()=>{
+        const choix = gens.map((g, k)=>{
+          const z = document.querySelector(`[data-annenvoi="${k}"]`);
+          return z ? z.value : "";
+        });
+        annulerRdv(id, ($("#annMotif") || {}).value || "", choix);
+      }}]});
+}
+async function annulerRdv(id, motif, choix){
+  const x = rdvParId(id);
+  if(!x) return;
+  let dit = "retiré de l'agenda";
+  if(WEB && x.ev){
+    try{
+      const rep = await webAppel({action:"agenda_annuler", ev:x.ev, voie:x.voie});
+      if(!rep || !rep.ok) throw new Error((rep && rep.erreur) || "réponse inattendue");
+      if(rep.absent) dit = "il n'était déjà plus dans l'agenda";
+    }catch(e){
+      dit = "l'agenda n'a pas pu être touché (" + String(e.message || e) + ")";
+      popup({titre:"Le rendez-vous reste dans votre agenda", genre:"erreur",
+        corps:`<p style="margin:0 0 8px">${esc(String(e.message || e))}</p>
+          <p style="margin:0">Il est marqué <b>annulé</b> ici, et les participants
+          peuvent être prévenus — mais il faudra le supprimer à la main dans Google
+          Agenda.</p>`});
+    }
+  } else if(!x.ev){
+    dit = "il n'avait pas d'événement dans l'agenda";
+  }
+  x.annule = Date.now();
+  x.motif = String(motif || "").trim();
+  (x.gens || []).forEach((g, k)=> g.envoi = (choix || [])[k] || "");
+  const quand = quandRdv(x);
+  const r = (L.prospects || []).filter(p=> p && p.id === x.recherche)[0];
+  const det = nomCourtBien(x.dossier) + " — du " + quand
+    + (x.motif ? " · " + x.motif : "") + " · " + dit;
+  if(r) noterJournal(r, "Visite annulée", det, "", x.dossier);
+  else noterAction({genre:"Visite annulée", dossier:x.dossier, texte:det});
+  saveLists();
+  confirmationsRdv(x, "annulation");
+  renderApresReponse();
+  if(pageActive() === "histobien") renderHistoBien();
+  toast("Rendez-vous annulé");
+}
+/* ------------------------------------- le bloc des rendez-vous, réutilisé */
+function blocRdv(filtre, titre){
+  const l = rdvDe(filtre);
+  if(!l.length) return `<p class="muted" style="margin:0">Aucun rendez-vous.</p>`;
+  return `<div class="jtable">${l.map(x=> `<div class="jrow${
+      x.annule ? " off" : ""}">
+    <span class="jquand">${esc(quandRdv(x))}<em>${x.annule ? "annulé"
+      : (rdvAVenir(x) ? "à venir" : "passé")}</em></span>
+    <span class="jquoi"><b>${esc(x.titre)}</b>${x.lieu
+      ? ` <em class="jbien">${esc(x.lieu)}</em>` : ""}${
+      (x.gens || []).length ? `<em class="jbien">${esc((x.gens || [])
+        .map(g=> (g.qualite || "") + " " + (g.nom || "")).join("  ·  "))}</em>` : ""}${
+      x.motif ? ` <em class="jbien">motif : ${esc(x.motif)}</em>` : ""}</span>
+    <span class="grow"></span>
+    ${x.annule ? `<span class="repnon">annulé</span>`
+      : `<button type="button" class="xbtn sup" data-rdvann="${esc(x.id)}"
+          >Annuler</button>`}
+    </div>`).join("")}</div>`;
+}
+
+/* blobEnB64 est déclarée avec les clips, plus bas : une seule suffit. */
 
 /* -------------------------------------------- le volet « Biens à rapprocher »
    Trois temps : ce qui attend une réponse, ce qu'on a déjà pris au suivi, ce
@@ -15267,6 +15740,11 @@ function pageJournal(i){
          <b>Biens à rapprocher</b> demande la date et le motif : six mois plus tard,
          c'est ce qui dit s'il faut le reproposer.</p>`}</div>
 
+    <div class="mdsect" style="margin-top:16px"><h4>Les rendez-vous ${
+      rdvDe({recherche:r.id}).length
+        ? `<span class="cnt">${rdvDe({recherche:r.id}).length}</span>` : ""}</h4>
+    ${blocRdv({recherche:r.id})}</div>
+
     <div class="mdsect" style="margin-top:16px"><h4>Tout ce qui a été fait</h4>
     <div class="fbtns" style="margin:0 0 10px">
       <button type="button" class="addbtn" data-jadd="${i}">+ Ajouter une note</button>
@@ -17813,6 +18291,11 @@ document.addEventListener("input", e=>{
      le reste : un champ qui se vide doit perdre sa couleur même si la suite
      du traitement s'arrête en chemin */
   if(t.closest && t.closest("#prospBody")) marquerRempli(t);
+  /* la recherche d'un participant au répertoire, au fil de la frappe */
+  if(t.dataset && t.dataset.rdvrech !== undefined){
+    dessinerRechercheRdv(t.value);
+    return;
+  }
   /* un modèle de courriel : on écrit dedans, il s'enregistre. Au fil de la
      frappe — un modèle à moitié écrit qu'on perdrait en changeant d'onglet
      serait une mauvaise surprise. */
@@ -18240,6 +18723,13 @@ document.addEventListener("change", e=>{
     }
     return;
   }
+  /* la qualité, l'invitation et la confirmation d'un participant */
+  if(t.dataset && t.dataset.rdvqual !== undefined){
+    const g = RDV.gens[+t.dataset.rdvqual]; if(g) g.qualite = t.value; return; }
+  if(t.dataset && t.dataset.rdvinv !== undefined){
+    const g = RDV.gens[+t.dataset.rdvinv]; if(g) g.invite = t.checked; return; }
+  if(t.dataset && t.dataset.rdvenvoi !== undefined){
+    const g = RDV.gens[+t.dataset.rdvenvoi]; if(g) g.envoi = t.value; return; }
   /* la liste déroulante des quartiers : choisir en ajoute un */
   if(t.dataset && t.dataset.qadd !== undefined){
     const val = t.value;
@@ -18352,7 +18842,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvncreer],[data-rdvann],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-persadd],[data-fraz],[data-actadd]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],[data-proposer],[data-visite],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -18790,6 +19280,44 @@ document.addEventListener("click", e=>{
     saveLists();
     renderApresReponse();
     return; }
+  if(t.dataset.rdvdel !== undefined){
+    RDV.gens.splice(+t.dataset.rdvdel, 1); dessinerParticipants(); return; }
+  if(t.dataset.rdvpers !== undefined){
+    const f = fichePersonne(t.dataset.rdvpers);
+    if(f){
+      ajouterParticipant(participantDe(f, "Autre", f.pid));
+      const z = $("#rdvRech"); if(z){ z.value = ""; dessinerRechercheRdv(""); }
+    }
+    return; }
+  if(t.dataset.rdvneuf !== undefined){
+    const z = $("#rdvNeuf");
+    if(z){ z.hidden = !z.hidden; if(!z.hidden){ const n = $("#rdvNnom");
+      if(n) n.focus(); } }
+    return; }
+  if(t.dataset.rdvncreer !== undefined){
+    const nom = String(($("#rdvNnom") || {}).value || "").trim();
+    if(!nom){ toast("Il faut au moins un nom"); return; }
+    const tel = String(($("#rdvNtel") || {}).value || "").trim();
+    const mail = String(($("#rdvNmail") || {}).value || "").trim();
+    const qual = ($("#rdvNqual") || {}).value || "Autre";
+    let pid = "";
+    /* l'ajouter au répertoire : la prochaine fois, on le retrouvera en
+       tapant trois lettres au lieu de tout resaisir */
+    if(($("#rdvNrep") || {}).checked){
+      const bouts = nom.split(/\s+/);
+      const p = Object.assign(blankPerson(), {
+        prenom: bouts.length > 1 ? bouts.slice(0, -1).join(" ") : "",
+        nom: bouts[bouts.length - 1] || nom, tel1: tel, email1: mail});
+      pid = inscrireAuRepertoire(p);
+      saveLists();
+    }
+    ajouterParticipant({pid, nom, qualite:qual, tel, email:mail,
+                        invite: !!mail, envoi:""});
+    ["rdvNnom", "rdvNtel", "rdvNmail"].forEach(k=>{
+      const z = $("#" + k); if(z) z.value = ""; });
+    const bloc = $("#rdvNeuf"); if(bloc) bloc.hidden = true;
+    return; }
+  if(t.dataset.rdvann !== undefined){ ouvrirAnnulationRdv(t.dataset.rdvann); return; }
   if(t.dataset.proposer){
     const [i, id] = t.dataset.proposer.split("|");
     ouvrirProposition(+i, id);
@@ -20801,6 +21329,7 @@ function doPost(e) {
      l'enregistrement des dossiers pendant ce temps. */
   try {
     if (q.action === 'agenda')          return sortie(agendaCreer(q));
+    if (q.action === 'agenda_annuler')  return sortie(agendaAnnuler(q));
     if (q.action === 'piece_envoi')     return sortie(pieceEnvoi(q));
     if (q.action === 'piece_lire')      return sortie(pieceLire(q));
     if (q.action === 'piece_renommer')  return sortie(pieceRenommer(q));
@@ -21051,7 +21580,8 @@ function agendaCreer(q) {
           mimeType: 'application/pdf'
         }]
       }, 'primary', { supportsAttachments: true, sendUpdates: 'all' });
-      return { ok: true, lien: ev.htmlLink || '', jointe: true };
+      return { ok: true, lien: ev.htmlLink || '', jointe: true,
+               ev: ev.id || '', voie: 'avance' };
     } catch (err) {
       /* service avancé non activé : on continue par la voie simple */
     }
@@ -21063,7 +21593,35 @@ function agendaCreer(q) {
     guests: invites.join(','),
     sendInvites: invites.length > 0
   });
-  return { ok: true, lien: lienEvenement(ev, cal), jointe: false };
+  return { ok: true, lien: lienEvenement(ev, cal), jointe: false,
+           ev: ev.getId(), voie: 'simple' };
+}
+
+/** { ev, voie } -> { ok, prevenus }  — le rendez-vous quitte l'agenda.
+ *
+ *  Les deux voies ne nomment pas un événement de la même façon : le service
+ *  avancé rend un identifiant nu, CalendarApp y accole « @google.com ». On
+ *  essaie donc l'une puis l'autre, plutôt que de parier sur celle qui l'a
+ *  créé — un agenda retouché à la main entre-temps ne doit pas nous arrêter.
+ *  Un rendez-vous déjà disparu n'est pas une erreur : le but est qu'il ne
+ *  soit plus là. */
+function agendaAnnuler(q) {
+  const id = String(q.ev || '').trim();
+  if (!id) return { erreur: 'aucun rendez-vous à annuler' };
+  if (typeof Calendar !== 'undefined' && Calendar.Events) {
+    try {
+      Calendar.Events.remove('primary', id.split('@')[0], { sendUpdates: 'all' });
+      return { ok: true, prevenus: true };
+    } catch (err) { /* pas le bon identifiant pour cette voie, ou déjà parti */ }
+  }
+  try {
+    const ev = CalendarApp.getDefaultCalendar().getEventById(id);
+    if (!ev) return { ok: true, absent: true };
+    ev.deleteEvent();
+    return { ok: true, prevenus: true };
+  } catch (err) {
+    return { erreur: String(err && err.message || err) };
+  }
 }
 function lienEvenement(ev, cal) {
   try {
@@ -24316,6 +24874,24 @@ const AIDE = [
   "<b>durée</b> part à 45 minutes et se change ; la fin suit. Le <b>demandeur</b> est "+
   "associé au rendez-vous avec ses coordonnées, et reçoit l'invitation de Google s'il a "+
   "une adresse. "+
+  "<b>Les participants.</b> Le <b>demandeur</b> et le <b>propriétaire du bien</b> y sont "+
+  "d'office — le propriétaire parce que c'est lui qu'on appelle quand on a dix minutes de "+
+  "retard, et ses coordonnées sont dans le rendez-vous quoi qu'il arrive. On en ajoute "+
+  "d'autres : le champ de recherche prend n'importe qui au <b>répertoire</b> en trois "+
+  "lettres, et <b>+ Nouveau contact</b> en crée un sur place — un artisan, un expert —, "+
+  "en l'ajoutant au répertoire si vous le cochez. Chacun porte sa <b>qualité</b> "+
+  "(demandeur, propriétaire, notaire, diagnostiqueur, artisan…), qui est écrite dans le "+
+  "rendez-vous : celui qui l'ouvre sur son téléphone sait qui il va trouver sur place. "+
+  "<b>Deux colonnes, deux choses différentes.</b> La case <b>invité</b> met la personne "+
+  "dans les invités de Google, qui lui envoie son invitation — réservée à ceux qui ont "+
+  "une adresse. La liste déroulante d'à côté envoie en plus une <b>confirmation de votre "+
+  "part</b>, par <b>courriel</b> ou par <b>WhatsApp</b> : le message s'ouvre déjà écrit, "+
+  "vous n'avez qu'à l'envoyer. Un courriel pour tous les destinataires choisis, une "+
+  "fenêtre WhatsApp par numéro — WhatsApp ne sait parler qu'à une personne à la fois. "+
+  "<b>La description du rendez-vous ne dit que les gens</b> : leur qualité, leur nom, "+
+  "leurs coordonnées, et le lien de la fiche. Le titre dit déjà le bien, sa surface, son "+
+  "prix et son mandat ; le champ « lieu » dit l'adresse. Les répéter noierait la seule "+
+  "chose qu'on y cherche sur le pas de la porte. "+
   "<b>Créer le rendez-vous</b> le pose dans votre agenda par le <b>script déployé dans "+
   "votre Drive</b> — celui qui porte déjà la base et les pièces jointes. La fiche du bien "+
   "y est jointe. "+
@@ -24341,6 +24917,35 @@ const AIDE = [
   "seulement, la fiche ne peut pas être jointe. "+
   "Le rendez-vous s'inscrit à l'<b>historique</b> du demandeur, en disant par quelle voie "+
   "il a été créé."],
+ ["Annuler un rendez-vous",
+  "Un rendez-vous posé reste <b>visible là où on le cherche</b> : sur la ligne du bien "+
+  "dans « Biens à rapprocher » (une pastille bleue « visite le … »), au volet "+
+  "<b>Historique</b> de la recherche, et au volet <b>Historique</b> du dossier du bien. "+
+  "Partout, le même bouton l'annule. "+
+  "La fenêtre d'annulation <b>dit d'avance ce qu'elle va faire</b> : retirer l'événement "+
+  "de votre <b>agenda Google</b> — pour de bon, pas seulement ici — et le marquer annulé "+
+  "dans les deux historiques. Elle propose de <b>prévenir chaque participant</b>, "+
+  "séparément, par courriel ou par WhatsApp : le message d'excuse s'ouvre déjà écrit. Et "+
+  "elle laisse noter un <b>motif</b>, gardé à l'historique — six mois plus tard, c'est ce "+
+  "qui dit si le demandeur s'était désisté ou si c'est le vendeur qui avait reporté. "+
+  "<b>Si l'agenda ne répond pas</b>, le rendez-vous est quand même marqué annulé ici et "+
+  "les participants peuvent être prévenus ; l'application vous dit alors franchement "+
+  "qu'il faudra le supprimer à la main dans Google Agenda. Mieux vaut le savoir que de "+
+  "le croire effacé."],
+ ["L'historique d'un bien : la vie de la vente",
+  "Le volet <b>Historique</b> d'un dossier rassemble, du plus récent au plus ancien, "+
+  "<b>tout ce qui a été fait sur ce bien</b> : les <b>actions</b> notées à la main, les "+
+  "<b>visites</b> prévues, passées ou annulées avec leurs participants, les "+
+  "<b>changements de prix</b> — chiffrés : « baisse de 20 000 € » —, les <b>dates "+
+  "clés</b> du mandat (signature, résiliation, offre, compromis, acte), et les biens "+
+  "proposés ou écartés par les demandeurs. "+
+  "<b>Rien ne s'y saisit deux fois.</b> Tout cela existait déjà, éparpillé : les actions "+
+  "portaient l'identifiant du dossier, l'historique des prix était dans le dossier, les "+
+  "dates clés aussi. On les met sur une même ligne du temps, et l'on voit enfin la vente "+
+  "comme une histoire. Le bouton <b>+ Créer une action</b> y ajoute ce que l'application "+
+  "ne peut pas deviner : un appel du vendeur, un artisan passé, un mot du voisin. "+
+  "C'est le pendant de l'historique du demandeur : l'un dit ce qu'un client a dit, "+
+  "l'autre ce qu'on a fait du bien."],
  ["Le négociateur et la date de mise à jour",
   "Une recherche neuve est <b>rattachée au négociateur connecté</b> — ou, s'il n'y a pas "+
   "de comptes, au seul négociateur de l'agence. Le champ, au volet <b>Objectif et "+
