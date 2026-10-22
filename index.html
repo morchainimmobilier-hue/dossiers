@@ -751,18 +751,11 @@ table.envois tr.repondu td.emode b{color:#166534}
   font-size:13px;cursor:pointer;color:var(--ink)}
 .rdvtrouve:hover{background:#dbeafe}
 .rdvtrouve em{display:block;font-style:normal;font-size:11.5px;color:var(--ink-3)}
-.rdvneuf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
-  margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:8px;
-  align-items:center}
-/* `display:grid` l'emporte sur l'attribut `hidden` du navigateur : sans
-   cette ligne, le bloc ne se refermerait jamais. */
-.rdvneuf[hidden]{display:none}
-.rdvneuf .chkline{grid-column:span 2;font-size:12.5px;text-transform:none;
-  letter-spacing:0;color:var(--ink-2);display:flex;align-items:center;gap:7px}
-.rdvneuf .chkline input{width:auto;flex:0 0 auto}
+/* la fiche d'identité complète, dans une fenêtre : la grille du répertoire,
+   sans ses deux sections du bas */
+.fidbox .pgrid{padding:0}
 @media(max-width:820px){
-  .rdvgen{grid-template-columns:minmax(0,1fr) 1fr;gap:6px}
-  .rdvneuf{grid-template-columns:1fr 1fr}}
+  .rdvgen{grid-template-columns:minmax(0,1fr) 1fr;gap:6px}}
 @media(max-width:700px){.rdvbox{grid-template-columns:1fr 1fr}
   .rdvbox .pf.wide{grid-column:1/-1}}
 .raprow.suivi{box-shadow:inset 3px 0 0 #16a34a}
@@ -1495,9 +1488,21 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
   border:1px solid var(--field-line);border-radius:8px;padding:6px 10px;font:inherit}
 .crmod > label{display:block;font-size:11px;letter-spacing:.4px;
   text-transform:uppercase;color:var(--ink-3);margin:8px 0 3px}
-.crmod input[type="text"],.crmod textarea{width:100%;background:var(--field);
-  border:1px solid var(--field-line);border-radius:8px;padding:7px 10px;font:inherit;
-  font-size:13px}
+.crmod input[type="text"],.crmod textarea,.crmod select{width:100%;
+  background:var(--field);border:1px solid var(--field-line);border-radius:8px;
+  padding:7px 10px;font:inherit;font-size:13px}
+/* les modèles WhatsApp : le rappel des contextes, et le choix d'une variante */
+.waquoi{margin:0 0 10px;padding:8px 12px;border:1px solid var(--line-2);
+  border-radius:10px;background:var(--accent-soft)}
+.waquoi p{margin:3px 0;font-size:12.5px;color:var(--ink-2)}
+.wavars{display:flex;flex-direction:column;gap:7px}
+.wavar{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line-2);
+  border-radius:10px;padding:9px 12px;cursor:pointer;background:#fff}
+.wavar:hover{background:var(--accent-soft)}
+.wavar input{width:auto;flex:0 0 auto;margin-top:3px}
+.wavar b{display:block;font-size:13.5px;color:var(--navy)}
+.wavar em{display:block;font-style:normal;font-size:12.5px;color:var(--ink-3);
+  white-space:pre-wrap;margin-top:3px}
 .crmod textarea{min-height:120px;resize:vertical;line-height:1.5}
 .crmots{margin-top:10px;font-size:12.5px}
 .crmots summary{cursor:pointer;color:var(--accent)}
@@ -1520,6 +1525,20 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .jquoi em{font-style:normal;color:var(--ink-2)}
 @media(max-width:760px){.jrow{flex-wrap:wrap;gap:3px 10px}
   .jquand,.jqui{flex:0 0 auto}.jquoi{flex:1 0 100%}}
+/* l'œil du compte-rendu : ouvert, la ligne y figure ; barré, elle n'y figure
+   pas — et la ligne se décolore pour qu'on le voie sans lire le bouton */
+.crbtn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;
+  width:27px;height:25px;padding:0;border:1px solid var(--line-2);border-radius:7px;
+  background:#fff;color:#1d6a3f;cursor:pointer;align-self:center}
+.crbtn:hover{background:var(--accent-soft);border-color:#bfdbfe}
+.crbtn.off{color:var(--ink-3);background:#f4f5f7}
+.jrow.horscr{background:#f7f8fa}
+.jrow.horscr .jquoi,.jrow.horscr .jqui,.jrow.horscr .jquand{color:var(--ink-3)}
+.jrow.horscr .jquoi b{font-weight:600;color:var(--ink-2)}
+.crnote{display:flex;align-items:flex-start;gap:8px;margin:0 0 10px;padding:7px 11px;
+  border:1px solid var(--line-2);border-radius:9px;background:#fbfcfe;
+  font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.crnote svg{flex:0 0 auto;margin-top:2px;color:var(--ink-3)}
 .mdcad{width:100%;border-collapse:collapse;font-size:12.5px}
 .mdcad th,.mdcad td{border:1px solid var(--line-2);padding:5px 9px;text-align:left}
 .mdcad th{background:var(--accent-soft);color:var(--navy);font-size:11px;font-weight:600}
@@ -2453,7 +2472,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 21 octobre 2026, 22 h 00">Dossiers de vente</div>
+  <div class="brand" title="Version du 22 octobre 2026, 12 h 33">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2667,7 +2686,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>21 octobre 2026, 22 h 00</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>22 octobre 2026, 12 h 33</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2958,6 +2977,47 @@ const LISTS_DEFAULT = {
        + "dire franchement ce qui vous a plu et ce qui vous a retenu : cela "
        + "m'aidera à vous proposer la suite.\n\n"
        + "Bien à vous,\n{{nego}}\n{{negotel}}\n{{agence}}"}],
+  /* ------------------------------------ la bibliothèque de messages WhatsApp
+     WhatsApp n'a ni objet ni pièce jointe : un message, et c'est tout. Mais
+     il s'écrit autrement qu'un courriel — plus court, plus direct —, et
+     l'on n'écrit pas la même chose selon le moment : confirmer, annuler,
+     relancer. D'où un CONTEXTE par modèle, et plusieurs modèles par
+     contexte : ce sont les variantes, et c'est l'application qui demande
+     laquelle au moment d'envoyer. Mêmes doubles accolades que les
+     courriels — voir MOTS_COURRIEL. */
+  whatsapp: [
+    {id:"w-conf", contexte:"confirmation", nom:"Confirmation — ton courant",
+     texte:"Bonjour {{nom}},\n\n"
+       + "Je vous confirme notre rendez-vous le {{date}} à {{heure}} pour la "
+       + "visite du {{typeMin}} de {{surface}} à {{ville}}.\n\n"
+       + "Rendez-vous {{lieu}}.\n\n"
+       + "À tout à l'heure — en cas d'imprévu, joignez-moi au {{negotel}}.\n\n"
+       + "{{nego}} — {{agence}}"},
+    {id:"w-conf-court", contexte:"confirmation", nom:"Confirmation — en deux lignes",
+     texte:"Bonjour {{nom}}, c'est bien noté : {{date}} à {{heure}}, "
+       + "{{lieu}}. À tout à l'heure. {{nego}}"},
+    {id:"w-ann", contexte:"annulation", nom:"Annulation — ton courant",
+     texte:"Bonjour {{nom}},\n\n"
+       + "Je suis au regret d'annuler notre rendez-vous du {{date}} à "
+       + "{{heure}} pour la visite du {{typeMin}} à {{ville}}.\n\n"
+       + "Je reviens vers vous pour convenir d'une autre date.\n\n"
+       + "Avec mes excuses,\n{{nego}} — {{negotel}}"},
+    {id:"w-ann-prop", contexte:"annulation", nom:"Annulation — du côté du propriétaire",
+     texte:"Bonjour {{nom}},\n\n"
+       + "La visite du {{date}} à {{heure}} est annulée : le demandeur s'est "
+       + "désisté. Je vous rappelle dès que j'ai une autre demande.\n\n"
+       + "{{nego}} — {{negotel}}"},
+    {id:"w-libre-rappel", contexte:"libre", nom:"Rappel d'un rendez-vous",
+     texte:"Bonjour {{nom}}, je me permets un mot pour notre rendez-vous de "
+       + "demain. Tout est bon de votre côté ? {{nego}} — {{agence}}"},
+    {id:"w-libre-relance", contexte:"libre", nom:"Relance après une proposition",
+     texte:"Bonjour {{nom}}, avez-vous pu regarder le {{typeMin}} de "
+       + "{{surface}} à {{ville}} que je vous ai adressé ? Dites-moi "
+       + "simplement ce qui vous a retenu, cela m'aidera pour la suite. "
+       + "{{nego}}"},
+    {id:"w-libre-rappelez", contexte:"libre", nom:"Demande de rappel",
+     texte:"Bonjour {{nom}}, pouvez-vous me rappeler quand vous avez un "
+       + "instant, au {{negotel}} ? Merci. {{nego}} — {{agence}}"}],
   /* Les quartiers, par commune. Un quartier n'existe que dans SA ville —
      « Trinquetaille » ne veut rien dire à Saint-Martin-de-Crau —, d'où un
      couple {ville, nom} et non une liste de mots. Elle part VIDE et se
@@ -3415,6 +3475,11 @@ function noterAction(o){
                   bien, de ne pas dire deux fois la même visite — et de ne pas
                   faire disparaître celles d'avant, qui n'en ont pas */
                rdv:a.rdv || "",
+               /* 1 : la ligne ne figurera pas au compte-rendu du
+                  propriétaire. Les corrections de coordonnées et
+                  d'orthographe naissent ainsi — voir GENRES_HORS_CR. */
+               horsCr: a.horsCr === undefined ? horsCrParDefaut(a.genre)
+                                              : (a.horsCr ? 1 : 0),
                groupe:a.groupe || ""};
   L.actions.push(act);
   return act;
@@ -3477,6 +3542,36 @@ function plusHautPdi(){
    l'ancienne forme imbriquée, ou une recherche retirée qu'on vient de ne
    pas reconstruire. Tant que cette forme dort quelque part, elle revient à
    chaque lecture : on réécrit donc aussitôt, ici et dans la base. */
+/* Les contextes des modèles WhatsApp. Ils sont déclarés ICI, et non avec le
+   reste de leur section, pour une raison bête et impérieuse : la
+   normalisation des listes s'en sert, et elle tourne à la première ligne
+   du programme. Un `const` déclaré plus bas n'existe pas encore à ce
+   moment-là. Voir « LES MESSAGES WHATSAPP » pour ce que chacun veut dire. */
+const CONTEXTES_WA = [
+  ["libre",        "Message direct",
+   "proposé par le bouton WhatsApp posé à côté d'un téléphone, partout dans "
+   + "l'application"],
+  ["confirmation", "Confirmation d'un rendez-vous",
+   "proposé quand un participant est marqué « confirmer par WhatsApp » à la "
+   + "création d'une visite"],
+  ["annulation",   "Annulation d'un rendez-vous",
+   "proposé quand on annule un rendez-vous en prévenant par WhatsApp"]
+];
+function idWa(){
+  return "wa" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+}
+/* Les genres d'action qui n'ont rien à faire dans un compte-rendu au
+   propriétaire : une coordonnée corrigée, une faute d'orthographe reprise.
+   Ils naissent l'œil barré — on peut le rouvrir ligne par ligne. Déclaré
+   ici pour la même raison que ci-dessus : la normalisation des listes s'en
+   sert, et elle tourne avant tout le reste. Voir « LE COMPTE-RENDU AU
+   PROPRIÉTAIRE ». */
+const GENRES_HORS_CR = ["Fiche modifiée"];
+function horsCrParDefaut(genre){
+  const g = fold(genre || "");
+  return GENRES_HORS_CR.some(x=> fold(x) === g) ? 1 : 0;
+}
+
 let APLATI = false;
 let L = loadLists();
 if(APLATI){
@@ -3536,6 +3631,15 @@ function loadListesDepuis(v){
   /* le journal des actions : jamais purgé, seulement filtré */
   if(!Array.isArray(out.actions)) out.actions = [];
   out.actions = out.actions.filter(Boolean);
+  /* L'œil du compte-rendu. Il n'existait pas : on le pose sur chaque ligne
+     déjà écrite, barré pour les corrections de coordonnées et
+     d'orthographe, ouvert pour le reste. Une fois posé il ne bouge plus
+     tout seul — sans quoi rouvrir l'œil d'une correction ne tiendrait pas
+     la relecture suivante. */
+  out.actions.forEach(a=>{
+    if(a.horsCr === undefined) a.horsCr = horsCrParDefaut(a.genre);
+    else a.horsCr = a.horsCr ? 1 : 0;
+  });
   /* le répertoire des personnes : un tableau, chaque fiche avec son identifiant */
   if(!Array.isArray(out.personnes)) out.personnes = [];
   out.personnes = out.personnes.filter(Boolean).map(f=>{
@@ -3572,8 +3676,22 @@ function loadListesDepuis(v){
   if(!Array.isArray(out.rdv)) out.rdv = [];
   out.rdv = out.rdv.filter(x=> x && x.id).map(x=> Object.assign({
     id:"", dossier:"", recherche:"", titre:"", lieu:"", debut:"", fin:"",
-    gens:[], ev:"", voie:"", cree:0, par:"", annule:0, motif:""}, x,
-    {gens: Array.isArray(x.gens) ? x.gens.filter(Boolean) : []}));
+    gens:[], ev:"", voie:"", cree:0, par:"", annule:0, motif:"", horsCr:0}, x,
+    {gens: Array.isArray(x.gens) ? x.gens.filter(Boolean) : [],
+     horsCr: x.horsCr ? 1 : 0}));
+  /* ANNULER, C'EST EFFACER. Une annulation laissait deux traces : le
+     rendez-vous marqué annulé, et une ligne « Visite annulée » dans les
+     deux historiques. Pour un compte-rendu au propriétaire, c'est deux
+     lignes de trop — un rendez-vous qui ne s'est pas tenu n'est pas un
+     évènement, c'est un évènement qui n'a pas eu lieu. On efface donc, et
+     l'on rattrape ici ce que les versions précédentes avaient inscrit :
+     les rendez-vous annulés et les lignes qui ne parlaient que d'eux. */
+  const annules = {};
+  out.rdv.filter(x=> x.annule).forEach(x=> annules[x.id] = 1);
+  if(Object.keys(annules).length){
+    out.rdv = out.rdv.filter(x=> !annules[x.id]);
+    out.actions = out.actions.filter(a=> !(a && a.rdv && annules[a.rdv]));
+  }
   /* les modèles de courriels : un nom, un objet, un corps. Un modèle sans
      nom n'est pas une fiche, c'est un oubli — on l'écarte. L'identifiant
      sert à la fusion entre appareils : sans lui, renommer un modèle en
@@ -3584,6 +3702,20 @@ function loadListesDepuis(v){
     .map(x=> ({id: String(x.id || "").trim() || idCourriel(),
                nom: String(x.nom || "").trim(),
                objet: String(x.objet || ""), corps: String(x.corps || "")}));
+  /* les modèles de messages WhatsApp : un nom, un contexte, un texte. Un
+     contexte inconnu — une version plus récente de l'application qui en
+     aurait ajouté un — est ramené au contexte libre plutôt qu'écarté : on
+     ne jette pas un texte qu'on a écrit. */
+  if(!Array.isArray(out.whatsapp)) out.whatsapp = [];
+  out.whatsapp = out.whatsapp.filter(x=> x && (String(x.nom || "").trim()
+      || String(x.texte || "").trim()))
+    .map(x=>{
+      const c = String(x.contexte || "libre").trim();
+      return {id: String(x.id || "").trim() || idWa(),
+              nom: String(x.nom || "").trim(),
+              contexte: CONTEXTES_WA.some(([v])=> v === c) ? c : "libre",
+              texte: String(x.texte || "")};
+    });
   /* « Fin du mandat sans renouvellement » disait trop : un mandat prend fin,
      qu'on le renouvelle ou non — et le renouvellement se lit désormais dans
      le dossier qui le reprend. La liste enregistrée suit le nouveau libellé,
@@ -5073,11 +5205,24 @@ function noterEcrit(bouton, genre, vers){
   noterAction(Object.assign({genre: genre, texte: vers ? "vers " + vers : ""}, c));
   saveLists();
 }
+/* ce que vaudront les doubles accolades pour CE bouton : le bien de son
+   dossier, la personne de son champ. Le bouton d'un carnet n'a ni l'un ni
+   l'autre — les mots se rempliront avec le dossier ouvert, ce qui est
+   encore la meilleure approximation. */
+function motsWaDuBouton(bouton){
+  const c = contexteDuBouton(bouton) || {};
+  const d = (c.dossier && allDossiers()[c.dossier]) || D || blankDossier();
+  return motsDuCourriel(d, fichePersonne(c.pid) || {});
+}
 function ouvrirWhatsApp(bouton){
   const r = lienWhatsApp(bouton);
   if(r.erreur){ toast(r.erreur); return; }
-  noterEcrit(bouton, "Message WhatsApp", valeurVoisine(bouton));
-  window.open(r.url, "_blank", "noopener");
+  const numero = valeurVoisine(bouton);
+  ouvrirChoixWa("libre", motsWaDuBouton(bouton), texte=>{
+    noterEcrit(bouton, "Message WhatsApp", numero);
+    window.open(r.url + (texte ? "?text=" + encodeURIComponent(texte) : ""),
+                "_blank", "noopener");
+  });
 }
 function ouvrirMail(bouton){
   const r = lienMail(bouton);
@@ -9029,7 +9174,7 @@ function vuePersonneFiche(){
     </div>`;
 }
 /* la fiche elle-même : les champs des vendeurs, les plus complets */
-function champsFichePersonne(f){
+function champsFichePersonne(f, court){
   const i = (L.personnes || []).indexOf(f);
   const unChamp = (k, lab, kd, w)=>{
     const h = controlRaw(`personnes:${i}:${k}`, kd, f[k] || "", `fp${i}`, "data-book");
@@ -9055,7 +9200,7 @@ function champsFichePersonne(f){
                      `fp${i}`, "data-book")}</div>
       <div class="pf wide"><label>Observations</label>
         ${controlRaw(`personnes:${i}:note`, "area", f.note || "", `fp${i}`, "data-book")}
-      </div></div>
+      </div></div>` + (court ? "" : `
     ${met.length ? `<div class="mdsect" style="margin-top:16px"><h4>Son métier</h4>
       <div class="seczones">${met.map(x=> `<div class="seczone">
         <span class="szg"></span>
@@ -9095,7 +9240,62 @@ function champsFichePersonne(f){
           <button type="button" class="xbtn" data-prosp="${esc(x.r.id)}">Ouvrir</button>
           </div>`).join("")}</div>`
       : `<p class="muted" style="margin:0">Aucun dossier ni recherche à son nom.</p>`}
-    </div>`;
+    </div>`);
+}
+
+/* ===================================================================== */
+/* UN CONTACT, UNE SEULE FICHE                                            */
+/* ---------------------------------------------------------------------  */
+/* On crée un contact depuis le répertoire, depuis une recherche, depuis   */
+/* un rendez-vous. Longtemps chacun de ces endroits avait son petit        */
+/* formulaire — un nom, un téléphone, et débrouillez-vous —, et il         */
+/* fallait retourner au répertoire pour compléter l'état civil : autant    */
+/* dire qu'on ne le complétait jamais. Désormais, OÙ QU'ON LE CRÉE, c'est  */
+/* la fiche d'identité qui s'ouvre : la même qu'au répertoire, tous ses    */
+/* champs, et ce qu'on y tape est inscrit au répertoire à la frappe —      */
+/* la fenêtre n'a donc pas de bouton « Enregistrer », il n'y a rien à      */
+/* enregistrer.                                                            */
+/* ===================================================================== */
+function nouvelleFichePersonne(depuis){
+  const f = fichePersonneVide();
+  f.pid = idFichePersonne();
+  f.cree = Date.now(); f.maj = Date.now();
+  if(depuis) CHAMPS_FICHE.forEach(k=>{
+    const v = String(depuis[k] === undefined || depuis[k] === null ? "" : depuis[k]).trim();
+    if(v) f[k] = depuis[k];
+  });
+  (L.personnes = L.personnes || []).push(f);
+  saveLists();
+  return f;
+}
+/* une fiche créée puis abandonnée ne doit pas rester au répertoire */
+function retirerFichePersonne(pid){
+  const f = fichePersonne(pid);
+  if(!f) return;
+  noterRetraitListe("personnes", f);
+  L.personnes = (L.personnes || []).filter(x=> x !== f);
+  saveLists();
+}
+/* La fenêtre elle-même. `avant` écrit un mot au-dessus de la grille,
+   `boutons` remplace le simple « Fermer » quand l'appelant a besoin de
+   reprendre la main — la fenêtre du rendez-vous, par exemple. */
+function ouvrirFicheIdentite(pid, o){
+  o = o || {};
+  const f = fichePersonne(pid);
+  if(!f){ toast("Fiche introuvable"); return; }
+  popup({titre: o.titre || "Fiche d'identité", large:true,
+    corps:`<div class="fidbox">${o.avant || ""}
+      ${champsFichePersonne(f, true)}
+      <p class="muted" style="margin:10px 0 0">C'est la fiche du
+        <b>répertoire</b> : ce qui est saisi ici y est inscrit aussitôt, et
+        suit la personne dans tous les dossiers qui la nomment. Rien à
+        enregistrer.</p></div>`,
+    boutons: o.boutons || [{lib:"Fermer"}]});
+  /* le curseur dans le premier champ utile : le NOM */
+  setTimeout(()=>{
+    const z = document.querySelector('#popCorps [data-book$=":nom"]');
+    if(z){ z.focus(); z.select(); }
+  }, 40);
 }
 
 /* ------------------------------------------------------- un historique
@@ -9119,6 +9319,146 @@ function redessinerHistorique(){
    recherche en toutes lettres, un sens de tri. Elles tiennent sur UNE
    ligne — trois commandes et un compteur n'ont pas à prendre deux hauteurs
    de champ au-dessus de ce qu'on est venu lire. */
+/* =====================================================================
+   LE COMPTE-RENDU AU PROPRIÉTAIRE : CE QUI Y FIGURE, CE QUI N'Y FIGURE PAS
+   ---------------------------------------------------------------------
+   Un propriétaire a droit au récit de ce qui s'est passé sur son bien :
+   les visites, les appels, les publications, les baisses de prix. Il n'a
+   que faire de ce qui regarde la tenue du fichier — un numéro de
+   téléphone corrigé, un nom mal orthographié repris.
+
+   D'où un ŒIL sur chaque ligne d'historique. Ouvert : la ligne figurera au
+   compte-rendu. Barré : elle n'y figurera pas. C'est un seul interrupteur,
+   et c'est important : il est porté par l'ÉVÈNEMENT, non par la fiche qui
+   le montre. Barrer l'œil d'une visite depuis l'historique du bien la
+   barre aussi dans l'historique du demandeur, parce que c'est la même
+   visite. Rien n'est effacé pour autant : l'historique montre tout, et ne
+   fait que dire ce qui sortira.
+
+   Quatre sortes de lignes, quatre endroits où l'interrupteur se range —
+   chacun là où vit la donnée, pour qu'il voyage avec elle d'un appareil à
+   l'autre :
+
+     act:<id>                 une action        → L.actions[].horsCr
+     rdv:<id>                 un rendez-vous    → L.rdv[].horsCr
+     prix:<dossier>:<rang>    un prix           → d.prix.histo[].horsCr
+     etape:<dossier>:<clé>    une date clé      → d.horsCr[clé]
+
+   Les deux dernières vivent dans le dossier, et non dans les listes :
+   c'est le dossier qui les détient, et c'est lui qu'on enregistre.
+   ===================================================================== */
+const IC_OEIL = `<svg viewBox="0 0 18 18" width="15" height="15" aria-hidden="true">` +
+  `<path d="M1.7 9S4.4 4.5 9 4.5 16.3 9 16.3 9 13.6 13.5 9 13.5 1.7 9 1.7 9Z"` +
+  ` fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>` +
+  `<circle cx="9" cy="9" r="2.1" fill="none" stroke="currentColor"` +
+  ` stroke-width="1.5"/></svg>`;
+const IC_OEIL_BARRE = `<svg viewBox="0 0 18 18" width="15" height="15"` +
+  ` aria-hidden="true">` +
+  `<path d="M1.7 9S4.4 4.5 9 4.5 16.3 9 16.3 9 13.6 13.5 9 13.5 1.7 9 1.7 9Z"` +
+  ` fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>` +
+  `<circle cx="9" cy="9" r="2.1" fill="none" stroke="currentColor"` +
+  ` stroke-width="1.5"/>` +
+  `<path d="M3.2 15.1 14.8 2.9" fill="none" stroke="currentColor" stroke-width="1.7"` +
+  ` stroke-linecap="round"/></svg>`;
+/* Où se range l'interrupteur d'une ligne. Rend {lire, ecrire} plutôt que
+   l'objet : un dossier ne s'enregistre pas comme une liste, et l'appelant
+   n'a pas à savoir lequel des deux il touche. */
+function interrupteurCr(cle){
+  const bouts = String(cle || "").split(":");
+  const quoi = bouts[0], a = bouts[1], b = bouts[2];
+  if(quoi === "act"){
+    const x = (L.actions || []).filter(y=> y && y.id === a)[0];
+    if(!x) return null;
+    return {lire: ()=> !!x.horsCr,
+            ecrire: v=>{ x.horsCr = v ? 1 : 0; saveLists(); }};
+  }
+  if(quoi === "rdv"){
+    const x = rdvParId(a);
+    if(!x) return null;
+    return {lire: ()=> !!x.horsCr,
+            ecrire: v=>{ x.horsCr = v ? 1 : 0; saveLists(); }};
+  }
+  if(quoi === "prix")
+    return interrupteurDossier(a, d=>{
+      const h = ((d.prix || {}).histo) || [];
+      return h[+b] || null;
+    }, "horsCr");
+  if(quoi === "etape")
+    return interrupteurDossier(a, d=>{
+      if(!d.horsCr || typeof d.horsCr !== "object") d.horsCr = {};
+      return d.horsCr;
+    }, b);
+  return null;
+}
+/* le même service, pour une donnée qui vit dans un dossier. Le dossier
+   ouvert est touché directement — c'est lui qui est à l'écran — ; un autre
+   est relu, modifié et réécrit. */
+function interrupteurDossier(id, viser, champ){
+  const dedans = (D && D.id === id) ? D : null;
+  const lire = ()=>{
+    const d = dedans || dossierDuBien(id);
+    if(!d) return false;
+    const o = viser(d);
+    return !!(o && o[champ]);
+  };
+  const ecrire = v=>{
+    if(dedans){
+      const o = viser(dedans);
+      if(o) o[champ] = v ? 1 : 0;
+      persist(true);
+      return;
+    }
+    const all = allDossiers();
+    if(!all[id]) return;
+    const o = viser(all[id]);
+    if(o) o[champ] = v ? 1 : 0;
+    all[id].maj = Date.now();
+    try{ localStorage.setItem(LS_DOSS, JSON.stringify(all)); }catch(e){}
+  };
+  return {lire, ecrire};
+}
+function horsCrDeLigne(cle){
+  const it = interrupteurCr(cle);
+  return it ? it.lire() : false;
+}
+/* L'INTERRUPTEUR D'UNE ACTION N'EST PAS TOUJOURS LE SIEN. Une action
+   « Visite organisée » est l'ombre d'un rendez-vous : l'historique du bien
+   montre le rendez-vous, celui du demandeur montre l'ombre, et ce sont la
+   MÊME visite. Si chacune avait son œil, barrer l'un n'aurait pas barré
+   l'autre — exactement ce qu'il ne faut pas. L'ombre renvoie donc à
+   l'interrupteur du rendez-vous, tant que celui-ci existe. */
+function cleCrAction(a){
+  if(a && a.rdv && rdvParId(a.rdv)) return "rdv:" + a.rdv;
+  return "act:" + ((a && a.id) || "");
+}
+function basculerCr(cle){
+  const it = interrupteurCr(cle);
+  if(!it){ toast("Ligne introuvable"); return; }
+  const avant = it.lire();
+  it.ecrire(!avant);
+  toast(avant ? "La ligne figurera au compte-rendu"
+              : "La ligne ne figurera pas au compte-rendu");
+  redessinerHistorique();
+}
+/* le bouton, posé en bout de ligne */
+function boutonCr(cle, hors){
+  return `<button type="button" class="crbtn${hors ? " off" : ""}"
+    data-cr="${esc(cle)}" aria-pressed="${hors ? "true" : "false"}"
+    title="${hors
+      ? "Écartée du compte-rendu au propriétaire — cliquez pour la remettre"
+      : "Figurera au compte-rendu au propriétaire — cliquez pour l'écarter"}"
+    >${hors ? IC_OEIL_BARRE : IC_OEIL}</button>`;
+}
+/* le rappel sous la barre de filtres : combien de lignes sont écartées */
+function noteCr(hors, total){
+  if(!total) return "";
+  if(!hors) return `<p class="crnote">${IC_OEIL} Les ${total} lignes figureront au
+    <b>compte-rendu au propriétaire</b>. L'œil en bout de ligne en écarte une.</p>`;
+  return `<p class="crnote">${IC_OEIL_BARRE} <b>${hors}</b> ligne${hors > 1 ? "s" : ""}
+    sur ${total} ${hors > 1 ? "sont écartées" : "est écartée"} du
+    <b>compte-rendu au propriétaire</b>. L'œil barré se rouvre d'un clic, et le même
+    évènement est écarté partout où il paraît.</p>`;
+}
 const TRIS_HISTO = [["recent", "du plus récent"], ["ancien", "du plus ancien"]];
 function barreHisto(etat, genres, n, quoi){
   return `<div class="histbar">
@@ -9152,25 +9492,32 @@ function blocHistorique(filtre){
   if((PERS.tri || "recent") === "ancien") l.reverse();
   const genres = (L.actions || []).filter(a=> !filtre.pid || a.pid === filtre.pid)
     .map(a=> a.genre).filter((g,i,t2)=> g && t2.indexOf(g) === i).sort(triFr);
-  return barreHisto(PERS, genres, l.length, "action") +
-    (l.length ? `<div class="jtable">${l.map(a=>{
+  const vus = l.map(a=>{
+    const cle = cleCrAction(a);
+    return {a, cle, hors: horsCrDeLigne(cle)};
+  });
+  return barreHisto(PERS, genres, l.length, "action")
+    + noteCr(vus.filter(x=> x.hors).length, vus.length) +
+    (l.length ? `<div class="jtable">${vus.map(({a, cle, hors})=>{
       const d = new Date(a.t || 0);
       const heure = isNaN(d.getTime()) ? "" :
         ("0" + d.getHours()).slice(-2) + " h " + ("0" + d.getMinutes()).slice(-2);
       const bien = bienDeAction(a);
-      /* une visite d'avant les rendez-vous gardés : elle s'annule ici, et
-         l'on dira qu'il faut l'effacer à la main dans l'agenda */
+      /* une visite d'avant les rendez-vous gardés : elle s'efface ici, et
+         l'on dira qu'il faut la retirer à la main dans l'agenda */
       const vieux = /^Visite organisée/.test(a.genre || "")
         && !(a.rdv && rdvParId(a.rdv)) ? a.id : "";
-      return `<div class="jrow${a.genre === "Note" ? " note" : ""}">
+      return `<div class="jrow${a.genre === "Note" ? " note" : ""}${
+          hors ? " horscr" : ""}">
         <span class="jquand">${esc(fdate(jourDe(a.t)))}<em>${esc(heure)}</em></span>
         <span class="jqui">${esc(a.qui || "—")}</span>
         <span class="jquoi"><b>${esc(a.genre || "")}</b>${
           a.texte ? " " + esc(a.texte) : ""}${
           bien ? ` <em class="jbien">${esc(bien)}</em>` : ""}</span>
-        ${vieux ? `<span class="grow"></span>
-          <button type="button" class="xbtn sup" data-annvieux="${esc(vieux)}"
-            >Annuler</button>` : ""}</div>`;
+        <span class="grow"></span>
+        ${vieux ? `<button type="button" class="xbtn sup"
+          data-annvieux="${esc(vieux)}">Annuler</button>` : ""}
+        ${boutonCr(cle, hors)}</div>`;
     }).join("")}</div>`
       : `<p class="muted" style="margin:0">${PERS.fg || PERS.fq
           ? "Aucune action ne répond à ces filtres."
@@ -9600,6 +9947,110 @@ function carteCourriels(){
     </div></div>`;
 }
 
+/* =====================================================================
+   LES MESSAGES WHATSAPP
+   ---------------------------------------------------------------------
+   Ils étaient écrits dans le programme : trois phrases, les mêmes pour
+   tout le monde, impossibles à corriger sans rouvrir le fichier. Ils
+   deviennent une bibliothèque, comme les courriels — à une différence
+   près, et c'est elle qui compte : un modèle WhatsApp porte un CONTEXTE.
+
+   Le contexte dit QUAND le modèle est proposé : au moment de confirmer un
+   rendez-vous, au moment de l'annuler, ou depuis n'importe quel bouton de
+   téléphone pour un message direct. Plusieurs modèles peuvent partager un
+   contexte : ce sont des VARIANTES, et l'application demande laquelle
+   employer juste avant d'ouvrir WhatsApp. Un seul modèle dans le
+   contexte : elle ne demande rien et l'emploie.
+
+   Pas d'objet, pas de pièce jointe : WhatsApp ne sait rien en faire.
+   ===================================================================== */
+/* CONTEXTES_WA et idWa() sont déclarés plus haut, près de la normalisation
+   des listes, qui en a besoin avant tout le reste. */
+function libContexteWa(c){
+  const x = CONTEXTES_WA.filter(([v])=> v === c)[0];
+  return x ? x[1] : "Message direct";
+}
+/* les modèles d'un contexte, dans l'ordre de la liste */
+function modelesWa(contexte){
+  return (L.whatsapp || []).filter(m=> m && (m.contexte || "libre") === contexte
+    && String(m.texte || "").trim());
+}
+/* ------------------------------------------- le choix d'une variante ----
+   `apres(texte, modele)` reçoit le texte déjà rempli pour les mots donnés,
+   et le modèle brut : l'appelant qui écrit à plusieurs personnes en a
+   besoin pour refaire le remplissage, nom par nom. Aucun modèle dans le
+   contexte : on n'importune personne, `apres` est appelé tout de suite
+   avec le texte vide, et c'est à l'appelant de décider quoi en faire. */
+function ouvrirChoixWa(contexte, mots, apres, renonce){
+  const l = modelesWa(contexte);
+  if(!l.length){ apres("", null); return; }
+  if(l.length === 1){ apres(remplirCourriel(l[0].texte, mots), l[0]); return; }
+  popup({titre:"Quel message WhatsApp ?", large:true,
+    corps:`<p class="muted" style="margin:0 0 10px">${esc(libContexteWa(contexte))} :
+        ${l.length} variantes dans vos modèles. Le texte est déjà rempli avec
+        ce que disent le bien et le rendez-vous ; il reste modifiable dans
+        WhatsApp avant l'envoi.</p>
+      <div class="wavars">${l.map((m, k)=> `<label class="wavar">
+          <input type="radio" name="wavar" value="${k}"${k ? "" : " checked"}>
+          <span><b>${esc(m.nom || "sans nom")}</b>
+            <em>${esc(remplirCourriel(m.texte, mots))}</em></span></label>`).join("")}
+        <label class="wavar"><input type="radio" name="wavar" value="-1">
+          <span><b>Sans texte</b><em>WhatsApp s'ouvre sur la conversation, le
+            message reste à écrire.</em></span></label>
+        <!-- « Sans texte » rend un modèle vide, et non l'absence de modèle :
+             l'appelant doit pouvoir distinguer « je n'en veux pas » de « il
+             n'y en avait aucun », qui n'appellent pas la même réponse. -->
+      </div>`,
+    boutons:[{lib:"Ne rien envoyer", action: renonce || function(){}},
+      {lib:"Ouvrir WhatsApp", primaire:true, action:()=>{
+        const r = document.querySelector('input[name="wavar"]:checked');
+        const k = r ? +r.value : 0;
+        if(k < 0){ apres("", {texte:"", vide:true}); return; }
+        apres(remplirCourriel(l[k].texte, mots), l[k]);
+      }}]});
+}
+/* ------------------------------------------- la carte de l'onglet Listes */
+function carteWhatsApp(){
+  const plie = estPlie("l_whatsapp", true);
+  const l = (L.whatsapp || []).filter(Boolean);
+  const bloc = (m, i)=> `<div class="crmod">
+    <header><input type="text" data-wamod="${i}:nom" value="${esc(m.nom)}"
+        class="crnom" placeholder="Nom du modèle">
+      <span class="grow"></span>
+      <button type="button" class="xbtn sup" data-wadel="${i}">Supprimer</button>
+    </header>
+    <label>Dans quel contexte</label>
+    <select data-wamod="${i}:contexte">${CONTEXTES_WA.map(([v, lib])=>
+      `<option value="${v}"${v === (m.contexte || "libre") ? " selected" : ""}
+        >${esc(lib)}</option>`).join("")}</select>
+    <label>Message</label>
+    <textarea data-wamod="${i}:texte" rows="6">${esc(m.texte)}</textarea>
+  </div>`;
+  return `<div class="listcard toute" id="lc_whatsapp">
+    <h3 class="pliable" data-pli="l_whatsapp">${chevron(plie)}Modèles de messages
+      WhatsApp <span class="cnt">${l.length}</span></h3>
+    <div class="plibody"${plie ? ' style="display:none"' : ''}>
+      <p class="muted" style="margin:0 0 8px">Chaque modèle porte un
+        <b>contexte</b> : c'est lui qui dit où le modèle est proposé. Quand un
+        contexte en compte plusieurs, l'application demande la
+        <b>variante</b> avant d'ouvrir WhatsApp ; quand il n'en compte qu'un,
+        elle l'emploie sans rien demander.</p>
+      <div class="waquoi">${CONTEXTES_WA.map(([v, lib, quoi])=>
+        `<p><b>${esc(lib)}</b> — ${esc(quoi)}
+          <span class="cnt">${modelesWa(v).length}</span></p>`).join("")}</div>
+      ${l.length ? `<div class="crmods">${l.map(bloc).join("")}</div>`
+        : `<p class="muted" style="margin:0">Aucun modèle : les boutons WhatsApp
+           ouvrent alors la conversation sans texte.</p>`}
+      <div class="fbtns" style="margin-top:10px">
+        <button type="button" class="addbtn" data-waadd="1">+ Ajouter un modèle</button>
+      </div>
+      <details class="crmots"><summary>Les mots remplacés automatiquement</summary>
+        <div>${MOTS_COURRIEL.map(([m, quoi])=>
+          `<p><code>{{${esc(m)}}}</code> ${esc(quoi)}</p>`).join("")}</div>
+      </details>
+    </div></div>`;
+}
+
 /* --------------------------------------- les vitesses, dans l'onglet Listes
    Elles ne servent qu'à une chose : convertir « 5 minutes à pied » en un
    rayon. Ce sont des vitesses de porte à porte, pas des performances —
@@ -9634,7 +10085,8 @@ function renderListes(){
         <span class="cnt">${(L[k]||[]).length}</span></h3>
       <div class="plibody"${plie?' style="display:none"':''}>
         <textarea data-list="${k}">${esc((L[k]||[]).join("\n"))}</textarea></div></div>`;
-  }).join("") + carteQuartiers() + carteCourriels() + carteVitesses();
+  }).join("") + carteQuartiers() + carteCourriels() + carteWhatsApp()
+    + carteVitesses();
 
   const a = L.agence;
   $("#agenceBox").innerHTML =
@@ -9820,6 +10272,9 @@ function chercherDansLesListes(q){
   voir("courriels", "Modèles de courriels",
     (L.courriels || []).filter(Boolean).map(x=>
       [x.nom, x.objet, x.corps].filter(Boolean).join(" · ")));
+  voir("whatsapp", "Modèles de messages WhatsApp",
+    (L.whatsapp || []).filter(Boolean).map(x=>
+      [x.nom, libContexteWa(x.contexte), x.texte].filter(Boolean).join(" · ")));
   return out;
 }
 function ouvrirListe(cle){
@@ -12878,8 +13333,11 @@ function participantsParDefaut(d, r){
   });
   return out;
 }
-/* l'état de la fenêtre pendant qu'elle est ouverte */
-let RDV = {gens:[], dossier:"", recherche:"", mode:""};
+/* l'état de la fenêtre pendant qu'elle est ouverte. `i` et `bien` disent
+   d'où elle a été ouverte : il faut savoir la ROUVRIR telle quelle, puisque
+   créer un contact passe maintenant par la fiche d'identité complète, qui
+   prend la place de la fenêtre le temps d'une saisie. */
+let RDV = {gens:[], dossier:"", recherche:"", mode:"", i:-1, bien:""};
 function ligneParticipant(x, k){
   return `<div class="rdvgen">
     <div class="rdvqui"><b>${esc(x.nom || "sans nom")}</b>
@@ -12929,11 +13387,46 @@ function dessinerRechercheRdv(q){
     : `<p class="muted" style="margin:4px 0 0">Personne de ce nom au répertoire.
        Le bouton <b>+ Nouveau contact</b> en crée un.</p>`;
 }
+/* ------------------------- un contact créé depuis le rendez-vous --------
+   La fenêtre du rendez-vous s'efface, la fiche d'identité prend sa place,
+   puis la fenêtre revient AVEC CE QU'ON Y AVAIT DÉJÀ SAISI et le nouveau
+   participant dedans. Le brouillon ci-dessous est tout ce qu'il faut pour
+   la rouvrir à l'identique. */
+function brouillonRdv(){
+  const v = id=> String((document.getElementById(id) || {}).value || "");
+  return {titre:v("rdvTitre"), lieu:v("rdvLieu"), adresse:v("rdvAdresse"),
+          date:v("rdvDate"), heure:v("rdvHeure") || "10", min:v("rdvMin") || "00",
+          duree:v("rdvDuree") || String(DUREE_VISITE), gens: RDV.gens.slice()};
+}
+function ouvrirContactDeVisite(){
+  const b = brouillonRdv(), i = RDV.i, bien = RDV.bien;
+  const f = nouvelleFichePersonne();
+  const revenir = garder=>{
+    if(garder && !personneVide(f)){
+      const x = participantDe(f, "Autre", f.pid);
+      x.nom = titrePersonne(f) || nomPersonne(f) || "sans nom";
+      b.gens = b.gens.concat([x]);
+    } else {
+      if(garder) toast("Fiche restée vide : contact non ajouté");
+      retirerFichePersonne(f.pid);
+    }
+    ouvrirVisite(i, bien, b);
+  };
+  ouvrirFicheIdentite(f.pid, {titre:"Nouveau contact",
+    avant:`<p class="muted" style="margin:0 0 10px">La fiche entre au
+      <b>répertoire</b> : la prochaine fois, trois lettres suffiront à la
+      retrouver. Sa <b>qualité</b> dans ce rendez-vous — propriétaire,
+      demandeur, diagnostiqueur… — se choisit ensuite, sur sa ligne de
+      participant.</p>`,
+    boutons:[{lib:"Abandonner ce contact", action:()=> revenir(false)},
+             {lib:"L'ajouter au rendez-vous", primaire:true,
+              action:()=> revenir(true)}]});
+}
 /* `i` est l'indice de la recherche qui demande la visite. Il peut être
    nul : une visite s'organise aussi depuis le bien lui-même, sans
    demandeur attitré — le propriétaire et l'agent suffisent à en faire un
    rendez-vous, et l'on ajoute qui l'on veut à la main. */
-function ouvrirVisite(i, id){
+function ouvrirVisite(i, id, repris){
   const r = (i === null || i === undefined || +i < 0)
     ? null : (L.prospects || [])[+i];
   const d = dossierDuBien(id);
@@ -12943,31 +13436,41 @@ function ouvrirVisite(i, id){
   const jour = demain.getFullYear() + "-"
     + String(demain.getMonth() + 1).padStart(2, "0") + "-"
     + String(demain.getDate()).padStart(2, "0");
-  RDV = {gens: participantsParDefaut(d, r), dossier: d.id,
-         recherche: (r || {}).id || "", mode: ""};
+  /* `repris` : la fenêtre revient d'un détour par la fiche d'identité d'un
+     contact qu'on vient de créer. On lui rend sa saisie. */
+  const b = repris || {};
+  const vHeure = b.heure || "10", vMin = b.min || "00";
+  const vDuree = b.duree || String(DUREE_VISITE);
+  RDV = {gens: b.gens ? b.gens.slice() : participantsParDefaut(d, r),
+         dossier: d.id, recherche: (r || {}).id || "", mode: "",
+         i: (r ? +i : -1), bien: id};
   popup({titre:"Organiser une visite", large:true,
     corps:`<div class="rdvbox">
       <div class="pf plein"><label for="rdvTitre">Intitulé du rendez-vous</label>
-        <input type="text" id="rdvTitre" value="${esc("Visite " + intituleBien(d))}">
+        <input type="text" id="rdvTitre" value="${esc(b.titre
+          || ("Visite " + intituleBien(d)))}">
       </div>
       <div class="pf"><label for="rdvLieu">Lieu du rendez-vous</label>
         <select id="rdvLieu">${lieux.map(x=>
-          `<option value="${x.cle}">${esc(x.lib)}</option>`).join("")}</select>
+          `<option value="${x.cle}"${x.cle === b.lieu ? " selected" : ""}
+            >${esc(x.lib)}</option>`).join("")}</select>
       </div>
       <div class="pf wide"><label for="rdvAdresse">Adresse</label>
-        <input type="text" id="rdvAdresse" value="${esc(lieux[0].adresse)}">
+        <input type="text" id="rdvAdresse" value="${esc(b.adresse === undefined
+          ? lieux[0].adresse : b.adresse)}">
       </div>
       <div class="pf"><label for="rdvDate">Date</label>
-        <input type="date" id="rdvDate" value="${jour}"></div>
+        <input type="date" id="rdvDate" value="${esc(b.date || jour)}"></div>
       <div class="pf"><label for="rdvHeure">Heure de début</label>
-        <div class="rdvhm"><select id="rdvHeure">${optionsHeures("10")}</select>
+        <div class="rdvhm"><select id="rdvHeure">${optionsHeures(vHeure)}</select>
           <span>:</span>
-          <select id="rdvMin">${optionsMinutes("00")}</select></div></div>
+          <select id="rdvMin">${optionsMinutes(vMin)}</select></div></div>
       <div class="pf"><label for="rdvDuree">Durée (minutes)</label>
-        <input type="text" id="rdvDuree" inputmode="numeric" value="${DUREE_VISITE}"></div>
+        <input type="text" id="rdvDuree" inputmode="numeric"
+          value="${esc(vDuree)}"></div>
       <div class="pf"><label>Fin</label>
-        <input type="text" id="rdvFin" value="${finDeVisite("10:00", DUREE_VISITE)}"
-          disabled></div>
+        <input type="text" id="rdvFin"
+          value="${esc(finDeVisite(vHeure + ":" + vMin, vDuree))}" disabled></div>
       <div class="pf plein"><label>Participants</label>
         <div class="rdvgens" id="rdvGens"></div>
         <div class="rdvadd">
@@ -12977,17 +13480,6 @@ function ouvrirVisite(i, id){
             >+ Nouveau contact</button>
         </div>
         <div id="rdvTrouves" class="rdvtrouves"></div>
-        <div id="rdvNeuf" class="rdvneuf" hidden>
-          <input type="text" id="rdvNnom" placeholder="Nom et prénom">
-          <input type="text" id="rdvNtel" placeholder="Téléphone">
-          <input type="text" id="rdvNmail" placeholder="Courriel">
-          <select id="rdvNqual">${QUALITES_RDV.map(q=>
-            `<option${q === "Autre" ? " selected" : ""}>${esc(q)}</option>`)
-            .join("")}</select>
-          <label class="chkline"><input type="checkbox" id="rdvNrep" checked>
-            <span>l'ajouter au répertoire</span></label>
-          <button type="button" class="addbtn mini" data-rdvncreer="1">Ajouter</button>
-        </div>
       </div>
       <p class="muted plein" style="margin:4px 0 0">La <b>fiche du bien</b> en PDF est
         jointe au rendez-vous, et les coordonnées de chacun sont écrites dedans, avec
@@ -13097,7 +13589,7 @@ async function creerVisite(i, d, f, gens){
       if(rep && rep.ok){
         fiche.ev = rep.ev || ""; fiche.voie = rep.voie || "";
         noter("agenda Google");
-        confirmationsRdv(fiche, "creation");
+        confirmationsRdv(fiche, "creation", ()=>
         popup({titre:"Rendez-vous créé",
           corps:`<p style="margin:0 0 8px">« <b>${esc(titre)}</b> » est dans votre
             agenda Google, le <b>${esc(b.debut.toLocaleDateString("fr-FR"))}</b> à
@@ -13111,7 +13603,7 @@ async function creerVisite(i, d, f, gens){
                   + "en donne le lien.")
               : "La fiche du bien n'a pas pu être composée."}</p>
             ${rep.lien ? `<p style="margin:8px 0 0"><a href="${esc(rep.lien)}"
-              target="_blank" rel="noopener">Ouvrir le rendez-vous</a></p>` : ""}`});
+              target="_blank" rel="noopener">Ouvrir le rendez-vous</a></p>` : ""}`}));
         return;
       }
       throw new Error((rep && rep.erreur) || "réponse inattendue");
@@ -13119,13 +13611,13 @@ async function creerVisite(i, d, f, gens){
       /* le filet : la page Google Agenda, déjà remplie */
       ouvrirAgendaGoogle(titre, f.adresse, texte, b, invites);
       noter("page Google Agenda");
-      confirmationsRdv(fiche, "creation");
+      confirmationsRdv(fiche, "creation", ()=>
       popup({titre:"Le script n'a pas pu créer le rendez-vous", genre:"erreur",
         corps:`<p style="margin:0 0 8px">${esc(String(e.message || e))}</p>
           ${quoiFaireAgenda(e)}
           <p style="margin:12px 0 0">En attendant, la page <b>Google Agenda</b> s'est
           ouverte, déjà remplie : il vous reste à cliquer sur « Enregistrer ». Par cette
-          voie seulement, la fiche du bien ne peut pas être jointe.</p>`});
+          voie seulement, la fiche du bien ne peut pas être jointe.</p>`}));
       return;
     }
   }
@@ -13197,27 +13689,34 @@ function ouvrirAgendaGoogle(titre, lieu, texte, b, invites){
 function etapesDuBien(d){
   const out = [];
   const dt = d.dates || {}, m = d.mandat || {};
-  const pose = (iso, quoi, det)=>{
+  /* `cle` nomme l'étape pour l'œil du compte-rendu : c'est elle qui est
+     rangée dans `d.horsCr`, et elle ne doit pas bouger d'une version à
+     l'autre sous peine de rouvrir un œil qu'on avait barré. */
+  const pose = (iso, cle, quoi, det)=>{
     if(!isoValide(iso)) return;
-    out.push({jour:iso, quoi, det: det || ""});
+    out.push({jour:iso, cle, quoi, det: det || "",
+              hors: !!((d.horsCr || {})[cle])});
   };
-  pose(m.date, "Mandat signé", [m.num ? "n° " + m.num : "", m.type]
+  pose(m.date, "mandat", "Mandat signé", [m.num ? "n° " + m.num : "", m.type]
     .filter(Boolean).join(" · "));
-  pose(m.resilieDate, "Mandat résilié", m.resilieMotif || "");
-  pose(dt.offre, "Offre acceptée", "");
-  pose(dt.compromis, "Compromis signé", "");
-  pose(dt.butoirPret, "Date butoir du financement", "");
-  pose(dt.acte, "Acte authentique", "");
+  pose(m.resilieDate, "resiliation", "Mandat résilié", m.resilieMotif || "");
+  pose(dt.offre, "offre", "Offre acceptée", "");
+  pose(dt.compromis, "compromis", "Compromis signé", "");
+  pose(dt.butoirPret, "butoir", "Date butoir du financement", "");
+  pose(dt.acte, "acte", "Acte authentique", "");
   return out;
 }
 function prixDuBien(d){
   const l = Array.isArray((d.prix || {}).histo) ? d.prix.histo : [];
-  return l.filter(x=> x && (x.date || x.fai)).map((x, k)=>{
+  return l.map((x, k)=> ({x, k})).filter(o=> o.x && (o.x.date || o.x.fai))
+    .map(o=>{
+    const x = o.x, k = o.k;
     const av = l[k - 1];
     const n = num(x.fai), p = av ? num(av.fai) : null;
     const ecart = (n !== null && p !== null && n !== p)
       ? (n < p ? " — baisse de " + eur(p - n) : " — hausse de " + eur(n - p)) : "";
-    return {jour: x.date || "", quoi: k === 0 ? "Prix au départ" : "Prix modifié",
+    return {jour: x.date || "", rang: k, hors: !!x.horsCr,
+            quoi: k === 0 ? "Prix au départ" : "Prix modifié",
             det: (n === null ? "" : eur(n)) + ecart
                  + (x.note ? " · " + x.note : "")};
   });
@@ -13237,8 +13736,9 @@ function ligneDuTempsBien(d){
     .forEach(a=> out.push({
       t: a.t || 0, jour: jourDe(a.t), qui: a.qui || "", quoi: a.genre || "",
       det: a.texte || "", genre: a.genre === "Note" ? "note" : "",
-      /* une visite d'avant se marque annulée à la main : son événement
-         Google nous est inconnu, on le dira */
+      cr: "act:" + a.id, hors: !!a.horsCr,
+      /* une visite d'avant s'efface à la main : son événement Google nous
+         est inconnu, on le dira */
       vieux: /^Visite organisée/.test(a.genre || "") ? a.id : ""}));
   rdvDe({dossier:d.id}).forEach(x=>{
     const t = new Date(x.debut).getTime() || x.cree || 0;
@@ -13248,17 +13748,26 @@ function ligneDuTempsBien(d){
       det: [x.lieu, (x.gens || []).map(g=> (g.qualite || "") + " "
               + (g.nom || "")).join(", "), x.motif ? "motif : " + x.motif : "",
             pose].filter(Boolean).join(" · "),
-      genre: x.annule ? "off" : "", rdv: x.annule ? "" : x.id});
+      genre: x.annule ? "off" : "", rdv: x.annule ? "" : x.id,
+      cr: "rdv:" + x.id, hors: !!x.horsCr});
   });
   prixDuBien(d).forEach(x=> out.push({t: jourEnT(x.jour), jour: x.jour,
-    qui: "", quoi: x.quoi, det: x.det, genre:"prix"}));
+    qui: "", quoi: x.quoi, det: x.det, genre:"prix",
+    cr: "prix:" + d.id + ":" + x.rang, hors: x.hors}));
   etapesDuBien(d).forEach(x=> out.push({t: jourEnT(x.jour), jour: x.jour,
-    qui: "", quoi: x.quoi, det: x.det, genre:"etape"}));
+    qui: "", quoi: x.quoi, det: x.det, genre:"etape",
+    cr: "etape:" + d.id + ":" + x.cle, hors: x.hors}));
   return out.sort((a, b)=> (b.t || 0) - (a.t || 0));
 }
 function jourEnT(iso){
   const d = isoValide(iso) ? new Date(iso + "T12:00:00") : null;
   return d && !isNaN(d.getTime()) ? d.getTime() : 0;
+}
+/* Ce qui sortira au compte-rendu : la même ligne du temps, l'œil barré
+   retiré. Le compte-rendu lui-même viendra après ; voici ce qu'il lira, et
+   c'est à cette fonction qu'on vérifie que l'œil sert à quelque chose. */
+function lignesPourCompteRendu(d){
+  return ligneDuTempsBien(d).filter(x=> !x.hors);
 }
 /* l'état des filtres de CETTE ligne du temps : elle a les siens, pour que
    chercher dans l'histoire d'un bien ne défasse pas le filtre posé sur
@@ -13293,17 +13802,19 @@ function renderHistoBien(){
         rendez-vous à venir</b> — ${esc(aVenir.map(x=> quandRdv(x)).join(", "))}. Il se
         lit en tête de la liste, et s'annule depuis sa ligne.</p>` : ""}
       ${barreHisto(HISTOB, genres, l.length, "ligne")}
+      ${noteCr(l.filter(x=> x.hors).length, l.length)}
       ${l.length ? `<div class="jtable">${l.map(x=> `<div class="jrow${
-          x.genre === "note" ? " note" : ""}${x.genre === "off" ? " off" : ""}">
+          x.genre === "note" ? " note" : ""}${x.genre === "off" ? " off" : ""}${
+          x.hors ? " horscr" : ""}">
         <span class="jquand">${esc(x.jour ? fdate(x.jour) : "—")}</span>
         <span class="jqui">${esc(x.qui || "—")}</span>
         <span class="jquoi"><b>${esc(x.quoi)}</b>${x.det ? " " + esc(x.det) : ""}</span>
-        ${x.rdv ? `<span class="grow"></span>
-          <button type="button" class="xbtn sup" data-rdvann="${esc(x.rdv)}"
-            >Annuler</button>` : ""}
-        ${x.vieux ? `<span class="grow"></span>
-          <button type="button" class="xbtn sup" data-annvieux="${esc(x.vieux)}"
-            >Annuler</button>` : ""}
+        <span class="grow"></span>
+        ${x.rdv ? `<button type="button" class="xbtn sup"
+          data-rdvann="${esc(x.rdv)}">Annuler</button>` : ""}
+        ${x.vieux ? `<button type="button" class="xbtn sup"
+          data-annvieux="${esc(x.vieux)}">Annuler</button>` : ""}
+        ${x.cr ? boutonCr(x.cr, x.hors) : ""}
         </div>`).join("")}</div>`
         : `<p class="muted" style="margin:0">${HISTOB.fg || HISTOB.fq
            ? "Rien ne répond à ces filtres."
@@ -13362,9 +13873,14 @@ function modeleNomme(bout){
    une page par numéro, puisque wa.me ne sait parler qu'à une personne. Les
    fenêtres s'ouvrent l'une après l'autre, doucement : les ouvrir toutes
    d'un coup, le navigateur en bloque la moitié. */
-function confirmationsRdv(x, genre){
+/* `apres` est appelé QUAND LES MESSAGES SONT RÉGLÉS, et non pas avant :
+   le choix d'une variante WhatsApp occupe la fenêtre, et l'appelant qui
+   voulait y afficher autre chose — « Rendez-vous créé », par exemple —
+   l'écraserait sans cela. C'est le défaut qu'avait la première version. */
+function confirmationsRdv(x, genre, apres){
+  const fini = apres || function(){};
   const gens = (x.gens || []).filter(g=> g.envoi);
-  if(!gens.length) return;
+  if(!gens.length){ fini(); return; }
   const annule = genre === "annulation";
   const mod = modeleNomme(annule ? "annul" : "confirmation");
   const mails = gens.filter(g=> g.envoi === "mail" && g.email);
@@ -13382,15 +13898,28 @@ function confirmationsRdv(x, genre){
       + "?subject=" + encodeURIComponent(objet)
       + "&body=" + encodeURIComponent(corps));
   }
-  was.forEach((g, k)=> setTimeout(()=>{
-    const mots = motsDuRdv(x, g);
-    const t = annule ? texteAnnulation(mots) : texteConfirmation(mots);
-    window.open("https://wa.me/" + numeroWa(g.tel) + "?text="
-      + encodeURIComponent(t), "_blank", "noopener");
-  }, 400 * k));
-  if(mails.length || was.length)
-    toast((annule ? "Annulation" : "Confirmation") + " : "
-      + (mails.length + was.length) + " message(s) préparé(s)");
+  /* WhatsApp : la VARIANTE est demandée une fois pour tous les
+     destinataires — on ne va pas poser trois fois la même question —, mais
+     le remplissage se refait pour chacun, nom par nom. Sans modèle dans le
+     contexte, on retombe sur le texte d'origine, celui qui était écrit
+     dans le programme : mieux vaut un message tout fait qu'un blanc. */
+  const quoi = annule ? "Annulation" : "Confirmation";
+  if(was.length) ouvrirChoixWa(annule ? "annulation" : "confirmation",
+    motsDuRdv(x, was[0]), (texte, modele)=>{
+      was.forEach((g, k)=> setTimeout(()=>{
+        const mots = motsDuRdv(x, g);
+        const t = modele ? remplirCourriel(modele.texte, mots)
+                : annule ? texteAnnulation(mots) : texteConfirmation(mots);
+        window.open("https://wa.me/" + numeroWa(g.tel) + "?text="
+          + encodeURIComponent(t), "_blank", "noopener");
+      }, 400 * k));
+      toast(quoi + " : " + (mails.length + was.length) + " message(s) préparé(s)");
+      fini();
+    }, fini);
+  else {
+    if(mails.length) toast(quoi + " : " + mails.length + " message(s) préparé(s)");
+    fini();
+  }
 }
 function texteConfirmation(m){
   return "Bonjour " + (m.nom || "") + ",\n\n"
@@ -13420,11 +13949,13 @@ function ouvrirAnnulationRdv(id){
         ${esc(quandRdv(x))}${x.lieu ? " · " + esc(x.lieu) : ""}</p>
       ${passe ? `<p class="alerte" style="margin:0 0 10px"><b>Ce rendez-vous est déjà
         passé : il a normalement eu lieu.</b> L'annuler maintenant le retire de votre
-        agenda et l'inscrit comme annulé dans les deux historiques — ce qui se dit d'une
+        agenda et <b>efface ses lignes</b> des deux historiques — ce qui se dit d'une
         visite qui ne s'est pas faite. Si elle a bien eu lieu, mieux vaut la laisser et
         noter ce qu'elle a donné par <b>+ Créer une action</b>.</p>` : ""}
-      <p style="margin:0 0 10px">Il sera <b>retiré de votre agenda Google</b> et marqué
-        annulé ici. L'historique du bien et celui du demandeur en gardent la trace.</p>
+      <p style="margin:0 0 10px">Il sera <b>retiré de votre agenda Google</b>, et ses
+        lignes <b>effacées</b> de l'historique du bien comme de celui du demandeur :
+        une visite qui ne s'est pas tenue n'a pas à figurer au compte-rendu du
+        propriétaire. <b>C'est sans retour.</b></p>
       ${gens.length ? `<p style="margin:0 0 6px"><b>Prévenir les participants ?</b></p>
         <div class="rdvgens">${gens.map((g, k)=> `<div class="rdvgen court">
           <div class="rdvqui"><b>${esc(g.nom || "sans nom")}</b>
@@ -13461,28 +13992,38 @@ async function annulerRdv(id, motif, choix){
       dit = "l'agenda n'a pas pu être touché (" + String(e.message || e) + ")";
       popup({titre:"Le rendez-vous reste dans votre agenda", genre:"erreur",
         corps:`<p style="margin:0 0 8px">${esc(String(e.message || e))}</p>
-          <p style="margin:0">Il est marqué <b>annulé</b> ici, et les participants
+          <p style="margin:0">Ses lignes sont <b>effacées ici</b>, et les participants
           peuvent être prévenus — mais il faudra le supprimer à la main dans Google
           Agenda.</p>`});
     }
   } else if(!x.ev){
     dit = "il n'avait pas d'événement dans l'agenda";
   }
-  x.annule = Date.now();
   x.motif = String(motif || "").trim();
   (x.gens || []).forEach((g, k)=> g.envoi = (choix || [])[k] || "");
-  const quand = quandRdv(x);
-  const r = (L.prospects || []).filter(p=> p && p.id === x.recherche)[0];
-  const det = nomCourtBien(x.dossier) + " — du " + quand
-    + (x.motif ? " · " + x.motif : "") + " · " + dit;
-  if(r) noterJournal(r, "Visite annulée", det, "", x.dossier, x.id);
-  else noterAction({genre:"Visite annulée", dossier:x.dossier, rdv:x.id,
-    texte:det});
+  /* ANNULER, C'EST EFFACER. On marquait le rendez-vous « annulé » et l'on
+     inscrivait une ligne « Visite annulée » dans les deux historiques.
+     Deux traces pour un évènement qui n'a pas eu lieu, et deux lignes à
+     barrer à la main avant d'envoyer un compte-rendu au propriétaire. Le
+     rendez-vous et les lignes qui ne parlaient que de lui s'en vont donc —
+     mais seulement après que l'agenda Google a été touché, et les
+     participants sont prévenus à partir de l'objet détaché. */
+  effacerRdv(x);
   saveLists();
   confirmationsRdv(x, "annulation");
   renderApresReponse();
   if(pageActive() === "histobien") renderHistoBien();
-  toast("Rendez-vous annulé");
+  toast("Rendez-vous annulé et effacé — " + dit);
+}
+/* Retirer un rendez-vous et son ombre. Les retraits sont DATÉS : sans
+   cela, l'appareil resté en arrière les rapporterait au premier échange. */
+function effacerRdv(x){
+  if(!x) return;
+  noterRetraitListe("rdv", x);
+  L.rdv = (L.rdv || []).filter(y=> y !== x);
+  (L.actions || []).filter(a=> a && a.rdv === x.id)
+    .forEach(a=> noterRetraitListe("actions", a));
+  L.actions = (L.actions || []).filter(a=> !(a && a.rdv === x.id));
 }
 /* ---------------------------------- une visite d'avant les rendez-vous
    Organisée quand l'application ne les gardait pas encore, elle n'existe
@@ -13492,7 +14033,6 @@ async function annulerRdv(id, motif, choix){
 function ouvrirAnnulationVieille(idAction){
   const a = (L.actions || []).filter(x=> x && x.id === idAction)[0];
   if(!a){ toast("Action introuvable"); return; }
-  const r = (L.prospects || []).filter(p=> p && p.id === a.recherche)[0];
   popup({titre:"Annuler cette visite ?", genre:"erreur",
     corps:`<p style="margin:0 0 10px"><b>${esc(a.genre)}</b> — ${esc(a.texte || "")}<br>
         <span class="muted">notée le ${esc(fdate(jourDe(a.t)))}</span></p>
@@ -13504,21 +14044,17 @@ function ouvrirAnnulationVieille(idAction){
         ? `<p style="margin:0 0 10px">Elle est d'ailleurs <b>déjà passée : elle a
            normalement eu lieu</b>. L'annuler ici dit qu'elle ne s'est pas faite.</p>`
         : ""}
-      <p style="margin:0 0 10px">L'annulation sera inscrite aux deux historiques, celui
-        du bien et celui du demandeur.</p>
-      <div class="pf plein"><label for="annvMotif">Motif (facultatif)</label>
-        <input type="text" id="annvMotif" placeholder="Le demandeur s'est désisté"></div>`,
+      <p style="margin:0 0 10px">La ligne sera <b>effacée</b> des deux historiques,
+        celui du bien et celui du demandeur : une visite qui ne s'est pas tenue n'a pas
+        à figurer au compte-rendu du propriétaire. <b>C'est sans retour.</b></p>`,
     boutons:[{lib:"Ne rien faire"},
-      {lib:"Inscrire l'annulation", primaire:true, action:()=>{
-        const motif = String(($("#annvMotif") || {}).value || "").trim();
-        const det = (a.texte || "") + (motif ? " · " + motif : "")
-          + " · à retirer à la main de l'agenda";
-        if(r) noterJournal(r, "Visite annulée", det, "", a.dossier);
-        else noterAction({genre:"Visite annulée", dossier:a.dossier, texte:det});
+      {lib:"Effacer cette visite", primaire:true, action:()=>{
+        noterRetraitListe("actions", a);
+        L.actions = (L.actions || []).filter(y=> y !== a);
         saveLists();
         renderApresReponse();
         if(pageActive() === "histobien") renderHistoBien();
-        toast("Annulation inscrite — pensez à l'effacer dans Google Agenda");
+        toast("Visite effacée — pensez à l'effacer dans Google Agenda");
       }}]});
 }
 /* ------------------------------------- le bloc des rendez-vous, réutilisé */
@@ -14816,18 +15352,28 @@ function ligneRechercheNeuve(gens){
 function nouvelleRechercheDe(gens, nom){
   const row = ligneRechercheNeuve(gens);
   if(nom) row.nomRech = nom;
+  /* une fiche de répertoire qui n'existait pas avant est un CONTACT CRÉÉ :
+     sa fiche d'identité s'ouvrira, pour la compléter tant qu'on l'a en tête */
+  let neuf = "";
   (row.personnes || []).forEach(p=>{
     if(!p.nom && !p.prenom) return;
     const brut = Object.assign(blankPerson(), {civilite:p.civilite, nom:p.nom,
       prenom:p.prenom, tel1:p.tel, email1:p.email, pid:p.pid});
+    const avant = (L.personnes || []).length;
     const pid = inscrireAuRepertoire(brut);
     if(pid) p.pid = pid;
+    if(pid && (L.personnes || []).length > avant && !neuf) neuf = pid;
   });
   (L.prospects = L.prospects || []).push(row);
   noterJournal(row, "Recherche créée", libelleAcquereur(row));
   saveLists();
   ouvrirProspect(row.id, "recherche");
   toast("Recherche créée");
+  if(neuf) ouvrirFicheIdentite(neuf, {titre:"Nouveau contact", avant:
+    `<p class="muted" style="margin:0 0 10px">La recherche est créée. Voici la
+      fiche d'identité du contact : complétez-la maintenant si vous avez les
+      éléments, ou fermez — on la retrouve à tout moment au
+      <b>répertoire</b>.</p>`});
   return row;
 }
 /* La duplication : tous les critères, le secteur, le budget. Pas les biens
@@ -14868,8 +15414,10 @@ function rattacherPersonne(idRech, src){
   p.nom = String(p.nom || "").toUpperCase();
   const brut = Object.assign(blankPerson(), {civilite:p.civilite, nom:p.nom,
     prenom:p.prenom, tel1:p.tel, email1:p.email, pid:p.pid});
+  const avant = (L.personnes || []).length;
   const pid = inscrireAuRepertoire(brut);
   if(pid) p.pid = pid;
+  const neuf = pid && (L.personnes || []).length > avant ? pid : "";
   if(!Array.isArray(r.personnes)) r.personnes = [];
   /* la même deux fois, c'est précisément ce qu'on cherche à éviter */
   if(r.personnes.some(x=> x && x.pid && x.pid === p.pid)){
@@ -14883,6 +15431,10 @@ function rattacherPersonne(idRech, src){
   saveLists();
   renderProspects();
   toast("Personne rattachée");
+  if(neuf) ouvrirFicheIdentite(neuf, {titre:"Nouveau contact", avant:
+    `<p class="muted" style="margin:0 0 10px">La personne est rattachée à la
+      recherche. Voici sa fiche d'identité : complétez-la maintenant si vous
+      avez les éléments, ou fermez — on la retrouve au <b>répertoire</b>.</p>`});
   return r;
 }
 /* « C'est elle » : un prospect s'ouvre, une personne d'un dossier donne ses
@@ -18834,6 +19386,17 @@ document.addEventListener("input", e=>{
     if(m){ m[champ] = t.value; saveLists(); }
     return;
   }
+  /* un modèle WhatsApp : même règle, et le contexte redessine la carte —
+     c'est lui qui range le modèle, et le rappel des contextes compte */
+  if(t.dataset && t.dataset.wamod !== undefined){
+    const [i, champ] = String(t.dataset.wamod).split(":");
+    const m = (L.whatsapp || [])[+i];
+    if(m){
+      m[champ] = t.value; saveLists();
+      if(champ === "contexte") renderListes();
+    }
+    return;
+  }
 
   if(t.dataset.b !== undefined){
     set(D, t.dataset.b, t.value);
@@ -19384,7 +19947,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvncreer],[data-rdvann],[data-annvieux],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],[data-proposer],[data-visite],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -19592,10 +20155,7 @@ document.addEventListener("click", e=>{
   if(t.dataset.pgopers){ PERS.onglet = t.dataset.pgopers; PERS.fg = ""; PERS.fq = "";
     renderRepertoire(); return; }
   if(t.dataset.persadd !== undefined){
-    const f = fichePersonneVide();
-    f.pid = idFichePersonne(); f.cree = Date.now(); f.maj = Date.now();
-    (L.personnes = L.personnes || []).push(f);
-    saveLists();
+    const f = nouvelleFichePersonne();
     PERS.ouvert = f.pid; PERS.onglet = "ident";
     renderRepertoire();
     const prem = $("#repParties .pgrid input");
@@ -19607,6 +20167,7 @@ document.addEventListener("click", e=>{
     redessinerHistorique(); return; }
   if(t.dataset.annvieux !== undefined){
     ouvrirAnnulationVieille(t.dataset.annvieux); return; }
+  if(t.dataset.cr !== undefined){ basculerCr(t.dataset.cr); return; }
   if(t.dataset.perstri !== undefined){ PERS.tri = t.dataset.perstri;
     renderRepertoire(); return; }
   /* de la fiche d'une personne à sa fiche de carnet, et retour */
@@ -19728,6 +20289,31 @@ document.addEventListener("click", e=>{
     const z = document.querySelector('[data-courriel="'
       + (L.courriels.length - 1) + ':nom"]');
     if(z){ z.focus(); z.select(); }
+    return;
+  }
+  if(t.dataset.waadd !== undefined){
+    if(!Array.isArray(L.whatsapp)) L.whatsapp = [];
+    L.whatsapp.push({id:idWa(), nom:"Nouveau modèle", contexte:"libre", texte:""});
+    saveLists();
+    PLIS["l_whatsapp"] = false;
+    renderListes();
+    const z = document.querySelector('[data-wamod="'
+      + (L.whatsapp.length - 1) + ':nom"]');
+    if(z){ z.focus(); z.select(); }
+    return;
+  }
+  if(t.dataset.wadel !== undefined){
+    const i = +t.dataset.wadel, m = (L.whatsapp || [])[i];
+    if(!m) return;
+    popup({titre:"Supprimer ce modèle ?", genre:"erreur",
+      corps:`<p style="margin:0">« <b>${esc(m.nom || "sans nom")}</b> » sera retiré de
+        la bibliothèque WhatsApp. Les messages déjà envoyés ne sont pas touchés.</p>`,
+      boutons:[{lib:"Annuler"}, {lib:"Supprimer", primaire:true, action:()=>{
+        noterRetraitListe("whatsapp", m);
+        L.whatsapp.splice(i, 1);
+        saveLists(); renderListes();
+        toast("Modèle supprimé");
+      }}]});
     return;
   }
   if(t.dataset.courrdel !== undefined){
@@ -19860,34 +20446,7 @@ document.addEventListener("click", e=>{
       const z = $("#rdvRech"); if(z){ z.value = ""; dessinerRechercheRdv(""); }
     }
     return; }
-  if(t.dataset.rdvneuf !== undefined){
-    const z = $("#rdvNeuf");
-    if(z){ z.hidden = !z.hidden; if(!z.hidden){ const n = $("#rdvNnom");
-      if(n) n.focus(); } }
-    return; }
-  if(t.dataset.rdvncreer !== undefined){
-    const nom = String(($("#rdvNnom") || {}).value || "").trim();
-    if(!nom){ toast("Il faut au moins un nom"); return; }
-    const tel = String(($("#rdvNtel") || {}).value || "").trim();
-    const mail = String(($("#rdvNmail") || {}).value || "").trim();
-    const qual = ($("#rdvNqual") || {}).value || "Autre";
-    let pid = "";
-    /* l'ajouter au répertoire : la prochaine fois, on le retrouvera en
-       tapant trois lettres au lieu de tout resaisir */
-    if(($("#rdvNrep") || {}).checked){
-      const bouts = nom.split(/\s+/);
-      const p = Object.assign(blankPerson(), {
-        prenom: bouts.length > 1 ? bouts.slice(0, -1).join(" ") : "",
-        nom: bouts[bouts.length - 1] || nom, tel1: tel, email1: mail});
-      pid = inscrireAuRepertoire(p);
-      saveLists();
-    }
-    ajouterParticipant({pid, nom, qualite:qual, tel, email:mail,
-                        invite: !!mail, envoi:""});
-    ["rdvNnom", "rdvNtel", "rdvNmail"].forEach(k=>{
-      const z = $("#" + k); if(z) z.value = ""; });
-    const bloc = $("#rdvNeuf"); if(bloc) bloc.hidden = true;
-    return; }
+  if(t.dataset.rdvneuf !== undefined){ ouvrirContactDeVisite(); return; }
   if(t.dataset.rdvann !== undefined){ ouvrirAnnulationRdv(t.dataset.rdvann); return; }
   if(t.dataset.proposer){
     const [i, id] = t.dataset.proposer.split("|");
@@ -24731,6 +25290,26 @@ const AIDE = [
   "<b>Où elle intervient.</b> Au bas de la fiche, la liste de ses dossiers et de ses "+
   "recherches, chacun avec son état — en vente, vendu, en cours — et un bouton pour y aller. "+
   "Une pastille pleine signale ce qui est vivant, une pastille grise ce qui est clos."],
+ ["Créer un contact : la fiche d'identité, d'où qu'on vienne",
+  "<b>Un contact se crée de partout</b> : au <b>Répertoire</b> par « + Ajouter une "+
+  "personne », sur une <b>recherche</b> par « + Ajouter une personne », dans la fenêtre "+
+  "d'un <b>rendez-vous</b> par « + Nouveau contact ». Ces trois chemins ouvrent "+
+  "désormais <b>la même fiche d'identité complète</b> — celle du répertoire, tous ses "+
+  "champs. "+
+  "Longtemps la fenêtre du rendez-vous se contentait d'un nom, d'un téléphone et d'un "+
+  "courriel, à charge pour vous de retourner au répertoire pour le reste : autant dire "+
+  "qu'on n'y retournait jamais, et le répertoire se remplissait de fiches à moitié "+
+  "vides. "+
+  "<b>Rien à enregistrer</b> : ce que vous tapez est inscrit au répertoire à la frappe, "+
+  "et la fenêtre n'a pas de bouton « Enregistrer » parce qu'il n'y a rien à enregistrer. "+
+  "<b>Depuis un rendez-vous</b>, la fenêtre de la visite s'efface le temps de la saisie, "+
+  "puis revient <b>avec ce que vous y aviez déjà mis</b> et le nouveau participant "+
+  "dedans ; sa <b>qualité</b> — propriétaire, demandeur, artisan… — se choisit ensuite, "+
+  "sur sa ligne. « <b>Abandonner ce contact</b> » retire la fiche du répertoire : une "+
+  "fiche créée par erreur n'y traîne pas. "+
+  "<b>Depuis une recherche</b>, le contrôle de doublon passe d'abord : une personne déjà "+
+  "au répertoire est <b>reprise</b>, et sa fiche ne se rouvre pas — on ne vient pas de "+
+  "la créer. Seul un contact vraiment neuf ouvre sa fiche."],
  ["Les métiers au répertoire : notaires, syndics, diagnostiqueurs…",
   "<b>Tout le monde est au répertoire</b>, y compris ceux avec qui vous travaillez : "+
   "notaires, personnes en charge d'une étude, négociateurs, et — comme <b>personnes "+
@@ -25421,6 +26000,24 @@ const AIDE = [
   "Un mot mal orthographié n'est <b>pas</b> remplacé par du vide : il reste écrit tel "+
   "quel dans le brouillon, où il se voit — un trou silencieux dans une phrase serait "+
   "bien pire."],
+ ["Les modèles de messages WhatsApp",
+  "Même carte, même onglet <b>Listes</b> : « <b>Modèles de messages WhatsApp</b> ». À "+
+  "une différence près, et c'est elle qui fait tout le service : un modèle WhatsApp "+
+  "porte un <b>contexte</b>, et le contexte dit <b>où le modèle est proposé</b>. "+
+  "Trois contextes : <b>Message direct</b> (le bouton WhatsApp posé à côté de "+
+  "n'importe quel téléphone, dans un dossier, au répertoire, sur une recherche), "+
+  "<b>Confirmation d'un rendez-vous</b> (un participant marqué « confirmer par "+
+  "WhatsApp » à la création d'une visite) et <b>Annulation d'un rendez-vous</b>. "+
+  "Plusieurs modèles peuvent partager un contexte : ce sont des <b>variantes</b>, et "+
+  "l'application demande laquelle employer juste avant d'ouvrir WhatsApp, en montrant "+
+  "le texte <b>déjà rempli</b> — on choisit sur pièce, pas sur un nom de modèle. Un "+
+  "seul modèle dans le contexte : elle ne demande rien et l'emploie. Aucun : WhatsApp "+
+  "s'ouvre sur la conversation, le message reste à écrire. "+
+  "Les <b>doubles accolades</b> sont les mêmes que pour les courriels, et la liste se "+
+  "déplie au bas de la carte. Pas d'objet, pas de pièce jointe : WhatsApp ne sait rien "+
+  "en faire. "+
+  "Quand plusieurs personnes doivent être prévenues, la variante n'est demandée "+
+  "<b>qu'une fois</b> — mais le texte est rempli pour chacune, nom par nom."],
  ["La fiche de présentation du bien, en PDF",
   "C'est la pièce qu'on joint à une proposition, et celle qu'on emporte à une visite. "+
   "Elle se compose <b>sans ouvrir le dossier du bien</b>, depuis la recherche du "+
@@ -25517,24 +26114,30 @@ const AIDE = [
   "dans « Biens à rapprocher » (une pastille bleue « visite le … »), au volet "+
   "<b>Historique</b> de la recherche, et au volet <b>Historique</b> du dossier du bien. "+
   "Partout, le même bouton l'annule. "+
-  "La fenêtre d'annulation <b>dit d'avance ce qu'elle va faire</b> : retirer l'événement "+
-  "de votre <b>agenda Google</b> — pour de bon, pas seulement ici — et le marquer annulé "+
-  "dans les deux historiques. Elle propose de <b>prévenir chaque participant</b>, "+
-  "séparément, par courriel ou par WhatsApp : le message d'excuse s'ouvre déjà écrit. Et "+
-  "elle laisse noter un <b>motif</b>, gardé à l'historique — six mois plus tard, c'est ce "+
-  "qui dit si le demandeur s'était désisté ou si c'est le vendeur qui avait reporté. "+
+  "<b>ANNULER, C'EST EFFACER.</b> La fenêtre dit d'avance ce qu'elle va faire : retirer "+
+  "l'événement de votre <b>agenda Google</b> — pour de bon, pas seulement ici — et "+
+  "<b>effacer ses lignes</b> de l'historique du bien comme de celui du demandeur. Aucune "+
+  "ligne « Visite annulée » n'est écrite à la place : une visite qui ne s'est pas tenue "+
+  "n'est pas un évènement, et elle n'a rien à faire dans un compte-rendu au "+
+  "propriétaire. C'est <b>sans retour</b>, et c'est dit avant. "+
+  "Elle propose de <b>prévenir chaque participant</b>, séparément, par courriel ou par "+
+  "WhatsApp : le message d'excuse s'ouvre déjà écrit, et il part avant que les lignes "+
+  "disparaissent. Elle laisse aussi noter un <b>motif</b>, qui sert au message. "+
   "<b>Une visite déjà passée s'annule aussi</b>, et la fenêtre le dit autrement : elle a "+
   "normalement eu lieu, et l'annuler écrit qu'elle ne s'est pas faite. Si elle a bien eu "+
   "lieu, mieux vaut la laisser et noter ce qu'elle a donné par <b>+ Créer une action</b>. "+
   "<b>Les visites organisées avant que l'application ne garde les rendez-vous</b> — "+
   "celles d'avant cette version — n'existent que comme ligne d'historique : leur "+
   "événement dans Google Agenda nous est inconnu. Elles portent tout de même un bouton "+
-  "<b>Annuler</b>, qui inscrit l'annulation dans les deux historiques et vous dit "+
-  "clairement qu'il faudra effacer l'événement à la main dans votre agenda. "+
-  "<b>Si l'agenda ne répond pas</b>, le rendez-vous est quand même marqué annulé ici et "+
-  "les participants peuvent être prévenus ; l'application vous dit alors franchement "+
-  "qu'il faudra le supprimer à la main dans Google Agenda. Mieux vaut le savoir que de "+
-  "le croire effacé."],
+  "<b>Annuler</b>, qui <b>efface la ligne</b> et vous dit clairement qu'il faudra "+
+  "retirer l'événement à la main dans votre agenda. "+
+  "<b>Si l'agenda ne répond pas</b>, les lignes sont tout de même effacées ici et les "+
+  "participants peuvent être prévenus ; l'application vous dit alors franchement qu'il "+
+  "faudra le supprimer à la main dans Google Agenda. Mieux vaut le savoir que de le "+
+  "croire effacé. "+
+  "<b>Les rendez-vous déjà marqués annulés</b> par les versions précédentes, et les "+
+  "lignes qui ne parlaient que d'eux, ont été effacés à la première ouverture de cette "+
+  "version."],
  ["Chercher et trier dans un historique",
   "Tous les historiques — celui d'un demandeur, celui d'une personne au répertoire, celui "+
   "d'un bien — portent la même barre, sur <b>une seule ligne</b> : le <b>genre</b> "+
@@ -25542,7 +26145,8 @@ const AIDE = [
   "récent, ou du plus ancien). Le compte des lignes retenues se lit à droite, et "+
   "<b>Effacer</b> rend la liste entière. "+
   "Chaque historique garde ses propres filtres : chercher dans l'histoire d'un bien ne "+
-  "défait pas celui qu'on avait posé sur la fiche d'un demandeur."],
+  "défait pas celui qu'on avait posé sur la fiche d'un demandeur. "+
+  "En bout de chaque ligne, l'<b>œil du compte-rendu</b> — voir le chapitre suivant."],
  ["L'historique d'un bien : la vie de la vente",
   "Le volet <b>Historique</b> d'un dossier rassemble, du plus récent au plus ancien, "+
   "<b>tout ce qui a été fait sur ce bien</b> : les <b>actions</b> notées à la main, les "+
@@ -25557,6 +26161,25 @@ const AIDE = [
   "ne peut pas deviner : un appel du vendeur, un artisan passé, un mot du voisin. "+
   "C'est le pendant de l'historique du demandeur : l'un dit ce qu'un client a dit, "+
   "l'autre ce qu'on a fait du bien."],
+ ["L'œil du compte-rendu au propriétaire",
+  "Un propriétaire a droit au récit de ce qui s'est passé sur son bien : les visites, "+
+  "les appels, les publications, les baisses de prix. Il n'a que faire de ce qui regarde "+
+  "la tenue du fichier — un numéro de téléphone corrigé, un nom mal orthographié repris. "+
+  "D'où un <b>œil</b> en bout de chaque ligne d'historique, partout où il y en a un : "+
+  "au bien, chez le demandeur, sur la fiche d'une personne. "+
+  "<b>Œil ouvert</b> : la ligne figurera au compte-rendu. <b>Œil barré</b> : elle n'y "+
+  "figurera pas, et la ligne se décolore pour qu'on le voie d'un coup d'œil sans lire le "+
+  "bouton. Un clic bascule. Rien n'est effacé : l'historique montre tout, et ne fait que "+
+  "dire ce qui sortira. "+
+  "<b>L'œil appartient à l'évènement, pas à la fiche.</b> Barrer une visite depuis "+
+  "l'historique du bien la barre aussi chez le demandeur, parce que c'est la même "+
+  "visite. Il n'y a jamais deux interrupteurs pour un même fait. "+
+  "<b>Ce qui naît barré</b> : les corrections de coordonnées et d'orthographe — les "+
+  "lignes « Fiche modifiée ». Elles sont utiles pour savoir qui a touché à quoi, elles "+
+  "n'ont rien à faire dans un compte-rendu. Un clic les rouvre si vous y tenez, et cela "+
+  "tient. Tout le reste naît l'œil ouvert. "+
+  "Sous la barre de filtres, un rappel dit <b>combien de lignes sont écartées</b> sur le "+
+  "total : on sait avant d'envoyer."],
  ["Le négociateur et la date de mise à jour",
   "Une recherche neuve est <b>rattachée au négociateur connecté</b> — ou, s'il n'y a pas "+
   "de comptes, au seul négociateur de l'agence. Le champ, au volet <b>Objectif et "+
