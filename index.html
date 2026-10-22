@@ -1539,6 +1539,10 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
   border:1px solid var(--line-2);border-radius:9px;background:#fbfcfe;
   font-size:12.5px;color:var(--ink-2);line-height:1.45}
 .crnote svg{flex:0 0 auto;margin-top:2px;color:var(--ink-3)}
+/* l'aperçu de la fiche de présentation : le vrai PDF, dans un cadre */
+.apercufiche{height:min(68vh,760px);border:1px solid var(--line-2);border-radius:10px;
+  overflow:hidden;background:#525659}
+.apercufiche iframe{display:block;width:100%;height:100%;border:0}
 .mdcad{width:100%;border-collapse:collapse;font-size:12.5px}
 .mdcad th,.mdcad td{border:1px solid var(--line-2);padding:5px 9px;text-align:left}
 .mdcad th{background:var(--accent-soft);color:var(--navy);font-size:11px;font-weight:600}
@@ -2472,7 +2476,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 22 octobre 2026, 12 h 33">Dossiers de vente</div>
+  <div class="brand" title="Version du 22 octobre 2026, 20 h 06">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2686,7 +2690,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>22 octobre 2026, 12 h 33</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>22 octobre 2026, 20 h 06</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2797,6 +2801,9 @@ table.tdb .puce.resilie{background:#64748b}
     <div class="modalbody detailbody" id="detailCorps"></div>
     <div class="modalfoot">
       <div id="detailPj"></div>
+      <button type="button" class="tbtn light" data-fiche="1"
+        title="La voir telle qu'elle partira, et l'enregistrer en PDF"
+        >Fiche de présentation</button>
       <div style="flex:1"></div>
       <button class="tbtn light" id="detailFermer">Fermer</button>
     </div>
@@ -19947,7 +19954,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
+    "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],[data-proposer],[data-visite],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -20168,6 +20175,12 @@ document.addEventListener("click", e=>{
   if(t.dataset.annvieux !== undefined){
     ouvrirAnnulationVieille(t.dataset.annvieux); return; }
   if(t.dataset.cr !== undefined){ basculerCr(t.dataset.cr); return; }
+  if(t.dataset.fiche !== undefined){
+    /* depuis la fiche du bien : c'est le dossier ouvert ; depuis une liste,
+       l'identifiant est écrit sur le bouton */
+    const id = String(t.dataset.fiche || "").replace(/^1$/, "");
+    ouvrirApercuFiche(id ? dossierDuBien(id) : D);
+    return; }
   if(t.dataset.perstri !== undefined){ PERS.tri = t.dataset.perstri;
     renderRepertoire(); return; }
   /* de la fiche d'une personne à sa fiche de carnet, et retour */
@@ -26019,27 +26032,76 @@ const AIDE = [
   "Quand plusieurs personnes doivent être prévenues, la variante n'est demandée "+
   "<b>qu'une fois</b> — mais le texte est rempli pour chacune, nom par nom."],
  ["La fiche de présentation du bien, en PDF",
-  "C'est la pièce qu'on joint à une proposition, et celle qu'on emporte à une visite. "+
-  "Elle se compose <b>sans ouvrir le dossier du bien</b>, depuis la recherche du "+
-  "demandeur, et tient en une à trois pages : "+
-  "l'<b>en-tête</b> de l'agence ; le <b>type et la surface</b>, l'adresse, le quartier et "+
-  "le numéro de mandat ; le <b>prix</b> avec la charge des honoraires et, s'ils sont à "+
-  "l'acquéreur, le taux et le prix hors honoraires ; la <b>photo principale</b> ; les "+
-  "<b>points essentiels</b> en deux colonnes — surfaces, pièces, étage, exposition, "+
-  "état, chauffage, annexes, copropriété, charges, taxe foncière ; les <b>deux "+
-  "étiquettes du DPE</b> avec les dépenses annuelles estimées ; le <b>mot du "+
-  "négociateur</b>, tiré de l'argumentaire du bien ; puis les <b>photos</b> et les "+
-  "<b>mentions légales</b>. "+
-  "<b>Dix photos au plus</b> : au-delà, le courriel ne passe plus et personne ne regarde "+
-  "la onzième. Celles du bien d'abord, la principale en tête, puis celles de l'immeuble. "+
-  "Chacune est redessinée et recomprimée : une fiche de dix photos pèse moins d'un "+
-  "méga-octet. "+
+  "C'est la pièce qu'on joint à une proposition, celle qu'on emporte à une visite, et "+
+  "celle qu'on montre à l'écran depuis la fiche du bien. Elle se compose <b>sans ouvrir "+
+  "le dossier</b>, depuis la recherche d'un demandeur comme depuis le bien lui-même. "+
+  "<b>Le bandeau</b> porte le <b>logo de l'agence</b> à gauche — il se règle dans "+
+  "l'onglet <b>Listes</b>, carte « Agence — logo et pied de page » —, et à droite le "+
+  "<b>négociateur du bien</b> avec son téléphone et son courriel, puis le nom de "+
+  "l'agence, son adresse et son site. "+
+  "<b>Le titre</b> dit trois choses et rien d'autre : <b>type de bien — VILLE — "+
+  "prix</b>. Dessous, l'adresse ou le quartier, et le mandat. "+
+  "<b>La photo d'ouverture</b> se pose selon son <b>orientation</b> : en bandeau si "+
+  "elle est en paysage, en colonne à côté des chiffres clés si elle est en portrait — "+
+  "là où il y aurait eu du vide. "+
+  "<b>Les données sont rangées par domaine</b>, en tableaux sur deux colonnes : le "+
+  "bien, le confort et les équipements, le prix, la copropriété, l'environnement. "+
+  "<b>Une donnée non renseignée ne laisse pas une ligne vide : elle ne laisse rien</b>, "+
+  "et un domaine entièrement vide ne donne pas de tableau du tout. Un bien dont on ne "+
+  "sait que le type et la ville tient en une page, sans un seul tiret. "+
+  "Viennent ensuite les <b>deux étiquettes du DPE</b> avec les dépenses annuelles "+
+  "estimées, et le <b>mot du négociateur</b>, tiré de l'argumentaire du bien. "+
+  "<b>Seize photos au plus</b>, celles du bien d'abord, la principale en tête, puis "+
+  "celles de l'immeuble. Chacune est redessinée et recomprimée. "+
   "Les <b>mentions légales</b> sont exactement celles de l'annonce — arrêté du 10 "+
   "janvier 2017, loi Climat, loi ALUR —, au mot près : une fiche et une annonce qui se "+
   "contrediraient seraient pires que pas de fiche du tout. Ce qui manque au dossier "+
-  "manque donc aussi ici, et se voit. "+
-  "Le PDF est <b>fabriqué par l'application elle-même</b>, sans rien envoyer nulle part : "+
-  "il s'ouvre partout de la même façon, y compris hors ligne."],
+  "manque donc aussi ici, et se voit."],
+ ["La voir avant de l'envoyer, et l'enregistrer",
+  "Dans la <b>fiche du bien</b>, au bas de la fenêtre, le bouton <b>Fiche de "+
+  "présentation</b> la compose et la montre. Ce n'est pas une maquette qui ressemblerait "+
+  "à la fiche : c'est le <b>fichier exact</b> qui partira en pièce jointe d'une "+
+  "proposition ou d'un rendez-vous, octet pour octet. "+
+  "Deux boutons dessous : <b>Ouvrir dans un onglet</b> et <b>Enregistrer en PDF</b>. "+
+  "Sur une tablette, le cadre reste parfois blanc — c'est le lecteur de PDF du système "+
+  "qui ne s'y prête pas ; les deux boutons, eux, marchent partout, et c'est pour cela "+
+  "qu'ils sont là. "+
+  "La composition demande quelques secondes quand il y a des cartes et des photos : "+
+  "elles sont allées chercher les tuiles et les commodités."],
+ ["Les trois cartes : situer le bien sans trahir le mandat",
+  "<b>Un mandat exclusif autorise à dire où est le bien</b> : l'adresse est écrite sous "+
+  "le titre, et le point est posé exactement sur les trois cartes. <b>Un mandat simple "+
+  "ne l'autorise pas</b> : c'est le <b>quartier</b> qui est nommé, et les cartes ne "+
+  "montrent que lui — aucun point n'est posé sur le bien. Ce n'est pas une préférence de "+
+  "présentation, c'est ce qu'on a le droit de publier. "+
+  "<b>La première carte</b> situe le quartier dans la commune, à <b>dix kilomètres à la "+
+  "ronde</b>, avec une échelle. Un halo rouge montre où regarder. "+
+  "<b>La deuxième</b> montre le quartier seul, son contour tracé — celui que vous avez "+
+  "dessiné dans la carte « Quartiers », ou repris de l'INSEE. "+
+  "<b>La troisième est à la même échelle que la deuxième</b>, et porte les "+
+  "<b>commodités</b> : écoles et crèches, commerces, transports en commun, santé, sport "+
+  "et loisirs, services et administrations. Six couleurs, une <b>légende</b> dans la "+
+  "carte, et sous les deux cartes le <b>compte par famille</b>. "+
+  "Les commodités viennent d'<b>OpenStreetMap</b>, par le service public Overpass — sans "+
+  "clé ni compte, comme la Base Adresse Nationale. C'est une liste collaborative : elle "+
+  "peut être incomplète, et la fiche le dit. Si le service ne répond pas dans les vingt "+
+  "secondes, la troisième carte est <b>omise</b> plutôt que remplacée par un cadre gris. "+
+  "Sans quartier ni exclusivité, une <b>seule carte</b> est composée, centrée sur la "+
+  "commune : on situe le bien sans prétendre à une précision qu'on n'a pas. "+
+  "Les fonds de carte sont ceux d'<b>OpenStreetMap</b>, comme la carte vivante du "+
+  "secteur, et l'attribution est écrite sur chaque image parce qu'elle est obligatoire. "+
+  "Hors ligne, la page des cartes n'est tout simplement pas composée — la fiche, elle, "+
+  "l'est."],
+ ["La planche de photos : l'orientation commande",
+  "La fiche finit toujours par une planche. Une grille fixe obligerait à choisir entre "+
+  "<b>déformer</b> les images et les poser dans des <b>cadres gris</b> ; ni l'un ni "+
+  "l'autre ne fait une belle planche. "+
+  "Les photos se posent donc en <b>lignes justifiées</b> : on en ajoute à la ligne tant "+
+  "que la hauteur qu'elles imposent reste trop grande, puis on ferme la ligne. En "+
+  "pratique, <b>trois portraits</b> tiennent ensemble sur une ligne, <b>deux "+
+  "paysages</b> aussi, et un mélange se répartit tout seul. Toutes les images d'une "+
+  "ligne ont la <b>même hauteur</b>, la ligne occupe <b>toute la largeur</b>, et "+
+  "<b>aucune image n'est déformée</b> — la largeur de chacune se déduit de son rapport."],
  ["Où trouver le script, et savoir s'il est à jour",
   "Le script est <b>dans l'application</b> : onglet <b>Listes</b>, carte « <b>Base "+
   "partagée entre plusieurs ordinateurs</b> », bouton <b>Voir le script</b> — ou "+
@@ -26146,7 +26208,8 @@ const AIDE = [
   "<b>Effacer</b> rend la liste entière. "+
   "Chaque historique garde ses propres filtres : chercher dans l'histoire d'un bien ne "+
   "défait pas celui qu'on avait posé sur la fiche d'un demandeur. "+
-  "En bout de chaque ligne, l'<b>œil du compte-rendu</b> — voir le chapitre suivant."],
+  "En bout de chaque ligne, l'<b>œil du compte-rendu</b> — voir « L'œil du "+
+  "compte-rendu au propriétaire »."],
  ["L'historique d'un bien : la vie de la vente",
   "Le volet <b>Historique</b> d'un dossier rassemble, du plus récent au plus ancien, "+
   "<b>tout ce qui a été fait sur ce bien</b> : les <b>actions</b> notées à la main, les "+
@@ -28474,28 +28537,356 @@ function pdfImageDepuis(im, maxPx){
 
 
 /* =====================================================================
+   DES CARTES DANS LA FICHE
+   ---------------------------------------------------------------------
+   La carte vivante de l'onglet Secteur est une carte Leaflet : des tuiles
+   posées dans le document, qu'on fait glisser. Une fiche en PDF n'a que
+   faire d'une carte qu'on fait glisser — il lui faut une IMAGE.
+
+   On compose donc l'image soi-même : on calcule quelles tuiles couvrent le
+   cadre, on les va chercher, on les pose sur une toile, et l'on dessine
+   par-dessus le contour du quartier, le point du bien, les commodités, une
+   échelle et une légende. La toile devient un JPEG, et le JPEG entre dans
+   le PDF comme une photo.
+
+   Les tuiles viennent d'OpenStreetMap, comme la carte vivante — même
+   service, mêmes conditions, et l'attribution est écrite sur chaque image
+   parce qu'elle est obligatoire. Elles sont gardées le temps de la séance :
+   composer deux fiches du même quartier ne les redemande pas.
+
+   Rien de tout cela n'est indispensable à la fiche : si le réseau ne
+   répond pas, la page des cartes est simplement omise, et l'on ne laisse
+   pas un cadre gris à la place.
+   ===================================================================== */
+const OSM_TUILE = "https://tile.openstreetmap.org/";
+const TUILE_PX = 256;
+const TUILES_MAX = 60;              /* garde-fou : jamais plus par carte */
+const TUILES_VUES = {};             /* le cache de la séance */
+
+function tuileX(lon, z){ return (lon + 180) / 360 * Math.pow(2, z); }
+function tuileY(lat, z){
+  const r = Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180;
+  return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * Math.pow(2, z);
+}
+async function tuileImage(z, x, y){
+  const cle = z + "/" + x + "/" + y;
+  if(TUILES_VUES[cle] !== undefined) return TUILES_VUES[cle];
+  let u = null;
+  try{
+    const r = await fetch(OSM_TUILE + cle + ".png");
+    if(!r.ok) throw new Error("tuile " + r.status);
+    const b = await r.blob();
+    let im;
+    if(typeof createImageBitmap === "function") im = await createImageBitmap(b);
+    else { u = URL.createObjectURL(b); im = await imageDepuis(u); }
+    TUILES_VUES[cle] = im || null;
+    return TUILES_VUES[cle];
+  }catch(e){ TUILES_VUES[cle] = null; return null; }
+  finally{ if(u) URL.revokeObjectURL(u); }
+}
+/* une boîte autour d'un point, en mètres — de quoi demander « dix
+   kilomètres à la ronde » sans parler de degrés */
+function bboxAutour(c, m){
+  const dLat = m / 111320;
+  const dLon = m / (111320 * Math.max(0.1, Math.cos(c.lat * Math.PI / 180)));
+  return {n: c.lat + dLat, s: c.lat - dLat, o: c.lon - dLon, e: c.lon + dLon};
+}
+function bboxDeContour(pts){
+  if(!Array.isArray(pts) || !pts.length) return null;
+  let n = -90, s = 90, o = 180, e = -180;
+  pts.forEach(p=>{ n = Math.max(n, p[0]); s = Math.min(s, p[0]);
+                   o = Math.min(o, p[1]); e = Math.max(e, p[1]); });
+  return {n, s, o, e};
+}
+function centreBbox(bb){ return {lat:(bb.n + bb.s) / 2, lon:(bb.o + bb.e) / 2}; }
+function elargirBbox(bb, k){
+  const dLat = (bb.n - bb.s) * k, dLon = (bb.e - bb.o) * k;
+  return {n: bb.n + dLat, s: bb.s - dLat, o: bb.o - dLon, e: bb.e + dLon};
+}
+/* le zoom le plus serré qui tienne la boîte dans le cadre */
+function zoomPour(bb, l, h, zMax){
+  for(let z = (zMax === undefined ? 17 : zMax); z >= 3; z--){
+    const dx = Math.abs(tuileX(bb.e, z) - tuileX(bb.o, z)) * TUILE_PX;
+    const dy = Math.abs(tuileY(bb.s, z) - tuileY(bb.n, z)) * TUILE_PX;
+    if(dx <= l && dy <= h) return z;
+  }
+  return 3;
+}
+/* la toile, et la fonction qui convertit un point du globe en pixels */
+async function carteCanvas(centre, z, l, h){
+  const c = document.createElement("canvas");
+  c.width = l; c.height = h;
+  const g = c.getContext("2d");
+  g.fillStyle = "#e9eef2"; g.fillRect(0, 0, l, h);
+  const x0 = tuileX(centre.lon, z) * TUILE_PX - l / 2;
+  const y0 = tuileY(centre.lat, z) * TUILE_PX - h / 2;
+  const n = Math.pow(2, z);
+  const tx1 = Math.floor(x0 / TUILE_PX), tx2 = Math.floor((x0 + l - 1) / TUILE_PX);
+  const ty1 = Math.floor(y0 / TUILE_PX), ty2 = Math.floor((y0 + h - 1) / TUILE_PX);
+  if((tx2 - tx1 + 1) * (ty2 - ty1 + 1) > TUILES_MAX) return null;
+  const jobs = [];
+  let posees = 0;
+  for(let tx = tx1; tx <= tx2; tx++) for(let ty = ty1; ty <= ty2; ty++){
+    if(ty < 0 || ty >= n) continue;
+    const mx = ((tx % n) + n) % n;
+    jobs.push(tuileImage(z, mx, ty).then(im=>{
+      if(!im) return;
+      posees++;
+      g.drawImage(im, Math.round(tx * TUILE_PX - x0), Math.round(ty * TUILE_PX - y0),
+                  TUILE_PX, TUILE_PX);
+    }));
+  }
+  await Promise.all(jobs);
+  if(!posees) return null;                 /* aucune tuile : pas de carte */
+  return {c, g, l, h, z,
+    versPx: (lat, lon)=> ({x: tuileX(lon, z) * TUILE_PX - x0,
+                           y: tuileY(lat, z) * TUILE_PX - y0})};
+}
+/* ------------------------------------------------ ce qu'on dessine dessus */
+function cadreCarte(k){
+  k.g.strokeStyle = "rgba(20,32,56,.35)"; k.g.lineWidth = 2;
+  k.g.strokeRect(1, 1, k.l - 2, k.h - 2);
+}
+function contourSurCarte(k, pts, trait, fond){
+  if(!Array.isArray(pts) || pts.length < 3) return;
+  const g = k.g;
+  g.beginPath();
+  pts.forEach((p, i)=>{ const q = k.versPx(p[0], p[1]);
+    if(i) g.lineTo(q.x, q.y); else g.moveTo(q.x, q.y); });
+  g.closePath();
+  if(fond){ g.fillStyle = fond; g.fill(); }
+  g.strokeStyle = trait || "#1d4ed8"; g.lineWidth = 3; g.lineJoin = "round";
+  g.stroke();
+}
+/* la goutte du bien : visible sur n'importe quel fond, donc cernée de blanc */
+function marqueurBien(k, lat, lon){
+  const p = k.versPx(lat, lon), g = k.g, r = 11;
+  g.beginPath();
+  g.moveTo(p.x, p.y);
+  g.bezierCurveTo(p.x - r * 1.5, p.y - r * 1.5, p.x - r, p.y - r * 2.9,
+                  p.x, p.y - r * 2.9);
+  g.bezierCurveTo(p.x + r, p.y - r * 2.9, p.x + r * 1.5, p.y - r * 1.5, p.x, p.y);
+  g.closePath();
+  g.fillStyle = "#c0392b"; g.strokeStyle = "#fff"; g.lineWidth = 3;
+  g.fill(); g.stroke();
+  g.beginPath(); g.arc(p.x, p.y - r * 1.85, r * 0.42, 0, 7);
+  g.fillStyle = "#fff"; g.fill();
+}
+/* un halo : à dix kilomètres à la ronde, une goutte de onze pixels se
+   perd. Le cercle dit « c'est par là » avant qu'on ait trouvé la goutte. */
+function haloSurCarte(k, lat, lon){
+  const p = k.versPx(lat, lon), g = k.g;
+  g.beginPath(); g.arc(p.x, p.y, 34, 0, 7);
+  g.fillStyle = "rgba(192,57,43,.12)"; g.fill();
+  g.strokeStyle = "rgba(192,57,43,.65)"; g.lineWidth = 2.5;
+  g.setLineDash([7, 5]); g.stroke(); g.setLineDash([]);
+}
+function pastilleSurCarte(k, lat, lon, couleur){
+  const p = k.versPx(lat, lon), g = k.g;
+  if(p.x < -8 || p.y < -8 || p.x > k.l + 8 || p.y > k.h + 8) return;
+  g.beginPath(); g.arc(p.x, p.y, 7, 0, 7);
+  g.fillStyle = couleur; g.fill();
+  g.strokeStyle = "#fff"; g.lineWidth = 2.4; g.stroke();
+}
+/* l'échelle : une barre et sa valeur, choisie dans une suite ronde */
+const PAS_ECHELLE = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
+function echelleSurCarte(k, centre){
+  const mParPx = 156543.03392 * Math.cos(centre.lat * Math.PI / 180)
+                 / Math.pow(2, k.z);
+  const vise = k.l * 0.26 * mParPx;
+  let m = PAS_ECHELLE[0];
+  PAS_ECHELLE.forEach(v=>{ if(v <= vise) m = v; });
+  const px = m / mParPx;
+  const g = k.g, x = 12, y = k.h - 16;
+  g.fillStyle = "rgba(255,255,255,.82)";
+  g.fillRect(x - 5, y - 15, px + 60, 22);
+  g.strokeStyle = "#13203a"; g.lineWidth = 2.4;
+  g.beginPath(); g.moveTo(x, y); g.lineTo(x + px, y);
+  g.moveTo(x, y - 5); g.lineTo(x, y + 2);
+  g.moveTo(x + px, y - 5); g.lineTo(x + px, y + 2);
+  g.stroke();
+  g.fillStyle = "#13203a";
+  g.font = "600 13px system-ui, sans-serif"; g.textAlign = "left";
+  g.fillText(m >= 1000 ? (m / 1000) + " km" : m + " m", x + px + 8, y + 4);
+}
+function attributionSurCarte(k){
+  const g = k.g, t = "© OpenStreetMap";
+  g.font = "11px system-ui, sans-serif";
+  const l = g.measureText(t).width + 10;
+  g.fillStyle = "rgba(255,255,255,.82)";
+  g.fillRect(k.l - l - 4, k.h - 19, l, 15);
+  g.fillStyle = "#4a5566"; g.textAlign = "left";
+  g.fillText(t, k.l - l + 1, k.h - 8);
+}
+function legendeSurCarte(k, entrees){
+  if(!entrees.length) return;
+  const g = k.g;
+  g.font = "600 13px system-ui, sans-serif";
+  let larg = 0;
+  entrees.forEach(e=> larg = Math.max(larg, g.measureText(e.lib).width));
+  const l = larg + 40, h = entrees.length * 20 + 14;
+  const x = 10, y = 10;
+  g.fillStyle = "rgba(255,255,255,.92)";
+  g.fillRect(x, y, l, h);
+  g.strokeStyle = "rgba(20,32,56,.3)"; g.lineWidth = 1.5;
+  g.strokeRect(x, y, l, h);
+  g.textAlign = "left";
+  entrees.forEach((e, i)=>{
+    const yy = y + 18 + i * 20;
+    g.beginPath(); g.arc(x + 16, yy - 4, 6.5, 0, 7);
+    g.fillStyle = e.coul; g.fill();
+    g.strokeStyle = "#fff"; g.lineWidth = 2; g.stroke();
+    g.fillStyle = "#13203a"; g.fillText(e.lib, x + 28, yy);
+  });
+}
+
+/* =====================================================================
+   LES COMMODITÉS DU QUARTIER
+   ---------------------------------------------------------------------
+   Écoles, commerces, transports, santé, loisirs, services : ce sont les
+   données d'OpenStreetMap, interrogées par Overpass — un service public,
+   sans clé et sans compte, comme la Base Adresse Nationale.
+
+   Six familles, et six couleurs. La famille est décidée DEUX FOIS : une
+   fois dans la requête, pour ne pas rapatrier la moitié de la commune, une
+   fois en relisant les étiquettes du point, pour savoir de quelle couleur
+   le peindre. Les deux définitions sont côte à côte, afin qu'on ne touche
+   jamais à l'une sans voir l'autre.
+
+   Overpass est lent, et quelquefois il ne répond pas. On lui laisse vingt
+   secondes, et s'il se tait la troisième carte est simplement omise.
+   ===================================================================== */
+const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+const OVERPASS_ATTENTE = 20000;
+const COMMODITES = [
+  {cle:"ecole", lib:"Écoles, crèches", coul:"#1d4ed8",
+   osm:['["amenity"~"^(school|kindergarten|college|university)$"]'],
+   test:t=> /^(school|kindergarten|college|university)$/.test(t.amenity || "")},
+  {cle:"commerce", lib:"Commerces", coul:"#b45309",
+   osm:['["shop"~"^(supermarket|convenience|bakery|butcher|greengrocer|mall|'
+        + 'department_store)$"]', '["amenity"~"^(marketplace|restaurant|cafe)$"]'],
+   test:t=> /^(supermarket|convenience|bakery|butcher|greengrocer|mall|department_store)$/
+              .test(t.shop || "")
+            || /^(marketplace|restaurant|cafe)$/.test(t.amenity || "")},
+  {cle:"transport", lib:"Transports en commun", coul:"#6d28d9",
+   osm:['["highway"="bus_stop"]', '["railway"="station"]',
+        '["public_transport"="station"]'],
+   test:t=> t.highway === "bus_stop" || t.railway === "station"
+            || t.public_transport === "station"},
+  {cle:"sante", lib:"Santé", coul:"#be123c",
+   osm:['["amenity"~"^(pharmacy|doctors|hospital|clinic|dentist)$"]'],
+   test:t=> /^(pharmacy|doctors|hospital|clinic|dentist)$/.test(t.amenity || "")},
+  {cle:"loisir", lib:"Sport et loisirs", coul:"#15803d",
+   osm:['["leisure"~"^(park|sports_centre|pitch|playground|swimming_pool|fitness_centre)$"]'],
+   test:t=> /^(park|sports_centre|pitch|playground|swimming_pool|fitness_centre)$/
+              .test(t.leisure || "")},
+  {cle:"service", lib:"Services, administrations", coul:"#0e7490",
+   osm:['["amenity"~"^(post_office|bank|townhall|police|library)$"]'],
+   test:t=> /^(post_office|bank|townhall|police|library)$/.test(t.amenity || "")}
+];
+const COMMODITES_MAX = 40;          /* par famille : au-delà, illisible */
+/* « #1d4ed8 » vers le triplet que veut le PDF : les familles n'ont qu'une
+   couleur, écrite une fois, et elle sert à la carte comme au bandeau */
+function couleurPdf(css){
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(css || ""));
+  if(!m) return PDF_GRIS;
+  return [parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255,
+          parseInt(m[3], 16) / 255];
+}
+function requeteCommodites(bb){
+  const z = "(" + bb.s.toFixed(5) + "," + bb.o.toFixed(5) + ","
+          + bb.n.toFixed(5) + "," + bb.e.toFixed(5) + ")";
+  const cl = [];
+  COMMODITES.forEach(f=> f.osm.forEach(ft=> cl.push("nwr" + ft + z + ";")));
+  return "[out:json][timeout:18];(" + cl.join("") + ");out center 600;";
+}
+function familleCommodite(tags){
+  const t = tags || {};
+  for(const f of COMMODITES) if(f.test(t)) return f;
+  return null;
+}
+async function commoditesAutour(bb){
+  const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+  const minuteur = setTimeout(()=>{ if(ctrl) ctrl.abort(); }, OVERPASS_ATTENTE);
+  try{
+    const r = await fetch(OVERPASS_URL, {method:"POST",
+      headers:{"Content-Type":"application/x-www-form-urlencoded"},
+      body:"data=" + encodeURIComponent(requeteCommodites(bb)),
+      signal: ctrl ? ctrl.signal : undefined});
+    if(!r.ok) throw new Error("réponse " + r.status);
+    const d = await r.json();
+    const vus = {}, out = [];
+    (d.elements || []).forEach(e=>{
+      const lat = e.lat !== undefined ? e.lat : (e.center || {}).lat;
+      const lon = e.lon !== undefined ? e.lon : (e.center || {}).lon;
+      if(lat === undefined || lon === undefined) return;
+      const f = familleCommodite(e.tags);
+      if(!f) return;
+      /* deux points au même endroit — le nœud et le contour du bâtiment —
+         ne font qu'une commodité */
+      const cle = f.cle + "|" + lat.toFixed(4) + "|" + lon.toFixed(4);
+      if(vus[cle]) return;
+      vus[cle] = 1;
+      out.push({lat, lon, f});
+    });
+    const compte = {};
+    return out.filter(p=>{
+      compte[p.f.cle] = (compte[p.f.cle] || 0) + 1;
+      return compte[p.f.cle] <= COMMODITES_MAX;
+    });
+  }catch(e){ return null; }
+  finally{ clearTimeout(minuteur); }
+}
+
+/* =====================================================================
    LA FICHE DE PRÉSENTATION D'UN BIEN, EN PDF
    ---------------------------------------------------------------------
-   C'est la pièce qu'on joint au courriel d'une proposition, et celle
-   qu'on emporte à une visite. Elle se compose pour un dossier QUELCONQUE,
-   sans l'ouvrir : on la demande depuis la recherche d'un demandeur, où le
-   bien n'est qu'une ligne d'une liste.
+   C'est la pièce qu'on joint au courriel d'une proposition, celle qu'on
+   emporte à une visite, et celle qu'on montre à l'écran depuis la fiche du
+   bien. Elle se compose pour un dossier QUELCONQUE, sans l'ouvrir : on la
+   demande depuis la recherche d'un demandeur, où le bien n'est qu'une
+   ligne d'une liste.
 
    Elle ne réinvente rien : les données sont celles de `donneesPubli`, les
    mentions légales celles de `mentionsPubli` — les mêmes que l'annonce,
    au mot près. Une fiche et une annonce qui se contrediraient seraient
    pires que pas de fiche du tout.
 
-   Dix photos au plus : au-delà, le courriel ne passe plus, et personne ne
-   regarde la onzième. Chacune est redessinée à 1100 pixels et réencodée en
-   JPEG — une fiche de dix photos pèse alors moins d'un méga-octet.
+   Ce qu'elle contient, dans l'ordre :
+
+     · un BANDEAU — le logo de l'agence à gauche, le négociateur avec son
+       téléphone et son courriel à droite, l'agence et son site dessous ;
+     · un TITRE explicite : type de bien — ville — prix ;
+     · la PHOTO d'ouverture, posée selon son orientation : en bandeau si
+       elle est en paysage, en colonne à côté des chiffres clés si elle est
+       en portrait ;
+     · les CHIFFRES CLÉS, quatre cases ;
+     · des TABLEAUX par domaine, sur deux colonnes. Une donnée non
+       renseignée ne laisse pas une ligne vide : elle ne laisse rien ;
+     · le DPE, ses deux étiquettes et les dépenses estimées ;
+     · le mot du négociateur ;
+     · trois CARTES — la situation à dix kilomètres à la ronde, le quartier,
+       et les commodités du quartier avec leur légende ;
+     · la PLANCHE DE PHOTOS, en lignes justifiées : trois portraits ou deux
+       paysages par ligne selon ce qui vient, jamais une image déformée ni
+       un cadre gris autour ;
+     · les mentions légales.
+
+   LE QUARTIER OU L'ADRESSE. Un mandat exclusif autorise à dire où est le
+   bien : l'adresse est écrite, et le point est posé exactement sur les
+   trois cartes. Un mandat simple ne l'autorise pas — c'est le quartier qui
+   est nommé, et les cartes ne montrent que lui. Ce n'est pas une
+   préférence de présentation, c'est ce qu'on a le droit de publier.
    ===================================================================== */
-const FICHE_MAX_PHOTOS = 10;
+const FICHE_MAX_PHOTOS = 16;
 const PDF_NAVY  = [0.078, 0.188, 0.361];
 const PDF_ENCRE = [0.059, 0.102, 0.169];
 const PDF_GRIS  = [0.471, 0.518, 0.604];
 const PDF_FILET = [0.827, 0.859, 0.906];
 const PDF_FOND  = [0.933, 0.953, 0.976];
+const PDF_BLANC = [1, 1, 1];
+const PDF_BANDE = [0.957, 0.969, 0.984];
+const PDF_OR    = [0.722, 0.459, 0.090];
 const DPE_TEINTE = {A:[0.192,0.596,0.204], B:[0.200,0.800,0.192],
   C:[0.796,0.988,0.204], D:[0.984,0.996,0.024], E:[0.984,0.800,0.020],
   F:[0.988,0.600,0.208], G:[0.988,0.008,0.020]};
@@ -28524,8 +28915,8 @@ async function imagesDeLaFiche(d){
   return out;
 }
 /* l'intitulé court d'un bien : « Appartement 29 m² 120 000 € — Mandat 1105 ».
-   Il sert au titre de la fiche, au nom du fichier et à l'objet du
-   rendez-vous — un seul endroit pour une seule façon de nommer. */
+   Il sert au nom du fichier et à l'objet du rendez-vous — un seul endroit
+   pour une seule façon de nommer. */
 function intituleBien(d){
   const c = critBien(d);
   return [c.type || "Bien",
@@ -28533,17 +28924,55 @@ function intituleBien(d){
           c.fai === null ? "" : eur(c.fai)].filter(Boolean).join(" ")
     + (c.mandat ? " — Mandat " + c.mandat : "");
 }
+/* le titre de la fiche : ce qu'on vend, où, et à quel prix. Trois choses,
+   et dans cet ordre — c'est la première ligne qu'on lit. */
+function titreDeLaFiche(d){
+  const o = donneesPubli(d);
+  return [o.type || "Bien", (o.ville || "").toUpperCase(),
+          o.fai === null ? "Prix sur demande" : eur(o.fai)]
+    .filter(Boolean).join("  —  ");
+}
 function nomFichierFiche(d){
   const c = critBien(d);
   return ("Fiche " + [c.type || "bien", c.ville || "", c.mandat ? "mandat "
     + c.mandat : ""].filter(Boolean).join(" - ") + ".pdf")
     .replace(/[\\/:*?"<>|]/g, "-");
 }
-/* ce que la fiche énumère, dans l'ordre où on le lit */
-function pointsDeLaFiche(d){
+/* un mandat exclusif autorise à dire l'adresse — les autres, non */
+function mandatExclusif(d){
+  return /exclusi/i.test(String(((d || {}).mandat || {}).type || ""));
+}
+/* ------------------------------------------------- les chiffres clés */
+function chiffresDeLaFiche(d){
   const o = donneesPubli(d), c = critBien(d), out = [];
-  const dit = (lib, val)=>{ if(val !== "" && val !== null && val !== undefined)
-    out.push([lib, String(val)]); };
+  if(o.surface !== null) out.push([m2txt(o.surface), "surface habitable"]);
+  if(c.pieces !== null)  out.push([String(c.pieces),
+    c.pieces > 1 ? "pièces" : "pièce"]);
+  if(c.chambres !== null) out.push([String(c.chambres),
+    c.chambres > 1 ? "chambres" : "chambre"]);
+  if(o.fai !== null && o.surface) out.push([eur(Math.round(o.fai / o.surface)),
+    "le m²"]);
+  if(out.length < 4 && o.terrain !== null) out.push([m2txt(o.terrain), "de terrain"]);
+  if(out.length < 4 && o.etage) out.push([o.etage, "étage"]);
+  return out.slice(0, 4);
+}
+/* ------------------------------------- ce que la fiche dit, par domaine
+   Un domaine sans aucune ligne renseignée ne donne pas un tableau vide :
+   il ne donne pas de tableau du tout. */
+function tableauxDeLaFiche(d){
+  const o = donneesPubli(d), c = critBien(d), out = [];
+  const bloc = titre=>{
+    const lignes = [];
+    out.push({titre, lignes});
+    return (lib, val)=>{
+      if(val === "" || val === null || val === undefined) return;
+      lignes.push([lib, String(val)]);
+    };
+  };
+  const pct = v=> v.toLocaleString("fr-FR",
+    {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  let dit = bloc("Le bien");
   dit("Type de bien", o.type);
   dit("Surface habitable", o.surface === null ? null : m2txt(o.surface));
   if(o.copro) dit("Surface loi Carrez", o.carrez === null ? null : m2txt(o.carrez));
@@ -28554,20 +28983,49 @@ function pointsDeLaFiche(d){
   dit("Salles d'eau", o.sdEau === null ? null : o.sdEau);
   dit("WC", o.wc === null ? null : o.wc);
   dit("Étage", o.etage ? o.etage + (o.etages ? " sur " + o.etages : "") : null);
-  if(o.copro) dit("Ascenseur", o.ascenseur ? "oui" : "non");
   dit("Exposition", o.exposition);
   dit("État général", o.etat);
+  dit("Année de construction", c.annee === null ? null : c.annee);
+
+  dit = bloc("Confort et équipements");
   dit("Chauffage", o.chauffage);
   dit("Climatisation", o.froid);
-  dit("Année de construction", c.annee === null ? null : c.annee);
   dit("Annexes", o.annexes.length ? o.annexes.join(", ") : null);
+  if(o.copro && o.ascenseur) dit("Ascenseur", "oui");
+
+  dit = bloc("Le prix");
+  dit("Prix de vente", o.fai === null ? null : eur(o.fai) + " honoraires inclus");
+  if(o.fai !== null && o.charge)
+    dit("Honoraires", "à la charge de l'" + o.charge.toLowerCase()
+      + (o.charge === "Acquéreur" && o.taux !== null
+         ? "  ·  " + pct(o.taux) + " % TTC" : ""));
+  if(o.charge === "Acquéreur" && o.net !== null)
+    dit("Prix hors honoraires", eur(o.net));
+  if(o.fai !== null && o.surface)
+    dit("Prix au m²", eur(Math.round(o.fai / o.surface)));
+  dit("Taxe foncière", o.taxe === null ? null : eur(o.taxe) + " par an");
+
   if(o.copro){
-    dit("Copropriété", o.lots === null ? "oui"
-      : o.lots + " lot" + (o.lots > 1 ? "s" : ""));
-    dit("Charges annuelles", o.charges === null ? null : eur(o.charges));
+    dit = bloc("La copropriété");
+    dit("Résidence", o.residence);
+    dit("Nombre de lots", o.lots === null ? null : o.lots);
+    dit("Dont lots d'habitation", o.lotsHab === null ? null : o.lotsHab);
+    dit("Charges courantes", o.charges === null ? null : eur(o.charges) + " par an");
+    if(o.piscine) dit("Piscine", "oui");
+    if(o.parkingColl) dit("Stationnement commun", "oui");
+    dit("Procédure en cours", o.procedure);
   }
-  dit("Taxe foncière", o.taxe === null ? null : eur(o.taxe));
-  return out;
+
+  dit = bloc("L'environnement");
+  dit("Quartier", o.quartier);
+  dit("À proximité", o.prox.length ? o.prox.join(", ") : null);
+  dit("Atouts", o.ambPlus.length ? o.ambPlus.join(", ") : null);
+
+  return out.filter(t=> t.lignes.length);
+}
+/* la même chose à plat : ce que la fiche énumère, dans l'ordre où on le lit */
+function pointsDeLaFiche(d){
+  return tableauxDeLaFiche(d).reduce((t, b)=> t.concat(b.lignes), []);
 }
 /* le texte de présentation : l'argumentaire du négociateur, qui dit ce que
    la fiche technique ne sait pas dire. Rien d'inventé ici — s'il est vide,
@@ -28576,186 +29034,501 @@ function texteDeLaFiche(d){
   const o = donneesPubli(d), bouts = [];
   if(o.caractRes) bouts.push(o.caractRes);
   if(o.coup) bouts.push(o.coup);
-  if(o.prox.length) bouts.push("À proximité : " + o.prox.join(", ") + ".");
-  if(o.ambPlus.length) bouts.push("Atouts : " + o.ambPlus.join(", ") + ".");
   if(o.travaux) bouts.push("Travaux à prévoir : " + o.travaux + ".");
   if(o.plusDit) bouts.push(o.plusDit);
   return bouts.join("\n\n");
 }
+
+/* =====================================================================
+   LES TABLEAUX
+   Un bandeau de titre, des lignes alternées, le libellé à gauche en gris
+   et la valeur à droite en gras. Une valeur longue se coupe sur plusieurs
+   lignes plutôt que de déborder.
+   ===================================================================== */
+const TAB_TITRE_H = 19;
+function lignesValeur(val, larg){ return pdfCouper(String(val), larg, 8.5, true); }
+function hauteurTableau(larg, lignes){
+  const lv = larg * 0.54 - 18;
+  return TAB_TITRE_H + lignes.reduce((s, x)=>
+    s + Math.max(16, lignesValeur(x[1], lv).length * 11 + 5), 0);
+}
+function tableauPdf(p, x, y, larg, titre, lignes){
+  const lv = larg * 0.54 - 18;
+  p.pave(x, y, larg, TAB_TITRE_H, PDF_NAVY);
+  p.texte(x + 9, y + 13, String(titre).toUpperCase(), 8.5, true, PDF_BLANC);
+  let yy = y + TAB_TITRE_H;
+  lignes.forEach((ligne, i)=>{
+    const ls = lignesValeur(ligne[1], lv);
+    const h = Math.max(16, ls.length * 11 + 5);
+    if(i % 2) p.pave(x, yy, larg, h, PDF_BANDE);
+    p.texte(x + 9, yy + 11, ligne[0], 8.5, false, PDF_GRIS);
+    ls.forEach((l, k)=> p.droite(x + larg - 9, yy + 11 + k * 11, l, 8.5, true,
+                                 PDF_ENCRE));
+    yy += h;
+    if(i < lignes.length - 1) p.trait(x + 9, yy, x + larg - 9, yy, 0.4, PDF_FILET);
+  });
+  p.trait(x, yy, x + larg, yy, 0.7, PDF_FILET);
+  p.trait(x, y + TAB_TITRE_H, x, yy, 0.7, PDF_FILET);
+  p.trait(x + larg, y + TAB_TITRE_H, x + larg, yy, 0.7, PDF_FILET);
+  return yy - y;
+}
+
+/* =====================================================================
+   LA PLANCHE DE PHOTOS — des lignes justifiées
+   ---------------------------------------------------------------------
+   Une grille fixe oblige à choisir entre déformer les images et les poser
+   dans des cadres gris. Ni l'un ni l'autre ne fait une belle planche.
+
+   On remplit donc des LIGNES : on ajoute des photos à la ligne en cours
+   tant que la hauteur qu'elles imposent reste au-dessus d'une hauteur
+   visée, puis on ferme la ligne. Trois portraits tiennent naturellement
+   ensemble, deux paysages aussi, et tout est à fleur — sans un pixel de
+   déformation, parce que la hauteur commune se déduit de la somme des
+   rapports largeur/hauteur.
+   ===================================================================== */
+function plancheLignes(images, larg, ecart, hVisee, hMax){
+  const out = [];
+  let ligne = [], somme = 0;
+  images.forEach(im=>{
+    ligne.push(im); somme += im.l / im.h;
+    const h = (larg - ecart * (ligne.length - 1)) / somme;
+    if(h <= hVisee){ out.push({ims: ligne, h}); ligne = []; somme = 0; }
+  });
+  if(ligne.length){
+    const h = Math.min(hMax, (larg - ecart * (ligne.length - 1)) / somme);
+    out.push({ims: ligne, h});
+  }
+  return out;
+}
+
+/* =====================================================================
+   OÙ EST LE BIEN, ET QU'EN DIRE
+   ===================================================================== */
+async function geoDeLaFiche(d){
+  const b = d.bien || {}, o = donneesPubli(d);
+  const exclusif = mandatExclusif(d);
+  const contour = o.quartier ? contourQuartier(b.ville, o.quartier) : null;
+  let point = null;
+  if(num(b.lat) !== null && num(b.lon) !== null)
+    point = {lat:+b.lat, lon:+b.lon};
+  /* un mandat exclusif montre le bien : s'il n'a pas de point, on le
+     cherche. Les autres n'en ont pas besoin — on ne montrera pas le bien. */
+  if(exclusif && !point && adresseGeo(b)){
+    try{ const p = await geocoder(adresseGeo(b), b.cp); if(p) point = p; }
+    catch(e){ /* sans point, la carte se centrera sur le quartier */ }
+  }
+  let centre = null;
+  if(contour) centre = centreBbox(bboxDeContour(contour));
+  else if(exclusif && point) centre = point;
+  if(!centre && (b.ville || b.cp)){
+    try{
+      const p = await geocoder(b.ville || b.cp, b.cp);
+      if(p) centre = {lat:p.lat, lon:p.lon};
+    }catch(e){ /* pas de carte, et c'est tout */ }
+  }
+  if(!centre && point) centre = point;
+  return {exclusif, point: exclusif ? point : null, contour, centre,
+          quartier: o.quartier, ville: b.ville || ""};
+}
+/* les trois cartes, en images prêtes pour le PDF. Rend null si le réseau
+   ne répond pas — la fiche se passera de sa page de cartes. */
+async function cartesDeLaFiche(d){
+  const g = await geoDeLaFiche(d);
+  if(!g.centre) return null;
+  const LPX = 1040, HPX = 620, DPX = 660;   /* pixels : trois fois le point */
+  const out = {geo:g, situation:null, quartier:null, commodites:null, legende:[]};
+
+  /* 1 · la situation : dix kilomètres à la ronde, pas plus */
+  const bbS = bboxAutour(g.centre, 10000);
+  const zS = zoomPour(bbS, LPX, HPX, 15);
+  const kS = await carteCanvas(g.centre, zS, LPX, HPX);
+  if(!kS) return null;
+  if(g.contour) contourSurCarte(kS, g.contour, "#1d4ed8", "rgba(29,78,216,.18)");
+  haloSurCarte(kS, (g.point || g.centre).lat, (g.point || g.centre).lon);
+  if(g.point) marqueurBien(kS, g.point.lat, g.point.lon);
+  else if(!g.contour) marqueurBien(kS, g.centre.lat, g.centre.lon);
+  echelleSurCarte(kS, g.centre); attributionSurCarte(kS); cadreCarte(kS);
+  out.situation = pdfImageDepuis(kS.c, 1500);
+
+  /* 2 · le quartier seul — et 3 · le même, avec ses commodités */
+  const bbQ = g.contour ? elargirBbox(bboxDeContour(g.contour), 0.12)
+                        : bboxAutour(g.centre, 700);
+  const cQ = centreBbox(bbQ);
+  const zQ = zoomPour(bbQ, DPX, DPX, 17);
+  const kQ = await carteCanvas(cQ, zQ, DPX, DPX);
+  if(kQ){
+    if(g.contour) contourSurCarte(kQ, g.contour, "#1d4ed8", "rgba(29,78,216,.14)");
+    if(g.point) marqueurBien(kQ, g.point.lat, g.point.lon);
+    else if(!g.contour) marqueurBien(kQ, cQ.lat, cQ.lon);
+    echelleSurCarte(kQ, cQ); attributionSurCarte(kQ); cadreCarte(kQ);
+    out.quartier = pdfImageDepuis(kQ.c, 1100);
+
+    /* la troisième est à la MÊME ÉCHELLE que la deuxième : même centre,
+       même zoom, même taille — on les compare d'un coup d'œil */
+    const pois = await commoditesAutour(bboxAutour(cQ, 1400));
+    if(pois && pois.length){
+      const kC = await carteCanvas(cQ, zQ, DPX, DPX);
+      if(kC){
+        if(g.contour) contourSurCarte(kC, g.contour, "#1d4ed8", "rgba(29,78,216,.08)");
+        pois.forEach(p=> pastilleSurCarte(kC, p.lat, p.lon, p.f.coul));
+        if(g.point) marqueurBien(kC, g.point.lat, g.point.lon);
+        const vues = {};
+        pois.forEach(p=> vues[p.f.cle] = (vues[p.f.cle] || 0) + 1);
+        out.legende = COMMODITES.filter(f=> vues[f.cle])
+          .map(f=> ({lib:f.lib, coul:f.coul, n:vues[f.cle]}));
+        legendeSurCarte(kC, out.legende);
+        echelleSurCarte(kC, cQ); attributionSurCarte(kC); cadreCarte(kC);
+        out.commodites = pdfImageDepuis(kC.c, 1100);
+      }
+    }
+  }
+  return out;
+}
+
 /* ------------------------------------------------------- la composition */
 async function ficheBienPdf(d){
   const o = donneesPubli(d), c = critBien(d);
   const nego = book("negociateurs", o.negociateur);
   const ag = L.agence || {};
+  const exclusif = mandatExclusif(d);
   const images = await imagesDeLaFiche(d);
-  const logo = ag.logo ? pdfImageDepuis(await imageDepuis(ag.logo), 400) : null;
+  const logo = ag.logo ? pdfImageDepuis(await imageDepuis(ag.logo), 500) : null;
+  let cartes = null;
+  try{ cartes = await cartesDeLaFiche(d); }
+  catch(e){ cartes = null; }        /* une carte manquante n'emporte pas la fiche */
 
   const doc = pdfDoc();
   const M = 38, LARG = doc.L - 2 * M;
+  const BAS = doc.H - 56;
+
   const piedDePage = (p, n, total)=>{
     p.trait(M, doc.H - 44, doc.L - M, doc.H - 44, 0.6, PDF_FILET);
     p.texte(M, doc.H - 32, [nego.nom || o.negociateur || "",
       nego.tel || "", nego.email || ""].filter(Boolean).join("  ·  "),
       7.5, false, PDF_GRIS);
-    p.texte(M, doc.H - 22, (ag.nom || "") + (ag.adresse ? " — " + ag.adresse : ""),
-      7.5, false, PDF_GRIS);
+    p.texte(M, doc.H - 22, [ag.nom || "", ag.adresse || "", ag.site || ""]
+      .filter(Boolean).join("  ·  "), 7.5, false, PDF_GRIS);
     p.droite(doc.L - M, doc.H - 22, "Document non contractuel  ·  page " + n
       + " / " + total, 7.5, false, PDF_GRIS);
   };
+  /* le bandeau des pages suivantes : un filet, le bien, le mandat */
+  const enTeteSuite = (p, y)=>{
+    p.texte(M, y + 9, titreDeLaFiche(d), 9, true, PDF_NAVY);
+    if(o.mandat) p.droite(doc.L - M, y + 9, "Mandat n° " + o.mandat, 8,
+                          false, PDF_GRIS);
+    p.trait(M, y + 15, doc.L - M, y + 15, 0.8, PDF_FILET);
+    return y + 28;
+  };
 
-  /* ------------------------------------------------------------ page 1 */
+  /* =============================================== page 1 : le bandeau */
   const p = doc.page();
   let y = M;
   if(logo){
-    const h = Math.min(42, 120 * logo.h / logo.l);
+    const h = Math.min(46, 150 * logo.h / logo.l);
     p.image(logo, M, y, h * logo.l / logo.h, h);
+  } else {
+    p.texte(M, y + 20, ag.nom || "", 12, true, PDF_NAVY);
   }
-  p.droite(doc.L - M, y + 12, ag.nom || "", 9, true, PDF_NAVY);
-  if(ag.adresse) p.droite(doc.L - M, y + 23, ag.adresse, 7.5, false, PDF_GRIS);
-  y += 54;
-  p.trait(M, y, doc.L - M, y, 1.4, PDF_NAVY);
-  y += 24;
+  /* à droite : qui vend ce bien, et comment le joindre */
+  let yd = y + 9;
+  p.droite(doc.L - M, yd, nego.nom || o.negociateur || "", 10.5, true, PDF_NAVY);
+  yd += 12;
+  const jointe = [nego.tel || "", nego.email || ""].filter(Boolean).join("   ·   ");
+  if(jointe){ p.droite(doc.L - M, yd, jointe, 8.5, true, PDF_ENCRE); yd += 11; }
+  if(logo && ag.nom){ p.droite(doc.L - M, yd, ag.nom, 8, false, PDF_GRIS); yd += 10; }
+  if(ag.adresse){ p.droite(doc.L - M, yd, ag.adresse, 8, false, PDF_GRIS); yd += 10; }
+  if(ag.site){ p.droite(doc.L - M, yd, ag.site, 8, false, PDF_GRIS); yd += 10; }
+  y = Math.max(y + 52, yd + 4);
+  p.trait(M, y, doc.L - M, y, 1.6, PDF_NAVY);
+  y += 25;
 
-  /* le titre : ce qu'on vend, et où */
-  const titre = [o.type, o.surface === null ? "" : m2txt(o.surface)]
-    .filter(Boolean).join(" — ");
-  p.texte(M, y, titre, 20, true, PDF_NAVY);
-  y += 17;
-  const ou = [c.adresse || "", [o.cp, o.ville].filter(Boolean).join(" "),
-              o.quartier ? "quartier " + o.quartier : ""].filter(Boolean)
-             .join("  ·  ");
-  p.texte(M, y, ou, 10, false, PDF_GRIS);
-  y += 10;
-  if(o.mandat) p.texte(M, y + 10, "Mandat n° " + o.mandat, 8.5, false, PDF_GRIS);
-
-  /* le prix, à droite, et ce qui l'accompagne */
-  const prix = o.fai === null ? "Prix sur demande" : eur(o.fai);
-  p.droite(doc.L - M, y - 7, prix, 20, true, PDF_ENCRE);
-  const sous = o.fai === null ? "" : (o.charge === "Acquéreur"
-    ? "honoraires inclus, charge acquéreur" + (o.taux === null ? ""
-        : " (" + o.taux.toLocaleString("fr-FR", {minimumFractionDigits:2,
-            maximumFractionDigits:2}) + " % TTC)")
-    : "honoraires inclus, charge vendeur");
-  if(sous) p.droite(doc.L - M, y + 6, sous, 8, false, PDF_GRIS);
-  if(o.charge === "Acquéreur" && o.net !== null)
-    p.droite(doc.L - M, y + 17, "soit " + eur(o.net) + " hors honoraires",
-             8, false, PDF_GRIS);
-  y += 28;
-
-  /* la photo principale */
-  if(images.length){
-    const h = 248, cadre = {x:M, y, l:LARG, h};
-    p.pave(cadre.x, cadre.y, cadre.l, cadre.h, PDF_FOND);
-    const im = images[0];
-    const k = Math.min(cadre.l / im.l, cadre.h / im.h);
-    const l2 = im.l * k, h2 = im.h * k;
-    p.image(im, cadre.x + (cadre.l - l2) / 2, cadre.y + (cadre.h - h2) / 2, l2, h2);
-    y += h + 20;
-  } else y += 6;
-
-  /* les points essentiels, en deux colonnes */
-  const pts = pointsDeLaFiche(d);
-  if(pts.length){
-    p.texte(M, y, "LES POINTS ESSENTIELS", 9, true, PDF_NAVY);
-    y += 12;
-    const colL = (LARG - 22) / 2;
-    const moitie = Math.ceil(pts.length / 2);
-    let bas = y;
-    [pts.slice(0, moitie), pts.slice(moitie)].forEach((col, n)=>{
-      const x = M + n * (colL + 22);
-      let yy = y;
-      col.forEach(([lib, val])=>{
-        p.texte(x, yy + 8, lib, 8.5, false, PDF_GRIS);
-        p.droite(x + colL, yy + 8, val, 8.5, true, PDF_ENCRE);
-        p.trait(x, yy + 12, x + colL, yy + 12, 0.4, PDF_FILET);
-        yy += 15;
-      });
-      bas = Math.max(bas, yy);
-    });
-    y = bas + 10;
-  }
-
-  /* les deux étiquettes du DPE */
-  if(o.dpeDu && (o.dpeE || o.dpeG)){
-    p.texte(M, y + 8, "DIAGNOSTIC DE PERFORMANCE ÉNERGÉTIQUE", 9, true, PDF_NAVY);
+  /* ------------------------------------------------------- le titre */
+  const titre = titreDeLaFiche(d);
+  const lignesT = pdfCouper(titre, LARG, 19, true);
+  lignesT.slice(0, 2).forEach(l=>{ p.texte(M, y, l, 19, true, PDF_NAVY); y += 21; });
+  y -= 6;
+  /* la ligne d'adresse : l'adresse exacte si le mandat est exclusif, le
+     quartier sinon — et le mandat, toujours */
+  const ou = [];
+  if(exclusif && c.adresse) ou.push(c.adresse);
+  ou.push([o.cp, o.ville].filter(Boolean).join(" "));
+  if(o.quartier) ou.push("quartier " + o.quartier);
+  p.texte(M, y + 14, ou.filter(Boolean).join("   ·   "), 10, false, PDF_GRIS);
+  y += 18;
+  const mt = String((d.mandat || {}).type || "").trim();
+  if(o.mandat || mt){
+    p.texte(M, y + 12, [mt ? "Mandat " + mt.toLowerCase() : "Mandat",
+      o.mandat ? "n° " + o.mandat : ""].filter(Boolean).join(" "),
+      8.5, exclusif, exclusif ? PDF_OR : PDF_GRIS);
     y += 14;
+  }
+  y += 10;
+
+  /* ------------------------------------- la photo d'ouverture et les clés
+     Son ORIENTATION commande la mise en page : un paysage prend toute la
+     largeur, un portrait se met en colonne et les chiffres clés viennent
+     se ranger à côté, là où il y aurait eu du vide. */
+  const chiffres = chiffresDeLaFiche(d);
+  const hero = images[0] || null;
+  const portrait = hero && hero.h > hero.l * 1.04;
+  const caseClef = (x, l, yy, val, lib)=>{
+    p.pave(x, yy, l, 40, PDF_FOND);
+    p.centre(x, l, yy + 20, val, 13, true, PDF_NAVY);
+    p.centre(x, l, yy + 32, lib, 7.5, false, PDF_GRIS);
+  };
+  if(hero && portrait){
+    const hMax = 252, lCol = Math.min(LARG * 0.46, hMax * hero.l / hero.h);
+    const hIm = lCol * hero.h / hero.l;
+    p.image(hero, M, y, lCol, hIm);
+    const xd = M + lCol + 18, ld = LARG - lCol - 18;
+    let yc = y + 4;
+    chiffres.forEach(([val, lib])=>{ caseClef(xd, ld, yc, val, lib); yc += 46; });
+    y += Math.max(hIm, yc - y) + 16;
+  } else if(hero){
+    const hIm = Math.min(250, LARG * hero.h / hero.l);
+    const lIm = hIm * hero.l / hero.h;
+    p.image(hero, M + (LARG - lIm) / 2, y, lIm, hIm);
+    y += hIm + 14;
+    if(chiffres.length){
+      const l = (LARG - 12 * (chiffres.length - 1)) / chiffres.length;
+      chiffres.forEach(([val, lib], i)=> caseClef(M + i * (l + 12), l, y, val, lib));
+      y += 52;
+    }
+  } else if(chiffres.length){
+    const l = (LARG - 12 * (chiffres.length - 1)) / chiffres.length;
+    chiffres.forEach(([val, lib], i)=> caseClef(M + i * (l + 12), l, y, val, lib));
+    y += 52;
+  }
+
+  /* ATTENTION, et c'est le seul piège de cette composition : `pdfDoc` n'a
+     qu'un flux à la fois. `p`, `pg`, `q` sont le MÊME objet — écrire par
+     l'un ou par l'autre écrit toujours sur la PAGE COURANTE, celle qu'a
+     ouverte le dernier `doc.page()`. Les variables ne servent qu'à la
+     lisibilité ; elles ne choisissent pas la page. Pour revenir sur une
+     page antérieure, il faut `doc.surPage(n)` — c'est ce que fait le pied
+     de page, et lui seul. */
+  /* ------------------------------------------- les tableaux, sur deux colonnes
+     Le prochain tableau va dans la colonne la plus HAUTE : la page se
+     remplit d'elle-même, sans qu'on ait à décider d'avance où couper. */
+  const colL = (LARG - 18) / 2;
+  let pg = p, yG = y, yD = y;
+  tableauxDeLaFiche(d).forEach(t=>{
+    const h = hauteurTableau(colL, t.lignes);
+    if(Math.min(yG, yD) + h > BAS){
+      pg = doc.page();
+      const y0 = enTeteSuite(pg, M);
+      yG = yD = y0;
+    }
+    const gauche = yG <= yD;
+    const x = M + (gauche ? 0 : colL + 18);
+    const yy = gauche ? yG : yD;
+    tableauPdf(pg, x, yy, colL, t.titre, t.lignes);
+    if(gauche) yG = yy + h + 15; else yD = yy + h + 15;
+  });
+  y = Math.max(yG, yD);
+
+  /* -------------------------------------------- les deux étiquettes du DPE */
+  if(o.dpeDu && (o.dpeE || o.dpeG)){
+    if(y + 74 > BAS){ pg = doc.page(); y = enTeteSuite(pg, M); }
+    pg.texte(M, y + 10, "DIAGNOSTIC DE PERFORMANCE ÉNERGÉTIQUE", 8.5, true, PDF_NAVY);
+    y += 18;
     const badge = (x, lettre, lib)=>{
       const t = DPE_TEINTE[String(lettre || "").toUpperCase()] || PDF_FILET;
-      p.pave(x, y, 34, 26, t);
-      p.centre(x, 34, y + 19, String(lettre || "?").toUpperCase(), 15, true,
-               PDF_ENCRE);
-      p.texte(x + 40, y + 11, lib, 8, false, PDF_GRIS);
-      p.texte(x + 40, y + 22, lettre ? "classe " + lettre : "non renseignée",
-              8.5, true, PDF_ENCRE);
+      pg.pave(x, y, 38, 30, t);
+      pg.centre(x, 38, y + 22, String(lettre || "?").toUpperCase(), 17, true,
+                PDF_ENCRE);
+      pg.texte(x + 46, y + 13, lib, 8, false, PDF_GRIS);
+      pg.texte(x + 46, y + 25, lettre ? "classe " + lettre : "non renseignée",
+               9, true, PDF_ENCRE);
     };
     badge(M, o.dpeE, "Consommation d'énergie");
     badge(M + LARG / 2, o.dpeG, "Émissions de gaz à effet de serre");
-    y += 32;
+    y += 36;
     if(o.coutMin !== null && o.coutMax !== null){
-      p.texte(M, y + 8, "Dépenses annuelles d'énergie estimées : " + eur(o.coutMin)
+      pg.texte(M, y + 9, "Dépenses annuelles d'énergie estimées : " + eur(o.coutMin)
         + " à " + eur(o.coutMax) + " par an.", 8, false, PDF_GRIS);
       y += 12;
     }
-    y += 8;
+    y += 10;
   }
 
-  /* la présentation, s'il y en a une */
+  /* ------------------------------------------- le mot du négociateur */
   const txt = texteDeLaFiche(d);
   if(txt){
-    const reste = doc.H - 70 - y;
-    if(reste > 60){
-      p.texte(M, y + 8, "LE MOT DU NÉGOCIATEUR", 9, true, PDF_NAVY);
-      y += 16;
-      const lignes = pdfCouper(txt, LARG, 9.5, false);
-      lignes.slice(0, Math.floor((reste - 24) / 12)).forEach(l=>{
-        p.texte(M, y + 9, l, 9.5, false, PDF_ENCRE); y += 12;
-      });
-    }
-  }
-  /* ------------------------------------------------- les autres photos */
-  const suite = images.slice(1);
-  const parPage = 6;
-  const pagesPhoto = [];
-  for(let i = 0; i < suite.length; i += parPage)
-    pagesPhoto.push(suite.slice(i, i + parPage));
-  pagesPhoto.forEach(lot=>{
-    const q = doc.page();
-    q.texte(M, M + 10, "LES PHOTOS — " + (o.type || "bien") + (o.ville
-      ? ", " + o.ville : ""), 9, true, PDF_NAVY);
-    q.trait(M, M + 18, doc.L - M, M + 18, 0.8, PDF_FILET);
-    const l = (LARG - 14) / 2, h = 150;
-    lot.forEach((im, i)=>{
-      const x = M + (i % 2) * (l + 14);
-      const yy = M + 32 + Math.floor(i / 2) * (h + 14);
-      q.pave(x, yy, l, h, PDF_FOND);
-      const k = Math.min(l / im.l, h / im.h);
-      q.image(im, x + (l - im.l * k) / 2, yy + (h - im.h * k) / 2,
-              im.l * k, im.h * k);
+    const lignes = [];
+    String(txt).split("\n\n").forEach((par, i)=>{
+      if(i) lignes.push("");
+      pdfCouper(par, LARG - 16, 9.5, false).forEach(l=> lignes.push(l));
     });
-  });
+    if(y + 34 + lignes.length * 12 > BAS && lignes.length * 12 < BAS - M - 40){
+      pg = doc.page(); y = enTeteSuite(pg, M);
+    }
+    pg.texte(M, y + 10, "LE MOT DU NÉGOCIATEUR", 8.5, true, PDF_NAVY);
+    y += 16;
+    const h = Math.min(lignes.length, Math.floor((BAS - y - 10) / 12)) * 12 + 12;
+    pg.pave(M, y, LARG, h, PDF_FOND);
+    let yy = y + 6;
+    lignes.forEach(l=>{
+      if(yy + 12 > y + h) return;
+      if(l) pg.texte(M + 10, yy + 9, l, 9.5, false, PDF_ENCRE);
+      yy += 12;
+    });
+    y += h + 14;
+  }
 
-  /* ------------------------------------------------ les mentions légales
-     Elles tiennent au bas de la première page quand la place y est — une
-     page de plus pour six lignes serait du papier perdu —, et prennent une
-     page à elles quand la fiche en compte déjà plusieurs. */
+  /* =============================================== la page des cartes */
+  if(cartes && cartes.situation){
+    const q = doc.page();
+    let yc = enTeteSuite(q, M);
+    q.texte(M, yc + 10, "SITUATION", 8.5, true, PDF_NAVY);
+    yc += 16;
+    const dit = cartes.geo.exclusif && cartes.geo.point
+      ? "Le bien est situé exactement, comme l'autorise le mandat exclusif."
+      : cartes.geo.quartier
+        ? "Le mandat ne permet pas de publier l'adresse : seul le quartier est "
+          + "montré."
+        : "Le bien est situé dans sa commune ; l'adresse n'est pas publiée.";
+    q.texte(M, yc + 9, dit, 8, false, PDF_GRIS);
+    yc += 16;
+
+    const hS = Math.min(250, LARG * cartes.situation.h / cartes.situation.l);
+    q.image(cartes.situation, M, yc, hS * cartes.situation.l / cartes.situation.h, hS);
+    yc += hS + 5;
+    q.texte(M, yc + 8, (cartes.geo.quartier
+      ? "Le quartier " + cartes.geo.quartier + " dans "
+      : "Le bien dans ") + (cartes.geo.ville || "la commune")
+      + " — dix kilomètres à la ronde.", 8, false, PDF_GRIS);
+    yc += 20;
+
+    if(cartes.quartier){
+      const l2 = (LARG - 16) / 2;
+      const h2 = Math.min(l2 * cartes.quartier.h / cartes.quartier.l, BAS - yc - 34);
+      q.image(cartes.quartier, M, yc, h2 * cartes.quartier.l / cartes.quartier.h, h2);
+      if(cartes.commodites)
+        q.image(cartes.commodites, M + l2 + 16, yc,
+                h2 * cartes.commodites.l / cartes.commodites.h, h2);
+      yc += h2 + 5;
+      q.texte(M, yc + 8, cartes.geo.quartier
+        ? "Le quartier " + cartes.geo.quartier : "Aux abords du bien", 8, true,
+        PDF_ENCRE);
+      if(cartes.commodites)
+        q.texte(M + l2 + 16, yc + 8, "Les commodités, à la même échelle", 8, true,
+                PDF_ENCRE);
+      yc += 14;
+      /* le compte, famille par famille : la carte montre où, ce bandeau dit
+         combien — et il remplit le bas de la page avec autre chose que du vide */
+      if(cartes.legende.length){
+        q.texte(M, yc + 10, "CE QU'ON TROUVE DANS LE QUARTIER", 8.5, true, PDF_NAVY);
+        yc += 16;
+        const col = (LARG - 24) / 3;
+        cartes.legende.forEach((e, i)=>{
+          const x = M + (i % 3) * (col + 12);
+          const yy = yc + Math.floor(i / 3) * 26;
+          q.pave(x, yy, col, 22, PDF_FOND);
+          q.pave(x, yy, 3.5, 22, couleurPdf(e.coul));
+          q.texte(x + 11, yy + 14, e.lib, 8, false, PDF_ENCRE);
+          q.droite(x + col - 9, yy + 14, String(e.n), 9, true, PDF_NAVY);
+        });
+        yc += Math.ceil(cartes.legende.length / 3) * 26 + 6;
+        q.texte(M, yc + 8, "Relevé sur OpenStreetMap dans un rayon d'environ 1,4 km "
+          + "autour du quartier. Une liste collaborative : elle peut être incomplète.",
+          7.5, false, PDF_GRIS);
+      } else if(!cartes.commodites)
+        q.texte(M, yc + 8, "Les commodités n'ont pas pu être relevées : le service "
+          + "OpenStreetMap n'a pas répondu.", 7.5, false, PDF_GRIS);
+    }
+    pg = q; y = yc + 14;
+  }
+
+  /* ========================================== la planche de photos */
+  const suite = images.slice(1);
+  if(suite.length){
+    let q = doc.page();
+    let yp = enTeteSuite(q, M);
+    q.texte(M, yp + 10, "LES PHOTOS", 8.5, true, PDF_NAVY);
+    yp += 18;
+    /* 255 points de hauteur visée : c'est la valeur qui ferme une ligne sur
+       TROIS PORTRAITS ou sur DEUX PAYSAGES, les deux compositions qu'on
+       veut voir. En dessous, les portraits se mettaient à quatre de front
+       et faisaient des timbres-poste. */
+    const lignes = plancheLignes(suite, LARG, 10, 255, 230);
+    lignes.forEach(li=>{
+      if(yp + li.h > BAS){
+        q = doc.page(); yp = enTeteSuite(q, M);
+        q.texte(M, yp + 10, "LES PHOTOS (suite)", 8.5, true, PDF_NAVY);
+        yp += 18;
+      }
+      let x = M;
+      li.ims.forEach(im=>{
+        const l = li.h * im.l / im.h;
+        q.image(im, x, yp, l, li.h);
+        x += l + 10;
+      });
+      yp += li.h + 10;
+    });
+    pg = q; y = yp + 4;
+  }
+
+  /* ------------------------------------------------ les mentions légales */
+  /* au bas de la dernière page quand la place y est — une page de plus pour
+     huit lignes serait du papier perdu —, une page à elles sinon */
   const mentions = pdfCouper(mentionsPubli(d), LARG, 8.5, false);
-  const besoin = mentions.length * 11 + 48;
-  if(doc.pages.length === 1 && doc.H - 60 - y > besoin){
+  const besoin = mentions.length * 11 + 52;
+  if(BAS - y > besoin){
     y += 14;
   } else {
-    doc.page();
-    y = M;
+    pg = doc.page();
+    y = enTeteSuite(pg, M);
   }
-  doc.texte(M, y + 10, "MENTIONS LÉGALES", 9, true, PDF_NAVY);
+  pg.texte(M, y + 10, "MENTIONS LÉGALES", 8.5, true, PDF_NAVY);
   y += 20;
-  mentions.forEach(l=>{ doc.texte(M, y, l, 8.5, false, PDF_ENCRE); y += 11; });
-  doc.texte(M, y + 10, "Les informations portées sur cette fiche sont données à "
+  mentions.forEach(l=>{ pg.texte(M, y, l, 8.5, false, PDF_ENCRE); y += 11; });
+  pg.texte(M, y + 10, "Les informations portées sur cette fiche sont données à "
     + "titre indicatif et n'ont pas de valeur contractuelle.", 8, false, PDF_GRIS);
 
   const total = doc.pages.length;
-  doc.pages.forEach((pg, i)=> piedDePage(doc.surPage(i), i + 1, total));
+  doc.pages.forEach((pgx, i)=> piedDePage(doc.surPage(i), i + 1, total));
   return new Blob([pdfOctets(doc, "Fiche " + (o.type || "bien"))],
                   {type:"application/pdf"});
+}
+
+/* =====================================================================
+   LA VOIR AVANT DE L'ENVOYER
+   ---------------------------------------------------------------------
+   Le même fichier que celui qui part en pièce jointe — pas une maquette à
+   l'écran qui ressemblerait à la fiche sans en être une. Ce qu'on regarde
+   ici est, octet pour octet, ce que le client recevra.
+
+   La fenêtre le montre dans un cadre, et propose de l'enregistrer. Sur une
+   tablette, le cadre reste parfois blanc : c'est le lecteur de PDF du
+   système qui ne s'y prête pas. Les deux boutons, eux, marchent partout —
+   d'où leur présence, et non un cadre seul.
+   ===================================================================== */
+let APERCU_FICHE = null;
+async function ouvrirApercuFiche(d){
+  if(!d){ toast("Bien introuvable"); return; }
+  toast("Composition de la fiche…");
+  let blob;
+  try{ blob = await ficheBienPdf(d); }
+  catch(e){
+    popup({titre:"La fiche n'a pas pu être composée", genre:"erreur",
+      corps:`<p style="margin:0">${esc(String((e && e.message) || e))}</p>`});
+    return;
+  }
+  if(APERCU_FICHE) try{ URL.revokeObjectURL(APERCU_FICHE); }catch(e){}
+  APERCU_FICHE = URL.createObjectURL(blob);
+  const nom = nomFichierFiche(d);
+  popup({titre:"Fiche de présentation", large:true,
+    corps:`<div class="apercufiche"><iframe src="${esc(APERCU_FICHE)}"
+        title="Fiche de présentation du bien"></iframe></div>
+      <p class="muted" style="margin:8px 0 0">C'est le fichier exact qui part en
+        pièce jointe d'une proposition ou d'un rendez-vous. Si le cadre reste blanc —
+        cela arrive sur tablette —, <b>Ouvrir dans un onglet</b> le montrera.</p>`,
+    boutons:[{lib:"Fermer"},
+      {lib:"Ouvrir dans un onglet",
+       action:()=> window.open(APERCU_FICHE, "_blank", "noopener")},
+      {lib:"Enregistrer en PDF", primaire:true,
+       action:()=> download(blob, nom)}]});
 }
 
 /* ======================================================== PUBLICATIONS ===
