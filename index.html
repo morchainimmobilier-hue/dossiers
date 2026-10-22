@@ -1543,6 +1543,20 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .apercufiche{height:min(68vh,760px);border:1px solid var(--line-2);border-radius:10px;
   overflow:hidden;background:#525659}
 .apercufiche iframe{display:block;width:100%;height:100%;border:0}
+/* l'onglet « Fiche de présentation » des Imprimés : un PDF, et non une page
+   composée en direct — Word et l'impression du navigateur n'y ont pas cours */
+.docbar #btnFicheRef,.docbar #btnFicheOnglet,.docbar #btnFicheDl{display:none}
+.docbar.pdf #btnWord,.docbar.pdf #btnPrint,.docbar.pdf #btnWordBoth{display:none}
+.docbar.pdf #btnFicheRef,.docbar.pdf #btnFicheOnglet,
+.docbar.pdf #btnFicheDl{display:inline-flex}
+.fichewrap[hidden]{display:none}
+.fichewrap{display:flex;flex-direction:column;gap:8px;padding:14px 0 0}
+.fichemot{margin:0;font-size:12.5px;color:var(--ink-2)}
+.fichemot.alerte{color:#9c1c1c;font-weight:600}
+.fichemot:empty{display:none}
+.fichecadre{height:min(76vh,1000px);border:1px solid var(--line-2);border-radius:10px;
+  overflow:hidden;background:#525659}
+.fichecadre iframe{display:block;width:100%;height:100%;border:0}
 .mdcad{width:100%;border-collapse:collapse;font-size:12.5px}
 .mdcad th,.mdcad td{border:1px solid var(--line-2);padding:5px 9px;text-align:left}
 .mdcad th{background:var(--accent-soft);color:var(--navy);font-size:11px;font-weight:600}
@@ -2476,7 +2490,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 22 octobre 2026, 20 h 06">Dossiers de vente</div>
+  <div class="brand" title="Version du 22 octobre 2026, 20 h 51">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2605,15 +2619,27 @@ table.tdb .puce.resilie{background:#64748b}
         <button data-d="fn" class="on">Fiche notaire</button>
         <button data-d="et">Dossier de vente</button>
         <button data-d="fa">Facture</button>
+        <button data-d="fp">Fiche de présentation</button>
       </div>
       <div style="flex:1"></div>
       <button class="addbtn" id="btnWord">Télécharger en Word</button>
       <button class="tbtn light" id="btnPrint">Imprimer / PDF</button>
       <button class="tbtn light" id="btnWordBoth">Les deux en Word</button>
+      <!-- la fiche de présentation est un PDF déjà composé : ni Word ni
+           l'impression du navigateur n'ont de sens ici, d'où ses boutons -->
+      <button class="tbtn light" id="btnFicheRef">Recomposer</button>
+      <button class="tbtn light" id="btnFicheOnglet">Ouvrir dans un onglet</button>
+      <button class="addbtn" id="btnFicheDl">Enregistrer en PDF</button>
     </div>
     <div class="card factcard" id="factForm" hidden><h2>Facture d'honoraires</h2>
       <div class="body" id="factBody"></div></div>
-    <div class="previewwrap"><div class="sheet" id="sheet"><div id="preview"></div></div></div>
+    <div class="previewwrap" id="previewWrap"><div class="sheet" id="sheet">
+      <div id="preview"></div></div></div>
+    <div class="fichewrap" id="ficheWrap" hidden>
+      <p class="fichemot" id="ficheEtat"></p>
+      <div class="fichecadre"><iframe id="fichePdf"
+        title="Fiche de présentation du bien"></iframe></div>
+    </div>
   </div>
 
   <!-- toutes les pièces jointes du dossier, rangées comme le menu de gauche -->
@@ -2690,7 +2716,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>22 octobre 2026, 20 h 06</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>22 octobre 2026, 20 h 51</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -2801,9 +2827,13 @@ table.tdb .puce.resilie{background:#64748b}
     <div class="modalbody detailbody" id="detailCorps"></div>
     <div class="modalfoot">
       <div id="detailPj"></div>
-      <button type="button" class="tbtn light" data-fiche="1"
+      <button type="button" class="addbtn" data-fiche="1"
         title="La voir telle qu'elle partira, et l'enregistrer en PDF"
-        >Fiche de présentation</button>
+        ><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none"
+          stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+          <path d="M3.5 1.8h6l3 3v9.4h-9z"/><path d="M9.3 1.9v3.2h3.1"/>
+          <path d="M5.6 8.2h4.8M5.6 10.6h3.2"/></svg>
+        Fiche de présentation</button>
       <div style="flex:1"></div>
       <button class="tbtn light" id="detailFermer">Fermer</button>
     </div>
@@ -18432,11 +18462,67 @@ function docTitle(w){
   return w === "et" ? "Dossier de vente" : w === "fa" ? "Facture" : "Fiche notaire";
 }
 function renderPreview(){
+  const fp = currentDoc === "fp";
+  const bar = $(".docbar");
+  if(bar) bar.classList.toggle("pdf", fp);
+  const pw = $("#previewWrap"); if(pw) pw.hidden = fp;
+  const fw = $("#ficheWrap");   if(fw) fw.hidden = !fp;
+  const ff = $("#factForm");    if(ff) ff.hidden = fp || currentDoc !== "fa";
+  if(fp){
+    /* `renderPreview` est appelée à chaque frappe dans le dossier. Composer
+       la fiche à chaque frappe serait absurde — elle va chercher des tuiles
+       de carte et recomprime les photos. On ne recompose donc PAS ici : on
+       dit seulement que ce qui est affiché n'est plus à jour. */
+    if(FICHE_APERCU.pour === D.id && FICHE_APERCU.url){
+      FICHE_APERCU.perimee = true;
+      majEtatFiche();
+    } else ficheAuxImprimes(false);
+    return;
+  }
   $("#preview").innerHTML = docHTML(currentDoc);
   $("#sheet").classList.toggle("a3", currentDoc==="et");
-  const ff = $("#factForm");
-  if(ff) ff.hidden = currentDoc !== "fa";
   if(currentDoc === "fa") ajusteFacture();
+}
+/* ----------------------------------------- la fiche de présentation, ici
+   Les trois autres imprimés sont des pages HTML composées en direct, qu'on
+   exporte en Word ou qu'on imprime. Celle-ci est un PDF déjà fait — le même
+   fichier, exactement, que celui qui part en pièce jointe d'une proposition
+   ou d'un rendez-vous. On le montre donc tel quel, et les boutons changent. */
+let FICHE_APERCU = {url:"", blob:null, pour:"", occupe:false, perimee:false};
+function majEtatFiche(){
+  const z = $("#ficheEtat");
+  if(!z) return;
+  if(FICHE_APERCU.occupe){ z.textContent = "Composition de la fiche…"; return; }
+  if(FICHE_APERCU.erreur){ z.textContent = FICHE_APERCU.erreur; return; }
+  z.textContent = FICHE_APERCU.perimee
+    ? "Le dossier a changé depuis : « Recomposer » refait la fiche."
+    : "";
+  z.classList.toggle("alerte", !!FICHE_APERCU.perimee);
+}
+async function ficheAuxImprimes(refaire){
+  const z = $("#fichePdf");
+  if(!z || FICHE_APERCU.occupe) return;
+  if(!refaire && FICHE_APERCU.pour === D.id && FICHE_APERCU.url && !FICHE_APERCU.perimee){
+    if(z.src !== FICHE_APERCU.url) z.src = FICHE_APERCU.url;
+    majEtatFiche();
+    return;
+  }
+  FICHE_APERCU.occupe = true; FICHE_APERCU.erreur = "";
+  majEtatFiche();
+  const pour = D.id;
+  let blob = null;
+  try{ blob = await ficheBienPdf(D); }
+  catch(e){ FICHE_APERCU.erreur = "La fiche n'a pas pu être composée : "
+    + String((e && e.message) || e); }
+  FICHE_APERCU.occupe = false;
+  if(blob){
+    if(FICHE_APERCU.url) try{ URL.revokeObjectURL(FICHE_APERCU.url); }catch(e){}
+    FICHE_APERCU.url = URL.createObjectURL(blob);
+    FICHE_APERCU.blob = blob; FICHE_APERCU.pour = pour; FICHE_APERCU.perimee = false;
+    const zz = $("#fichePdf");
+    if(zz) zz.src = FICHE_APERCU.url;
+  }
+  majEtatFiche();
 }
 /* Hauteur utile d'une A4 imprimée à 12 mm de marges : 273 mm. On vise un peu
    moins — Word ne compose pas au pixel près comme le navigateur. */
@@ -20116,6 +20202,12 @@ document.addEventListener("click", e=>{
     $$("#docSeg button").forEach(x=>x.classList.remove("on")); t.classList.add("on");
     currentDoc = t.dataset.d;
     if(currentDoc === "fa") renderFacture();
+    if(currentDoc === "fp"){
+      /* on arrive sur l'onglet : c'est le moment de composer, et le seul */
+      renderPreview();
+      ficheAuxImprimes(false);
+      return;
+    }
     renderPreview(); return;
   }
   if(t.dataset.add){ D[t.dataset.add].push(blankPerson());
@@ -22269,6 +22361,17 @@ $("#btnDup").onclick = ()=>{
 $("#btnWord").onclick = ()=>exportWord(currentDoc);
 $("#btnWordBoth").onclick = ()=>{ exportWord("fn"); setTimeout(()=>exportWord("et"), 600); };
 $("#btnPrint").onclick = printDoc;
+/* les trois boutons de la fiche de présentation, qui remplacent les
+   précédents quand c'est elle qui est à l'écran */
+$("#btnFicheRef").onclick = ()=> ficheAuxImprimes(true);
+$("#btnFicheOnglet").onclick = ()=>{
+  if(!FICHE_APERCU.url){ toast("La fiche n'est pas encore composée"); return; }
+  window.open(FICHE_APERCU.url, "_blank", "noopener");
+};
+$("#btnFicheDl").onclick = ()=>{
+  if(!FICHE_APERCU.blob){ toast("La fiche n'est pas encore composée"); return; }
+  download(FICHE_APERCU.blob, nomFichierFiche(D));
+};
 
 $("#btnExpAll").onclick = ()=>{
   persist(true);
@@ -26057,17 +26160,28 @@ const AIDE = [
   "janvier 2017, loi Climat, loi ALUR —, au mot près : une fiche et une annonce qui se "+
   "contrediraient seraient pires que pas de fiche du tout. Ce qui manque au dossier "+
   "manque donc aussi ici, et se voit."],
- ["La voir avant de l'envoyer, et l'enregistrer",
-  "Dans la <b>fiche du bien</b>, au bas de la fenêtre, le bouton <b>Fiche de "+
-  "présentation</b> la compose et la montre. Ce n'est pas une maquette qui ressemblerait "+
-  "à la fiche : c'est le <b>fichier exact</b> qui partira en pièce jointe d'une "+
-  "proposition ou d'un rendez-vous, octet pour octet. "+
-  "Deux boutons dessous : <b>Ouvrir dans un onglet</b> et <b>Enregistrer en PDF</b>. "+
+ ["Où la trouver : l'onglet Imprimés, et la fiche du bien",
+  "<b>Deux chemins, le même document.</b> "+
+  "<b>Le premier, et le plus naturel : l'onglet « Imprimés » du dossier.</b> La fiche de "+
+  "présentation y est le <b>quatrième imprimé</b>, après la fiche notaire, le dossier de "+
+  "vente et la facture. Les trois premiers sont des pages composées en direct, qu'on "+
+  "exporte en Word ou qu'on imprime ; celle-ci est un PDF déjà fait, et les boutons "+
+  "changent en conséquence : <b>Recomposer</b>, <b>Ouvrir dans un onglet</b>, "+
+  "<b>Enregistrer en PDF</b> remplacent « Télécharger en Word » et « Imprimer / PDF », "+
+  "qui n'auraient pas de sens. "+
+  "<b>La fiche se compose à l'arrivée sur l'onglet, et pas à chaque frappe</b> : elle va "+
+  "chercher des tuiles de carte et recomprime les photos, ce serait absurde. Si vous "+
+  "modifiez le dossier pendant qu'elle est à l'écran, un mot en rouge vous dit qu'elle "+
+  "n'est plus à jour, et <b>Recomposer</b> la refait. "+
+  "<b>Le second : la fiche du bien.</b> Au bas de la fenêtre, le bouton bleu <b>Fiche de "+
+  "présentation</b> la compose et la montre dans une fenêtre, avec les mêmes deux "+
+  "boutons. C'est le chemin court quand on est déjà en train de regarder le bien. "+
+  "Dans les deux cas, ce n'est pas une maquette qui ressemblerait à la fiche : c'est le "+
+  "<b>fichier exact</b> qui partira en pièce jointe d'une proposition ou d'un "+
+  "rendez-vous, octet pour octet. "+
   "Sur une tablette, le cadre reste parfois blanc — c'est le lecteur de PDF du système "+
-  "qui ne s'y prête pas ; les deux boutons, eux, marchent partout, et c'est pour cela "+
-  "qu'ils sont là. "+
-  "La composition demande quelques secondes quand il y a des cartes et des photos : "+
-  "elles sont allées chercher les tuiles et les commodités."],
+  "qui ne s'y prête pas ; <b>Ouvrir dans un onglet</b> le montrera. "+
+  "La composition demande quelques secondes quand il y a des cartes et des photos."],
  ["Les trois cartes : situer le bien sans trahir le mandat",
   "<b>Un mandat exclusif autorise à dire où est le bien</b> : l'adresse est écrite sous "+
   "le titre, et le point est posé exactement sur les trois cartes. <b>Un mandat simple "+
