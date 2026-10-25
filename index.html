@@ -403,10 +403,12 @@ input.auto{background:var(--accent-soft)!important;color:var(--navy);font-weight
 .calc.mini.urgent{background:#ffedd5;border-color:#fb923c;color:#9a3412}
 .calc.mini.perime{background:#fee2e2;border-color:#f87171;color:#991b1b}
 .dpe{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
-/* les deux étiquettes closent la ligne : elles vont ensemble, et se
-   distinguent de ce qui les produit */
-.dpeetiqs{display:flex;gap:10px;padding:3px 9px 4px;border-radius:8px;
-  background:#f1f5f9;border:1px solid var(--line)}
+/* les deux étiquettes suivent les deux valeurs qui les font : elles vont
+   ensemble, et se distinguent de ce qui les produit */
+.dpeetiqs{display:flex;gap:9px;padding:3px 9px 4px;border-radius:8px;
+  background:#f1f5f9;border:1px solid var(--line);align-items:flex-end}
+.dpedont{font-size:10.5px;color:var(--ink-2);white-space:nowrap;padding-bottom:7px}
+.carrezmot{align-self:flex-end;font-size:11px;color:var(--ink-3);padding-bottom:7px}
 .dpeone.etiq .dpelab::after{content:" ·calculée";letter-spacing:0;text-transform:none;
   font-size:9px;opacity:.75}
 .dpeone.etiq.main .dpelab::after{content:" ·à la main";color:#9a3412;opacity:1}
@@ -1101,10 +1103,22 @@ table.piecest select{min-width:86px}
 table.piecest .withadd{gap:3px}
 table.piecest .addinline[data-search]{display:none}
 table.piecest input[type=checkbox]{margin:0}
-table.piecetot{margin-top:8px}
-table.piecetot td:nth-child(2),table.piecetot td:nth-child(3),
-table.piecetot th:nth-child(2),table.piecetot th:nth-child(3){text-align:right}
-table.piecetot tr.tot td{font-weight:700}
+/* les totaux des pièces, sur la ligne du titre : le total en évidence, la
+   répartition par niveau ensuite, et le filet du titre passe après */
+.detailbox .dsec h4.avectot{flex-wrap:wrap;row-gap:6px}
+.detailbox .dsec h4.avectot::after{order:9}
+.pietot{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  text-transform:none;letter-spacing:0;font-weight:400}
+.pietot .pietotal{display:inline-flex;align-items:baseline;gap:4px;
+  background:var(--navy);color:#fff;border-radius:7px;padding:3px 10px;
+  font-size:13px;font-weight:800;white-space:nowrap}
+.pietot .pietotal em{font-style:normal;font-size:10px;font-weight:600;opacity:.85}
+.pietot .pietotal i{font-style:normal;font-size:10.5px;font-weight:500;opacity:.78}
+.pieniv{display:inline-flex;align-items:baseline;gap:4px;background:#f1f5f9;
+  border:1px solid var(--line-2);border-radius:7px;padding:2px 8px;
+  font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.pieniv b{font-size:12.5px;font-weight:700;color:var(--navy)}
+.pielg{font-size:10px;color:var(--ink-3);white-space:nowrap}
 .annx .as{width:100%;display:block}
 .annx .as i{display:block;font-style:normal;font-size:10.5px;color:var(--ink-3);
   margin-bottom:2px}
@@ -2490,7 +2504,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 22 octobre 2026, 20 h 51">Dossiers de vente</div>
+  <div class="brand" title="Version du 25 octobre 2026, 13 h 45">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2716,7 +2730,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>22 octobre 2026, 20 h 51</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>25 octobre 2026, 13 h 45</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4086,6 +4100,28 @@ function classeSeuil(v, table){
 }
 function classeEnergieDpe(kwh){ return classeSeuil(kwh, SEUILS_DPE_E); }
 function classeGesDpe(co2){     return classeSeuil(co2,  SEUILS_DPE_G); }
+/* ------------------------------------------- l'etiquette du logement ----
+   Depuis l'arrete du 31 mars 2021, la lettre d'un DPE n'est PAS celle de la
+   consommation : c'est la PLUS MAUVAISE des deux, consommation et emissions.
+   168 kWh/m2/an donne un C, 33 kg CO2/m2/an donne un D : le logement est
+   classe D, et c'est D qui doit figurer sur l'annonce.
+
+   L'application affichait les deux lettres cote a cote sans les departager,
+   et retenait la consommation comme classe energie. C'etait faux, et faux
+   du cote qui coute cher : une annonce annoncant un C pour un bien classe
+   D. Le calcul est corrige ici, et les dossiers deja saisis sont repris a
+   la lecture - voir `migrate`. */
+function pireDpe(a, b){
+  const x = String(a || "").toUpperCase(), y = String(b || "").toUpperCase();
+  if(!x) return y;
+  if(!y) return x;
+  return x > y ? x : y;            /* A..G : l'ordre des lettres suffit */
+}
+/* la lettre du logement, telle qu'elle doit paraitre */
+function classeDpeDuBien(d){
+  const o = d || {};
+  return pireDpe(classeEnergieDpe(o.dpeKwh), classeGesDpe(o.dpeCo2));
+}
 /* vrai quand les seuils ordinaires ne s'appliquent pas : petite surface */
 function dpeHorsBareme(){
   const su = num((D.detail || {}).surface);
@@ -4099,7 +4135,9 @@ function majClasseDpe(i, quoi){
   const manuel = quoi === "E" ? d.dpeEManuel : d.dpeGManuel;
   if(manuel || dpeHorsBareme()) return false;
   const champ = quoi === "E" ? "dpeEnergie" : "dpeGes";
-  const veut = quoi === "E" ? classeEnergieDpe(d.dpeKwh) : classeGesDpe(d.dpeCo2);
+  /* E ne veut plus dire la classe de la consommation mais la lettre du
+     logement : la plus mauvaise des deux. */
+  const veut = quoi === "E" ? classeDpeDuBien(d) : classeGesDpe(d.dpeCo2);
   if(d[champ] === veut) return false;
   d[champ] = veut;
   const sel = document.querySelector(`[data-dpesel="${i}:${champ}"]`);
@@ -6617,7 +6655,8 @@ function tableauPieces(o){
         placeholder="remarque"></td>
       <td class="cact"><button type="button" class="xbtn mini" data-piecedel="${i}"
         title="Retirer cette pièce">✕</button></td></tr>`).join("");
-  return `<div class="dsec"><h4>Les pièces</h4>
+  return `<div class="dsec"><h4 class="avectot">Les pièces
+      <span id="piecesTot">${blocTotauxPieces(o)}</span></h4>
     <div class="tdbscroll"><table class="grid-t piecest">
       <tr><th style="width:124px">Niveau</th><th style="width:184px">Pièce</th>
         <th style="width:88px">Au sol (m²)</th>
@@ -6626,7 +6665,6 @@ function tableauPieces(o){
         <th class="cact"></th></tr>
       ${lignes || `<tr><td colspan="7" class="muted">Aucune pièce détaillée.</td></tr>`}
     </table></div>
-    <div id="piecesTot">${blocTotauxPieces(o)}</div>
     <div class="dact"><button type="button" class="addbtn"
       id="pieceAjout">+ Ajouter une pièce</button></div>
     <p class="dnote">Choisissez le nom dans la liste — le <b>+</b> en ajoute un
@@ -7035,21 +7073,47 @@ function rafraichirDepuisPieces(){
 }
 /* Les totaux, sous le tableau : une ligne par niveau, puis l'ensemble. La
    surface du bien, elle, reprend le total habitable. */
+/* --------------------------------------- les totaux, sur UNE SEULE LIGNE
+   Ils tenaient dans un tableau sous le tableau : une colonne par mesure,
+   une ligne par niveau, et le total tout en bas. C'était clair et cela
+   prenait cinq centimètres de hauteur pour cinq nombres.
+
+   Ils passent donc sur la ligne du titre, à sa droite. Le TOTAL d'abord,
+   mis en évidence — c'est le seul nombre qu'on cherche neuf fois sur dix,
+   et c'est celui qui doit égaler la surface habitable du bien —, puis la
+   répartition par niveau. Deux nombres par niveau, « habitable / au sol »,
+   et la légende est écrite au bout : sans elle on ne saurait pas lequel
+   est lequel. */
+const NIVEAUX_COURTS = {
+  "Rez-de-chaussée":"RDC", "Rez-de-chaussée + ½":"RDC + ½",
+  "Rez-de-jardin":"RDJ", "Sous-sol":"S-sol",
+  "1er étage":"1er", "1er étage + ½":"1er + ½",
+  "2e étage":"2e", "2e étage + ½":"2e + ½",
+  "3e étage":"3e", "3e étage + ½":"3e + ½",
+  "4e étage":"4e", "Combles":"Combles"
+};
+function niveauCourt(n){
+  const t = String(n || "").trim();
+  if(!t) return "sans niveau";
+  if(NIVEAUX_COURTS[t]) return NIVEAUX_COURTS[t];
+  /* un niveau ajouté à la main : on abrège ce qu'on sait abréger */
+  return t.replace(/\bRez-de-chaussée\b/i, "RDC").replace(/\bétage\b/i, "").trim();
+}
 function blocTotauxPieces(o){
   const t = totauxPieces(o || cibleBien().o);
   if(!t.lignes.length) return "";
   const m2 = v=> v ? v.toLocaleString("fr-FR") : "—";
-  const seul = t.lignes.length === 1;
-  return `<table class="grid-t piecetot">
-    <tr><th>${seul ? "Total" : "Par niveau"}</th>
-      <th style="width:92px">Au sol</th><th style="width:92px">Habitable</th></tr>
-    ${seul ? "" : t.lignes.map(x=>`<tr><td>${esc(x.niveau || "sans niveau")}
-      <span class="cnt">${x.n}</span></td>
-      <td>${esc(m2(x.sol))}</td><td>${esc(m2(x.hab))}</td></tr>`).join("")}
-    <tr class="tot"><td>Total${seul ? " — " + esc(t.lignes[0].niveau ||
-        "sans niveau") : ""}</td>
-      <td>${esc(m2(t.sol))} m²</td><td>${esc(m2(t.hab))} m²</td></tr>
-  </table>`;
+  const niv = t.lignes.map(x=> `<span class="pieniv" title="${esc(x.niveau
+      || "sans niveau")} — ${esc(m2(x.hab))} m² habitables, ${esc(m2(x.sol))} m² au sol${
+      x.n ? " (" + x.n + " pièce" + (x.n > 1 ? "s" : "") + ")" : ""}">${
+      esc(niveauCourt(x.niveau))} <b>${esc(m2(x.hab))}</b>/${esc(m2(x.sol))}</span>`)
+    .join("");
+  return `<span class="pietot">
+    <b class="pietotal" title="Total des pièces — ${esc(m2(t.hab))} m² habitables,
+      ${esc(m2(t.sol))} m² au sol">${esc(m2(t.hab))} m² <em>hab.</em>
+      <i>/ ${esc(m2(t.sol))} au sol</i></b>
+    ${t.lignes.length > 1 ? niv + `<span class="pielg">hab./sol</span>` : ""}
+  </span>`;
 }
 function majTotauxPieces(){
   const z = document.getElementById("piecesTot");
@@ -8293,6 +8357,19 @@ function renderDiags(){
     if(!diagVisible(d)){ if(!d.masque && !d.manuel) masques.push(d.nom); return ""; }
     const res = DIAG_RESULTAT.includes(d.nom)
       ? ynControl(`diags.${i}.positif`, DIAG_CHOIX[d.nom])
+      /* LE MESURAGE CARREZ. Sa case est à la place où Plomb porte son
+         « Positif / Négatif », et elle ne garde RIEN pour elle : elle écrit
+         dans la surface Carrez de la fiche du bien, `detail.carrez`. Une
+         seule valeur, deux fenêtres dessus — elles ne peuvent donc pas
+         diverger, et la reporter d'un côté à l'autre n'est pas un travail
+         mais une conséquence. La correction d'une valeur déjà saisie
+         demande confirmation : voir le gardien de `detail.carrez`. */
+      : d.nom === "Loi Carrez"
+        ? `<div class="dpe"><span class="dpeone">` +
+          `<span class="dpelab">Surface mesurée (m²)</span>` +
+          `${controlRaw("detail.carrez","money",(D.detail || {}).carrez || "",
+                        "","data-b")}</span>` +
+          `<span class="carrezmot">reportée sur la fiche du bien</span></div>`
       : d.nom === "DPE"
         /* On saisit ce que dit le rapport — les consommations, puis le coût
            annuel qu'impose l'annonce — et les deux étiquettes se posent au
@@ -8304,12 +8381,17 @@ function renderDiags(){
           `${controlRaw(`diags.${i}.dpeKwh`,"nb5",d.dpeKwh||"","","data-b")}</span>` +
           `<span class="dpeone"><span class="dpelab">kg CO₂/m²/an</span>` +
           `${controlRaw(`diags.${i}.dpeCo2`,"nb5",d.dpeCo2||"","","data-b")}</span>` +
+          /* L'étiquette du logement suit aussitôt les deux valeurs qui la
+             font : c'est la plus mauvaise des deux, et c'est elle qu'on
+             annonce. Puis, en toutes lettres, celle des émissions — sans
+             quoi on ne saurait pas laquelle des deux a décidé. */
+          `<span class="dpeetiqs">${dpeSelect(i,"dpeEnergie",DPE_ENERGIE,"Étiquette DPE")}` +
+          `<span class="dpedont">dont émission GES</span>` +
+          `${dpeSelect(i,"dpeGes",DPE_GES,"GES")}</span>` +
           `<span class="dpeone"><span class="dpelab">Coût min</span>` +
           `${controlRaw(`diags.${i}.dpeCoutMin`,"money",d.dpeCoutMin||"","","data-b")}</span>` +
           `<span class="dpeone"><span class="dpelab">Coût max</span>` +
           `${controlRaw(`diags.${i}.dpeCoutMax`,"money",d.dpeCoutMax||"","","data-b")}</span>` +
-          `<span class="dpeetiqs">${dpeSelect(i,"dpeEnergie",DPE_ENERGIE,"Énergie")}` +
-          `${dpeSelect(i,"dpeGes",DPE_GES,"GES")}</span>` +
           (dpeHorsBareme() ? `<span class="dpenote">moins de 40 m² : les seuils sont
              adaptés, reportez les classes du diagnostic</span>` : "") + `</div>`
         : `<span class="muted">—</span>`;
@@ -19548,7 +19630,9 @@ document.addEventListener("input", e=>{
     if(t.dataset.b.startsWith("diags."))    majDiagCalc();
     /* les consommations saisies posent les deux étiquettes */
     const mdpe = /^diags\.(\d+)\.dpe(Kwh|Co2)$/.exec(t.dataset.b || "");
-    if(mdpe) majClasseDpe(+mdpe[1], mdpe[2] === "Kwh" ? "E" : "G");
+    /* l'une comme l'autre peut changer la lettre du logement, puisqu'elle
+       est la plus mauvaise des deux : on recalcule les deux a chaque fois */
+    if(mdpe){ majClasseDpe(+mdpe[1], "G"); majClasseDpe(+mdpe[1], "E"); }
     /* la surface décide si les seuils ordinaires s'appliquent */
     if(t.dataset.b === "detail.surface") (D.diags || []).forEach((d,i)=>{
       if(d.nom === "DPE"){ majClasseDpe(i, "E"); majClasseDpe(i, "G"); } });
@@ -19715,6 +19799,140 @@ document.addEventListener("input", e=>{
    la frappe, une année partielle (0002, 0020, 0202…) forme une date valide et
    déclenchait un rendu qui volait le focus avant la fin de la saisie. */
 /* Contrôles à la validation : numéro de mandat unique, dates dans l'ordre. */
+/* =====================================================================
+   LE QUARTIER, DEVINÉ DE L'ADRESSE
+   ---------------------------------------------------------------------
+   Les quartiers sont déjà là : on les a nommés pour les recherches, et la
+   plupart ont un contour tracé sur la carte. Une adresse saisie tombe donc
+   dans l'un d'eux, et le demander à l'utilisateur est lui faire faire le
+   travail d'un calcul.
+
+   Trois règles, et elles se suffisent :
+
+     · on ne remplit QUE si la case est vide. Un quartier choisi à la main
+       ne se fait jamais corriger par une devinette ;
+     · s'il y a des contours, c'est la géométrie qui décide : le point du
+       bien tombe dans un contour, et un seul. Deux contours qui se
+       recouvrent, ou aucun : on ne devine pas ;
+     · sans contour mais avec un SEUL quartier connu dans la commune, c'est
+       celui-là — il n'y a pas d'autre réponse possible.
+
+   Le point vient du dossier quand il y est, sinon de la Base Adresse
+   Nationale, et il est alors gardé : la question ne se repose plus. Rien
+   de tout cela ne bloque la saisie, et un réseau absent ne se voit pas.
+   ===================================================================== */
+let QUARTIER_VU = "";
+function poserQuartierDevine(nom, pourquoi){
+  if(!nom) return;
+  D.bien = D.bien || {};
+  D.bien.quartier = nom;
+  const el = document.querySelector('[data-b="bien.quartier"]');
+  if(el){
+    /* la commune peut n'avoir ce quartier dans sa liste que depuis peu */
+    if(!Array.from(el.options).some(o=> o.value === nom)){
+      const o = document.createElement("option");
+      o.value = nom; o.textContent = nom; el.appendChild(o);
+    }
+    el.value = nom;
+  }
+  /* saisi sur un lot, le quartier vaut pour l'immeuble entier — même règle
+     que la saisie à la main */
+  const r = residenceDuBien();
+  if(r.nom && r.qnom !== nom){ r.qnom = nom; saveLists(); }
+  autosave();
+  majRapprochements();
+  toast("Quartier : " + nom + " (" + pourquoi + ")");
+}
+async function devinerQuartier(){
+  const b = (D || {}).bien || {};
+  if(String(b.quartier || "").trim()) return;          /* déjà choisi */
+  const ville = String(b.ville || "").trim();
+  if(!ville) return;
+  /* une adresse par dossier : on ne redemande pas pour la même */
+  const cle = (D.id || "") + "|" + fold(adresseGeo(b));
+  if(QUARTIER_VU === cle) return;
+  QUARTIER_VU = cle;
+  const qs = (L.quartiers || []).filter(q=> q && q.nom
+    && fold(q.ville) === fold(ville));
+  if(!qs.length) return;
+  const traces = qs.filter(q=> Array.isArray(q.contour) && q.contour.length > 2);
+  if(!traces.length){
+    if(qs.length === 1)
+      poserQuartierDevine(qs[0].nom, "seul quartier connu à " + ville);
+    return;
+  }
+  let pt = (num(b.lat) !== null && num(b.lon) !== null)
+    ? {lat:+b.lat, lon:+b.lon} : null;
+  if(!pt){
+    if(!String(b.adresse || "").trim()) return;
+    try{
+      const g = await geocoder(adresseGeo(b), b.cp);
+      if(!g) return;
+      pt = g;
+      poserPointBien(D.id, g);          /* gardé : plus de second appel */
+    }catch(e){ return; }                /* hors ligne : on ne dit rien */
+  }
+  /* le dossier a pu changer pendant l'aller-retour */
+  if(!D || fold(adresseGeo(D.bien || {})) !== fold(adresseGeo(b))) return;
+  if(String((D.bien || {}).quartier || "").trim()) return;
+  const dedans = traces.filter(q=> dansPolygone(pt.lat, pt.lon, q.contour));
+  if(dedans.length === 1) poserQuartierDevine(dedans[0].nom, "d'après l'adresse");
+  else if(!dedans.length && qs.length === 1)
+    poserQuartierDevine(qs[0].nom, "seul quartier connu à " + ville);
+}
+/* l'adresse quittée, la commune choisie : c'est là qu'on essaie */
+document.addEventListener("focusout", e=>{
+  const t = e.target;
+  if(!t || !t.dataset) return;
+  if(["bien.adresse", "bien.cp", "bien.ville"].indexOf(t.dataset.b) < 0) return;
+  setTimeout(()=>{ try{ devinerQuartier(); }catch(err){} }, 60);
+});
+
+/* =====================================================================
+   LA SURFACE CARREZ : UNE SEULE VALEUR, DEUX FENÊTRES
+   ---------------------------------------------------------------------
+   Elle se saisit à deux endroits — la ligne « Loi Carrez » des diagnostics
+   et la fiche du bien — et c'est la MÊME donnée, `detail.carrez`. Il n'y a
+   donc rien à reporter d'un côté à l'autre, et rien qui puisse diverger.
+
+   Reste qu'une surface Carrez n'est pas un champ comme un autre : elle est
+   portée au mandat, à l'annonce et aux mentions légales. La CORRIGER après
+   coup se demande donc ; la saisir la première fois, non — on ne confirme
+   pas un champ qu'on remplit. On retient la valeur à l'entrée dans le
+   champ, et l'on compare à la sortie.
+   ===================================================================== */
+let CARREZ_AVANT = null;
+document.addEventListener("focusin", e=>{
+  const t = e.target;
+  if(t && t.dataset && t.dataset.b === "detail.carrez")
+    CARREZ_AVANT = String(t.value || "").trim();
+});
+document.addEventListener("focusout", e=>{
+  const t = e.target;
+  if(!t || !t.dataset || t.dataset.b !== "detail.carrez") return;
+  const avant = CARREZ_AVANT;
+  CARREZ_AVANT = null;
+  const apres = String(t.value || "").trim();
+  if(avant === null || avant === "" || avant === apres) return;
+  popup({titre:"Changer la surface Carrez ?", genre:"erreur",
+    corps:`<p style="margin:0 0 10px">Elle passe de <b>${esc(avant)} m²</b> à
+        <b>${esc(apres || "— rien —")}</b>.</p>
+      <p style="margin:0">C'est la même valeur <b>à la fiche du bien et à la ligne
+        « Loi Carrez » des diagnostics</b> : elle change des deux côtés. Elle est
+        aussi reprise au mandat, à l'annonce et aux mentions légales.</p>`,
+    boutons:[{lib:"Revenir à " + avant + " m²", action:()=>{
+        set(D, "detail.carrez", avant);
+        const z = document.querySelector('[data-b="detail.carrez"]');
+        if(z) z.value = avant;
+        autosave(); refreshCalcs(); renderDiags(); renderDetail(); majDetail();
+        renderPreview();
+        toast("Surface Carrez inchangée");
+      }},
+      {lib:"Oui, la changer", primaire:true, action:()=>{
+        refreshCalcs(); renderDiags(); renderDetail(); majDetail(); renderPreview();
+        toast("Surface Carrez : " + (apres || "vidée"));
+      }}]});
+});
 document.addEventListener("focusout", e=>{
   const t = e.target;
   if(!t || !t.dataset) return;
@@ -22530,11 +22748,15 @@ const SCRIPT_GOOGLE = `/**
  *  En venant d'une version antérieure à la 11, la première visite créée
  *  déclenchera une nouvelle demande d'autorisation (votre agenda) :
  *  acceptez-la, c'est votre propre script qui la demande.
+ *  En venant de la 11, le premier échange rangera sous « DOSSIERS DE
+ *  VENTE » ce qui se trouverait encore ailleurs. Les fichiers sont
+ *  DÉPLACÉS, jamais recopiés : ils gardent leur identifiant, donc tous
+ *  les liens de vos pièces jointes. Rien n'est supprimé.
  */
 
 /** La version de CE script. L'application la lit et vous prévient quand le
  *  script déployé dans votre Drive est plus ancien qu'elle ne l'attend. */
-const VERSION_SCRIPT = 11;
+const VERSION_SCRIPT = 12;
 
 /** Mot de passe partagé — mettez le vôtre, et le même dans l'application. */
 const CLE = 'changez-moi';
@@ -22544,6 +22766,90 @@ const NOM_FICHIER = 'Dossiers de vente - base.json';
 
 /** Nom du dossier Drive où sont rangées les pièces jointes. */
 const NOM_PIECES = 'Dossiers de vente — pièces';
+
+/** Le dossier unique sous lequel TOUT est rangé. */
+const NOM_RACINE = 'DOSSIERS DE VENTE';
+
+/* ------------------------------------------------- UN SEUL DOSSIER -------
+ *  Tout ce que l'application dépose dans votre Drive vit sous « DOSSIERS DE
+ *  VENTE » : la base, les comptes, les sauvegardes du jour et les pièces
+ *  jointes. C'est là qu'on les range, et c'est là qu'on les cherche.
+ *
+ *  Jusqu'à la version 11, chaque fichier était cherché dans TOUT le Drive,
+ *  par son nom. Cela paraissait souple ; c'était fragile. Le jour où une
+ *  recherche ne rend rien — un fichier devenu invisible au script pour une
+ *  raison qui ne tient pas à nous —, le script en recrée un VIDE à la
+ *  racine, et l'on se retrouve avec deux fichiers du même nom dont le plus
+ *  récent ne contient rien. C'est arrivé le 22 octobre 2026.
+ *
+ *  La version 12 pose trois garde-fous :
+ *    · tout est rangé sous un dossier unique ;
+ *    · on y cherche d'abord, et dans le reste du Drive seulement ensuite —
+ *      auquel cas on DÉPLACE ce qu'on trouve dans le dossier, une fois pour
+ *      toutes. Rien n'est dupliqué, rien n'est recopié : le déplacement
+ *      conserve l'identifiant, donc tous les liens des pièces jointes ;
+ *    · quand plusieurs fichiers portent le même nom, on retient LE PLUS
+ *      GARNI, et non le plus récent. C'est le cœur du correctif : un
+ *      fichier vide créé le soir est PLUS RÉCENT qu'un fichier plein écrit
+ *      le matin, et trier par date aurait reproduit la panne.
+ *
+ *  Rien n'est jamais supprimé : un doublon est ignoré, pas détruit. Le
+ *  Drive de quelqu'un ne se nettoie pas tout seul.
+ */
+function dossierRacine() {
+  const it = DriveApp.getFoldersByName(NOM_RACINE);
+  while (it.hasNext()) {
+    const f = it.next();
+    if (!f.isTrashed()) return f;
+  }
+  return DriveApp.createFolder(NOM_RACINE);
+}
+
+/** Déplace un fichier ou un dossier sous la racine, s'il n'y est pas déjà. */
+function rangerDans(x, dossier) {
+  try {
+    const p = x.getParents();
+    while (p.hasNext()) if (p.next().getId() === dossier.getId()) return x;
+    x.moveTo(dossier);
+  } catch (err) {
+    /* un Drive qui refuse le déplacement — partage, quota — n'empêche pas
+       de travailler : on rend l'objet tel qu'il est */
+  }
+  return x;
+}
+
+/** Le fichier de ce nom, rangé sous la racine. Le plus garni l'emporte. */
+function fichierRange(nom) {
+  const racine = dossierRacine();
+  const l = [];
+  const it = DriveApp.getFilesByName(nom);
+  while (it.hasNext()) {
+    const f = it.next();
+    if (!f.isTrashed()) l.push(f);
+  }
+  if (!l.length) return racine.createFile(nom, '{}', MimeType.PLAIN_TEXT);
+  l.sort(function (a, b) {
+    const d = b.getSize() - a.getSize();
+    return d !== 0 ? d : (b.getLastUpdated() - a.getLastUpdated());
+  });
+  return rangerDans(l[0], racine);
+}
+
+/** Le sous-dossier de ce nom, rangé sous la racine. */
+function dossierRange(nom) {
+  const racine = dossierRacine();
+  let it = racine.getFoldersByName(nom);
+  while (it.hasNext()) {
+    const f = it.next();
+    if (!f.isTrashed()) return f;
+  }
+  it = DriveApp.getFoldersByName(nom);
+  while (it.hasNext()) {
+    const f = it.next();
+    if (!f.isTrashed()) return rangerDans(f, racine);
+  }
+  return racine.createFolder(nom);
+}
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
@@ -22620,14 +22926,7 @@ function doPost(e) {
 
 /* ------------------------------------------------------------------ Drive */
 
-function fichierBase() {
-  const it = DriveApp.getFilesByName(NOM_FICHIER);
-  while (it.hasNext()) {
-    const f = it.next();
-    if (!f.isTrashed()) return f;
-  }
-  return DriveApp.createFile(NOM_FICHIER, '{}', MimeType.PLAIN_TEXT);
-}
+function fichierBase() { return fichierRange(NOM_FICHIER); }
 
 function lireBase() {
   const t = fichierBase().getBlob().getDataAsString('UTF-8');
@@ -22700,14 +22999,7 @@ function protegerCarnets(ancien, neuf) {
 const NOM_COPIES = 'Dossiers de vente - sauvegardes';
 const COPIES_GARDEES = 15;
 
-function dossierCopies() {
-  const it = DriveApp.getFoldersByName(NOM_COPIES);
-  while (it.hasNext()) {
-    const f = it.next();
-    if (!f.isTrashed()) return f;
-  }
-  return DriveApp.createFolder(NOM_COPIES);
-}
+function dossierCopies() { return dossierRange(NOM_COPIES); }
 
 function copieDuJour(fichier) {
   try {
@@ -22729,14 +23021,7 @@ function copieDuJour(fichier) {
 /* --------------------------------------------------------- pièces jointes */
 
 /** Le dossier racine des pièces, créé au premier envoi. */
-function racinePieces() {
-  const it = DriveApp.getFoldersByName(NOM_PIECES);
-  while (it.hasNext()) {
-    const f = it.next();
-    if (!f.isTrashed()) return f;
-  }
-  return DriveApp.createFolder(NOM_PIECES);
-}
+function racinePieces() { return dossierRange(NOM_PIECES); }
 
 /** Descend — en créant au besoin — la suite de sous-dossiers demandée. */
 function dossierChemin(parties) {
@@ -22970,14 +23255,7 @@ const SEANCE_H = 12;
 const ECHECS_MAX = 5;
 const BLOCAGE_MIN = 15;
 
-function fichierComptes() {
-  const it = DriveApp.getFilesByName(NOM_COMPTES);
-  while (it.hasNext()) {
-    const f = it.next();
-    if (!f.isTrashed()) return f;
-  }
-  return DriveApp.createFile(NOM_COMPTES, '{}', MimeType.PLAIN_TEXT);
-}
+function fichierComptes() { return fichierRange(NOM_COMPTES); }
 function lireComptes() {
   try {
     const o = JSON.parse(fichierComptes().getBlob().getDataAsString('UTF-8') || '{}');
@@ -23526,7 +23804,7 @@ let WEB = null, WEB_MAJ = 0, WEB_ETAT = "", WEB_MSG = "";
    déployé annonce. Un script resté en arrière ne se voyait pas : il
    répondait normalement, et seule la fonction nouvelle échouait, plus tard,
    sans qu'on sache pourquoi. Il se dit maintenant à l'écran. */
-const SCRIPT_ATTENDU = 11;
+const SCRIPT_ATTENDU = 12;
 let WEB_VERSION = null;
 let WEB_VOIR_SCRIPT = false;
 /* ce qui a été tapé dans le formulaire, pour ne pas le perdre en cas d'échec */
@@ -24698,6 +24976,27 @@ function migrate(d){
   (Array.isArray(d.diags) ? d.diags : []).forEach(x=>{
     if(x && x.nom && !DIAGS.includes(x.nom)) out.diags.push(repriseDiag(x.nom, x));
   });
+  /* L'ÉTIQUETTE DU LOGEMENT, REPRISE. Elle valait la classe de la
+     consommation ; elle vaut la plus mauvaise des deux. Un dossier saisi
+     avant la correction porte donc une lettre trop clémente, et c'est elle
+     qui partait sur les annonces. On la recalcule à la lecture — sauf
+     quand elle a été choisie À LA MAIN, auquel cas elle n'appartient pas
+     au calcul, et sauf sous 40 m² où les seuils ne sont pas les nôtres. */
+  const petit = (()=>{ const su = num((out.detail || {}).surface);
+                       return su !== null && su > 0 && su < 40; })();
+  if(!petit) (out.diags || []).forEach(x=>{
+    if(!x || x.nom !== "DPE") return;
+    /* les émissions aussi : elles n'étaient posées qu'à la frappe, de sorte
+       qu'un dossier repris d'un autre appareil montrait une case vide là
+       où le rapport donne une lettre */
+    if(!x.dpeGManuel){
+      const g = classeGesDpe(x.dpeCo2);
+      if(g && x.dpeGes !== g) x.dpeGes = g;
+    }
+    if(x.dpeEManuel) return;
+    const veut = pireDpe(classeEnergieDpe(x.dpeKwh), classeGesDpe(x.dpeCo2));
+    if(veut && x.dpeEnergie !== veut) x.dpeEnergie = veut;
+  });
   ["vendeurs","acquereurs"].forEach(k=>{
     if(!out[k] || !out[k].length) out[k] = [blankPerson()];
     const cote = k==="vendeurs" ? "vendeur" : "acquereur";
@@ -24929,14 +25228,48 @@ const AIDE = [
   "À partir du deuxième vendeur ou acquéreur, la case « Même adresse que le précédent » recopie "+
   "l'adresse de la fiche du dessus et la maintient à jour. Les champs concernés se verrouillent "+
   "tant que la case est cochée."],
- ["Le DPE : les deux étiquettes se calculent",
+ ["Le DPE : l'étiquette est la plus mauvaise des deux",
   "Sur la ligne du DPE, vous saisissez ce que dit le rapport — les "+
-  "<b>kWh/m²/an</b> et les <b>kg CO₂/m²/an</b> — et les deux classes se posent d'elles-"+
-  "mêmes au bout de la ligne, d'après les seuils de l'arrêté du 31 mars 2021. Elles "+
-  "portent la mention « calculée ». Vous pouvez toujours en choisir une à la main : elle "+
-  "passe alors en « à la main » et la saisie ne la rattrape plus. Pour revenir au calcul, "+
-  "videz simplement le menu. Attention aux bornes : <b>70 kWh/m²/an est un B</b>, pas un A, "+
-  "et <b>6 kg de CO₂ est un B</b> également."],
+  "<b>kWh/m²/an</b> et les <b>kg CO₂/m²/an</b> — et l'étiquette se pose d'elle-même "+
+  "juste après, d'après les seuils de l'arrêté du 31 mars 2021. "+
+  "<b>Elle est la plus mauvaise des deux</b>, et c'est la règle : 168 kWh/m²/an donnent "+
+  "un C, 33 kg de CO₂ donnent un D, le logement est classé <b>D</b>. C'est cette "+
+  "lettre-là qui doit figurer sur l'annonce et dans les mentions légales. La mention "+
+  "« <b>dont émission GES</b> » suit, avec la classe climat, pour qu'on voie laquelle "+
+  "des deux a décidé. "+
+  "<b>Les dossiers déjà saisis ont été repris</b> : l'application retenait jusqu'ici la "+
+  "classe de la consommation, ce qui était trop clément. Un bien annoncé C peut donc "+
+  "être passé en D — c'est une correction, pas une erreur, et il vaut mieux qu'elle "+
+  "arrive maintenant. Les classes que vous aviez choisies <b>à la main</b> ne sont pas "+
+  "touchées, non plus que les biens de moins de 40 m². "+
+  "Les deux étiquettes portent la mention « calculée ». Vous pouvez toujours en choisir "+
+  "une à la main : elle passe alors en « à la main » et la saisie ne la rattrape plus ; "+
+  "videz le menu pour revenir au calcul. Attention aux bornes : <b>70 kWh/m²/an est un "+
+  "B</b>, pas un A, et <b>6 kg de CO₂ est un B</b> également."],
+ ["Le mesurage Carrez : une valeur, deux endroits",
+  "La ligne <b>Loi Carrez</b> des diagnostics porte une case <b>Surface mesurée</b>, à "+
+  "la place où le plomb porte son « Positif / Négatif ». Elle ne garde rien pour elle : "+
+  "c'est la <b>même valeur</b> que « Dont loi Carrez » de la fiche du bien. Une seule "+
+  "donnée, deux fenêtres dessus — il n'y a donc rien à reporter d'un côté à l'autre, et "+
+  "elles ne peuvent pas diverger. "+
+  "Saisie pour la première fois, elle entre sans rien demander. <b>La corriger demande "+
+  "confirmation</b> : la fenêtre rappelle l'ancienne valeur, la nouvelle, et que la "+
+  "surface Carrez est reprise au mandat, à l'annonce et aux mentions légales. On peut "+
+  "revenir à la valeur d'avant d'un clic."],
+ ["Le quartier se devine de l'adresse",
+  "Dans la fiche du bien, à l'onglet <b>L'adresse</b>, le quartier se remplit tout seul "+
+  "quand on quitte l'adresse ou la commune — à trois conditions, et elles comptent : "+
+  "<b>la case doit être vide</b> (un quartier choisi à la main n'est jamais corrigé par "+
+  "une devinette) ; le quartier doit <b>déjà exister</b> dans vos listes pour cette "+
+  "commune ; et il faut pouvoir décider. "+
+  "<b>Comment il décide.</b> Si vos quartiers ont un <b>contour tracé</b>, c'est la "+
+  "géométrie : l'adresse est repérée, et si le point tombe dans un contour — un seul —, "+
+  "c'est celui-là. Sans contour mais avec un <b>seul quartier connu</b> dans la commune, "+
+  "c'est celui-là aussi : il n'y a pas d'autre réponse possible. Dans tous les autres "+
+  "cas, l'application ne devine pas et vous laisse choisir. "+
+  "Le point relevé est <b>gardé dans le dossier</b> : la question ne se repose plus, et "+
+  "le bien est du même coup placé sur la carte des secteurs. Hors ligne, rien ne se "+
+  "passe et rien ne se casse."],
  ["DPE : les logements de moins de 40 m²",
   "Depuis le 1<sup>er</sup> juillet 2024, les logements d'une surface de référence "+
   "inférieure à 40 m² ont des seuils <b>adaptés</b>, qui changent mètre carré par mètre "+
@@ -24950,6 +25283,17 @@ const AIDE = [
   "<b>et</b> l'année de référence des prix utilisés pour cette estimation. Le montant est "+
   "toujours là ; l'année, non. Si un portail ou un contrôle vous la réclame, dites-le-moi : "+
   "elle se remet en une ligne."],
+ ["Les pièces : les totaux sur la ligne du titre",
+  "Les totaux tenaient dans un tableau sous le tableau — une ligne par niveau, le total "+
+  "tout en bas — et prenaient cinq centimètres de hauteur pour cinq nombres. Ils sont "+
+  "désormais <b>sur la ligne du titre « Les pièces »</b>, à sa droite. "+
+  "Le <b>total</b> vient en premier, en évidence : c'est le nombre qu'on cherche neuf "+
+  "fois sur dix, et c'est lui qui doit égaler la surface habitable du bien. Puis la "+
+  "<b>répartition par niveau</b>, deux nombres par niveau — <b>habitable / au sol</b>, "+
+  "la légende est écrite au bout. Les niveaux sont abrégés pour tenir sur une ligne : "+
+  "<b>RDC</b>, <b>RDJ</b>, <b>S-sol</b>, <b>1er</b>, <b>2e</b>… Le détail complet d'un "+
+  "niveau — les deux surfaces et le nombre de pièces — s'affiche en survolant sa "+
+  "pastille."],
  ["Diagnostics : la liste s'adapte au bien",
   "L'année de construction, saisie dans l'onglet Général, commande la liste. Moins de quinze "+
   "ans : DPE, termites et ERP seulement. Quinze ans et plus : gaz et électricité s'ajoutent. "+
@@ -26216,6 +26560,34 @@ const AIDE = [
   "paysages</b> aussi, et un mélange se répartit tout seul. Toutes les images d'une "+
   "ligne ont la <b>même hauteur</b>, la ligne occupe <b>toute la largeur</b>, et "+
   "<b>aucune image n'est déformée</b> — la largeur de chacune se déduit de son rapport."],
+ ["Tout votre Drive sous un seul dossier",
+  "Depuis la <b>version 12 du script</b>, tout ce que l'application dépose dans votre "+
+  "Drive vit sous un dossier unique : <b>DOSSIERS DE VENTE</b>. On y trouve la "+
+  "<b>base</b> partagée, le fichier des <b>comptes</b>, le dossier des "+
+  "<b>sauvegardes</b> du jour et celui des <b>pièces jointes</b>. Plus rien à la racine. "+
+  "<b>La reprise se fait toute seule</b>, au premier échange après la mise à jour du "+
+  "script : ce qui se trouvait ailleurs est <b>déplacé</b> dans ce dossier. Déplacé, et "+
+  "non recopié — chaque fichier garde son identifiant, donc tous les liens de vos "+
+  "pièces jointes continuent de fonctionner. "+
+  "<b>Pourquoi ce changement.</b> Jusqu'à la version 11, chaque fichier était cherché "+
+  "dans <b>tout</b> le Drive, par son nom. Le jour où cette recherche ne rend rien — un "+
+  "fichier devenu invisible au script pour une raison qui ne tient pas à l'application —, "+
+  "le script en recréait un <b>vide</b> à la racine, et l'on se retrouvait avec deux "+
+  "fichiers du même nom dont le plus récent ne contenait rien. C'est arrivé le 22 "+
+  "octobre 2026. "+
+  "<b>Deux garde-fous</b> désormais : on cherche d'abord dans le dossier, et seulement "+
+  "ensuite ailleurs ; et quand plusieurs fichiers portent le même nom, c'est le <b>plus "+
+  "garni</b> qui est retenu — jamais le plus récent. C'est le cœur du correctif : un "+
+  "fichier vide créé le soir est plus récent qu'un fichier plein écrit le matin, et "+
+  "trier par date aurait reproduit la panne. "+
+  "<b>Rien n'est supprimé.</b> Un doublon est ignoré, pas détruit : l'application ne "+
+  "fait pas le ménage toute seule dans votre Drive. Si vous voyez deux fichiers du même "+
+  "nom, celui qui compte est le plus gros ; l'autre s'efface à la main, quand vous "+
+  "voudrez. "+
+  "<b>Si une base paraît vide</b> : vos données ne sont pas perdues. Elles sont dans le "+
+  "navigateur de chaque appareil, et le dossier <b>sauvegardes</b> en garde quinze "+
+  "copies quotidiennes. La première écriture depuis un appareil à jour la remplit de "+
+  "nouveau — c'est exactement ce qui s'est passé le 24 octobre."],
  ["Où trouver le script, et savoir s'il est à jour",
   "Le script est <b>dans l'application</b> : onglet <b>Listes</b>, carte « <b>Base "+
   "partagée entre plusieurs ordinateurs</b> », bouton <b>Voir le script</b> — ou "+
