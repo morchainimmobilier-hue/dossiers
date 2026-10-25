@@ -601,6 +601,13 @@ table.grid-t td .ynb{min-width:48px;padding:3px 9px;font-size:11.5px}
   padding:1px 8px;font-size:11px;font-weight:700;letter-spacing:0}
 .card > h2 .cnt{background:rgba(255,255,255,.2);color:#fff}
 .logobox{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+/* la signature de courriel : large et basse, montrée à sa taille réelle
+   mais bridée, et sur un damier clair pour que la transparence se voie */
+.signbox{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.signvu{max-width:340px;max-height:110px;border:1px solid var(--line);
+  border-radius:8px;padding:6px;
+  background:repeating-conic-gradient(#f1f5f9 0% 25%,#fff 0% 50%) 50%/14px 14px}
+.signbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .logobox img{max-height:64px;max-width:230px;border:1px solid var(--line);border-radius:6px;
   padding:4px;background:#fff}
 .logobox.large img{max-height:74px;max-width:420px}
@@ -720,6 +727,17 @@ table.envois tr.repondu td.emode b{color:#166534}
   border:1px solid var(--field-line);border-radius:8px;padding:7px 10px;font:inherit;
   font-size:13.5px}
 .propo textarea{min-height:200px;resize:vertical;line-height:1.5}
+/* la case de la pièce jointe, et ce qu'elle promet juste en dessous */
+.pjligne{margin:4px 0 2px;font-size:13.5px}
+.pjligne b{color:var(--navy)}
+.pjmot{margin:0 0 4px 26px;font-size:12.5px;line-height:1.45}
+/* ce que la signature va faire, montré avant l'envoi */
+.signavant{display:flex;align-items:center;gap:12px;margin:2px 0 8px;padding:9px 11px;
+  background:var(--accent-soft);border:1px solid #bfdbfe;border-radius:9px}
+.signavant img{max-width:150px;max-height:58px;flex:0 0 auto;border-radius:4px;
+  background:#fff}
+.signavant p{margin:0;font-size:12.5px;line-height:1.45}
+.signmot{margin:2px 0 8px;font-size:12.5px;line-height:1.45}
 .rdvbox{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 14px;
   align-items:start}
 .rdvbox > .plein{grid-column:1/-1}
@@ -1993,27 +2011,62 @@ table.tdb .puce.resilie{background:#64748b}
 /* ------------------------------------------- le tableau « Mes dossiers »
    Une hauteur de ligne FIXE : une liste dont les lignes respirent au
    rythme des photos se parcourt deux fois moins vite. */
-/* la grille de filtres, à gauche, et la liste à droite */
-.dosszone{display:grid;grid-template-columns:238px minmax(0,1fr);gap:16px;
-  align-items:start}
-.dfiltres{background:#fff;border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:14px;position:sticky;
-  top:calc(var(--hbar,53px) + 60px)}
-.dfiltres h3{margin:0 0 12px;font-size:12px;letter-spacing:.5px;
-  text-transform:uppercase;color:var(--navy)}
-.dfg{margin-bottom:11px}
-.dfg label{display:block;font-size:11px;letter-spacing:.4px;text-transform:uppercase;
-  color:var(--ink-3);margin-bottom:3px}
-.dfg select,.dfg input{width:100%;background:var(--field);
-  border:1px solid var(--field-line);border-radius:8px;padding:6px 9px;font:inherit;
-  font-size:13px}
-.dfdeux{display:flex;gap:6px;margin-top:5px}
-.dfdeux input{min-width:0}
-.dfcompte{margin:14px 0 8px;font-size:12.5px;color:var(--ink-2);
-  border-top:1px solid var(--line-2);padding-top:10px}
+/* ---------------------------------------------- la barre de filtres ----
+   Elle était une colonne à gauche. Elle devient une barre EN TÊTE DE LA
+   LISTE, chaque filtre posé sur la colonne qu'il filtre : le type sur la
+   photo, le prix sur le prix, la commune sur la commune, la surface sur
+   la surface, le statut sur la pastille de statut. On lit alors la barre
+   comme l'en-tête d'un tableau — ce qu'elle est devenue.
+
+   Les largeurs sont celles des colonnes de .drow2, à l'unité près, et le
+   décalage de 10 px à gauche se rattrape sur la première cellule : une
+   barre qui ne tombe pas pile sur ses colonnes est pire qu'une barre
+   ailleurs, parce qu'elle promet un alignement qu'elle ne tient pas.
+
+   Elle est FIGÉE sous les onglets : on déroule cent biens sans perdre de
+   vue ce qui les a sélectionnés. */
+.dosszone{display:block}
+.dosscard{padding:0;overflow:visible}
+.dbarre{display:flex;gap:14px;align-items:flex-end;background:#fff;
+  padding:9px 14px 10px 10px;border-bottom:1px solid var(--line);
+  border-radius:var(--radius) var(--radius) 0 0;
+  position:sticky;top:calc(var(--hbar,53px) + 47px);z-index:14;
+  /* l'ombre dit que les lignes passent DESSOUS, et non qu'elles sont
+     coupées : sans elle, une liste qui défile sous la barre a l'air
+     tronquée */
+  box-shadow:0 6px 10px -8px rgba(15,23,42,.35)}
+.dbarre [hidden]{display:none}
+.dbarre > .grow{flex:1 1 auto}
+.dfc{min-width:0;display:flex;flex-direction:column;gap:3px}
+.dfc > label{font-size:10px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--ink-3);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.dfc select,.dfc input{width:100%;min-width:0;background:var(--field);
+  border:1px solid var(--field-line);border-radius:8px;padding:6px 8px;
+  font:inherit;font-size:13px;color:var(--ink)}
+.dfc select:focus,.dfc input:focus{outline:2px solid var(--accent);
+  outline-offset:-1px;background:#fff}
+/* un filtre en service se voit d'un coup d'œil : sans cela, on cherche
+   pourquoi la liste est courte */
+.dfc .actif{background:var(--accent-soft);border-color:#bfdbfe;font-weight:600}
+.dfdeux{display:flex;gap:6px}
+.dfdeux input{min-width:0;flex:1 1 0}
+/* les largeurs des colonnes de la liste, reportées telles quelles */
+.dfc.fph{flex:0 0 126px}
+.dfc.ftyp{flex:0 0 200px}
+.dfc.fville{flex:0 0 150px}
+.dfc.fsurf{flex:0 0 130px}
+.dfc.fstat{flex:0 0 136px}
+.dfc.fraz{flex:0 0 auto;align-items:flex-end;text-align:right}
+.dfcompte{font-size:12.5px;color:var(--ink-2);white-space:nowrap;padding-bottom:5px}
 .dfcompte b{color:var(--navy);font-size:15px}
-@media(max-width:900px){.dosszone{grid-template-columns:1fr}
-  .dfiltres{position:static}}
+.dfraz button{display:inline-flex;align-items:center;gap:6px}
+@media(max-width:860px){
+  /* au doigt, l'alignement n'a plus de sens : les filtres s'enroulent */
+  .dbarre{flex-wrap:wrap;gap:8px 10px;padding:10px;position:static}
+  .dbarre > .grow{display:none}
+  .dfc.fph,.dfc.ftyp,.dfc.fville,.dfc.fsurf,.dfc.fstat{flex:1 1 140px}
+  .dfc.fraz{flex:1 1 100%;align-items:stretch;text-align:left}}
 .drow2{display:flex;align-items:stretch;gap:14px;height:97px;
   border-bottom:1px solid var(--line-2);padding:0 14px 0 0;background:#fff}
 .drow2:last-child{border-bottom:0}
@@ -2504,7 +2557,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 25 octobre 2026, 13 h 45">Dossiers de vente</div>
+  <div class="brand" title="Version du 25 octobre 2026, 17 h 05">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2730,7 +2783,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>25 octobre 2026, 13 h 45</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>25 octobre 2026, 17 h 05</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3296,6 +3349,10 @@ const BOOKS = {
        être annoncée, et le portrait rond */
     ["qualite","Qualité annoncée","text","wide"],
     ["portrait","Portrait","portrait","wide"],
+    /* la signature de courriel : une image, celle que l'on colle au bas
+       de ses messages. Elle remplace les lignes écrites sous la formule
+       de politesse dans les modèles. */
+    ["signature","Signature de courriel","signature","plein"],
     ["manaranche","Appartient à l'agence Manaranche","check"],
     ["commission","Pourcentage de commission","pct"]]},
   diagnostiqueurs:{title:"Diagnostiqueurs", mode:"card", label:"Cabinet", cols:[
@@ -5353,6 +5410,21 @@ function controlBase(path,kind,v,grp,attr){
          <input type="file" accept="image/*" hidden data-bookportrait="${path}"></label>` +
       (v ? `<button type="button" class="xbtn sup" data-bookportraitdel="${path}"
               >Retirer</button>` : "") + `</div>`;
+  }
+  /* La signature de courriel. Rien à voir avec le portrait : elle est
+     large et basse, on ne la recadre pas en carré, et sa largeur fait
+     foi — c'est une image de signature, pas une photo d'identité. */
+  if(kind==="signature"){
+    return `<div class="signbox">` +
+      (v ? `<img src="${esc(v)}" alt="Signature" class="signvu">`
+         : `<span class="muted">Aucune signature. Chargez l'image que vous mettez au
+             bas de vos courriels : elle remplacera les lignes écrites sous la
+             formule de politesse dans vos modèles.</span>`) +
+      `<div class="signbtns">
+        <label class="tbtn light" style="cursor:pointer">${v ? "Changer" : "Choisir une image"}
+          <input type="file" accept="image/*" hidden data-booksign="${path}"></label>` +
+      (v ? `<button type="button" class="xbtn sup" data-booksigndel="${path}"
+              >Retirer</button>` : "") + `</div></div>`;
   }
   /* ------------------------------------------------- plusieurs réponses ----
      Un acquéreur cherche « une maison OU un appartement ». Tapé à la main,
@@ -8521,6 +8593,40 @@ function chargerPortrait(file, poser){
   };
   r.readAsDataURL(file);
 }
+/* La signature de courriel. On ne la recadre pas : une signature est une
+   image qu'on a composée, chaque pixel y est voulu. On la ramène
+   seulement à 640 px de large au plus — assez pour qu'elle reste nette
+   dans un message, assez peu pour qu'elle ne gonfle pas la base — et on
+   garde le PNG quand l'image en est un, parce qu'une signature a presque
+   toujours un fond transparent, qu'un JPEG noircirait. */
+function chargerSignature(file, poser){
+  const png = /png$/i.test(file.type || "") || /\.png$/i.test(file.name || "");
+  const r = new FileReader();
+  r.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const k = Math.min(1, 640 / (img.width || 1));
+      const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(img.width * k));
+      c.height = Math.max(1, Math.round(img.height * k));
+      const g = c.getContext("2d");
+      if(!png){ g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); }
+      g.drawImage(img, 0, 0, c.width, c.height);
+      try{
+        const url = png ? c.toDataURL("image/png") : c.toDataURL("image/jpeg", 0.9);
+        /* une signature de plus d'un demi-méga part dans la base et dans
+           chaque sauvegarde : on prévient plutôt que de la ranger en douce */
+        if(url.length > 700000){ toast("Signature trop lourde : réduisez l'image"); return; }
+        poser(url);
+        saveLists(); renderCarnets();
+        toast("Signature enregistrée");
+      }catch(e){ toast("Image trop lourde pour le navigateur"); }
+    };
+    img.onerror = ()=> toast("Image illisible");
+    img.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
 function chargerLogo(file){
   const r = new FileReader();
   r.onload = ()=>{
@@ -9993,7 +10099,9 @@ const MOTS_COURRIEL = [
   ["nego",      "le négociateur qui suit le bien"],
   ["negotel",   "son téléphone"],
   ["negomail",  "son courriel"],
-  ["agence",    "le nom de l'agence"]
+  ["agence",    "le nom de l'agence"],
+  ["signature", "la signature du négociateur — son image si sa fiche en porte une,"
+              + " sinon ses coordonnées en toutes lettres"]
 ];
 function idCourriel(){
   return "cr" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -10020,7 +10128,8 @@ function motsDuCourriel(d, pers, extra){
     nego:     nego.nom || o.negociateur || "",
     negotel:  nego.tel || "",
     negomail: nego.email || "",
-    agence:   (L.agence || {}).nom || ""
+    agence:   (L.agence || {}).nom || "",
+    signature: signatureTexte(nego)
   }, extra || {});
 }
 /* Le remplacement. Un mot inconnu reste écrit tel quel : mieux vaut un
@@ -10028,6 +10137,167 @@ function motsDuCourriel(d, pers, extra){
 function remplirCourriel(txt, mots){
   return String(txt == null ? "" : txt).replace(/\{\{(\w+)\}\}/g,
     (tout, mot)=> mots[mot] !== undefined ? mots[mot] : tout);
+}
+
+/* =====================================================================
+   LA SIGNATURE DU NÉGOCIATEUR
+   ---------------------------------------------------------------------
+   Chaque négociateur peut charger dans sa fiche l'IMAGE qu'il met au bas
+   de ses courriels. Elle vient alors remplacer, dans le message préparé,
+   les lignes écrites sous la formule de politesse — c'est-à-dire la
+   signature tapée à la main dans le modèle.
+
+   Deux façons de dire où elle va :
+     · le repère {{signature}}, placé dans le modèle, fait foi ;
+     · sans repère, on cherche la formule de politesse — « Cordialement »,
+       « Bien à vous », « Je vous prie d'agréer… » — et tout ce qui la suit
+       est remplacé.
+   Le repère l'emporte : on ne devine que faute de mieux.
+
+   SANS IMAGE dans la fiche, rien n'est remplacé : les lignes du modèle
+   partent telles qu'elles sont écrites. C'est le comportement d'avant, et
+   c'est ce qu'il faut — un négociateur qui n'a pas chargé d'image n'a pas
+   demandé qu'on réécrive ses messages.
+
+   POURQUOI UN COLLAGE, et non un courriel tout prêt : le standard qui
+   ouvre la messagerie (mailto) ne transporte que du texte. Une image ne
+   peut pas y entrer, et Outlook, de son côté, n'ajoute sa propre
+   signature qu'aux messages qu'il crée lui-même — jamais à ceux qu'on lui
+   amorce de l'extérieur. Le message est donc copié DEUX FOIS dans le
+   presse-papiers : en texte, et en texte enrichi avec l'image. Outlook
+   prend le second quand on colle dans le corps du message.
+   ===================================================================== */
+/* ce que valent les lignes d'une signature quand il n'y a pas d'image */
+function signatureTexte(nego){
+  const n = nego || {};
+  return [n.nom || "", n.qualite || "", n.tel || "", n.email || "",
+          (L.agence || {}).nom || ""].filter(x=> String(x).trim()).join("\n");
+}
+/* la signature d'un négociateur nommé : l'image, si sa fiche en porte une */
+function signatureImage(nom){
+  const n = book("negociateurs", nom || "");
+  return String((n || {}).signature || "");
+}
+/* les formules qui ferment un message. Reconnues au début d'une ligne,
+   accents et apostrophes mis à plat. */
+const FORMULES_POLITESSE = [
+  "cordialement", "bien cordialement", "tres cordialement",
+  "bien a vous", "bien sincerement", "sincerement", "chaleureusement",
+  "salutations", "sinceres salutations", "salutations distinguees",
+  "mes salutations", "avec mes salutations",
+  "veuillez agreer", "veuillez recevoir", "je vous prie d'agreer",
+  "je vous prie de recevoir", "je vous prie de croire",
+  "dans l'attente", "dans cette attente", "en vous remerciant",
+  "a bientot", "a tres bientot", "a tout a l'heure", "a votre disposition",
+  "amicalement", "respectueusement", "bien respectueusement",
+  "bonne reception", "bonne journee", "bonne soiree", "merci d'avance"
+];
+function aPlat(s){
+  return fold(s).replace(/[’‘`´]/g, "'").replace(/\s+/g, " ").trim();
+}
+/* Où couper, dans un texte DÉJÀ rempli. Rend {debut, fin} — les lignes à
+   remplacer par l'image —, ou null quand il n'y a rien à remplacer.
+
+   Deux lectures, dans cet ordre :
+     1. le BLOC exact que {{signature}} a posé dans le texte. C'est le cas
+        du repère : on sait au caractère près ce qu'on a écrit, et on le
+        reprend au même endroit, où qu'il soit dans le message.
+     2. à défaut, la formule de politesse, et tout ce qui la suit. C'est
+        le cas des modèles existants, où la signature est tapée à la main.
+*/
+function zoneSignature(lignes, bloc){
+  const b = String(bloc || "").split(/\r?\n/).filter(x=> x.trim());
+  if(b.length){
+    for(let i = 0; i + b.length <= lignes.length; i++){
+      let ok = true;
+      for(let k = 0; k < b.length; k++)
+        if(String(lignes[i + k]).trim() !== b[k].trim()){ ok = false; break; }
+      if(ok) return {debut:i, fin:i + b.length};
+    }
+  }
+  /* la DERNIÈRE formule rencontrée : « Je vous prie d'agréer, Madame, »
+     tient parfois sur deux lignes, et c'est la fin qui compte */
+  let trouve = -1;
+  lignes.forEach((l, i)=>{
+    const t = aPlat(l);
+    if(t && FORMULES_POLITESSE.some(f=> t.indexOf(f) === 0)) trouve = i;
+  });
+  if(trouve < 0) return null;
+  /* ce qui suit la formule, une fois ôtées les lignes vides de la fin */
+  let fin = lignes.length;
+  while(fin > trouve + 1 && !String(lignes[fin - 1]).trim()) fin--;
+  return fin > trouve + 1 ? {debut:trouve + 1, fin} : null;
+}
+function echapHtml(s){
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+/* Le message en texte enrichi, image comprise. Les styles sont écrits sur
+   chaque balise : une messagerie ne lit pas de feuille de style. */
+function courrielEnrichi(corps, img, bloc){
+  const lignes = String(corps == null ? "" : corps).split(/\r?\n/);
+  const z = img ? zoneSignature(lignes, bloc) : null;
+  const avant = z ? lignes.slice(0, z.debut) : lignes;
+  const apres = z ? lignes.slice(z.fin) : [];
+  const txt = l=> echapHtml(l).replace(/ {2}/g, " &nbsp;") || "&nbsp;";
+  const p = l=> `<div style="margin:0">${txt(l)}</div>`;
+  const image = z
+    ? `<div style="margin:8px 0"><img src="${echapHtml(img)}" alt=""
+        style="max-width:340px;height:auto;border:0;display:block"></div>`
+    : "";
+  return `<div style="font-family:Calibri,Segoe UI,Arial,sans-serif;font-size:11pt;`
+    + `color:#1f2937;line-height:1.45">${avant.map(p).join("")}${image}`
+    + `${apres.map(p).join("")}</div>`;
+}
+/* L'image a-t-elle de quoi se poser dans ce texte ? C'est ce qu'on
+   annonce avant l'envoi : promettre une signature qui ne viendra pas
+   serait pire que ne rien promettre. */
+function signaturePlacee(corps, img, bloc){
+  if(!img) return false;
+  return !!zoneSignature(String(corps == null ? "" : corps).split(/\r?\n/), bloc);
+}
+/* Copier les deux versions d'un coup. Rend « riche » quand l'image est
+   partie avec, « texte » sinon — l'appelant le dit à l'utilisateur,
+   parce que cela change ce qu'il verra en collant. */
+async function copierCourrielRiche(texte, html){
+  try{
+    if(html && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/html":  new Blob([html],  {type:"text/html"}),
+        "text/plain": new Blob([texte], {type:"text/plain"})
+      })]);
+      return "riche";
+    }
+  }catch(e){ /* refusé : on passe à la voie d'en dessous */ }
+  /* la voie ancienne : on écoute l'événement « copy » et on y glisse les
+     deux formats. Elle marche là où l'autre est interdite — un fichier
+     ouvert depuis le disque, par exemple. */
+  if(html){
+    let pose = false;
+    const sur = e=>{
+      try{
+        e.clipboardData.setData("text/html", html);
+        e.clipboardData.setData("text/plain", texte);
+        e.preventDefault(); pose = true;
+      }catch(err){}
+    };
+    document.addEventListener("copy", sur);
+    try{
+      const z = document.createElement("textarea");
+      z.value = texte; z.style.position = "fixed"; z.style.opacity = "0";
+      document.body.appendChild(z); z.select();
+      document.execCommand("copy");
+      z.remove();
+    }catch(e){}
+    document.removeEventListener("copy", sur);
+    if(pose) return "riche";
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText)
+      await navigator.clipboard.writeText(texte);
+    else throw new Error("pas de presse-papiers");
+    return "texte";
+  }catch(e){ return "rien"; }
 }
 function courrielsDisponibles(){
   return (L.courriels || []).filter(Boolean);
@@ -10533,7 +10803,8 @@ function majRechDossiers(q){
          s'écrivait « true » au milieu de la ligne, et un prix sans espace
          ni euro ne se lisait pas. */
       const det = (b.cols || []).map(([f, lab, kd])=>{
-        if(kd === "sep" || kd === "check" || kd === "portrait" || f === "nom") return "";
+        if(kd === "sep" || kd === "check" || kd === "portrait" || kd === "signature"
+           || f === "nom") return "";
         const v = r[f];
         if(v === undefined || v === null || v === "" || v === true || v === false)
           return "";
@@ -10675,22 +10946,21 @@ const IC_POUBELLE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden
    ouverture on revient au portefeuille du jour — les biens EN VENTE —,
    qui est ce qu'on vient voir neuf fois sur dix. Les vendus et les
    résiliés sont toujours là, à un choix de distance. */
-let DOSS_F = {type:"", ville:"", stade:"vente",
-              prixM:"", prixA:"", prixB:"", surfM:"", surfA:"", surfB:""};
+const DOSS_F_VIDE = {type:"", ville:"", stade:"vente",
+  prixMin:"", prixMax:"", surfMin:"", surfMax:""};
+let DOSS_F = Object.assign({}, DOSS_F_VIDE);
 const STADES_DOSSIER = [["vente","En vente"], ["offre","Sous offre"],
   ["compromis","Sous compromis"], ["vendu","Vendu"], ["resilie","Mandat résilié"]];
-/* les trois façons de borner un nombre, et rien de plus : au-delà, un
-   filtre coûte plus de réflexion qu'il n'en fait gagner */
-const BORNES_FILTRE = [["", "peu importe"], ["sup", "supérieur à"],
-  ["inf", "inférieur à"], ["entre", "entre… et…"]];
-function dansLaBorne(v, mode, a, b){
-  if(!mode) return true;
-  const n = num(v), x = num(a), y = num(b);
-  if(n === null) return false;          // non renseigné : il ne répond pas
-  if(mode === "sup")  return x === null || n >= x;
-  if(mode === "inf")  return y === null ? (x === null || n <= x) : n <= y;
-  if(mode === "entre") return (x === null || n >= x) && (y === null || n <= y);
-  return true;
+/* Deux bornes, et rien de plus. Il y avait avant un menu « supérieur à /
+   inférieur à / entre… et… » : trois clics pour dire ce que deux cases
+   « de » et « à » disent sans un mot, et un menu de plus à poser sur une
+   barre où la place est comptée. Une case vide ne borne rien. */
+function dansMinMax(v, a, b){
+  const x = num(a), y = num(b);
+  if(x === null && y === null) return true;
+  const n = num(v);
+  if(n === null) return false;          // non renseigné : il ne répond à aucune borne
+  return (x === null || n >= x) && (y === null || n <= y);
 }
 function villesDesDossiers(){
   const out = [];
@@ -10706,55 +10976,73 @@ function dossiersFiltres(){
     if(DOSS_F.stade && stade(d).cls !== DOSS_F.stade) return false;
     if(DOSS_F.type && fold(c.type) !== fold(DOSS_F.type)) return false;
     if(DOSS_F.ville && fold(b.ville || "") !== fold(DOSS_F.ville)) return false;
-    if(!dansLaBorne(c.fai, DOSS_F.prixM, DOSS_F.prixA, DOSS_F.prixB)) return false;
-    if(!dansLaBorne(c.surface, DOSS_F.surfM, DOSS_F.surfA, DOSS_F.surfB)) return false;
+    if(!dansMinMax(c.fai, DOSS_F.prixMin, DOSS_F.prixMax)) return false;
+    if(!dansMinMax(c.surface, DOSS_F.surfMin, DOSS_F.surfMax)) return false;
     return true;
   });
 }
-function grilleFiltres(n, total){
-  const borne = (cle, lib)=>{
-    const m = DOSS_F[cle + "M"];
-    return `<div class="dfg"><label>${esc(lib)}</label>
-      <select data-dfiltre="${cle}M">${BORNES_FILTRE.map(([v, l])=>
-        `<option value="${v}"${v === m ? " selected" : ""}>${esc(l)}</option>`)
-        .join("")}</select>
-      ${m ? `<div class="dfdeux">
-        <input type="text" inputmode="numeric" data-dfiltre="${cle}A"
-          value="${esc(DOSS_F[cle + "A"])}" placeholder="${m === "inf"
-            ? "au plus" : "au moins"}">
-        ${m === "entre" ? `<input type="text" inputmode="numeric"
-          data-dfiltre="${cle}B" value="${esc(DOSS_F[cle + "B"])}"
-          placeholder="au plus">` : ""}</div>` : ""}</div>`;
-  };
-  const rien = !DOSS_F.type && !DOSS_F.ville && !DOSS_F.prixM && !DOSS_F.surfM
-            && DOSS_F.stade === "vente";
-  return `<aside class="dfiltres">
-    <h3>Filtrer</h3>
-    <div class="dfg"><label for="dfType">Type de bien</label>
-      <select id="dfType" data-dfiltre="type"><option value="">tous</option>${
-        (L.typeBien || []).map(t=>
+/* le portefeuille du jour est-il montré tel quel ? */
+function dossFiltreVierge(){
+  return Object.keys(DOSS_F_VIDE).every(k=> DOSS_F[k] === DOSS_F_VIDE[k]);
+}
+/* --------------------------------------------------------------------- */
+/* LA BARRE DE FILTRES.
+
+   Elle est dessinée UNE FOIS, à l'ouverture de la page, et elle n'est
+   plus touchée ensuite : c'est la liste seule qui se redessine au fil de
+   la frappe. Cette séparation n'est pas un raffinement, c'est la
+   correction d'un défaut : redessiner un champ pendant qu'on y tape
+   détruit l'élément qui a le curseur, et le curseur part avec lui. On
+   rattrapait le coup en le remettant de force après coup, ce qui marchait
+   une fois sur deux et sautait d'une cellule à l'autre.
+
+   LA RÈGLE, pour toute barre de filtres à venir : ce qui porte la saisie
+   et ce qui porte le résultat sont deux rendus distincts, et la saisie ne
+   redessine jamais que le résultat. */
+function barreFiltres(){
+  const champ = (cle, ph)=> `<input type="text" inputmode="numeric"
+    data-dfiltre="${cle}" value="${esc(DOSS_F[cle])}" placeholder="${esc(ph)}"
+    class="${DOSS_F[cle] ? "actif" : ""}" aria-label="${esc(ph)}">`;
+  return `<div class="dbarre">
+    <div class="dfc fph"><label for="dfType">Type de bien</label>
+      <select id="dfType" data-dfiltre="type" class="${DOSS_F.type ? "actif" : ""}"
+        ><option value="">tous</option>${(L.typeBien || []).map(t=>
           `<option${fold(t) === fold(DOSS_F.type) ? " selected" : ""}>${esc(t)}</option>`)
         .join("")}</select></div>
-    ${borne("prix", "Prix")}
-    <div class="dfg"><label for="dfVille">Commune</label>
-      <select id="dfVille" data-dfiltre="ville"><option value="">toutes</option>${
-        villesDesDossiers().map(v=>
+    <div class="dfc ftyp"><label>Prix (€)</label>
+      <div class="dfdeux">${champ("prixMin", "de")}${champ("prixMax", "à")}</div></div>
+    <div class="dfc fville"><label for="dfVille">Commune</label>
+      <select id="dfVille" data-dfiltre="ville" class="${DOSS_F.ville ? "actif" : ""}"
+        ><option value="">toutes</option>${villesDesDossiers().map(v=>
           `<option${fold(v) === fold(DOSS_F.ville) ? " selected" : ""}>${esc(v)}</option>`)
         .join("")}</select></div>
-    ${borne("surf", "Surface (m²)")}
-    <div class="dfg"><label for="dfStade">Statut</label>
-      <select id="dfStade" data-dfiltre="stade"><option value="">tous</option>${
-        STADES_DOSSIER.map(([v, l])=>
+    <div class="dfc fsurf"><label>Surface (m²)</label>
+      <div class="dfdeux">${champ("surfMin", "de")}${champ("surfMax", "à")}</div></div>
+    <span class="grow"></span>
+    <div class="dfc fstat"><label for="dfStade">Statut</label>
+      <select id="dfStade" data-dfiltre="stade"
+        class="${DOSS_F.stade === DOSS_F_VIDE.stade ? "" : "actif"}"
+        ><option value="">tous</option>${STADES_DOSSIER.map(([v, l])=>
           `<option value="${v}"${v === DOSS_F.stade ? " selected" : ""}>${esc(l)}</option>`)
         .join("")}</select></div>
-    <p class="dfcompte"><b>${n}</b> dossier${n > 1 ? "s" : ""} sur ${total}</p>
-    ${rien ? `<p class="muted" style="margin:0;font-size:12px">Par défaut, seuls les
-      biens <b>en vente</b> sont montrés.</p>`
-      : `<button type="button" class="tbtn light mini" data-dfraz="1"
-          >Revenir au portefeuille</button>`}
-  </aside>`;
+    <div class="dfc fraz dfraz">
+      <p class="dfcompte" id="dossCompte"></p>
+      <button type="button" class="tbtn light mini" data-dfraz="1" id="dossRaz"
+        data-bulle="Revenir au portefeuille du jour : les biens en vente,&#10;sans aucun autre filtre"
+        >Tout voir</button></div>
+  </div>`;
 }
+/* La page entière : la barre, puis la liste. Appelée à l'ouverture de la
+   page et chaque fois que la barre elle-même doit changer — « Tout voir »,
+   un dossier créé ou supprimé. JAMAIS pendant une frappe. */
 function renderDossiers(){
+  $("#dossierList").innerHTML = `<div class="dosszone">
+    <div class="card dosscard">${barreFiltres()}
+      <div id="dossListe"></div></div></div>`;
+  renderDossiersListe();
+}
+/* La liste seule. C'est elle, et elle seule, que la frappe redessine. */
+function renderDossiersListe(){
   /* du moins cher au plus cher : c'est ainsi qu'on compare deux biens, et
      qu'on répond à « qu'ai-je autour de 200 000 € ? ». Un bien sans prix
      n'est pas gratuit — il passe à la fin. */
@@ -10822,13 +11110,19 @@ function renderDossiers(){
       </div>
     </div>`;
   };
-  $("#dossierList").innerHTML = `<div class="dosszone">
-    ${grilleFiltres(items.length, tous.length)}
-    <div class="card">${items.length
-      ? `<div class="dlist">${items.map(ligne).join("")}</div>`
-      : `<div class="body muted">${tous.length
-          ? "Aucun dossier ne répond à ces filtres."
-          : "Aucun dossier enregistré."}</div>`}</div></div>`;
+  const z = $("#dossListe");
+  if(!z) return;                       /* la page n'est pas dessinée : rien à faire */
+  z.innerHTML = items.length
+    ? `<div class="dlist">${items.map(ligne).join("")}</div>`
+    : `<div class="body muted">${tous.length
+        ? "Aucun bien ne répond à ces filtres."
+        : "Aucun dossier enregistré."}</div>`;
+  /* le compte et le bouton de remise à zéro vivent DANS la barre, qu'on ne
+     redessine pas : on ne touche donc qu'à leur contenu */
+  const cpt = $("#dossCompte");
+  if(cpt) cpt.innerHTML = `<b>${items.length}</b> / ${tous.length}`;
+  const raz = $("#dossRaz");
+  if(raz) raz.hidden = dossFiltreVierge();
   /* les vignettes se peignent après coup : lire un fichier prend un instant,
      et la liste ne doit pas attendre */
   setTimeout(()=> photos.forEach(p=> peindreVignette(p)), 30);
@@ -13232,6 +13526,29 @@ function dossierDuBien(id){
   return all[id] ? migrate(JSON.parse(JSON.stringify(all[id]))) : null;
 }
 /* ---------------------------------------------------- PROPOSER UN BIEN */
+/* --------------------------------------------- la pièce jointe, ou non
+   Composer la fiche descriptive d'un bien prend quelques secondes et
+   donne un PDF de plusieurs pages. C'est ce qu'on veut neuf fois sur dix,
+   et une perte de temps la dixième — pour un bien qu'on vient d'envoyer à
+   la même personne, pour une simple relance. La case s'en souvient d'une
+   fois sur l'autre : l'application s'aligne sur l'habitude sans jamais
+   l'imposer. Le choix est propre à CET appareil — c'est une habitude de
+   travail, pas une donnée de dossier : il n'a rien à faire dans la base
+   partagée. */
+const LS_PJ = "mi_pieces_jointes_v1";
+function veutPJ(quoi){
+  try{
+    const o = JSON.parse(localStorage.getItem(LS_PJ) || "{}");
+    return o[quoi] === undefined ? true : !!o[quoi];
+  }catch(e){ return true; }
+}
+function poserPJ(quoi, v){
+  try{
+    const o = JSON.parse(localStorage.getItem(LS_PJ) || "{}");
+    o[quoi] = !!v;
+    localStorage.setItem(LS_PJ, JSON.stringify(o));
+  }catch(e){}
+}
 function ouvrirProposition(i, id){
   const r = (L.prospects || [])[+i];
   const d = dossierDuBien(id);
@@ -13270,17 +13587,69 @@ function ouvrirProposition(i, id){
       <div class="pf"><label for="propoCorps">Message</label>
         <textarea id="propoCorps" rows="12">${esc(remplirCourriel(m0.corps, mots))}</textarea>
       </div>
-      <p class="muted" style="margin:8px 0 0">La <b>fiche du bien</b> est téléchargée en
-        PDF au moment de l'envoi : glissez-la dans le message. Le texte est aussi copié
-        dans le presse-papiers, au cas où votre messagerie raccourcirait l'objet ou le
-        corps.</p>
+      <div id="propoSign"></div>
+      <label class="chkline pjligne"><input type="checkbox" id="propoPJ"${
+          veutPJ("fiche") ? " checked" : ""}>
+        <span>Préparer la <b>fiche descriptive</b> du bien en PDF</span></label>
+      <p class="muted pjmot" id="propoPJmot"></p>
     </div>`,
     boutons:[{lib:"Annuler"}, {lib:"Préparer le message", primaire:true, action:()=>{
       const qui = $("#propoQui");
       const dest = avec.length ? avec[+(qui ? qui.value : 0)] : null;
+      const pj = !!($("#propoPJ") || {}).checked;
+      poserPJ("fiche", pj);
       envoyerProposition(+i, d, dest, ($("#propoObjet") || {}).value || "",
-                         ($("#propoCorps") || {}).value || "");
+                         ($("#propoCorps") || {}).value || "", pj, mots.signature);
     }}]});
+  /* ce que la case promet, dit en clair et tout de suite : composer la
+     fiche prend quelques secondes, et savoir qu'on les attend change tout */
+  const motPJ = ()=>{
+    const z = $("#propoPJmot"), c = $("#propoPJ");
+    if(!z || !c) return;
+    z.innerHTML = c.checked
+      ? `La fiche est composée puis <b>téléchargée</b> au moment de l'envoi — quelques
+         secondes — et il reste à la glisser dans le message : le standard qui ouvre
+         votre messagerie ne sait pas attacher un fichier lui-même.`
+      : `Aucune fiche ne sera composée. Le message part seul, et l'envoi est immédiat.`;
+  };
+  const cPJ = $("#propoPJ");
+  if(cPJ) cPJ.onchange = motPJ;
+  motPJ();
+  /* La signature : on montre l'image et on dit combien de lignes elle va
+     remplacer, AVANT l'envoi. Une promesse qu'on ne peut pas vérifier
+     après coup — le message est parti dans Outlook — doit se vérifier
+     avant. Le texte étant modifiable, le compte se refait à chaque
+     frappe. */
+  const imgSign = signatureImage((donneesPubli(d) || {}).negociateur);
+  const motSign = ()=>{
+    const z = $("#propoSign");
+    if(!z) return;
+    if(!imgSign){
+      z.innerHTML = `<p class="muted signmot">La fiche de
+        <b>${esc(mots.nego || "ce négociateur")}</b> ne porte pas d'image de signature :
+        le message part avec les lignes écrites ci-dessus, telles quelles.
+        Pour en charger une : onglet <b>Listes</b>, carte « Négociateurs ».</p>`;
+      return;
+    }
+    const corps = ($("#propoCorps") || {}).value || "";
+    const lignes = corps.split(/\r?\n/);
+    const zone = zoneSignature(lignes, mots.signature);
+    z.innerHTML = `<div class="signavant">
+      <img src="${esc(imgSign)}" alt="Signature">
+      <p class="muted">${zone
+        ? `La signature de <b>${esc(mots.nego)}</b> remplacera les
+           <b>${zone.fin - zone.debut} ligne${zone.fin - zone.debut > 1 ? "s" : ""}</b>
+           sous « ${esc(String(lignes[zone.debut - 1] || "").trim()
+             || "la formule de politesse")} ». Outlook s'ouvrira sur l'objet seul :
+           collez le message dans le corps (<kbd>Ctrl</kbd> + <kbd>V</kbd>) et la
+           signature viendra avec.`
+        : `Aucune formule de politesse repérée : la signature ne sera pas placée.
+           Terminez le message par « Cordialement, » — ou posez le repère
+           <code>{{signature}}</code> dans le modèle.`}</p></div>`;
+  };
+  const zCorps = $("#propoCorps");
+  if(zCorps) zCorps.addEventListener("input", motSign);
+  motSign();
   /* changer de modèle réécrit l'objet et le corps — mais pas ce qu'on vient
      d'y modifier à la main sans prévenir : on le demande. */
   const sel = $("#propoMod");
@@ -13288,6 +13657,7 @@ function ouvrirProposition(i, id){
     const m = modeles[+sel.value] || {};
     $("#propoObjet").value = remplirCourriel(m.objet, mots);
     $("#propoCorps").value = remplirCourriel(m.corps, mots);
+    motSign();
   };
   const quiSel = $("#propoQui");
   if(quiSel) quiSel.onchange = ()=>{
@@ -13297,29 +13667,47 @@ function ouvrirProposition(i, id){
     const m2 = motsDuCourriel(d, x.p);
     $("#propoObjet").value = remplirCourriel(m.objet, m2);
     $("#propoCorps").value = remplirCourriel(m.corps, m2);
+    motSign();
   };
 }
-async function envoyerProposition(i, d, dest, objet, corps){
+async function envoyerProposition(i, d, dest, objet, corps, avecFiche, blocSign){
   const r = (L.prospects || [])[i];
-  toast("Composition de la fiche…");
+  /* LE PRESSE-PAPIERS D'ABORD. Le navigateur n'accorde le presse-papiers
+     qu'à chaud, dans la foulée du clic ; composer un PDF de deux mégas
+     avant de le demander, c'est se le voir refuser. On copie, puis on
+     compose. */
+  const img = signatureImage((donneesPubli(d) || {}).negociateur);
+  const riche = courrielEnrichi(corps, img, blocSign);
+  const copie = await copierCourrielRiche(corps, img ? riche : "");
   let fichier = "";
-  try{
-    const blob = await ficheBienPdf(d);
-    fichier = nomFichierFiche(d);
-    download(blob, fichier);
-  }catch(e){
-    toast("La fiche n'a pas pu être composée : " + e.message);
+  if(avecFiche !== false){
+    toast("Composition de la fiche…");
+    try{
+      const blob = await ficheBienPdf(d);
+      fichier = nomFichierFiche(d);
+      download(blob, fichier);
+    }catch(e){
+      toast("La fiche n'a pas pu être composée : " + e.message);
+    }
   }
-  copierAvis(corps, "Le message");
-  const url = "mailto:" + encodeURIComponent((dest || {}).email || "")
-    + "?subject=" + encodeURIComponent(objet)
-    + "&body=" + encodeURIComponent(corps);
+  toast(copie === "riche"
+    ? (signaturePlacee(corps, img, blocSign)
+        ? "Message copié avec la signature — collez-le dans Outlook"
+        : "Message copié — collez-le dans Outlook")
+    : copie === "texte" ? "Message copié (texte seul)"
+    : "Copie impossible — le message est dans la fenêtre de votre messagerie");
+  /* LE CORPS : dans le message, ou dans le presse-papiers, jamais les
+     deux. Quand la signature est partie en texte enrichi, c'est le
+     collage qui fait le message entier — l'écrire AUSSI dans mailto
+     donnerait deux fois le même texte, l'un sous l'autre. Sans signature
+     à coller, on garde l'ancienne voie : le corps est écrit d'avance et
+     il n'y a rien à faire. */
+  const tete = "mailto:" + encodeURIComponent((dest || {}).email || "")
+    + "?subject=" + encodeURIComponent(objet);
+  const url = tete + "&body=" + encodeURIComponent(corps);
   /* une adresse mailto trop longue est refusée en silence par Windows : on
      n'envoie alors que l'objet, le corps restant dans le presse-papiers */
-  ouvrirMailto(url.length > 1800
-    ? "mailto:" + encodeURIComponent((dest || {}).email || "")
-      + "?subject=" + encodeURIComponent(objet)
-    : url);
+  ouvrirMailto(copie === "riche" || url.length > 1800 ? tete : url);
   noterProposition(r, d.id);
   noterJournal(r, "Bien proposé", nomCourtBien(d.id)
     + ((dest || {}).email ? " — à " + dest.email : "")
@@ -13515,7 +13903,8 @@ function brouillonRdv(){
   const v = id=> String((document.getElementById(id) || {}).value || "");
   return {titre:v("rdvTitre"), lieu:v("rdvLieu"), adresse:v("rdvAdresse"),
           date:v("rdvDate"), heure:v("rdvHeure") || "10", min:v("rdvMin") || "00",
-          duree:v("rdvDuree") || String(DUREE_VISITE), gens: RDV.gens.slice()};
+          duree:v("rdvDuree") || String(DUREE_VISITE), gens: RDV.gens.slice(),
+          fiche: !!(document.getElementById("rdvPJ") || {}).checked};
 }
 function ouvrirContactDeVisite(){
   const b = brouillonRdv(), i = RDV.i, bien = RDV.bien;
@@ -13600,22 +13989,40 @@ function ouvrirVisite(i, id, repris){
         </div>
         <div id="rdvTrouves" class="rdvtrouves"></div>
       </div>
-      <p class="muted plein" style="margin:4px 0 0">La <b>fiche du bien</b> en PDF est
-        jointe au rendez-vous, et les coordonnées de chacun sont écrites dedans, avec
-        sa qualité. Les <b>invités</b> reçoivent l'invitation de Google ; la dernière
-        colonne envoie en plus une <b>confirmation</b> de votre part, par courriel ou
-        par WhatsApp.</p>
+      <label class="chkline pjligne plein"><input type="checkbox" id="rdvPJ"${
+          (b.fiche === undefined ? veutPJ("visite") : b.fiche) ? " checked" : ""}>
+        <span>Joindre la <b>fiche descriptive</b> du bien au rendez-vous</span></label>
+      <p class="muted pjmot plein" id="rdvPJmot"></p>
+      <p class="muted plein" style="margin:4px 0 0">Les coordonnées de chacun sont
+        écrites dans le rendez-vous, avec sa qualité. Les <b>invités</b> reçoivent
+        l'invitation de Google ; la dernière colonne envoie en plus une
+        <b>confirmation</b> de votre part, par courriel ou par WhatsApp.</p>
     </div>`,
     boutons:[{lib:"Annuler"}, {lib:"Créer le rendez-vous", primaire:true, action:()=>{
+      const pj = !!($("#rdvPJ") || {}).checked;
+      poserPJ("visite", pj);
       creerVisite(r ? +i : -1, d, {
         titre:   ($("#rdvTitre") || {}).value || "",
         lieu:    ($("#rdvLieu") || {}).value || "",
         adresse: ($("#rdvAdresse") || {}).value || "",
         date:    ($("#rdvDate") || {}).value || "",
         heure:   heureChoisie(),
-        duree:   ($("#rdvDuree") || {}).value || DUREE_VISITE
+        duree:   ($("#rdvDuree") || {}).value || DUREE_VISITE,
+        fiche:   pj
       }, RDV.gens.slice());
     }}]});
+  const motRdvPJ = ()=>{
+    const z = $("#rdvPJmot"), c = $("#rdvPJ");
+    if(!z || !c) return;
+    z.innerHTML = c.checked
+      ? `Elle est composée et attachée au rendez-vous : chacun la retrouve dans
+         l'invitation. Compter quelques secondes de plus à la création.`
+      : `Le rendez-vous se crée sans fiche — plus rapide, et tout aussi complet
+         pour une seconde visite.`;
+  };
+  const cRdvPJ = $("#rdvPJ");
+  if(cRdvPJ) cRdvPJ.onchange = motRdvPJ;
+  motRdvPJ();
   dessinerParticipants();
   /* le lieu commande l'adresse : « Sur place » et « À l'agence » la
      remplissent, « Autre » la laisse à saisir */
@@ -13675,11 +14082,13 @@ async function creerVisite(i, d, f, gens){
   const invites = gens.filter(x=> x.invite && x.email).map(x=> x.email);
 
   let piece = null;
-  try{
-    const blob = await ficheBienPdf(d);
-    piece = {nom: nomFichierFiche(d), type:"application/pdf",
-             data: await blobEnB64(blob)};
-  }catch(e){ /* un rendez-vous sans fiche vaut mieux que pas de rendez-vous */ }
+  if(f.fiche !== false){
+    try{
+      const blob = await ficheBienPdf(d);
+      piece = {nom: nomFichierFiche(d), type:"application/pdf",
+               data: await blobEnB64(blob)};
+    }catch(e){ /* un rendez-vous sans fiche vaut mieux que pas de rendez-vous */ }
+  }
 
   const fiche = {id: idRdv(), dossier: d.id, recherche: (r || {}).id || "",
     titre, lieu: f.adresse, debut: b.debut.toISOString(), fin: b.fin.toISOString(),
@@ -14013,9 +14422,20 @@ function confirmationsRdv(x, genre, apres){
     const corps = annule
       ? texteAnnulation(mots)
       : remplirCourriel((mod || {}).corps || texteConfirmation(mots), mots);
-    ouvrirMailto("mailto:" + encodeURIComponent(mails.map(g=> g.email).join(","))
-      + "?subject=" + encodeURIComponent(objet)
-      + "&body=" + encodeURIComponent(corps));
+    /* la signature du négociateur qui suit CE bien, comme pour une
+       proposition : le message est copié en texte enrichi, et la fenêtre
+       de messagerie s'ouvre alors sur l'objet seul — sans quoi le texte
+       s'y trouverait deux fois, celui d'avance et celui qu'on colle */
+    const dd = dossierDuBien(x.dossier);
+    const img = dd ? signatureImage((donneesPubli(dd) || {}).negociateur) : "";
+    const tete = "mailto:" + encodeURIComponent(mails.map(g=> g.email).join(","))
+      + "?subject=" + encodeURIComponent(objet);
+    copierCourrielRiche(corps, img ? courrielEnrichi(corps, img, mots.signature) : "")
+      .then(copie=>{
+        ouvrirMailto(copie === "riche" ? tete
+          : tete + "&body=" + encodeURIComponent(corps));
+        if(copie === "riche") toast("Message copié avec la signature — collez-le");
+      });
   }
   /* WhatsApp : la VARIANTE est demandée une fois pour tous les
      destinataires — on ne va pas poser trois fois la même question —, mais
@@ -19534,17 +19954,15 @@ document.addEventListener("input", e=>{
      le reste : un champ qui se vide doit perdre sa couleur même si la suite
      du traitement s'arrête en chemin */
   if(t.closest && t.closest("#prospBody")) marquerRempli(t);
-  /* les filtres de « Mes dossiers » : au fil de la frappe, et sans perdre
-     le curseur — la grille se redessine autour du champ qu'on remplit */
+  /* Les filtres de « Mes dossiers » : la liste se resserre à chaque
+     lettre, et le champ où l'on tape n'est PAS redessiné — c'est tout
+     l'objet de la séparation barre / liste. Plus de curseur rattrapé de
+     force, plus de saut d'une cellule à l'autre. */
   if(t.dataset && t.dataset.dfiltre !== undefined){
+    if(!t.isConnected) return;         /* voir « le champ détaché », plus bas */
     DOSS_F[t.dataset.dfiltre] = t.value;
-    const cle = t.dataset.dfiltre, pos = t.selectionStart;
-    renderDossiers();
-    const z = document.querySelector(`[data-dfiltre="${cle}"]`);
-    if(z && z.tagName === "INPUT"){
-      z.focus();
-      try{ z.setSelectionRange(pos, pos); }catch(e){}
-    }
+    t.classList.toggle("actif", !!t.value);
+    renderDossiersListe();
     return;
   }
   /* la recherche d'un participant au répertoire, au fil de la frappe */
@@ -19602,7 +20020,9 @@ document.addEventListener("input", e=>{
     if(/^notaire\.(vendeur|acquereur)$/.test(t.dataset.b)) renderNotaires();
     if(/^notaire\.(vendeur|acquereur)Contact$/.test(t.dataset.b)) reprendreClerc(t.dataset.b);
     if(t.dataset.b === "fin.condSusp"){ majPret(); renderGeneral(); }
-    if(t.dataset.b === "mandat.num")        renderDossiers();
+    /* la liste seule : la barre de filtres n'a rien à voir avec le numéro
+       de mandat, et on ne redessine pas une barre pendant une frappe */
+    if(t.dataset.b === "mandat.num")        renderDossiersListe();
     if(/^bien\.(residence|adresse|adresse2|ville)$/.test(t.dataset.b)) majMenuDossier();
     if(t.dataset.b.startsWith("mandat."))   majObligatoires();
     if(t.dataset.b === "bien.residence"){ appliquerResidence(); renderGeneral(); }
@@ -20088,6 +20508,15 @@ document.addEventListener("change", e=>{
       chargerPortrait(file, url=>{ L[k][+i][f] = url; });
     return;
   }
+  /* la signature de courriel d'un négociateur */
+  if(t.dataset && t.dataset.booksign){
+    const [k, i, f] = t.dataset.booksign.split(":");
+    const file = t.files && t.files[0];
+    t.value = "";
+    if(file && L[k] && L[k][+i])
+      chargerSignature(file, url=>{ L[k][+i][f] = url; });
+    return;
+  }
   if(t.dataset && t.dataset.dpesel !== undefined){
     const [i,champ] = t.dataset.dpesel.split(":");
     const d = D.diags[+i];
@@ -20126,14 +20555,24 @@ document.addEventListener("change", e=>{
     }
     return;
   }
+  /* les menus de la barre de filtres. Comme les champs : seule la liste se
+     redessine, pour que le menu garde son ouverture et son focus.
+
+     LE CHAMP DÉTACHÉ. Un champ qu'on retire du document alors qu'il a le
+     curseur lance un dernier « change » en partant — avec la valeur qu'il
+     portait. C'est ainsi qu'après « Tout voir », la borne de prix qu'on
+     venait de vider se réinscrivait toute seule : les filtres étaient
+     remis à zéro, puis la barre redessinée, et le champ mourant renvoyait
+     sa vieille valeur dans l'état propre. Un élément qui n'est plus dans
+     la page n'a plus voix au chapitre : on l'écoute, on ne l'enregistre
+     pas. À retenir pour toute barre qui se redessine. */
   if(t.dataset && t.dataset.dfiltre !== undefined){
+    if(!t.isConnected) return;
     DOSS_F[t.dataset.dfiltre] = t.value;
-    /* changer de mode de borne efface ce qui n'a plus de sens */
-    if(/M$/.test(t.dataset.dfiltre) && !t.value){
-      const r = t.dataset.dfiltre.slice(0, -1);
-      DOSS_F[r + "A"] = ""; DOSS_F[r + "B"] = "";
-    }
-    renderDossiers();
+    const parDefaut = t.dataset.dfiltre === "stade"
+      ? t.value === DOSS_F_VIDE.stade : !t.value;
+    t.classList.toggle("actif", !parDefaut);
+    renderDossiersListe();
     return;
   }
   /* la qualité, l'invitation et la confirmation d'un participant */
@@ -20257,7 +20696,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -20531,8 +20970,17 @@ document.addEventListener("click", e=>{
   }
   /* le propriétaire d'un bien, depuis la liste des dossiers */
   if(t.dataset.dfraz !== undefined){
-    DOSS_F = {type:"", ville:"", stade:"vente",
-              prixM:"", prixA:"", prixB:"", surfM:"", surfA:"", surfB:""};
+    /* On laisse d'abord le champ qui a le curseur rendre son dernier
+       souffle. Un champ qui perd le focus lance un « change » avec la
+       valeur qu'il portait ; si on remet les filtres à zéro AVANT, ce
+       dernier souffle vient réinscrire la vieille valeur dans l'état tout
+       propre — et « Tout voir » ne voyait pas tout. On le fait partir,
+       puis on nettoie. L'ordre compte. */
+    const a = document.activeElement;
+    if(a && a.dataset && a.dataset.dfiltre !== undefined) a.blur();
+    DOSS_F = Object.assign({}, DOSS_F_VIDE);
+    /* un clic, pas une frappe : la barre peut se redessiner, et elle le
+       doit — ce sont ses propres champs qu'on vient de vider */
     renderDossiers(); return;
   }
   if(t.dataset.oproprio !== undefined){
@@ -20807,6 +21255,10 @@ document.addEventListener("click", e=>{
     saveLists(); renderCarnets(); refreshAllVilles(); rebuildSelects(); return; }
   if(t.dataset.bookportraitdel){
     const [k,i,f] = t.dataset.bookportraitdel.split(":");
+    if(L[k] && L[k][+i]){ L[k][+i][f] = ""; saveLists(); renderCarnets(); }
+    return; }
+  if(t.dataset.booksigndel){
+    const [k,i,f] = t.dataset.booksigndel.split(":");
     if(L[k] && L[k][+i]){ L[k][+i][f] = ""; saveLists(); renderCarnets(); }
     return; }
   if(t.dataset.bookdel){ const [k,i]=t.dataset.bookdel.split(":");
@@ -26915,13 +27367,27 @@ const AIDE = [
   "<b>Les dossiers sont rangés du moins cher au plus cher</b> : c'est ainsi qu'on compare "+
   "deux biens, et qu'on répond à « qu'ai-je autour de 200 000 € ? ». Un bien dont le prix "+
   "n'est pas saisi passe à la fin — il n'est pas gratuit. "+
-  "<b>La grille de filtres</b>, à gauche, croise cinq critères : le <b>type de bien</b>, "+
-  "le <b>prix</b> (supérieur à, inférieur à, ou entre deux bornes), la <b>commune</b> — "+
-  "seules celles où vous avez des biens sont proposées —, la <b>surface</b> (de la même "+
-  "façon que le prix) et le <b>statut</b>. Le compte des dossiers retenus se lit sous la "+
-  "grille, et un bouton rend le portefeuille du jour. Un bien dont le prix ou la surface "+
-  "n'est pas renseigné ne répond pas à un filtre qui porte dessus : il ne peut pas "+
-  "prétendre être « en dessous de 200 000 € ». "+
+  "<b>La barre de filtres</b> est <b>en tête de la liste</b>, et chaque filtre est posé "+
+  "<b>sur la colonne qu'il filtre</b> : le type au-dessus de la photo, le prix au-dessus "+
+  "du prix, la commune au-dessus de la commune, la surface au-dessus de la surface, le "+
+  "statut au-dessus de la pastille de statut. Elle se lit comme l'en-tête du tableau, "+
+  "parce qu'elle en est un. "+
+  "<b>Elle reste visible</b> quand vous déroulez : elle se fige sous les onglets, et les "+
+  "biens passent dessous. Cent biens plus bas, vous savez encore ce qui les a "+
+  "sélectionnés. "+
+  "<b>Le prix et la surface se bornent par deux cases</b>, <b>de</b> et <b>à</b>. Une seule "+
+  "remplie suffit : « de 200 000 » donne tout ce qui vaut au moins cela, « à 200 000 » "+
+  "tout ce qui vaut au plus. Il y avait avant un menu « supérieur à / inférieur à / entre… "+
+  "et… » : trois clics pour dire ce que deux cases disent sans un mot. "+
+  "<b>La liste se resserre à chaque lettre</b>, et le curseur ne quitte pas la case. "+
+  "C'était un défaut : la liste entière était redessinée à chaque frappe, barre comprise, "+
+  "et le champ où l'on tapait disparaît avec le curseur dedans. Désormais la barre est "+
+  "dessinée une fois et n'est plus touchée : seule la liste se refait. "+
+  "<b>Un filtre en service se colore</b>, et le compte — <b>retenus / total</b> — se lit "+
+  "au bout de la barre, avec le bouton <b>Tout voir</b> qui rend le portefeuille du jour. "+
+  "Seules les communes où vous avez des biens sont proposées. Un bien dont le prix ou la "+
+  "surface n'est pas renseigné ne répond pas à un filtre qui porte dessus : il ne peut "+
+  "pas prétendre être « en dessous de 200 000 € ». "+
   "<b>Cinq colonnes.</b> "+
   "<b>1.</b> La <b>première photo</b> du bien — celle marquée comme principale, à défaut "+
   "la première des pièces jointes. "+
@@ -26967,7 +27433,46 @@ const AIDE = [
   "publication. Chaque négociateur a donc sa propre carte, et le clip d'un dossier prend "+
   "celle du négociateur qui suit le vendeur. "+
   "La photo est recadrée en carré à l'import ; une photo de buste, cadrée assez large pour "+
-  "que le rond ne coupe pas le menton, donne le meilleur résultat."],
+  "que le rond ne coupe pas le menton, donne le meilleur résultat. "+
+  "La fiche porte enfin la <b>signature de courriel</b> : voyez le chapitre suivant."],
+ ["La signature de courriel, et pourquoi il faut coller",
+  "<b>Chaque négociateur peut charger dans sa fiche l'image de sa signature</b> — celle "+
+  "qu'il met au bas de ses messages. Carnet « Négociateurs », au <b>Répertoire</b>, champ "+
+  "<b>Signature de courriel</b>. L'image n'est pas recadrée : elle est seulement ramenée à "+
+  "640 pixels de large au plus, et un PNG reste un PNG — une signature a presque toujours "+
+  "un fond transparent, qu'un JPEG noircirait. "+
+  "<b>Où elle se met.</b> Dans un message préparé par l'application, elle vient <b>remplacer "+
+  "les lignes écrites sous la formule de politesse</b> — « Cordialement », « Bien à "+
+  "vous », « Je vous prie d'agréer… » et les autres. Si votre modèle contient le repère "+
+  "<code>{{signature}}</code>, c'est là exactement qu'elle se pose, où que ce soit dans le "+
+  "message. La fenêtre <b>vous le dit avant l'envoi</b> : elle montre l'image et annonce "+
+  "combien de lignes elle remplacera, et sous quelle formule. "+
+  "<b>Sans image dans la fiche, rien ne change</b> : le message part avec les lignes "+
+  "écrites dans le modèle, telles quelles. "+
+  "<b>Pourquoi il faut coller.</b> Le standard qui ouvre votre messagerie — <i>mailto</i> "+
+  "— ne transporte que du texte : une image ne peut pas y entrer. Et Outlook, de son "+
+  "côté, n'ajoute <b>sa</b> signature automatique qu'aux messages qu'il crée lui-même, "+
+  "jamais à ceux qu'on lui amorce de l'extérieur — c'est pourquoi la vôtre ne sortait "+
+  "pas. L'application contourne les deux de la même façon : elle <b>copie le message en "+
+  "texte enrichi</b>, image comprise, et n'ouvre la messagerie que sur l'<b>objet</b> et "+
+  "le <b>destinataire</b>. Il reste un <kbd>Ctrl</kbd> + <kbd>V</kbd> dans le corps du "+
+  "message, et tout est là. Le texte seul est copié en même temps : une messagerie qui "+
+  "refuserait le format enrichi collera le texte brut, sans l'image, plutôt que rien. "+
+  "<b>L'intérêt, au fond</b>, est moins pour vos propres messages — vous pouvez toujours "+
+  "laisser Outlook signer — que pour ceux préparés sur un bien suivi par un <b>autre "+
+  "négociateur</b> : c'est <b>sa</b> signature qui part, pas la vôtre."],
+ ["La pièce jointe : à préparer, ou non",
+  "Composer la fiche descriptive d'un bien prend quelques secondes et donne un PDF de "+
+  "plusieurs pages. C'est ce qu'on veut neuf fois sur dix — et une perte de temps la "+
+  "dixième : une relance, un bien déjà envoyé à la même personne, une seconde visite. "+
+  "<b>Une case le demande désormais</b>, à deux endroits : dans <b>Proposer ce bien</b> "+
+  "(« Préparer la fiche descriptive du bien en PDF ») et dans <b>Organiser une "+
+  "visite</b> (« Joindre la fiche descriptive du bien au rendez-vous »). Une ligne sous "+
+  "la case dit ce qui va se passer dans l'un et l'autre cas. "+
+  "<b>Elle se souvient de votre dernier choix</b>, et seulement sur cet appareil : "+
+  "c'est une habitude de travail, pas une donnée de dossier, elle n'a rien à faire dans "+
+  "la base partagée. Cochée la première fois ; si vous la décochez, elle restera "+
+  "décochée la fois suivante, et inversement. Les deux cases sont indépendantes."],
  ["Tableau de bord",
   "Les honoraires saisis sont TTC ; tout y est ramené au hors taxe (TVA 20 %). Les honoraires HT "+
   "se partagent par moitié entre le négociateur qui suit le vendeur et celui qui suit "+
