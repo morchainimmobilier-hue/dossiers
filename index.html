@@ -2053,19 +2053,32 @@ table.tdb .puce.resilie{background:#64748b}
 .dfdeux input{min-width:0;flex:1 1 0}
 /* les largeurs des colonnes de la liste, reportées telles quelles */
 .dfc.fph{flex:0 0 126px}
-.dfc.ftyp{flex:0 0 200px}
-.dfc.fville{flex:0 0 150px}
-.dfc.fsurf{flex:0 0 130px}
+.dfc.ftyp{flex:0 0 230px}
+.dfc.fdpe{flex:0 0 56px}
+.dfc.fville{flex:0 0 170px}
+.dfc.fsurf{flex:0 0 150px}
+/* la place des deux repères de fin de ligne : rien à filtrer là, mais le
+   statut doit tomber sur sa pastille */
+.dfc.fico{flex:0 0 68px}
 .dfc.fstat{flex:0 0 136px}
+.dfc.fdpe select{padding-left:5px;padding-right:2px;text-align:center;
+  text-align-last:center}
 .dfc.fraz{flex:0 0 auto;align-items:flex-end;text-align:right}
 .dfcompte{font-size:12.5px;color:var(--ink-2);white-space:nowrap;padding-bottom:5px}
 .dfcompte b{color:var(--navy);font-size:15px}
 .dfraz button{display:inline-flex;align-items:center;gap:6px}
-@media(max-width:860px){
+/* En dessous d'environ 1180 px, les colonnes ne tiennent plus côte à côte :
+   la ligne déborderait, et une ligne qui déborde est illisible. Le tableau
+   et sa barre passent alors en mode « enroulé », tous les deux au même
+   seuil — une barre alignée sur des colonnes qui ne le sont plus serait
+   pire que pas de barre du tout. */
+@media(max-width:1180px){
   /* au doigt, l'alignement n'a plus de sens : les filtres s'enroulent */
   .dbarre{flex-wrap:wrap;gap:8px 10px;padding:10px;position:static}
   .dbarre > .grow{display:none}
   .dfc.fph,.dfc.ftyp,.dfc.fville,.dfc.fsurf,.dfc.fstat{flex:1 1 140px}
+  .dfc.fdpe{flex:0 0 70px}
+  .dfc.fico{display:none}
   .dfc.fraz{flex:1 1 100%;align-items:stretch;text-align:left}}
 .drow2{display:flex;align-items:stretch;gap:14px;height:97px;
   border-bottom:1px solid var(--line-2);padding:0 14px 0 0;background:#fff}
@@ -2090,12 +2103,24 @@ table.tdb .puce.resilie{background:#64748b}
 .dcol b{font-size:14px;color:var(--navy);line-height:1.2;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 /* le type et le prix sont ce qu'on lit en premier : ils en ont la taille */
-.dtyp{flex:0 0 200px}
+.dtyp{flex:0 0 230px}
 .dtyp b{font-size:17px;font-weight:700}
 .dtyp .dprix{font-size:16px;font-weight:700;color:var(--ink);line-height:1.25}
-.dville{flex:0 0 150px}
-.dsurf{flex:0 0 130px}
-.dico{flex:0 0 auto;flex-direction:row;align-items:center;gap:8px}
+.dville{flex:0 0 170px}
+.dsurf{flex:0 0 150px}
+/* l'étiquette du DPE, entre le prix et la commune : une lettre, sa
+   couleur, et le GES en petit dans le coin quand il diffère */
+.ddpe{flex:0 0 56px;align-items:flex-start;justify-content:center}
+.dpepast{position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:9px;font-size:19px;font-weight:700;
+  line-height:1;letter-spacing:0}
+.dpepast i{position:absolute;right:3px;bottom:2px;font-style:normal;font-size:10px;
+  font-weight:700;opacity:.82}
+.dpepast.vide{background:#f1f5f9;border:1px dashed var(--line);color:#aab4c4;
+  font-size:15px;font-weight:600}
+/* les deux repères sont collés au bout de la ligne, avec le statut et les
+   commandes : le vide qu'ils laissaient au milieu ne disait rien */
+.dico{flex:0 0 68px;flex-direction:row;align-items:center;gap:8px}
 /* la pastille du mandat : sa couleur dit le type, donc l'intérêt */
 .mdt{display:inline-block;align-self:flex-start;margin-top:2px;font-size:11px;
   font-weight:600;border-radius:20px;padding:1px 9px;border:1px solid}
@@ -2143,10 +2168,13 @@ table.tdb .puce.resilie{background:#64748b}
   color:var(--navy)}
 .menuact button.fort{border-color:#bfdbfe;background:var(--accent-soft);
   color:var(--navy);font-weight:600}
-@media(max-width:860px){
+@media(max-width:1180px){
   .drow2{height:auto;flex-wrap:wrap;padding:0 10px 10px 0}
   .drow2 .dph{flex:0 0 96px;height:96px}
+  .drow2 > .grow{display:none}
   .dtyp,.dsurf,.dville{flex:1 1 auto}
+  .ddpe{flex:0 0 46px;align-items:center}}
+@media(max-width:860px){
   .menuact{grid-template-columns:1fr}}
 
 .aide h4{margin:18px 0 5px;color:var(--navy);font-size:13.5px}
@@ -2557,7 +2585,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 25 octobre 2026, 17 h 05">Dossiers de vente</div>
+  <div class="brand" title="Version du 26 octobre 2026, 17 h 25">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2783,7 +2811,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>25 octobre 2026, 17 h 05</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>26 octobre 2026, 17 h 25</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4178,6 +4206,37 @@ function pireDpe(a, b){
 function classeDpeDuBien(d){
   const o = d || {};
   return pireDpe(classeEnergieDpe(o.dpeKwh), classeGesDpe(o.dpeCo2));
+}
+/* ------------------------------------------- la pastille d'une lettre DPE
+   Les couleurs sont celles de l'échelle déjà en service sur la fiche du
+   bien (DPE_ENERGIE) : une même lettre ne doit pas changer de teinte
+   selon l'endroit où on la regarde.
+
+   La pastille sert dans la liste des biens, où elle doit se reconnaître
+   à la couleur avant même d'être lue — c'est tout son intérêt sur une
+   colonne de 56 pixels. */
+function teinteDpe(lettre){
+  return DPE_ENERGIE.filter(x=> x.l === lettre)[0] || null;
+}
+/* le diagnostic DPE d'un dossier, s'il y en a un */
+function diagDpe(d){
+  return ((d || {}).diags || []).filter(x=> x && x.nom === "DPE")[0] || {};
+}
+/* la lettre à montrer : l'étiquette principale, celle qui est inscrite
+   sur le diagnostic — la plus mauvaise des deux, comme partout ailleurs */
+function lettreDpeDossier(d){
+  return String(diagDpe(d).dpeEnergie || "").trim().toUpperCase();
+}
+function pastilleDpe(d){
+  const l = lettreDpeDossier(d);
+  const t = teinteDpe(l);
+  if(!t) return `<span class="dpepast vide" data-bulle="DPE non renseigné"
+    aria-label="DPE non renseigné">—</span>`;
+  const ges = String(diagDpe(d).dpeGes || "").trim().toUpperCase();
+  const bulle = "Étiquette DPE : " + l + (ges ? "\nÉmission de GES : " + ges : "");
+  return `<span class="dpepast" style="background:${t.bg};color:${t.fg}"
+    data-bulle="${esc(bulle)}" aria-label="${esc(bulle)}">${esc(l)}${
+    ges && ges !== l ? `<i>${esc(ges)}</i>` : ""}</span>`;
 }
 /* vrai quand les seuils ordinaires ne s'appliquent pas : petite surface */
 function dpeHorsBareme(){
@@ -10946,7 +11005,7 @@ const IC_POUBELLE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden
    ouverture on revient au portefeuille du jour — les biens EN VENTE —,
    qui est ce qu'on vient voir neuf fois sur dix. Les vendus et les
    résiliés sont toujours là, à un choix de distance. */
-const DOSS_F_VIDE = {type:"", ville:"", stade:"vente",
+const DOSS_F_VIDE = {type:"", ville:"", stade:"vente", dpe:"",
   prixMin:"", prixMax:"", surfMin:"", surfMax:""};
 let DOSS_F = Object.assign({}, DOSS_F_VIDE);
 const STADES_DOSSIER = [["vente","En vente"], ["offre","Sous offre"],
@@ -10976,6 +11035,7 @@ function dossiersFiltres(){
     if(DOSS_F.stade && stade(d).cls !== DOSS_F.stade) return false;
     if(DOSS_F.type && fold(c.type) !== fold(DOSS_F.type)) return false;
     if(DOSS_F.ville && fold(b.ville || "") !== fold(DOSS_F.ville)) return false;
+    if(DOSS_F.dpe && lettreDpeDossier(d) !== DOSS_F.dpe) return false;
     if(!dansMinMax(c.fai, DOSS_F.prixMin, DOSS_F.prixMax)) return false;
     if(!dansMinMax(c.surface, DOSS_F.surfMin, DOSS_F.surfMax)) return false;
     return true;
@@ -11011,6 +11071,11 @@ function barreFiltres(){
         .join("")}</select></div>
     <div class="dfc ftyp"><label>Prix (€)</label>
       <div class="dfdeux">${champ("prixMin", "de")}${champ("prixMax", "à")}</div></div>
+    <div class="dfc fdpe"><label for="dfDpe">DPE</label>
+      <select id="dfDpe" data-dfiltre="dpe" class="${DOSS_F.dpe ? "actif" : ""}"
+        ><option value="">tous</option>${DPE_ENERGIE.map(x=>
+          `<option value="${x.l}"${x.l === DOSS_F.dpe ? " selected" : ""}>${x.l}</option>`)
+        .join("")}</select></div>
     <div class="dfc fville"><label for="dfVille">Commune</label>
       <select id="dfVille" data-dfiltre="ville" class="${DOSS_F.ville ? "actif" : ""}"
         ><option value="">toutes</option>${villesDesDossiers().map(v=>
@@ -11019,6 +11084,7 @@ function barreFiltres(){
     <div class="dfc fsurf"><label>Surface (m²)</label>
       <div class="dfdeux">${champ("surfMin", "de")}${champ("surfMax", "à")}</div></div>
     <span class="grow"></span>
+    <span class="dfc fico" aria-hidden="true"></span>
     <div class="dfc fstat"><label for="dfStade">Statut</label>
       <select id="dfStade" data-dfiltre="stade"
         class="${DOSS_F.stade === DOSS_F_VIDE.stade ? "" : "actif"}"
@@ -11080,6 +11146,7 @@ function renderDossiersListe(){
         <span class="mdt ${m.cls}" data-bulle="${esc(m.lib)}">${
           numero ? "n° " + esc(numero) : "sans n°"}</span>
       </div>
+      <div class="dcol ddpe">${pastilleDpe(d)}</div>
       <div class="dcol dville"><b>${esc(b.ville || "—")}</b>
         <span>${esc(b.cp || "")}</span></div>
       <div class="dcol dsurf">
@@ -11087,6 +11154,7 @@ function renderDossiersListe(){
         <span>${esc(compte(c.pieces, "pièce"))}</span>
         <span>${esc(compte(c.chambres, "chambre"))}</span>
       </div>
+      <span class="grow"></span>
       <div class="dcol dico">
         ${prop.length ? `<button type="button" class="dbul" data-oproprio="${esc(d.id)}"
             data-bulle="${esc(prop.join(" et "))}"
@@ -11097,7 +11165,6 @@ function renderDossiersListe(){
           || "adresse à saisir")}" aria-label="${esc(adr || "adresse à saisir")}"
           >${IC_ADRESSE}</span>
       </div>
-      <span class="grow"></span>
       <span class="dstat ${esc(s.cls)}">${esc(s.lib)}</span>
       <button type="button" class="dbul act" data-menuact="bien:${esc(d.id)}"
         data-bulle="Créer une action" aria-label="Créer une action">${IC_PLUSACT}</button>
@@ -27388,19 +27455,24 @@ const AIDE = [
   "Seules les communes où vous avez des biens sont proposées. Un bien dont le prix ou la "+
   "surface n'est pas renseigné ne répond pas à un filtre qui porte dessus : il ne peut "+
   "pas prétendre être « en dessous de 200 000 € ». "+
-  "<b>Cinq colonnes.</b> "+
+  "<b>Six colonnes.</b> "+
   "<b>1.</b> La <b>première photo</b> du bien — celle marquée comme principale, à défaut "+
   "la première des pièces jointes. "+
   "<b>2.</b> Le <b>type</b>, le <b>prix</b>, et la <b>pastille du mandat</b>, dont la "+
   "couleur dit le type : <b>vert</b> pour l'exclusif, le plus fort ; <b>ambre</b> pour le "+
   "semi-exclusif ; <b>violet</b> pour une délégation ; <b>gris</b> pour le simple, le "+
   "moins fort. Un type que vous ajouteriez prend une teinte neutre. "+
-  "<b>3.</b> La <b>commune</b> et son code postal. "+
-  "<b>4.</b> La <b>surface</b>, le nombre de <b>pièces</b>, le nombre de "+
+  "<b>3.</b> L'<b>étiquette du DPE</b> : la lettre principale, celle qui est inscrite "+
+  "sur le diagnostic — la plus mauvaise des deux —, avec sa couleur officielle, et la "+
+  "lettre du <b>GES</b> en petit dans le coin quand elle diffère. Un bien sans DPE "+
+  "renseigné porte une pastille vide en pointillés. Le survol donne les deux lettres en "+
+  "toutes lettres. Un <b>filtre DPE</b> l'accompagne dans la barre. "+
+  "<b>4.</b> La <b>commune</b> et son code postal. "+
+  "<b>5.</b> La <b>surface</b>, le nombre de <b>pièces</b>, le nombre de "+
   "<b>chambres</b> — comptés sur le détail des pièces, comme partout ailleurs ; un "+
   "compte qu'on n'a pas saisi se dit d'un <b>trait</b>. "+
-  "<b>5.</b> Deux repères qui parlent au survol : le <b>propriétaire</b> (un clic ouvre "+
-  "sa fiche dans le dossier) et l'<b>adresse</b> du bien. "+
+  "<b>6.</b> Deux repères qui parlent au survol : le <b>propriétaire</b> (un clic ouvre "+
+  "sa fiche dans le dossier) et l'<b>adresse</b> du bien. Ils sont <b>rejetés au bout de la ligne</b>, avec le statut et les commandes : le vide qu'ils laissaient au milieu ne disait rien. "+
   "<b>La hauteur des lignes est fixe.</b> Une liste dont les lignes respirent au rythme "+
   "des photos se parcourt deux fois moins vite : l'œil perd le rythme. La photo s'y "+
   "adapte en se <b>recadrant</b>, jamais en s'étirant. "+
