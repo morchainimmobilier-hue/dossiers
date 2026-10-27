@@ -170,7 +170,19 @@ main{flex:1;min-width:0;max-width:1240px;margin:0 auto;padding:22px 0 80px}
 .heroid .hquoi{font-size:20px;line-height:1.25;letter-spacing:-.2px;font-weight:500;
   color:var(--ink-2)}
 .heroid .hsub{color:var(--ink-2);font-size:12.5px;margin-top:4px}
-.herochiffres{display:flex;gap:10px;flex-wrap:wrap}
+.herochiffres{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* « Créer une action », à gauche des chiffres : c'est le geste le plus
+   fréquent de la page, et il se perdait au milieu des trombones. Un fond
+   ambré léger suffit à le faire voir sans crier. */
+.hact{display:inline-flex;align-items:center;gap:9px;font:inherit;font-size:12.5px;
+  font-weight:650;line-height:1.2;text-align:left;color:#92400e;cursor:pointer;
+  background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;
+  padding:9px 14px;margin-right:4px;
+  transition:background .14s ease,border-color .14s ease,box-shadow .14s ease}
+.hact:hover{background:#fde68a;border-color:#f59e0b;box-shadow:var(--shadow)}
+.hact:active{background:#fcd34d}
+.hact svg{flex:0 0 auto;width:17px;height:17px}
+@media(max-width:860px){.hact span br{display:none}}
 /* les trois chiffres sont des boutons : ils ouvrent « Prix et honoraires » */
 .hchiffre{display:block;text-align:left;background:none;border:1px solid transparent;
   border-radius:9px;padding:4px 10px 5px;margin:-4px -2px;cursor:pointer;color:inherit;
@@ -1540,6 +1552,14 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
   border-radius:10px;background:var(--accent-soft)}
 .waquoi p{margin:3px 0;font-size:12.5px;color:var(--ink-2)}
 .wavars{display:flex;flex-direction:column;gap:7px}
+/* le titre d'un groupe dans le choix d'un modèle */
+.wagrp{margin:4px 0 2px;font-size:10.5px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--ink-3)}
+.wagrp:first-child{margin-top:0}
+/* le contexte d'un modèle de courriel, à droite de son nom */
+.crctx{flex:0 0 auto;max-width:230px;background:var(--field);
+  border:1px solid var(--field-line);border-radius:8px;padding:5px 8px;
+  font:inherit;font-size:12.5px;color:var(--ink-2)}
 .wavar{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line-2);
   border-radius:10px;padding:9px 12px;cursor:pointer;background:#fff}
 .wavar:hover{background:var(--accent-soft)}
@@ -1576,6 +1596,10 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
   background:#fff;color:#1d6a3f;cursor:pointer;align-self:center}
 .crbtn:hover{background:var(--accent-soft);border-color:#bfdbfe}
 .crbtn.off{color:var(--ink-3);background:#f4f5f7}
+/* la croix d'à côté : elle efface. Rouge pâle au repos pour qu'on ne la
+   confonde pas avec l'œil, franchement rouge au survol. */
+.crbtn.sup{margin-left:5px;color:#b91c1c;border-color:#f3d4d4;background:#fffafa}
+.crbtn.sup:hover{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
 .jrow.horscr{background:#f7f8fa}
 .jrow.horscr .jquoi,.jrow.horscr .jqui,.jrow.horscr .jquand{color:var(--ink-3)}
 .jrow.horscr .jquoi b{font-weight:600;color:var(--ink-2)}
@@ -1839,9 +1863,9 @@ table.tdb.statuts tr.adet.vide td{color:var(--ink-3);font-style:italic;text-alig
    dessous : c'est le nombre qu'on vient lire de loin, pas le titre. */
 .altuiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;
   margin-bottom:18px}
-.altuile{display:flex;flex-direction:column;align-items:flex-start;gap:0;
+.altuile{display:flex;flex-direction:column;align-items:center;gap:0;
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  padding:14px 17px 15px;box-shadow:var(--shadow);text-align:left;font:inherit;
+  padding:14px 17px 15px;box-shadow:var(--shadow);text-align:center;font:inherit;
   color:inherit;cursor:pointer;
   transition:box-shadow .16s ease,border-color .16s ease,transform .16s ease}
 .altuile:hover{border-color:#b9c8dd;box-shadow:var(--shadow-2);transform:translateY(-1px)}
@@ -1861,6 +1885,20 @@ table.tdb.statuts tr.adet.vide td{color:var(--ink-3);font-style:italic;text-alig
 /* une tuile à zéro n'a rien d'alarmant : elle redevient neutre */
 .altuile.calme{border-color:var(--line);background:var(--card)}
 @media(max-width:860px){.altuiles{grid-template-columns:1fr}}
+/* ----------------------------------------- les tuiles de la page « Le bien »
+   Mêmes tuiles que sur Aujourd'hui — on les lit de la même façon, elles
+   s'ouvrent de la même façon — mais plus nombreuses et plus petites : le
+   grand nombre y est un POURCENTAGE de remplissage, pas un décompte. */
+.btuiles{grid-template-columns:repeat(auto-fill,minmax(212px,1fr))}
+.btuile .n{font-size:38px;letter-spacing:-1.6px}
+.btuile .n i{font-style:normal;font-size:20px;font-weight:600;margin-left:2px;
+  letter-spacing:0}
+.btuile.plein{border-color:#bfe3cb;background:linear-gradient(180deg,#fff,#fafefb)}
+.btuile.plein .n{color:#15803d}
+.btuile.partiel{border-color:#e6cba4}
+.btuile.partiel .n{color:#b45309}
+.btuile.vide .n{color:var(--ink-3)}
+@media(max-width:860px){.btuiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* ------------------------------------- le tableau « Dossiers à traiter »
    Une ligne par dossier, cinq colonnes, et tout tient sur la ligne : un
@@ -2642,7 +2680,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 27 octobre 2026, 14 h 45">Dossiers de vente</div>
+  <div class="brand" title="Version du 27 octobre 2026, 17 h 30">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2695,7 +2733,8 @@ table.tdb .puce.resilie{background:#64748b}
     <span class="drref" id="dossRailRef">—</span>
     <span class="drsub" id="dossRailSub"></span>
   </div>
-  <button class="mitem" data-mgo="general">Général</button>
+  <button class="mitem" data-mgo="bien">Le bien</button>
+  <button class="mitem" data-mgo="mandat">Le mandat</button>
   <button class="mitem" data-mgo="plan">Plan</button>
   <button class="mitem" data-mgo="vendeurs">Vendeurs <b id="cntV"></b></button>
   <button class="mitem" data-mgo="acquereurs">Acquéreurs <b id="cntA"></b></button>
@@ -2706,14 +2745,15 @@ table.tdb .puce.resilie{background:#64748b}
   <button class="mitem" data-mgo="divers">Divers</button>
   <button class="mitem" data-mgo="documents">Imprimés</button>
   <button class="mitem" data-mgo="pieces">Pièces jointes <b id="cntPJ"></b></button>
-  <button class="mitem" data-mgo="publications">Publications</button>
+  <button class="mitem" data-mgo="publications">Publicité</button>
   <button class="mitem" data-mgo="avis">Avis</button>
   <button class="mitem" data-mgo="histobien">Historique</button>
 </nav>
 
 <main>
   <div class="alerte" id="alerte" hidden></div>
-  <div class="panel on" id="p-general"><div id="generalGrid"></div></div>
+  <div class="panel on" id="p-bien"><div id="bienGrid"></div></div>
+  <div class="panel" id="p-mandat"><div id="mandatGrid"></div></div>
 
   <div class="panel" id="p-plan"><div id="planBody"></div></div>
 
@@ -2868,7 +2908,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>27 octobre 2026, 14 h 45</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>27 octobre 2026, 17 h 30</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3740,6 +3780,43 @@ function plusHautPdi(){
    normalisation des listes s'en sert, et elle tourne à la première ligne
    du programme. Un `const` déclaré plus bas n'existe pas encore à ce
    moment-là. Voir « LES MESSAGES WHATSAPP » pour ce que chacun veut dire. */
+/* =====================================================================
+   LES CONTEXTES D'UN MODÈLE
+   ---------------------------------------------------------------------
+   Un modèle sans contexte, c'est une bibliothèque qu'il faut relire en
+   entier à chaque envoi. Le contexte dit QUAND le modèle sert ; au moment
+   d'écrire, l'application met en tête ceux qui conviennent, et laisse
+   toute la bibliothèque en dessous — elle propose, elle n'impose pas.
+   ===================================================================== */
+const CONTEXTES_MAIL = [
+  ["libre",        "Message libre",
+   "proposé partout ailleurs : depuis une action, depuis un bouton courriel"],
+  ["proposition",  "Proposer un bien à un demandeur",
+   "proposé par l'enveloppe, sur la ligne d'un bien rapproché"],
+  ["confirmation", "Confirmation d'un rendez-vous",
+   "proposé quand un participant est à prévenir par courriel"],
+  ["annulation",   "Annulation d'un rendez-vous",
+   "proposé quand on annule un rendez-vous en prévenant par courriel"],
+  ["relance",      "Relance d'un demandeur",
+   "proposé depuis une action dont le genre parle de relance"],
+  ["vendeur",      "Au propriétaire",
+   "proposé depuis une action portant sur un bien, pour écrire au vendeur"]
+];
+/* Ranger la bibliothèque existante sans rien demander : le nom du modèle
+   dit presque toujours à quoi il sert. Ce qui ne se devine pas reste
+   « libre », et se range à la main en deux clics. */
+const INDICES_CONTEXTE = [
+  ["proposition", /propos|bien pour vous|s[ée]lection/i],
+  ["confirmation", /confirm/i],
+  ["annulation",  /annul/i],
+  ["relance",     /relanc|nouvelle du|sans nouvelle/i],
+  ["vendeur",     /propri[ée]taire|vendeur|compte.?rendu/i]
+];
+function contexteDevine(nom){
+  const t = String(nom || "");
+  const x = INDICES_CONTEXTE.filter(([, re])=> re.test(t))[0];
+  return x ? x[0] : "libre";
+}
 const CONTEXTES_WA = [
   ["libre",        "Message direct",
    "proposé par le bouton WhatsApp posé à côté d'un téléphone, partout dans "
@@ -3889,12 +3966,21 @@ function loadListesDepuis(v){
      nom n'est pas une fiche, c'est un oubli — on l'écarte. L'identifiant
      sert à la fusion entre appareils : sans lui, renommer un modèle en
      créerait un second à la synchronisation suivante. */
+  /* les modèles de courriels : comme ceux de WhatsApp, ils portent
+     désormais un CONTEXTE, qui dit quand les proposer. Un modèle d'avant
+     n'en a pas : on le devine une fois pour toutes d'après son nom, ce qui
+     range la bibliothèque existante sans rien demander. */
   if(!Array.isArray(out.courriels)) out.courriels = [];
   out.courriels = out.courriels.filter(x=> x && (String(x.nom || "").trim()
       || String(x.objet || "").trim() || String(x.corps || "").trim()))
-    .map(x=> ({id: String(x.id || "").trim() || idCourriel(),
-               nom: String(x.nom || "").trim(),
-               objet: String(x.objet || ""), corps: String(x.corps || "")}));
+    .map(x=>{
+      const c = String(x.contexte || "").trim();
+      return {id: String(x.id || "").trim() || idCourriel(),
+              nom: String(x.nom || "").trim(),
+              contexte: CONTEXTES_MAIL.some(([v])=> v === c) ? c
+                        : contexteDevine(x.nom),
+              objet: String(x.objet || ""), corps: String(x.corps || "")};
+    });
   /* les modèles de messages WhatsApp : un nom, un contexte, un texte. Un
      contexte inconnu — une version plus récente de l'application qui en
      aurait ajouté un — est ramené au contexte libre plutôt qu'écarté : on
@@ -4518,7 +4604,7 @@ function repandreFichePersonne(f){
   if(D){
     ["vendeurs","acquereurs"].forEach(k=> (D[k] || []).forEach(p=>{
       if(p && p.pid === f.pid) rafraichirDepuisRepertoire(p); }));
-    if(pageActive() === "general"){ renderPeople("vendeurs"); renderPeople("acquereurs");
+    if(pageGenerale()){ renderPeople("vendeurs"); renderPeople("acquereurs");
                                     renderPreview(); }
   }
   if(typeof syncDiffere === "function") syncDiffere();
@@ -5695,11 +5781,8 @@ const SCHEMA_GENERAL = [
     occupation — a sa propre fiche, ouverte par le bouton « Le bien » de
     l'en-tête. Ne reste ici que ce qui touche au MANDAT et non au bien :
     la résiliation, où mène l'étape correspondante de la frise. */
- {col:0,t:"Résiliation du mandat",n:"1",cle:"bien",f:[
-   ["mandat.resilie","Mandat résilié","check"],
-   ["mandat.resilieDate","Date de résiliation","date","sub",null,()=> !!D.mandat.resilie],
-   ["mandat.resilieMotif","Motif","list:motifResil","sub",null,()=> !!D.mandat.resilie]
- ]},
+ /* La résiliation a quitté cette liste : elle se saisit à même la page
+    « Le mandat », sous les trois champs qu'elle éteint. */
  {col:0,t:"Suivi du dossier",n:"2",cle:"suivi",f:[
    ["nego.vendeur","Vendeur suivi par","book:negociateurs"],
    /* tant qu'il n'y a ni offre ni compromis, il n'y a pas d'acquéreur à suivre */
@@ -5979,7 +6062,7 @@ function etapesDossier(){
   l.push({cle:"acte", lib:"Acte authentique", iso:d.acte,
           cible:"sec:dates:dates.acte"});
   if(m.resilie) l.push({cle:"resilie", lib:"Mandat résilié", iso:m.resilieDate,
-                        cible:"sec:bien:mandat.resilieDate"});
+                        cible:"page:mandat:mandat.resilieDate"});
   return l;
 }
 function friseDossier(){
@@ -6021,6 +6104,16 @@ function ouvrirEtape(cible){
     setTimeout(()=>{ e.focus(); signaler(e); }, 120);
     return;
   }
+  /* une page du dossier, et le champ à y viser : c'est le cas de la
+     résiliation, qui se saisit maintenant à même la page du mandat */
+  if(m[0] === "page"){
+    activerOnglet(m[1]);
+    setTimeout(()=>{
+      const e = document.querySelector(`#p-${m[1]} [data-b="${m[2]}"]`);
+      if(e){ e.focus(); signaler(e.closest(".pf") || e); }
+    }, 90);
+    return;
+  }
   if(m[0] !== "sec") return;
   /* la fenêtre s'ouvre SUR le champ de l'étape, et le fait voir : on ne
      force pas l'ouverture du calendrier, qui emporterait le focus */
@@ -6053,14 +6146,14 @@ function heroDossier(){
      pour l'immeuble, dont les cinq tiroirs ne tiendraient pas ici. */
   const tiroirsAffaire = (rubriquesDe(sujetDossier(D)) || [])
     .map(r=> trombone(sujetDossier(D), r, r));
-  const actions = [
-    `<button type="button" class="xbtn" data-dbien="1">${IC_LOUPE_BIEN}<span>Le bien</span></button>`
-  ].concat(tiroirsAffaire).concat([
+  /* « Le bien » n'a plus de bouton ici : le menu de gauche porte désormais
+     une page entière à ce nom, et deux chemins vers la même chose sèment
+     plus qu'ils n'aident. « Créer une action », à l'inverse, se perdait au
+     milieu des trombones : elle rejoint les chiffres, à gauche du prix. */
+  const actions = tiroirsAffaire.concat([
     trombone(sujetBien(D), "Photos"),
     String(b.residence || "").trim() ? trombone(sujetImmeuble(b.residence), "Documents immeubles") : "",
     String(b.residence || "").trim() ? boutonImmeuble(b.residence, "Dossiers de l'immeuble") : "",
-    `<button type="button" class="xbtn" data-menuact="bien:${esc(D.id)}">${
-      IC_ACTION}<span>Créer une action</span></button>`,
     venteEnCours() ? `<button type="button" class="xbtn" data-annul="1">Annuler la vente</button>` : ""
   ]).filter(Boolean).join("");
   return `<div class="hero">
@@ -6080,6 +6173,9 @@ function heroDossier(){
         })()}
       </div>
       <div class="herochiffres">
+        <button type="button" class="hact" data-menuact="bien:${esc(D.id)}"
+          title="Noter un appel, une visite, un courrier — tout ce qui s'est passé">
+          ${IC_ACTION}<span>Créer<br>une action</span></button>
         ${chiffre("Prix FAI", eur0(num(D.prix.fai)))}
         ${chiffre("Honoraires TTC", eur0(num(D.prix.honoraires)),
                   D.prix.charge ? "charge " + D.prix.charge.toLowerCase() : "")}
@@ -6095,14 +6191,8 @@ function heroDossier(){
 /* « Prix et honoraires » et « Dates clés » n'ont plus de tuile : la première
    s'ouvre en cliquant les chiffres du bandeau, la seconde répétait la frise
    — qui se saisit maintenant. Les deux fenêtres, elles, sont inchangées. */
-const TUILES_GENERAL = [
-  {cle:"suivi",    titre:"Suivi du dossier"},
-  {cle:"copro",    titre:"Infos sur copropriété", si:coproRenseigne},
-  {cle:"acqs",     titre:"Demandeurs pour ce bien",
-   si:()=> acquereursPourBien().length > 0},
-  {cle:"mobilier", titre:"Mobilier"},
-  {cle:"annulees", titre:"Ventes annulées", si:()=> (D.annulations || []).length > 0}
-];
+/* `TUILES_GENERAL` a disparu avec la page qui la portait : ses tuiles se
+   répartissent entre `tuilesDuBien()` et `TUILES_MANDAT`. */
 function vide(t){ return !String(t || "").trim(); }
 function lignesTuile(cle){
   const b = D.bien || {}, L4 = [];
@@ -6141,6 +6231,20 @@ function lignesTuile(cle){
         !!((x.ecarts || []).length || (x.flous || []).length)));
     if(!list.length) l("Personne", "pour l'instant", true);
   }
+  if(cle === "prix"){
+    l("Prix FAI", eur0(num(D.prix.fai)), num(D.prix.fai) === null);
+    l("Honoraires TTC", eur0(num(D.prix.honoraires)), num(D.prix.honoraires) === null);
+    l("À la charge du", D.prix.charge || "non précisé", vide(D.prix.charge));
+    const net = prixNet();
+    l("Net vendeur", net === null ? "—" : eur(net), net === null);
+  }
+  if(cle === "dates"){
+    const dt = D.dates || {};
+    [["offre","Offre d'achat"], ["compromis","Compromis"],
+     ["butoirFin","Butoir financement"], ["acte","Acte authentique"]]
+      .forEach(([k, lab])=> l(lab, isoValide(dt[k]) ? fdate(dt[k]) : "non datée",
+        !isoValide(dt[k])));
+  }
   if(cle === "annulees"){
     const a = (D.annulations || []);
     const der = a[a.length - 1] || {};
@@ -6171,6 +6275,14 @@ function piedTuile(cle){
   }
   if(cle === "mobilier") return "Repris tel quel sur le dossier de vente.";
   if(cle === "annulees") return "Les dates et le client de chaque tentative.";
+  if(cle === "prix"){
+    const h = ((D.prix || {}).histo || []).filter(x=> x && (x.date || x.fai));
+    return h.length > 1 ? `<b>${h.length}</b> prix successifs`
+         : "Le net vendeur et le taux se déduisent des trois montants.";
+  }
+  if(cle === "dates") return venteEnCours()
+    ? "Les échéances se calculent dès que l'offre ou le compromis est daté."
+    : "Rien n'est encore engagé sur ce dossier.";
   return "";
 }
 function tuileAlerte(cle){
@@ -6189,13 +6301,190 @@ function renderTuile(t){
         brut ? dd : esc(dd)}</dd>`).join("")}</dl>
     <div class="tf">${piedTuile(t.cle)}</div></button>`;
 }
-function renderGeneral(){
-  const boite = $("#generalGrid");
+/* =====================================================================
+   DEUX PAGES À LA PLACE DE « GÉNÉRAL » : LE BIEN, ET LE MANDAT
+   ---------------------------------------------------------------------
+   « Général » mêlait deux choses qui n'ont rien à voir : ce qu'EST le
+   bien — son type, ses pièces, son terrain, qui l'occupe — et ce qu'est
+   l'AFFAIRE — le mandat, son prix, ses dates, qui la suit. On les
+   sépare, et chacune a sa page.
+
+   Le CARTOUCHE du haut — la désignation, les chiffres, les trombones et
+   la frise des étapes — est le même sur les deux : c'est l'identité du
+   dossier, elle ne dépend pas de la page où l'on se trouve.
+   ===================================================================== */
+function pageGenerale(){ return PAGE === "bien" || PAGE === "mandat"; }
+/* le même champ, montré à deux endroits, reste le même partout */
+function synchroniserChamp(source){
+  const chemin = source && source.dataset ? source.dataset.b : "";
+  if(!chemin) return;
+  document.querySelectorAll(`[data-b="${chemin}"]`).forEach(z=>{
+    if(z === source || z === document.activeElement) return;
+    if(z.value !== source.value) z.value = source.value;
+  });
+}
+/* l'ancien nom reste pour les vingt appels qui l'emploient */
+function renderGeneral(){ renderBien(); renderMandat(); }
+
+/* ------------------------------------------- le remplissage d'un volet
+   Chaque tuile du bien annonce, en gros, le POURCENTAGE de ce qui est
+   renseigné derrière elle. Ce n'est pas une note : c'est un repère pour
+   savoir où il reste à travailler avant une annonce ou une visite. Les
+   champs comptés sont ceux que le volet montre vraiment — la loi Carrez
+   ne compte qu'en copropriété, l'étage que sur un appartement. */
+const CHAMPS_VOLET = {
+  type: ()=> ["bien.type", "bien.sitJur", "bien.annee"]
+    .concat(estCoproBien() ? ["bien.residence"] : []),
+  adresse: ()=> ["bien.adresse", "bien.cp", "bien.ville", "bien.quartier"],
+  carac: ()=> ["detail.surface", "detail.exposition", "detail.etat",
+               "detail.pieces", "detail.chambres", "detail.sdb", "detail.wc",
+               "detail.chauffage", "detail.ecs", "detail.taxe"]
+    .concat(estCoproBien() ? ["detail.carrez", "detail.charges"] : [])
+    .concat(estApptOuLocal() ? ["detail.etage", "detail.etages"] : []),
+  terrain: ()=> ["detail.terrain"],
+  occup: ()=>{
+    const oc = D.occupation || {};
+    return String(oc.statut || "") === "Loué"
+      ? ["occupation.statut", "occupation.nom", "occupation.bail",
+         "occupation.debut", "occupation.fin", "occupation.loyer"]
+      : ["occupation.statut"];
+  },
+  immeuble: ()=> ["detail.surface", "detail.terrain", "detail.charges",
+                  "detail.taxe", "detail.chauffage", "detail.ecs"]
+};
+function rempli(v){
+  return v !== undefined && v !== null && String(v).trim() !== "";
+}
+/* les pièces se comptent autrement : ce qui manque n'est pas un champ du
+   volet mais une pièce mal décrite — sans niveau ou sans surface */
+function remplissagePieces(){
+  const l = (cibleBien().o.pieces) || [];
+  if(!l.length) return {n:0, total:1, mot:"aucune pièce saisie"};
+  const ok = l.filter(p=> p && String(p.nom || "").trim()
+    && String(p.niveau || "").trim() && num(p.surface) !== null).length;
+  return {n:ok, total:l.length,
+          mot: ok + " pièce" + (ok > 1 ? "s" : "") + " complète"
+               + (ok > 1 ? "s" : "") + " sur " + l.length};
+}
+function remplissageVolet(cle){
+  if(cle === "pieces") return remplissagePieces();
+  if(/^lg:/.test(cle)){
+    const g = (logementsDe(D) || []).filter(x=> x && x.id === cle.slice(3))[0];
+    if(!g) return null;
+    const vals = [(g.detail || {}).surface, (g.detail || {}).pieces,
+                  (g.detail || {}).chambres, (g.occupation || {}).statut,
+                  (g.pieces || []).length ? "oui" : ""];
+    const n = vals.filter(rempli).length;
+    return {n, total:vals.length, mot:n + " renseignement sur " + vals.length};
+  }
+  const f = CHAMPS_VOLET[cle];
+  if(!f) return null;
+  const l = f();
+  const n = l.filter(p=> rempli(get(D, p))).length;
+  return {n, total:l.length, mot:n + " champ" + (n > 1 ? "s" : "")
+          + " sur " + l.length};
+}
+/* la copropriété se lit sur la fiche de l'immeuble, pas sur le dossier */
+function remplissageCopro(){
+  const r = residenceDuBien();
+  const champs = COPRO_POINTS.map(([k])=> r[k])
+    .concat([r.syndic, r.nbLots]);
+  const n = champs.filter(rempli).length;
+  return {n, total:champs.length, mot:n + " renseignement" + (n > 1 ? "s" : "")
+          + " sur " + champs.length};
+}
+/* ------------------------------------------------- LES TUILES DU BIEN */
+function tuilesDuBien(){
+  const out = pagesBien().map(x=> ({cle:"v:" + x.cle, titre:x.lib,
+                                    r:remplissageVolet(x.cle)}));
+  out.push({cle:"sec:copro", titre:"Infos sur copropriété", r:remplissageCopro(),
+            si:coproRenseigne});
+  const dem = acquereursPourBien();
+  out.push({cle:"sec:acqs", titre:"Demandeurs pour ce bien", compte:dem.length,
+            mot:dem.length > 1 ? "demandeurs" : "demandeur",
+            det:dem.length ? "recherches en cours qui portent sur ce bien"
+                           : "aucune recherche ne porte sur ce bien"});
+  return out.filter(t=> !t.si || t.si());
+}
+function tuileBien(t){
+  /* une tuile qui compte des gens montre leur nombre ; une tuile de
+     formulaire montre son pourcentage. Mettre « 100 % de demandeurs »
+     n'aurait aucun sens. */
+  if(t.compte !== undefined)
+    return `<button type="button" class="altuile grande btuile ${
+        t.compte ? "att" : "calme"}" data-btuile="${esc(t.cle)}">
+      <span class="t">${esc(t.titre)}</span>
+      <span class="n">${t.compte}</span>
+      <span class="u">${esc(t.mot)}</span>
+      <span class="d">${esc(t.det)}</span></button>`;
+  const r = t.r || {n:0, total:0, mot:""};
+  const pct = r.total ? Math.round(100 * r.n / r.total) : 0;
+  const ton = pct >= 100 ? "plein" : pct ? "partiel" : "vide";
+  return `<button type="button" class="altuile grande btuile ${ton}"
+      data-btuile="${esc(t.cle)}">
+    <span class="t">${esc(t.titre)}</span>
+    <span class="n">${pct}<i>%</i></span>
+    <span class="u">renseigné</span>
+    <span class="d">${esc(r.mot || "")}</span></button>`;
+}
+function renderBien(){
+  const boite = $("#bienGrid");
   if(!boite) return;
   boite.innerHTML = heroDossier() +
-    `<div class="tuiles">${TUILES_GENERAL.filter(t=> !t.si || t.si())
-      .map(renderTuile).join("")}</div>`;
+    `<div class="altuiles btuiles">${tuilesDuBien().map(tuileBien).join("")}</div>`;
   majDetailTuile();
+  majSectionOuverte();
+}
+/* ------------------------------------------------------ LE MANDAT ----
+   Les trois champs du mandat sont déjà dans la barre du haut, où ils sont
+   partout à portée. Les redonner ici n'est pas un doublon inutile : c'est
+   la page du mandat, on doit pouvoir les y lire et les y corriger sans
+   viser une barre de 24 pixels. Les deux jeux de champs se tiennent à
+   jour l'un l'autre (voir `synchroniserChamp`).
+
+   La RÉSILIATION quitte la fenêtre « Résiliation du mandat » du menu
+   Général, qui n'existe plus : elle est ici, à sa place, sous les trois
+   champs qu'elle éteint. */
+function carteDuMandat(){
+  const m = D.mandat || {};
+  return `<div class="card"><h2><span class="n">1</span>Le mandat</h2><div class="body">
+    <div class="pgrid" style="padding:0">
+      <div class="pf"><label>Numéro de mandat</label>${control("mandat.num","text")}</div>
+      <div class="pf"><label>Type de mandat</label>${control("mandat.type","list:mandat")}</div>
+      <div class="pf"><label>Signé le</label>${control("mandat.date","date")}</div>
+      <div class="pf"><label>Échéance</label>
+        <div class="calc">${esc(echeanceMandat(D) ? fdate(echeanceMandat(D)) : "—")}</div></div>
+    </div>
+    ${m.suiteDe ? `<p class="dnote" style="margin:10px 0 0">À la suite du mandat
+      <b>n° ${esc(m.suiteDe)}</b>.</p>` : ""}
+    <div class="fsep"></div>
+    <label class="chkline"><input type="checkbox" data-chk="mandat.resilie"${
+        m.resilie ? " checked" : ""}>
+      <span>Mandat résilié</span></label>
+    ${m.resilie ? `<div class="pgrid" style="padding:10px 0 0">
+
+      <div class="pf"><label>Date de résiliation</label>${
+        control("mandat.resilieDate","date")}</div>
+      <div class="pf"><label>Motif</label>${
+        control("mandat.resilieMotif","list:motifResil")}</div>
+    </div>` : ""}
+    <p class="muted" style="margin:10px 0 0">Un mandat résilié garde son dossier : rien
+      n'est effacé, le bien quitte seulement la vente.</p>
+  </div></div>`;
+}
+const TUILES_MANDAT = [
+  {cle:"suivi",    titre:"Suivi du dossier"},
+  {cle:"prix",     titre:"Prix et honoraires"},
+  {cle:"dates",    titre:"Dates clés"},
+  {cle:"mobilier", titre:"Mobilier"},
+  {cle:"annulees", titre:"Ventes annulées", si:()=> (D.annulations || []).length > 0}
+];
+function renderMandat(){
+  const boite = $("#mandatGrid");
+  if(!boite) return;
+  boite.innerHTML = heroDossier() + carteDuMandat() +
+    `<div class="tuiles">${TUILES_MANDAT.filter(t=> !t.si || t.si())
+      .map(renderTuile).join("")}</div>`;
   majSectionOuverte();
 }
 /* le résumé de la fiche détaillée vit désormais dans la tuile ; il n'est
@@ -6205,7 +6494,6 @@ function majDetailTuile(){ majDetail(); }
 /* ------------------------------------ la fenêtre d'une section du dossier */
 let SECTION_OUVERTE = "", TIROIR_OUVERT = "";
 const SOUS_SECTION = {
-  bien:"Un mandat résilié garde son dossier : rien n'est effacé, le bien quitte seulement la vente.",
   prix:"Le net vendeur, le prix porté à l'acte et le taux se déduisent des trois premiers champs.",
   dates:"Les échéances n'apparaissent qu'une fois l'offre ou le compromis daté.",
   suivi:"Qui suit le vendeur, qui suit l'acquéreur, et l'intermédiaire éventuel.",
@@ -6775,7 +7063,9 @@ function pagesBien(){
            {cle:"terrain", lib:"Le terrain"},
            {cle:"occup",   lib:"L'occupation"});
   }
-  l.push({cle:"argu", lib:"Argumentaire"});
+  /* L'argumentaire a quitté la fiche du bien pour la page Publicité : il
+     ne décrit pas le bien, il sert à en parler. Et c'est sur la page qui
+     écrit l'annonce qu'on veut l'avoir sous les yeux. */
   return l;
 }
 function pageBienCourante(){
@@ -7118,7 +7408,6 @@ function renderDetail(){
     blocDetail(D, "", {t:"La surface du terrain", f:[["terrain","Terrain (m²)","money"]]});
   else if(page === "occup")   corps = blocOccupation(o, chemin);
   else if(page === "immeuble")corps = pageImmeuble();
-  else if(page === "argu")    corps = blocArgumentaire();
   else if(page === "carac" || c.lg){
     const g = c.lg;
     const surf = {t:"Surfaces et situation", f:[
@@ -7178,35 +7467,8 @@ function renderDetail(){
 /* L'argumentaire : trois séries de cases et trois lignes libres. Il tient sur
    toute la largeur, sous les deux colonnes — c'est la partie qu'on remplit en
    rentrant de visite, pas celle qu'on relève sur le mandat. */
-function blocArgumentaire(){
-  const a = D.argu || {};
-  const serie = g=>{
-    const coches = (a[g.cle] || {});
-    return `<div class="argg"><h5>${esc(g.titre)}</h5>
-      <div class="argcases">${g.liste.map(([k, lab])=>
-        `<label class="argcase${coches[k] ? " on" : ""}">
-          <input type="checkbox" data-chk="argu.${g.cle}.${k}"${coches[k] ? " checked" : ""}>
-          <span>${esc(lab)}</span></label>`).join("")}</div></div>`;
-  };
-  return `<div class="dsec darg"><h4>Argumentaire commercial</h4>
-    <p class="dnote" style="margin:0 0 12px">Ce que la fiche technique ne dit pas, et
-      qui fait pourtant la différence dans une annonce. Rien n'est obligatoire : tout ce
-      qui est coché ou écrit ici nourrit le texte des publications, et rien d'autre n'y
-      entre.</p>
-    <div class="arggs">${ARGU_GROUPES.map(serie).join("")}</div>
-    <div class="dgrid" style="margin-top:12px">
-      <div class="pf wide"><label>Ce qui vous a frappé en visitant</label>
-        ${control("argu.coup","area")}</div>
-      <div class="pf wide"><label>Travaux récents ou à prévoir</label>
-        ${control("argu.travaux","text")}</div>
-      <div class="pf wide"><label>Autre chose à dire</label>
-        ${control("argu.plus","text")}</div>
-    </div>
-    ${estCoproBien() ? `<p class="dnote">Le <b>quartier</b> et le <b>caractère de la
-      résidence</b> se saisissent une seule fois sur la fiche de l'immeuble, au carnet
-      Résidences : ils servent à tous les lots.</p>` : ""}</div>`;
-}
-
+/* `blocArgumentaire` a disparu : l'argumentaire est passé page Publicité,
+   où `carteArgumentairePubli()` n'en garde que les cases. */
 /* On ne redessine pas la fiche à chaque frappe — le curseur y resterait à
    peine. On remet seulement à jour ce qui en dépend ; le passage de la saisie
    libre au calcul, lui, demande un vrai redessin. */
@@ -8041,7 +8303,8 @@ const ONGLETS_SANS_MANDAT = ["aujourdhui","tdb","dossiers","prospects","immeuble
   "repertoire","listes","aide"];
 /* Les pages du dossier ouvert ne sont plus dans la barre du haut : elles
    tiennent dans une colonne à gauche, toutes visibles d'un coup. */
-const ONGLETS_DOSSIER = ["general","plan","vendeurs","acquereurs","notaires","financement",
+const ONGLETS_DOSSIER = ["bien","mandat","plan","vendeurs","acquereurs",
+  "notaires","financement",
   "diagnostics","questionnaire","divers","documents","pieces","publications","avis",
   "histobien"];
 let PAGE = "aujourdhui";
@@ -8101,6 +8364,10 @@ function majHauteurBandeau(){
 }
 window.addEventListener("resize", majHauteurBandeau);
 function activerOnglet(p){
+  /* « général » n'existe plus : il s'est scindé en « Le bien » et « Le
+     mandat ». Le vieux nom continue de mener au premier, pour que les
+     vingt endroits qui l'appelaient n'aient pas à changer. */
+  if(p === "general") p = "bien";
   const panneau = $("#p-"+p);
   if(!panneau) return;
   /* une page du dossier n'a pas d'onglet dans la barre : c'est la colonne
@@ -8113,6 +8380,8 @@ function activerOnglet(p){
   $$(".tab").forEach(x=>x.classList.remove("on")); if(t) t.classList.add("on");
   $$(".panel").forEach(x=>x.classList.remove("on"));
   panneau.classList.add("on");
+  if(p==="bien")       renderBien();
+  if(p==="mandat")     renderMandat();
   if(p==="documents")  renderPreview();
   if(p==="plan")       renderPlan();
   if(p==="pieces")     renderPagePieces();
@@ -9792,6 +10061,104 @@ function boutonCr(cle, hors){
       : "Figurera au compte-rendu au propriétaire — cliquez pour l'écarter"}"
     >${hors ? IC_OEIL_BARRE : IC_OEIL}</button>`;
 }
+/* =====================================================================
+   SUPPRIMER UNE LIGNE D'HISTORIQUE
+   ---------------------------------------------------------------------
+   L'œil écarte du compte-rendu ; la croix EFFACE. Pour de bon, et sans
+   rien noter nulle part : une ligne supprimée ne laisse pas de ligne
+   « ligne supprimée » derrière elle, ce qui serait absurde.
+
+   On supprime donc l'objet dont la ligne est l'image, et non la ligne :
+     · une action — elle sort du journal ;
+     · un rendez-vous — il sort des rendez-vous, et l'action qui en était
+       l'ombre part avec lui ; l'événement de l'agenda Google, lui, reste,
+       et la confirmation le dit ;
+     · un changement de prix — il sort de l'historique des prix ;
+     · une étape — sa DATE est effacée du dossier, ce qui peut changer le
+       statut. La confirmation le dit aussi : une suppression muette qui
+       fait repasser un dossier « en vente » serait une mauvaise surprise.
+
+   Rien de tout cela n'est récupérable, d'où la confirmation.
+   ===================================================================== */
+const IC_CROIX_SUP = `<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"
+  fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+  <path d="M4.3 4.3l7.4 7.4M11.7 4.3l-7.4 7.4"/></svg>`;
+const ETAPES_DATE = {mandat:"mandat.date", resiliation:"mandat.resilieDate",
+  offre:"dates.offre", compromis:"dates.compromis",
+  butoir:"dates.butoirPret", acte:"dates.acte"};
+/* ce que la suppression va emporter, dit en clair avant de la faire */
+function avertSuppressionHisto(cle){
+  const q = String(cle || "").split(":")[0];
+  if(q === "rdv") return "Le rendez-vous est effacé de l'application, participants "
+    + "compris. <b>L'événement reste dans votre agenda Google</b> : retirez-le là-bas "
+    + "si vous le voulez.";
+  if(q === "prix") return "Cette étape de l'historique des prix disparaît. Le prix "
+    + "actuel du bien, lui, ne change pas.";
+  if(q === "etape") return "C'est la <b>date elle-même</b> qui est effacée du dossier, "
+    + "et non une simple ligne : le <b>statut du dossier</b> peut en changer.";
+  return "L'action est effacée du journal, ici et partout où elle paraissait.";
+}
+function supprimerLigneHisto(cle){
+  const bouts = String(cle || "").split(":");
+  const quoi = bouts[0], a = bouts[1], b = bouts[2];
+  if(quoi === "act"){
+    L.actions = (L.actions || []).filter(x=> !x || x.id !== a);
+    saveLists(); return true;
+  }
+  if(quoi === "rdv"){
+    L.rdv = (L.rdv || []).filter(x=> !x || x.id !== a);
+    L.actions = (L.actions || []).filter(x=> !x || x.rdv !== a);
+    saveLists(); return true;
+  }
+  if(quoi === "prix" || quoi === "etape"){
+    const all = allDossiers(), d = (D && D.id === a) ? D : all[a];
+    if(!d) return false;
+    if(quoi === "prix"){
+      const h = Array.isArray((d.prix || {}).histo) ? d.prix.histo : [];
+      if(+b < 0 || +b >= h.length) return false;
+      h.splice(+b, 1);
+    } else {
+      const chemin = ETAPES_DATE[b];
+      if(!chemin) return false;
+      set(d, chemin, "");
+      /* un mandat dont on efface la date de résiliation n'est plus résilié :
+         laisser la case cochée sans date ferait un statut sans raison */
+      if(b === "resiliation"){ d.mandat.resilie = false; d.mandat.resilieMotif = ""; }
+    }
+    d.maj = Date.now();
+    if(D && D.id === a){
+      all[a] = JSON.parse(JSON.stringify(D));
+      persist(true);
+    } else {
+      all[a] = d;
+      try{ localStorage.setItem(LS_DOSS, JSON.stringify(all)); }
+      catch(e){ toast("Le navigateur a refusé d'enregistrer"); return false; }
+    }
+    return true;
+  }
+  return false;
+}
+function demanderSuppressionHisto(cle, libelle){
+  if(!cle) return;
+  popup({titre:"Supprimer cette ligne ?", genre:"erreur",
+    corps:`<p style="margin:0 0 10px">${esc(libelle || "Cette ligne")}</p>
+      <p class="alerte" style="margin:0">${avertSuppressionHisto(cle)}
+        <b>C'est définitif</b> : rien n'est gardé, nulle part.</p>`,
+    boutons:[{lib:"Annuler"}, {lib:"Supprimer définitivement", primaire:true, action:()=>{
+      if(!supprimerLigneHisto(cle)){ toast("Ligne introuvable"); return; }
+      redessinerHistorique();
+      renderApresReponse();
+      if(pageActive() === "aujourdhui") renderAujourdhui();
+      toast("Ligne supprimée");
+    }}]});
+}
+/* la croix, posée à côté de l'œil */
+function boutonSupprHisto(cle, libelle){
+  if(!cle) return "";
+  return `<button type="button" class="crbtn sup" data-histsup="${esc(cle)}"
+    data-histsuplib="${esc(libelle || "")}" title="Supprimer définitivement cette ligne"
+    aria-label="Supprimer cette ligne">${IC_CROIX_SUP}</button>`;
+}
 /* le rappel sous la barre de filtres : combien de lignes sont écartées */
 function noteCr(hors, total){
   if(!total) return "";
@@ -9860,7 +10227,8 @@ function blocHistorique(filtre){
         <span class="grow"></span>
         ${vieux ? `<button type="button" class="xbtn sup"
           data-annvieux="${esc(vieux)}">Annuler</button>` : ""}
-        ${boutonCr(cle, hors)}</div>`;
+        ${boutonCr(cle, hors)}${boutonSupprHisto(cle,
+          [fdate(jourDe(a.t)), a.genre, a.texte].filter(Boolean).join(" \u2014 "))}</div>`;
     }).join("")}</div>`
       : `<p class="muted" style="margin:0">${PERS.fg || PERS.fq
           ? "Aucune action ne répond à ces filtres."
@@ -9993,11 +10361,188 @@ function ouvrirCreerAction(cible, genre){
       saveLists();
       renderCarnets();
       if(pageActive() === "prospects") renderProspects();
-      if(pageActive() === "general") renderGeneral();
+      if(pageGenerale()) renderGeneral();
       toast("Action enregistrée");
+      /* NOTER N'EST PAS ENVOYER. Choisir le genre « Courriel » puis fermer
+         la fenêtre laissait une ligne « Courriel » dans l'historique et
+         aucun courriel nulle part : on avait écrit qu'on avait écrit. Le
+         genre enchaîne donc sur l'envoi, pour de bon. */
+      const suite = voieDuGenre(genre);
+      if(suite === "mail")
+        setTimeout(()=> ouvrirEnvoiCourriel({dossierId:dos, pid:quiPid,
+          contexte:contexteDuGenre(genre, role), genre, texte}), 120);
+      else if(suite === "wa")
+        setTimeout(()=> ouvrirEnvoiWa({dossierId:dos, pid:quiPid, texte}), 120);
     }}]
   });
   setTimeout(()=>{ const e = $("#acTexte"); if(e) e.focus(); }, 40);
+}
+/* =====================================================================
+   ÉCRIRE UN COURRIEL, DE N'IMPORTE OÙ
+   ---------------------------------------------------------------------
+   « Proposer ce bien » savait déjà écrire : un destinataire, un modèle,
+   un objet, un corps, la signature et la fiche en pièce jointe. Mais il
+   ne savait écrire QU'À un demandeur, et QUE depuis une ligne de
+   rapprochement.
+
+   Voici la même chose, ouverte à tout le monde : au vendeur d'un bien, à
+   un contact du répertoire, à qui l'on veut. C'est elle qui s'ouvre quand
+   on note une action du genre « Courriel » — noter n'est pas envoyer.
+   ===================================================================== */
+function destinatairesCourriel(o){
+  const out = [];
+  const met = (nom, mail, quoi)=>{
+    const m = String(mail || "").trim();
+    if(!m || out.some(x=> fold(x.email) === fold(m))) return;
+    out.push({nom: nom || m, email:m, quoi: quoi || ""});
+  };
+  const f = o.pid ? fichePersonne(o.pid) : null;
+  if(f){ met(nomUsuel(f), f.email1, "sa fiche"); met(nomUsuel(f), f.email2, "sa fiche"); }
+  const d = o.d;
+  if(d) ["vendeurs","acquereurs"].forEach(k=>
+    (d[k] || []).filter(p=> p && !personneVide(p)).forEach(p=>
+      met(titrePersonne(p), p.email1 || p.email,
+          k === "vendeurs" ? "vendeur" : "acquéreur")));
+  return out;
+}
+function ouvrirEnvoiCourriel(opt){
+  const o = opt || {};
+  const d = o.dossierId ? dossierDuBien(o.dossierId) : null;
+  const dossier = d || migrate(blankDossier());
+  const dests = destinatairesCourriel({pid:o.pid, d});
+  const rangs = modelesCourriel(o.contexte || "libre");
+  const modeles = rangs.tous;
+  if(!modeles.length){
+    popup({titre:"Aucun modèle de courriel", genre:"erreur",
+      corps:`<p style="margin:0">La bibliothèque est vide. Ajoutez-en un dans
+        l'onglet <b>Listes</b>, carte « Modèles de courriels » — et donnez-lui un
+        <b>contexte</b>, pour qu'il vous soit proposé au bon moment.</p>`});
+    return;
+  }
+  const pers = o.pid ? fichePersonne(o.pid) : null;
+  const mots = motsDuCourriel(dossier, pers || {});
+  const m0 = modeles[0];
+  const avecFiche = !!d;
+  popup({titre:"Écrire un courriel", large:true,
+    corps:`<div class="propo">
+      ${d ? `<p class="mdnote" style="margin:0 0 10px"><b>${esc(intituleBien(d))}</b><br>
+        ${esc(bienDe(d))}</p>` : ""}
+      <div class="pf"><label for="envQui">À qui</label>
+        ${dests.length ? `<select id="envQui">${dests.map((x, k)=>
+            `<option value="${k}">${esc(x.nom)} — ${esc(x.email)}${
+              x.quoi ? " (" + esc(x.quoi) + ")" : ""}</option>`).join("")}</select>`
+        : `<p class="alerte" style="margin:0">Aucune adresse électronique connue. Le
+            message sera préparé sans destinataire : vous l'ajouterez dans votre
+            messagerie.</p>`}
+      </div>
+      <div class="pf"><label for="envMod">Modèle
+        <span class="muted">— ${esc(libContexteMail(o.contexte || "libre"))}</span></label>
+        <select id="envMod">${optionsModeles(rangs, 0)}</select></div>
+      <div class="pf"><label for="envObjet">Objet</label>
+        <input type="text" id="envObjet" value="${esc(remplirCourriel(m0.objet, mots))}">
+      </div>
+      <div class="pf"><label for="envCorps">Message</label>
+        <textarea id="envCorps" rows="12">${esc(remplirCourriel(m0.corps, mots))}</textarea>
+      </div>
+      <div id="envSign"></div>
+      ${avecFiche ? `<label class="chkline pjligne"><input type="checkbox" id="envPJ"${
+          veutPJ("fiche") ? " checked" : ""}>
+        <span>Préparer la <b>fiche descriptive</b> du bien en PDF</span></label>` : ""}
+    </div>`,
+    boutons:[{lib:"Annuler"}, {lib:"Préparer le message", primaire:true, action:()=>{
+      const q = $("#envQui");
+      const dest = dests.length ? dests[+(q ? q.value : 0)] : null;
+      const pj = avecFiche && !!($("#envPJ") || {}).checked;
+      if(avecFiche) poserPJ("fiche", pj);
+      envoyerCourriel(d, dest, ($("#envObjet") || {}).value || "",
+                      ($("#envCorps") || {}).value || "", pj, mots.signature);
+    }}]});
+  const sel = $("#envMod");
+  if(sel) sel.onchange = ()=>{
+    const m = modeles[+sel.value] || {};
+    $("#envObjet").value = remplirCourriel(m.objet, mots);
+    $("#envCorps").value = remplirCourriel(m.corps, mots);
+    motSign();
+  };
+  /* la même annonce que sur « Proposer ce bien » : ce que la signature va
+     remplacer, montré avant l'envoi */
+  const imgSign = signatureImage((donneesPubli(dossier) || {}).negociateur);
+  function motSign(){
+    const z = $("#envSign");
+    if(!z) return;
+    if(!imgSign){ z.innerHTML = ""; return; }
+    const corps = ($("#envCorps") || {}).value || "";
+    const lignes = corps.split(/\r?\n/);
+    const zone = zoneSignature(lignes, mots.signature);
+    z.innerHTML = `<div class="signavant"><img src="${esc(imgSign)}" alt="Signature">
+      <p class="muted">${zone
+        ? `La signature remplacera les <b>${zone.fin - zone.debut} ligne${
+            zone.fin - zone.debut > 1 ? "s" : ""}</b> sous «&nbsp;${esc(
+            String(lignes[zone.debut - 1] || "").trim() || "la formule de politesse")}&nbsp;».
+           Outlook s'ouvrira sur l'objet seul : collez le message
+           (<kbd>Ctrl</kbd> + <kbd>V</kbd>).`
+        : `Aucune formule de politesse repérée : la signature ne sera pas placée.`}</p>
+      </div>`;
+  }
+  const zc = $("#envCorps");
+  if(zc) zc.addEventListener("input", motSign);
+  motSign();
+}
+/* L'envoi proprement dit : le même chemin que pour une proposition — le
+   presse-papiers d'abord, la fiche ensuite, la messagerie en dernier. */
+async function envoyerCourriel(d, dest, objet, corps, avecFiche, blocSign){
+  const img = signatureImage(((donneesPubli(d || migrate(blankDossier()))) || {}).negociateur);
+  const riche = courrielEnrichi(corps, img, blocSign);
+  const copie = await copierCourrielRiche(corps, img ? riche : "");
+  if(avecFiche && d){
+    toast("Composition de la fiche…");
+    try{ download(await ficheBienPdf(d), nomFichierFiche(d)); }
+    catch(e){ toast("La fiche n'a pas pu être composée : " + e.message); }
+  }
+  toast(copie === "riche"
+    ? "Message copié — collez-le dans Outlook"
+    : copie === "texte" ? "Message copié (texte seul)" : "Copie impossible");
+  const tete = "mailto:" + encodeURIComponent((dest || {}).email || "")
+    + "?subject=" + encodeURIComponent(objet);
+  const url = tete + "&body=" + encodeURIComponent(corps);
+  ouvrirMailto(copie === "riche" || url.length > 1800 ? tete : url);
+}
+/* Le pendant WhatsApp : le choix du modèle, puis la conversation. */
+function ouvrirEnvoiWa(opt){
+  const o = opt || {};
+  const d = o.dossierId ? dossierDuBien(o.dossierId) : null;
+  const f = o.pid ? fichePersonne(o.pid) : null;
+  const tel = String((f && (f.tel1 || f.tel2)) || "").trim();
+  if(!tel){ toast("Aucun téléphone connu pour cette personne"); return; }
+  const mots = motsDuCourriel(d || migrate(blankDossier()), f || {});
+  ouvrirChoixWa("libre", mots, texte=>{
+    window.open("https://wa.me/" + numeroWa(tel)
+      + (texte ? "?text=" + encodeURIComponent(texte) : ""), "_blank", "noopener");
+  }, function(){});
+}
+
+/* ------------------------------------------- du genre d'action à l'envoi
+   Les genres sont une liste que vous tenez : on ne peut donc pas s'appuyer
+   sur des noms exacts. On reconnaît la VOIE au mot — « courriel », « mail »
+   d'un côté, « whatsapp » de l'autre —, ce qui marche aussi pour « Courriel
+   de relance » ou « Mail au notaire », que vous ajouteriez demain. */
+function voieDuGenre(genre){
+  const t = fold(genre || "");
+  if(/whatsapp|\bwa\b/.test(t)) return "wa";
+  if(/courriel|e-?mail|\bmail\b/.test(t)) return "mail";
+  return "";
+}
+/* et le contexte, qui range les modèles : le genre d'abord, le rôle de la
+   personne ensuite — écrire au vendeur d'un bien n'est pas écrire à un
+   demandeur */
+function contexteDuGenre(genre, role){
+  const t = fold(genre || "");
+  if(/relanc/.test(t)) return "relance";
+  if(/confirm/.test(t)) return "confirmation";
+  if(/annul/.test(t)) return "annulation";
+  if(/propos/.test(t)) return "proposition";
+  if(fold(role || "") === "vendeur") return "vendeur";
+  return "libre";
 }
 
 function renderRepertoire(){
@@ -10420,6 +10965,31 @@ async function copierCourrielRiche(texte, html){
 function courrielsDisponibles(){
   return (L.courriels || []).filter(Boolean);
 }
+/* -------------------------------------------- le bon modèle, d'abord
+   Rendu : la bibliothèque entière, mais RANGÉE — ceux du contexte
+   demandé en tête, les autres derrière. On ne cache jamais un modèle :
+   le jour où le contexte tombe à côté, il faut pouvoir prendre l'autre
+   sans aller d'abord le reclasser dans les Listes. */
+function modelesCourriel(contexte){
+  const l = courrielsDisponibles();
+  const dedans = l.filter(m=> (m.contexte || "libre") === contexte);
+  const dehors = l.filter(m=> (m.contexte || "libre") !== contexte);
+  return {adaptes:dedans, autres:dehors, tous:dedans.concat(dehors)};
+}
+function libContexteMail(c){
+  const x = CONTEXTES_MAIL.filter(([v])=> v === c)[0];
+  return x ? x[1] : "Message libre";
+}
+/* le menu déroulant d'un choix de modèle, en deux groupes */
+function optionsModeles(rangs, choisi){
+  const opt = (m, k)=> `<option value="${k}"${k === choisi ? " selected" : ""}
+    >${esc(m.nom || "sans nom")}</option>`;
+  let k = -1;
+  const groupe = (lib, l)=> !l.length ? "" :
+    `<optgroup label="${esc(lib)}">${l.map(m=> opt(m, ++k)).join("")}</optgroup>`;
+  return groupe("Adaptés à la situation", rangs.adaptes)
+       + groupe("Toute la bibliothèque", rangs.autres);
+}
 /* ------------------------------------------- la carte de l'onglet Listes */
 function carteCourriels(){
   const plie = estPlie("l_courriels", true);
@@ -10427,6 +10997,10 @@ function carteCourriels(){
   const bloc = (m, i)=> `<div class="crmod">
     <header><input type="text" data-courriel="${i}:nom" value="${esc(m.nom)}"
         class="crnom" placeholder="Nom du modèle">
+      <select class="crctx" data-courriel="${i}:contexte"
+        title="Quand ce modèle est proposé">${CONTEXTES_MAIL.map(([v, lib])=>
+        `<option value="${v}"${v === (m.contexte || "libre") ? " selected" : ""}
+          >${esc(lib)}</option>`).join("")}</select>
       <span class="grow"></span>
       <button type="button" class="xbtn sup" data-courrdel="${i}">Supprimer</button>
     </header>
@@ -10439,9 +11013,14 @@ function carteCourriels(){
     <h3 class="pliable" data-pli="l_courriels">${chevron(plie)}Modèles de courriels
       <span class="cnt">${l.length}</span></h3>
     <div class="plibody"${plie ? ' style="display:none"' : ''}>
-      <p class="muted" style="margin:0 0 8px">Les messages envoyés aux demandeurs depuis
-        le volet <b>Biens à rapprocher</b> d'une recherche. Le texte reste modifiable
-        au moment de l'envoi : ce qui est ici n'est qu'un point de départ.</p>
+      <p class="muted" style="margin:0 0 8px">Les messages que l'application prépare
+        pour vous. Le texte reste modifiable au moment de l'envoi : ce qui est ici n'est
+        qu'un point de départ. Le <b>contexte</b>, à droite du nom, dit <b>quand</b> le
+        modèle est proposé en premier ; toute la bibliothèque reste accessible à chaque
+        envoi.</p>
+      <details class="crmots" style="margin:0 0 10px"><summary>Les six contextes</summary>
+        <div>${CONTEXTES_MAIL.map(([, lib, quand])=>
+          `<p><b>${esc(lib)}</b> — ${esc(quand)}</p>`).join("")}</div></details>
       ${l.length ? `<div class="crmods">${l.map(bloc).join("")}</div>`
         : `<p class="muted" style="margin:0">Aucun modèle.</p>`}
       <div class="fbtns" style="margin-top:10px">
@@ -10488,19 +11067,35 @@ function modelesWa(contexte){
    besoin pour refaire le remplissage, nom par nom. Aucun modèle dans le
    contexte : on n'importune personne, `apres` est appelé tout de suite
    avec le texte vide, et c'est à l'appelant de décider quoi en faire. */
+/* La bibliothèque ENTIÈRE est proposée, rangée : les modèles du contexte
+   d'abord, les autres en dessous. On ne cachait auparavant que les
+   premiers, et le jour où le contexte tombait à côté il fallait aller
+   reclasser un modèle dans les Listes avant de pouvoir s'en servir. Un
+   seul modèle en tout : on ne demande rien, il n'y a rien à choisir. */
 function ouvrirChoixWa(contexte, mots, apres, renonce){
-  const l = modelesWa(contexte);
+  const dedans = modelesWa(contexte);
+  const dehors = (L.whatsapp || []).filter(m=> m
+    && (m.contexte || "libre") !== contexte && String(m.texte || "").trim());
+  const l = dedans.concat(dehors);
   if(!l.length){ apres("", null); return; }
   if(l.length === 1){ apres(remplirCourriel(l[0].texte, mots), l[0]); return; }
+  const choix = (m, k)=> `<label class="wavar">
+      <input type="radio" name="wavar" value="${k}"${k ? "" : " checked"}>
+      <span><b>${esc(m.nom || "sans nom")}</b>
+        <em>${esc(remplirCourriel(m.texte, mots))}</em></span></label>`;
+  let k = -1;
+  const groupe = (lib, items)=> !items.length ? "" :
+    `<p class="wagrp">${esc(lib)}</p>` + items.map(m=> choix(m, ++k)).join("");
   popup({titre:"Quel message WhatsApp ?", large:true,
-    corps:`<p class="muted" style="margin:0 0 10px">${esc(libContexteWa(contexte))} :
-        ${l.length} variantes dans vos modèles. Le texte est déjà rempli avec
-        ce que disent le bien et le rendez-vous ; il reste modifiable dans
-        WhatsApp avant l'envoi.</p>
-      <div class="wavars">${l.map((m, k)=> `<label class="wavar">
-          <input type="radio" name="wavar" value="${k}"${k ? "" : " checked"}>
-          <span><b>${esc(m.nom || "sans nom")}</b>
-            <em>${esc(remplirCourriel(m.texte, mots))}</em></span></label>`).join("")}
+    corps:`<p class="muted" style="margin:0 0 10px">${esc(libContexteWa(contexte))}${
+        dedans.length ? " : " + dedans.length + " modèle"
+          + (dedans.length > 1 ? "s" : "") + " de ce contexte"
+          : " : aucun modèle de ce contexte"}${dehors.length
+          ? ", et le reste de la bibliothèque en dessous" : ""}. Le texte est déjà
+        rempli avec ce que disent le bien et le rendez-vous ; il reste modifiable
+        dans WhatsApp avant l'envoi.</p>
+      <div class="wavars">${groupe("Adaptés à la situation", dedans)}${
+        groupe("Toute la bibliothèque", dehors)}
         <label class="wavar"><input type="radio" name="wavar" value="-1">
           <span><b>Sans texte</b><em>WhatsApp s'ouvre sur la conversation, le
             message reste à écrire.</em></span></label>
@@ -13746,7 +14341,9 @@ function ouvrirProposition(i, id){
   if(!r || !d){ toast("Bien introuvable"); return; }
   const gens = destinatairesRecherche(r);
   const avec = gens.filter(x=> x.email);
-  const modeles = courrielsDisponibles();
+  /* les modèles rangés : ceux du contexte « proposer un bien » d'abord */
+  const rangs = modelesCourriel("proposition");
+  const modeles = rangs.tous;
   if(!modeles.length){
     popup({titre:"Aucun modèle de courriel", genre:"erreur",
       corps:`<p style="margin:0">La bibliothèque est vide. Ajoutez-en un dans
@@ -13769,8 +14366,7 @@ function ouvrirProposition(i, id){
             préparé sans destinataire : vous l'ajouterez dans votre messagerie.</p>`}
       </div>
       <div class="pf"><label for="propoMod">Modèle</label>
-        <select id="propoMod">${modeles.map((m, k)=>
-          `<option value="${k}">${esc(m.nom || "sans nom")}</option>`).join("")}</select>
+        <select id="propoMod">${optionsModeles(rangs, 0)}</select>
       </div>
       <div class="pf"><label for="propoObjet">Objet</label>
         <input type="text" id="propoObjet" value="${esc(remplirCourriel(m0.objet, mots))}">
@@ -14534,6 +15130,8 @@ function renderHistoBien(){
         ${x.vieux ? `<button type="button" class="xbtn sup"
           data-annvieux="${esc(x.vieux)}">Annuler</button>` : ""}
         ${x.cr ? boutonCr(x.cr, x.hors) : ""}
+        ${x.cr ? boutonSupprHisto(x.cr, [x.jour ? fdate(x.jour) : "", x.quoi, x.det]
+          .filter(Boolean).join(" \u2014 ")) : ""}
         </div>`).join("")}</div>`
         : `<p class="muted" style="margin:0">${HISTOB.fg || HISTOB.fq
            ? "Rien ne répond à ces filtres."
@@ -14583,9 +15181,15 @@ function motsDuRdv(x, pers){
        {hour:"2-digit", minute:"2-digit"}),
      lieu: x.lieu || ""});
 }
-function modeleNomme(bout){
+/* Le modèle d'un contexte : le premier qui le porte. À défaut — une
+   bibliothèque pas encore rangée —, on retombe sur l'ancienne recherche
+   par le nom, qui a l'avantage de continuer à marcher. */
+function modeleDuContexte(contexte, bout){
   const l = courrielsDisponibles();
-  return l.filter(m=> fold(m.nom || "").indexOf(fold(bout)) >= 0)[0] || null;
+  const parCtx = l.filter(m=> (m.contexte || "libre") === contexte)[0];
+  if(parCtx) return parCtx;
+  const t = fold(bout || "");
+  return t ? (l.filter(m=> fold(m.nom || "").indexOf(t) >= 0)[0] || null) : null;
 }
 /* Prévenir les participants. Le courriel passe par le logiciel de courrier
    — une seule fenêtre pour tous les destinataires cochés —, WhatsApp par
@@ -14601,7 +15205,8 @@ function confirmationsRdv(x, genre, apres){
   const gens = (x.gens || []).filter(g=> g.envoi);
   if(!gens.length){ fini(); return; }
   const annule = genre === "annulation";
-  const mod = modeleNomme(annule ? "annul" : "confirmation");
+  const mod = modeleDuContexte(annule ? "annulation" : "confirmation",
+                               annule ? "annul" : "confirmation");
   const mails = gens.filter(g=> g.envoi === "mail" && g.email);
   const was   = gens.filter(g=> g.envoi === "wa" && g.tel);
   if(mails.length){
@@ -14906,7 +15511,7 @@ function majRapprochements(){
     try{
       const auj = document.getElementById("carteRappro");
       if(auj && pageActive() === "aujourdhui") renderAujourdhui();
-      if(pageActive() === "general") renderGeneral();
+      if(pageGenerale()) renderGeneral();
       if(pageActive() === "prospects" && PROSP.ouvert){
         const i = indexProspect(PROSP.ouvert);
         if(i >= 0) majRapproFiche("prospects", i);
@@ -15358,8 +15963,8 @@ function etatCourant(){
   const p = pageActive();
   if(p === "prospects")  return {page:"prospects",  id:PROSP.ouvert, volet:PROSP.page};
   if(p === "repertoire") return {page:"repertoire", id:PERS.ouvert,  volet:PERS.onglet};
-  if(p === "general")    return {page:"general",    id:(typeof D !== "undefined" && D
-                                                       ? D.id : ""), volet:""};
+  if(p === "bien" || p === "mandat")
+    return {page:p, id:(typeof D !== "undefined" && D ? D.id : ""), volet:""};
   return {page:p, id:"", volet:""};
 }
 function empilerFenetre(){
@@ -15379,7 +15984,7 @@ function libEtat(e){
     const f = e.id ? fichePersonne(e.id) : null;
     return f ? (nomUsuel(f) || "sa fiche") : "Le répertoire";
   }
-  if(e.page === "general") return "Le dossier";
+  if(e.page === "bien" || e.page === "mandat") return "Le dossier";
   return "la page précédente";
 }
 function retablirFenetre(e){
@@ -15391,8 +15996,9 @@ function retablirFenetre(e){
     PERS.ouvert = e.id || ""; PERS.onglet = e.volet || "ident";
     PERS.fg = ""; PERS.fq = "";
     activerOnglet("repertoire"); renderRepertoire();
-  } else if(e.page === "general" && e.id && typeof ouvrirDossier === "function"){
-    ouvrirDossier(e.id);
+  } else if((e.page === "bien" || e.page === "mandat") && e.id
+             && typeof ouvrirDossier === "function"){
+    ouvrirDossier(e.id); activerOnglet(e.page);
   } else activerOnglet(e.page);
   window.scrollTo(0, 0);
 }
@@ -17869,24 +18475,28 @@ function tuilesAlertes(cote){
   let rech = [];
   try{ rech = tousLesRapprochements(); }catch(e){ rech = []; }
   const sansRep = rech.reduce((t, x)=> t + x.attente, 0);
+  /* Le mot de l'unité est donné AU SINGULIER ET AU PLURIEL. Ajouter un
+     « s » à la fin d'un groupe de mots donnait « bien à proposers » :
+     « proposer » est un verbe, il ne s'accorde pas. Écrire les deux
+     formes coûte quatre mots et ne se trompe jamais. */
   const t = [
     {k:"trait", n:aTraiter.length, titre:"Dossiers à traiter",
      det:"mandats à échéance, dates butoir et diagnostics",
-     mot:"dossier", chaud:true},
+     un:"dossier", plur:"dossiers", chaud:true},
     {k:"avis", n:av.aFaire.length + av.attente.length, titre:"Suivi des avis",
      det:av.aFaire.length + " à demander · " + av.attente.length + " sans réponse",
-     mot:"avis"},
+     un:"avis", plur:"avis"},
     {k:"rech", n:sansRep, titre:"Recherches",
      det:rech.length + " demandeur" + (rech.length > 1 ? "s" : "")
          + " en attente d'une réponse",
-     mot:"bien à proposer"}
+     un:"bien à proposer", plur:"biens à proposer"}
   ];
   return `<div class="altuiles">${t.map(x=> `
     <button type="button" class="altuile grande ${!x.n ? "calme"
         : x.chaud ? "chaud" : "att"}" data-tir="${x.k}">
       <span class="t">${esc(x.titre)}</span>
       <span class="n">${x.n}</span>
-      <span class="u">${esc(x.mot)}${x.n > 1 ? "s" : ""}</span>
+      <span class="u">${esc(x.n > 1 ? x.plur : x.un)}</span>
       <span class="d">${esc(x.det)}</span>
     </button>`).join("")}</div>`;
 }
@@ -20284,6 +20894,7 @@ document.addEventListener("input", e=>{
     if(m){ m[champ] = t.value; saveLists(); }
     return;
   }
+
   /* un modèle WhatsApp : même règle, et le contexte redessine la carte —
      c'est lui qui range le modèle, et le rappel des contextes compte */
   if(t.dataset && t.dataset.wamod !== undefined){
@@ -20298,6 +20909,12 @@ document.addEventListener("input", e=>{
 
   if(t.dataset.b !== undefined){
     set(D, t.dataset.b, t.value);
+    /* Un même champ peut être à l'écran DEUX FOIS : le numéro, le type et
+       la date du mandat sont dans la barre du haut et sur la page « Le
+       mandat ». Celui qu'on ne touche pas doit suivre, sinon la page
+       affiche une valeur périmée jusqu'au prochain redessin. On ne touche
+       jamais à celui qui a le curseur. */
+    synchroniserChamp(t);
     refreshCalcs();
     if(t.dataset.role === "cp")   refreshVilles(t.dataset.grp, true);
     if(t.dataset.role === "pays"){ refreshVilles(t.dataset.grp, true); }
@@ -21001,7 +21618,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-dossgo],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -21072,6 +21689,14 @@ document.addEventListener("click", e=>{
     setTimeout(()=> signaler(document.getElementById("bk_negociateurs_0")), 90);
     return; }
   if(t.dataset.sect){ ouvrirSection(t.dataset.sect); return; }
+  /* une tuile de la page « Le bien » : soit un volet de la fiche du bien,
+     soit une des deux sections qui restent dans les fenêtres */
+  if(t.dataset.btuile){
+    const [quoi, cle] = String(t.dataset.btuile).split(":");
+    if(quoi === "sec"){ ouvrirSection(cle); return; }
+    BIEN.page = String(t.dataset.btuile).slice(2);
+    ouvrirDetail();
+    return; }
   if(t.dataset.etape){ ouvrirEtape(t.dataset.etape); return; }
   if(t.dataset.tir){ ouvrirTiroirAuj(t.dataset.tir); return; }
   /* une cellule du tableau « Dossiers à traiter » : on ouvre le dossier à
@@ -21238,6 +21863,9 @@ document.addEventListener("click", e=>{
   if(t.dataset.annvieux !== undefined){
     ouvrirAnnulationVieille(t.dataset.annvieux); return; }
   if(t.dataset.cr !== undefined){ basculerCr(t.dataset.cr); return; }
+  if(t.dataset.histsup !== undefined){
+    demanderSuppressionHisto(t.dataset.histsup, t.dataset.histsuplib || "");
+    return; }
   if(t.dataset.fiche !== undefined){
     /* depuis la fiche du bien : c'est le dossier ouvert ; depuis une liste,
        l'identifiant est écrit sur le bouton */
@@ -25881,22 +26509,46 @@ const AIDE = [
   "À droite du mandat, elle suit les dates clés saisies dans l'onglet Général : EN VENTE tant "+
   "qu'aucune date n'est renseignée, puis SOUS OFFRE, SOUS COMPROMIS et VENDU. C'est la date la "+
   "plus récente qui donne la mention."],
- ["L'onglet Général : l'en-tête et les tuiles",
-  "La page ne montre plus deux colonnes de formulaires. En haut, l'<b>en-tête du dossier</b> : "+
-  "le <b>type et la surface</b> du bien, puis son <b>adresse</b> en dessous — les deux de la "+
-  "même taille, le bien s'annonçant avant de se situer — et la résidence sur la ligne "+
-  "suivante s'il y en a une. À droite, les trois chiffres : prix FAI, honoraires TTC, net "+
-  "vendeur. Dessous, la <b>frise des dates clés</b>, décrite à l'article suivant. "+
-  "Puis des <b>tuiles</b>, une par sujet : le bien, le suivi, la copropriété, le mobilier. "+
-  "Chacune montre quatre lignes — ce que l'on vient vérifier neuf fois sur dix — et un pied "+
-  "qui dit ce qu'il y a derrière. <b>Un clic sur la tuile ouvre sa fiche</b> dans une "+
-  "fenêtre, où la saisie se fait au calme ; en la fermant, la tuile se met à jour. "+
-  "<kbd>Échap</kbd>, la croix ou un clic à côté ferment la fenêtre. "+
-  "Une tuile qui demande votre attention se souligne d'un <b>trait orange</b> : une "+
-  "restriction de copropriété, un mandat résilié. "+
-  "Les boutons de l'en-tête restent à portée : la fiche détaillée du bien, les tiroirs de "+
-  "pièces jointes, les dossiers de l'immeuble, la création d'une action et l'annulation d'une "+
-  "vente en cours."],
+ ["Deux pages à la place de Général : Le bien, Le mandat",
+  "« Général » mêlait deux choses qui n'ont rien à voir : ce qu'<b>est le bien</b> — son "+
+  "type, ses pièces, son terrain, qui l'occupe — et ce qu'est l'<b>affaire</b> — le mandat, "+
+  "son prix, ses dates, qui la suit. Le menu de gauche porte maintenant <b>Le bien</b> et "+
+  "<b>Le mandat</b> à sa place. "+
+  "<b>Le cartouche du haut est le même sur les deux</b> : c'est l'identité du dossier, elle "+
+  "ne dépend pas de la page où l'on se trouve. Le type et la surface, l'adresse, la "+
+  "résidence, les trois chiffres, les trombones et la <b>frise des étapes</b> — tout y est, "+
+  "des deux côtés. "+
+  "<b>« Créer une action » a changé de place</b> : elle se perdait au milieu des trombones, "+
+  "elle est désormais <b>à gauche du prix FAI</b>, sur fond ambré. C'est le geste le plus "+
+  "fréquent de la page. "+
+  "Le bouton « Le bien » du cartouche, lui, a disparu : le menu de gauche porte une page "+
+  "entière à ce nom, et deux chemins vers la même chose sèment plus qu'ils n'aident."],
+ ["Le bien : huit tuiles et leur pourcentage",
+  "La page <b>Le bien</b> ne montre que des <b>tuiles</b>, une par sujet : le type de bien, "+
+  "l'adresse, les pièces, les caractéristiques, le terrain, l'occupation — les six volets de "+
+  "la fiche détaillée — puis la <b>copropriété</b> et les <b>demandeurs pour ce bien</b>. "+
+  "Chacune annonce, en gros, le <b>pourcentage de ce qui est renseigné</b> derrière elle. Ce "+
+  "n'est pas une note : c'est un repère pour savoir où il reste à travailler avant une "+
+  "annonce ou une visite. Les champs comptés sont ceux que le volet montre <b>vraiment</b> : "+
+  "la loi Carrez ne compte qu'en copropriété, l'étage que sur un appartement. Les pièces se "+
+  "comptent autrement — une pièce est complète quand elle a un nom, un niveau et une "+
+  "surface. Vert à 100 %, ambre en chemin, gris quand rien n'est saisi. "+
+  "La tuile des <b>demandeurs</b> compte des gens, pas des champs : elle montre leur nombre. "+
+  "<b>Un clic ouvre le volet par-dessus la page</b>, comme les tuiles d'Aujourd'hui. On "+
+  "referme par la croix, <kbd>Échap</kbd> ou un clic à côté, et l'on est là où l'on était."],
+ ["Le mandat : les informations, et quatre tuiles",
+  "La page <b>Le mandat</b> porte d'abord le <b>mandat lui-même</b>, modifiable sur place : "+
+  "son <b>numéro</b>, son <b>type</b>, sa <b>date de signature</b>, et son <b>échéance</b> "+
+  "calculée. Ces trois champs sont aussi dans la barre du haut, où ils sont partout à "+
+  "portée ; ce n'est pas un doublon inutile — c'est la page du mandat, on doit pouvoir les y "+
+  "lire et les y corriger sans viser une barre de 24 pixels. <b>Les deux jeux de champs se "+
+  "tiennent à jour l'un l'autre</b> : ce qu'on tape d'un côté paraît de l'autre. "+
+  "La <b>résiliation</b> est ici, à sa place, sous les trois champs qu'elle éteint : la case "+
+  "cochée fait apparaître la date et le motif. Elle n'est plus derrière une fenêtre du menu "+
+  "Général, qui n'existe plus. "+
+  "Dessous, quatre tuiles : <b>Suivi du dossier</b>, <b>Prix et honoraires</b>, <b>Dates "+
+  "clés</b>, <b>Mobilier</b> — et <b>Ventes annulées</b> quand il y en a. Elles s'ouvrent "+
+  "comme avant, dans une fenêtre, où la saisie se fait au calme."],
  ["La frise des dates clés : elle se lit ET se saisit",
   "La frise, sous l'en-tête, portait quatre étapes figées et ne servait qu'à lire ; une tuile "+
   "« Dates clés » répétait les mêmes dates juste à côté. <b>La tuile a disparu</b> : la frise "+
@@ -25919,6 +26571,63 @@ const AIDE = [
   "Le <b>type du mandat</b> est repris dans la première étape : « Mandat exclusif », avec sa "+
   "date. La cliquer ne déroule pas de fenêtre — elle remonte au <b>cartouche du haut</b>, où "+
   "le numéro, le type et la date du mandat se saisissent depuis toujours."],
+ ["L'argumentaire passe sous Publicité",
+  "L'argumentaire vivait au bas de la fiche détaillée du bien, derrière un volet qu'il "+
+  "fallait aller chercher. Or il ne <b>décrit</b> pas le bien — la surface, les pièces et le "+
+  "terrain le décrivent : il sert à en <b>parler</b>. Sa place est donc sur la page qui "+
+  "écrit l'annonce, et <b>en tête</b>, puisque c'est par lui qu'on commence. L'onglet "+
+  "<b>Publications</b> s'appelle d'ailleurs maintenant <b>Publicité</b>. "+
+  "<b>Seules les cases à cocher ont suivi</b>, comme demandé. Les trois champs libres "+
+  "d'autrefois — ce qui vous a frappé, les travaux, autre chose à dire — ne sont plus là. Ce "+
+  "qui y avait déjà été écrit <b>reste dans le dossier</b> et continue de nourrir les textes "+
+  "d'annonce ; il n'y a simplement plus de quoi en écrire de nouveau. Dites-le-moi s'ils "+
+  "vous manquent : ils se remettent en une ligne."],
+ ["Supprimer une ligne d'historique",
+  "À côté de l'<b>œil</b>, qui écarte une ligne du compte-rendu au propriétaire, une "+
+  "<b>croix rouge</b> l'<b>efface</b>. Pour de bon, et sans rien noter nulle part : une "+
+  "ligne supprimée ne laisse pas de ligne « ligne supprimée » derrière elle, ce qui serait "+
+  "absurde. "+
+  "Ce n'est pas la ligne qui est supprimée, mais <b>l'objet dont elle est l'image</b>, et la "+
+  "confirmation le dit à chaque fois : une <b>action</b> sort du journal ; un "+
+  "<b>rendez-vous</b> sort des rendez-vous, et l'action qui en était l'ombre part avec lui — "+
+  "<b>l'événement reste dans votre agenda Google</b>, à retirer là-bas ; un <b>changement de "+
+  "prix</b> sort de l'historique des prix, sans toucher au prix actuel ; une <b>étape</b> — "+
+  "offre, compromis, acte — voit sa <b>date effacée du dossier</b>, ce qui peut en changer "+
+  "le statut. "+
+  "Rien n'est récupérable, d'où la confirmation. Elle rappelle la ligne, dit ce qui va "+
+  "disparaître, et demande de confirmer."],
+ ["Le bon modèle au bon moment, courriel et WhatsApp",
+  "Chaque <b>modèle de courriel</b> porte maintenant un <b>contexte</b>, comme vos modèles "+
+  "WhatsApp : message libre, proposer un bien, confirmation d'un rendez-vous, annulation, "+
+  "relance d'un demandeur, au propriétaire. Il se choisit dans la liste déroulante posée à "+
+  "droite du nom du modèle, onglet <b>Listes</b>. "+
+  "Au moment d'écrire, l'application met <b>en tête</b> les modèles du contexte qui "+
+  "convient, sous l'intitulé « Adaptés à la situation », et laisse <b>toute la "+
+  "bibliothèque</b> juste en dessous. Elle propose, elle n'impose pas : le jour où le "+
+  "contexte tombe à côté, l'autre modèle est à un clic, sans aller d'abord le reclasser. "+
+  "<b>Vos modèles existants ont été rangés tout seuls</b>, d'après leur nom : un modèle "+
+  "nommé « Proposition » est entré dans « proposer un bien », « Relance » dans « relance ». "+
+  "Ce qui ne se devinait pas est resté « message libre » : vérifiez-les une fois, cela se "+
+  "corrige en deux clics. "+
+  "<b>Les messages WhatsApp suivent la même règle</b> : le choix d'une variante montre "+
+  "désormais les modèles du contexte <i>et</i> le reste de la bibliothèque, en deux groupes. "+
+  "Un seul modèle en tout : on ne demande rien, il n'y a rien à choisir."],
+ ["Noter n'est pas envoyer : l'action qui écrit vraiment",
+  "Choisir le genre « <b>Courriel</b> » dans <b>Créer une action</b> laissait jusqu'ici une "+
+  "ligne « Courriel » dans l'historique et aucun courriel nulle part : on avait écrit qu'on "+
+  "avait écrit. "+
+  "Le genre <b>enchaîne maintenant sur l'envoi</b>. Une fenêtre s'ouvre : le "+
+  "<b>destinataire</b> — la personne de l'action, ou le vendeur et l'acquéreur du bien, avec "+
+  "leurs adresses —, le <b>modèle</b> rangé par contexte, l'objet, le texte, la "+
+  "<b>signature</b> du négociateur et, quand l'action porte sur un bien, la case de la "+
+  "<b>fiche descriptive</b>. L'envoi se fait ensuite comme ailleurs : le message est copié "+
+  "en texte enrichi et la messagerie s'ouvre sur l'objet, il reste à coller. "+
+  "Un genre qui parle de <b>WhatsApp</b> ouvre de la même façon le choix d'un message et la "+
+  "conversation. Les autres genres — un appel, une visite, une note — ne déclenchent rien : "+
+  "ils se notent, et c'est tout. "+
+  "L'application reconnaît la voie au <b>mot</b> contenu dans le genre : « courriel », "+
+  "« mail », « whatsapp ». Un genre que vous ajouteriez — « Courriel de relance », « Mail au "+
+  "notaire » — fonctionnera donc sans rien régler."],
  ["Le prix s'ouvre en cliquant les chiffres",
   "Les trois chiffres de l'en-tête — <b>prix FAI</b>, <b>honoraires TTC</b>, <b>net "+
   "vendeur</b> — sont des boutons : un clic sur l'un des trois ouvre <b>Prix et "+
@@ -32569,6 +33278,38 @@ function photosDeLImmeuble(){
   return piecesDe(sujetImmeuble(nom), "Photos").filter(p=> p.photo);
 }
 
+/* ------------------------------------- l'argumentaire, en tête de page
+   Il vivait au bas de la fiche détaillée du bien, derrière un volet qu'il
+   fallait aller chercher. Or il ne DÉCRIT pas le bien — la surface, les
+   pièces, le terrain le décrivent — : il sert à en PARLER. Sa place est
+   donc sur la page qui écrit l'annonce, et en tête, puisque c'est par lui
+   qu'on commence.
+
+   Les trois champs libres d'autrefois — ce qui vous a frappé, les travaux,
+   autre chose à dire — ne sont plus là : vous avez demandé à ne garder que
+   les cases. Ce qui y avait déjà été écrit reste dans le dossier et
+   continue de nourrir les textes ; il n'y a simplement plus de quoi en
+   écrire de nouveau. */
+function carteArgumentairePubli(){
+  const a = D.argu || {};
+  const serie = g=>{
+    const coches = (a[g.cle] || {});
+    return `<div class="argg"><h5>${esc(g.titre)}</h5>
+      <div class="argcases">${g.liste.map(([k, lab])=>
+        `<label class="argcase${coches[k] ? " on" : ""}">
+          <input type="checkbox" data-chk="argu.${g.cle}.${k}"${coches[k] ? " checked" : ""}>
+          <span>${esc(lab)}</span></label>`).join("")}</div></div>`;
+  };
+  return `<div class="card"><h2>L'argumentaire</h2><div class="body">
+    <p class="muted" style="margin-top:0">Ce que la fiche technique ne dit pas, et qui
+      fait pourtant la différence dans une annonce. Rien n'est obligatoire : tout ce qui
+      est coché ici nourrit le texte ci-dessous, et rien d'autre n'y entre.</p>
+    <div class="arggs">${ARGU_GROUPES.map(serie).join("")}</div>
+    ${estCoproBien() ? `<p class="muted" style="margin:10px 0 0">Le <b>quartier</b> et le
+      <b>caractère de la résidence</b> se saisissent une seule fois sur la fiche de
+      l'immeuble, au carnet Résidences : ils servent à tous les lots.</p>` : ""}
+  </div></div>`;
+}
 function renderPublications(){
   const z = $("#publiBody"); if(!z) return;
   /* En changeant de dossier, on repart du brouillon de CELUI-LÀ. Le
@@ -32587,6 +33328,7 @@ function renderPublications(){
   const dispo = photosDuBien().length + photosDeLImmeuble().length;
 
   z.innerHTML = `
+    ${carteArgumentairePubli()}
     <div class="card"><h2>Le texte</h2><div class="body">
       <div class="pubstyles">${STYLES_PUBLI.map(s=>
         `<button type="button" class="stylebtn${s.cle === PUB_STYLE ? " on" : ""}"
@@ -32604,10 +33346,9 @@ function renderPublications(){
         <button type="button" class="addbtn" id="pubCopier">${IC_COPIE} Copier le texte</button>
       </div>
       ${arguRempli() ? "" : `<p class="muted" style="margin:8px 0 0">
-        <b>L'argumentaire du bien est vide.</b> Sans lui, le texte ne peut qu'énumérer
-        les caractéristiques. Il se remplit en bas de la
-        <a href="#" id="pubVersArgu">fiche détaillée du bien</a> — quelques cases et
-        trois lignes suffisent à changer l'annonce.</p>`}
+        <b>L'argumentaire est vide.</b> Sans lui, le texte ne peut qu'énumérer les
+        caractéristiques. Les cases sont <b>en tête de cette page</b> : quelques-unes
+        suffisent à changer l'annonce.</p>`}
     </div></div>
 
     <div class="card"><h2>Le clip</h2><div class="body">
@@ -32709,7 +33450,6 @@ function renderPublications(){
     PUB_TEXTE = textePubli(PUB_STYLE, PUB_GRAINE);
     renderPublications();
   };
-  if(b("pubVersArgu")) b("pubVersArgu").onclick = e=>{ e.preventDefault(); ouvrirDetail(); };
   brancherBande();
   if(b("pubCopier")) b("pubCopier").onclick = copierTextePubli;
   const sel = b("pubAppelSel");
