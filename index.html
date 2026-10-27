@@ -256,6 +256,9 @@ main{flex:1;min-width:0;max-width:1240px;margin:0 auto;padding:22px 0 80px}
 /* la fenêtre d'une section, et le tiroir de consultation */
 .modal.tiroir{place-items:stretch;justify-items:end;padding:0}
 .secbox{width:min(760px,100%);display:flex;flex-direction:column;max-height:88vh}
+/* une liste large — un tableau, des demandeurs — ne tient pas dans une
+   colonne de lecture : elle s'ouvre centrée et prend la place qu'il faut */
+.modal.grand .secbox{width:min(1180px,100%)}
 .modal.tiroir .secbox{width:min(560px,100vw);height:100%;max-height:100%;
   border-radius:0;box-shadow:-24px 0 64px -24px rgba(10,20,38,.45)}
 .secbox > .sh{display:flex;align-items:flex-start;gap:12px;padding:15px 18px 13px;
@@ -709,7 +712,11 @@ table.envois tr.repondu td.emode b{color:#166534}
   font-size:10.5px;font-weight:700}
 .repnon{background:#f1f5f9;color:#64748b;border-radius:999px;padding:1px 8px;
   font-size:10.5px;font-weight:700}
+/* visité : ni un oui ni un non — un fait, en attente de réponse */
+.repvis{background:#e0f2fe;color:#075985;border-radius:999px;padding:1px 8px;
+  font-size:10.5px;font-weight:700}
 .raprow.refuse{opacity:.6}
+.raprow.visite{background:#f7fbff}
 /* « proposé le 12/03 » : pour ne pas proposer deux fois le même bien en
    croyant le faire pour la première */
 .rapdit{display:inline-block;font-size:11px;color:#92400e;background:#fef3c7;
@@ -719,6 +726,11 @@ table.envois tr.repondu td.emode b{color:#166534}
   color:#1e3a8a;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;
   padding:1px 9px;margin:2px 0 0;cursor:pointer}
 .rapvis:hover{background:#dbeafe;border-color:#93c5fd}
+/* une visite passée, ou prise depuis une autre recherche du même
+   demandeur : on la montre, mais il n'y a rien à annuler d'ici */
+.rapvis.fait{cursor:default;background:#f8fafc;border-color:var(--line);
+  color:var(--ink-2)}
+.rapvis.fait:hover{background:#f8fafc;border-color:var(--line)}
 .rapvis svg{flex:0 0 auto}
 /* les deux fenêtres d'action, sur un bien rapproché */
 .propo .pf,.rdvbox .pf{margin-bottom:10px}
@@ -1821,32 +1833,77 @@ table.tdb.statuts tr.adet.vide td{color:var(--ink-3);font-style:italic;text-alig
 .aujrow .xbtn{justify-self:end}
 @media(max-width:760px){.aujrow{grid-template-columns:1fr auto auto}}
 /* les quatre tuiles d'alerte de la page Aujourd'hui */
-.altuiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;
+/* ------------------------------------------- les trois tuiles d'accueil
+   Trois, de largeur égale, et ensemble aussi larges que le tableau des
+   dossiers en cours qui les surplombe. Le titre, puis le COMPTE en grand
+   dessous : c'est le nombre qu'on vient lire de loin, pas le titre. */
+.altuiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;
   margin-bottom:18px}
-.altuile{display:flex;align-items:center;gap:13px;background:var(--card);
-  border:1px solid var(--line);border-radius:var(--radius);padding:12px 15px;
-  box-shadow:var(--shadow);text-align:left;font:inherit;color:inherit;cursor:pointer;
+.altuile{display:flex;flex-direction:column;align-items:flex-start;gap:0;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 17px 15px;box-shadow:var(--shadow);text-align:left;font:inherit;
+  color:inherit;cursor:pointer;
   transition:box-shadow .16s ease,border-color .16s ease,transform .16s ease}
 .altuile:hover{border-color:#b9c8dd;box-shadow:var(--shadow-2);transform:translateY(-1px)}
 .altuile:active{transform:translateY(0)}
-.altuile .n{font-size:24px;font-weight:700;letter-spacing:-.6px;min-width:32px;
-  text-align:center;font-variant-numeric:tabular-nums}
-.altuile .txt{min-width:0}
-.altuile .t{display:block;font-size:13px;font-weight:650;line-height:1.25}
-.altuile .d{display:block;font-size:11.5px;color:var(--ink-3);margin-top:2px}
-.altuile .fl{margin-left:auto;color:var(--ink-3);font-size:16px;line-height:1}
-.altuile:hover .fl{color:var(--accent)}
+.altuile .t{display:block;font-size:13.5px;font-weight:650;line-height:1.25;
+  color:var(--navy)}
+.altuile .n{display:block;font-size:46px;font-weight:700;letter-spacing:-2px;
+  line-height:1.05;margin:6px 0 0;font-variant-numeric:tabular-nums}
+.altuile .u{display:block;font-size:12px;color:var(--ink-2);margin-top:-2px}
+.altuile .d{display:block;font-size:11.5px;color:var(--ink-3);margin-top:7px;
+  line-height:1.35}
 .altuile.calme .n{color:var(--ink-3)}
 .altuile.att   .n{color:#b45309}
 .altuile.att{border-color:#e6cba4}
 .altuile.chaud .n{color:#b91c1c}
 .altuile.chaud{border-color:#e7b4b4;background:linear-gradient(180deg,#fff,#fffafa)}
-/* la liste d'une alerte se déploie sous sa tuile, sur toute la largeur :
-   une colonne de 215 px ne sait pas porter un tableau */
-.alliste{grid-column:1/-1;margin:-6px 0 2px}
-/* une tuile dépliée coiffe sa liste : elle en prend toute la largeur */
-.altuile.on{grid-column:1/-1;border-color:var(--accent);box-shadow:var(--shadow-2)}
-.altuile.on .fl{color:var(--accent)}
+/* une tuile à zéro n'a rien d'alarmant : elle redevient neutre */
+.altuile.calme{border-color:var(--line);background:var(--card)}
+@media(max-width:860px){.altuiles{grid-template-columns:1fr}}
+
+/* ------------------------------------- le tableau « Dossiers à traiter »
+   Une ligne par dossier, cinq colonnes, et tout tient sur la ligne : un
+   dossier qui déborderait sur deux lignes se compterait deux fois à
+   l'œil. Les quatre premières colonnes coupent proprement, la dernière
+   porte autant de pastilles qu'il y a d'alertes. */
+.trtab{display:flex;flex-direction:column;border:1px solid var(--line);
+  border-radius:10px;overflow:hidden;background:#fff}
+.trrow{display:grid;grid-template-columns:78px 112px 140px minmax(80px,1fr)
+  minmax(200px,2.4fr);gap:10px;align-items:center;padding:8px 12px;
+  border-bottom:1px solid var(--line-2);font-size:13px}
+.trrow:last-child{border-bottom:0}
+.trrow:not(.tete):hover{background:var(--accent-soft)}
+.trrow.tete{background:#f8fafc;font-size:10px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--ink-3);padding:7px 12px;position:sticky;top:0;z-index:2}
+.trc{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trnum{font-weight:700;color:var(--navy)}
+.trnum i{font-weight:400;color:var(--ink-3)}
+.trtype{color:var(--ink)}
+.trprop{font-weight:600;color:var(--ink)}
+.tradr{color:var(--ink-2)}
+/* ce qui mène quelque part se signale au survol, et nulle part ailleurs :
+   un soulignement permanent sur cinq colonnes ferait un tableau illisible */
+.trrow:not(.tete) [role="button"]{cursor:pointer}
+.trrow:not(.tete) .trnum[role="button"]:hover,
+.trrow:not(.tete) .trtype[role="button"]:hover,
+.trrow:not(.tete) .trprop[role="button"]:hover,
+.trrow:not(.tete) .tradr[role="button"]:hover{text-decoration:underline;color:var(--accent)}
+.tral{display:flex;gap:6px;align-items:center;overflow:hidden}
+.tral1{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;font-size:11px;font-weight:600;border-radius:20px;
+  padding:2px 8px;border:1px solid;cursor:pointer}
+.tral1:hover{filter:brightness(.96)}
+.tral1.perime{background:#fee2e2;border-color:#f87171;color:#991b1b}
+.tral1.urgent{background:#ffedd5;border-color:#fb923c;color:#9a3412}
+.tral1.proche{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.tral1.veille{background:#fefce8;border-color:#fde68a;color:#854d0e}
+.tral1.calme {background:#f1f5f9;border-color:#cbd5e1;color:#475569}
+@media(max-width:860px){
+  .trrow{grid-template-columns:72px minmax(0,1fr);gap:4px 10px}
+  .trrow.tete{display:none}
+  .trc{white-space:normal}
+  .tral{grid-column:1/-1;flex-wrap:wrap}}
 .aujpied{display:flex;justify-content:center;margin-top:2px}
 .aujpied .xbtn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px}
 /* la pastille de stade, ici en simple repère, se fait discrète */
@@ -2585,7 +2642,7 @@ table.tdb .puce.resilie{background:#64748b}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 26 octobre 2026, 17 h 25">Dossiers de vente</div>
+  <div class="brand" title="Version du 27 octobre 2026, 14 h 45">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2811,7 +2868,7 @@ table.tdb .puce.resilie{background:#64748b}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>26 octobre 2026, 17 h 25</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>27 octobre 2026, 14 h 45</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -6165,6 +6222,7 @@ function ouvrirSection(cle, champ){
   if(!sec) return;
   SECTION_OUVERTE = cle; TIROIR_OUVERT = "";
   $("#secBox").classList.remove("tiroir");
+  $("#secBox").classList.remove("grand");
   $("#secCorps").className = "scorps unique";
   $("#secTitre").textContent = sec.t;
   $("#secSous").textContent = SOUS_SECTION[cle] || "";
@@ -6185,6 +6243,7 @@ function fermerSection(){
   const etaitSection = !!SECTION_OUVERTE, etaitTiroir = !!TIROIR_OUVERT;
   SECTION_OUVERTE = ""; TIROIR_OUVERT = "";
   $("#secBox").classList.remove("tiroir");
+  $("#secBox").classList.remove("grand");
   /* la page reprend la main : les tuiles ou les compteurs ont pu changer */
   if(etaitSection) renderGeneral();
   if(etaitTiroir)  renderAujourdhui();
@@ -13328,9 +13387,56 @@ function refusFiches(r){
 }
 function refusDe(r){ return refusFiches(r).map(x=> x.id); }
 function refusInfo(r, id){ return refusFiches(r).filter(x=> x.id === id)[0] || null; }
+
+/* =====================================================================
+   UNE VISITE VAUT POUR LE DEMANDEUR, PAS POUR LA RECHERCHE
+   ---------------------------------------------------------------------
+   Monsieur X a deux recherches — une résidence principale, un
+   investissement — et le même bien ressort sur les deux. On organise la
+   visite depuis l'une : il serait absurde que l'autre continue de
+   proposer ce bien comme s'il n'avait rien vu. Une visite est un fait
+   qui appartient à la PERSONNE, pas au dossier de recherche par lequel
+   on y est arrivé.
+
+   Deux recherches sont du même demandeur quand elles partagent au moins
+   une personne. L'identifiant du répertoire fait foi ; à défaut — une
+   fiche ancienne, un nom tapé à la main —, on se rabat sur le nom mis à
+   plat, ce qui vaut mieux que rien et ne risque qu'un rapprochement de
+   trop entre deux homonymes.
+   ===================================================================== */
+function clesPersonnesProspect(r){
+  return personnesProspect(r).map(p=> p.pid
+      ? "p:" + p.pid
+      : "n:" + fold(nomPersonneProspect(p) || ""))
+    .filter(k=> k !== "n:");
+}
+function recherchesDuMemeDemandeur(r){
+  if(!r) return [];
+  const cles = clesPersonnesProspect(r);
+  if(!cles.length) return [r];
+  return (L.prospects || []).filter(x=> x &&
+    clesPersonnesProspect(x).some(k=> cles.indexOf(k) >= 0));
+}
+/* La visite d'un bien par ce demandeur, sur n'importe laquelle de ses
+   recherches : la prochaine à venir, ou à défaut la dernière passée. */
+function visiteDuDemandeur(r, id){
+  const ids = recherchesDuMemeDemandeur(r).map(x=> x.id).filter(Boolean);
+  if(!ids.length) return null;
+  const l = (L.rdv || []).filter(x=> x && !x.annule && x.dossier === id
+    && ids.indexOf(x.recherche) >= 0);
+  if(!l.length) return null;
+  const avenir = l.filter(rdvAVenir)
+    .sort((a, b)=> String(a.debut).localeCompare(String(b.debut)));
+  if(avenir.length) return avenir[0];
+  return l.sort((a, b)=> String(b.debut).localeCompare(String(a.debut)))[0];
+}
+/* L'état d'un bien pour une recherche. L'ordre compte : une réponse
+   donnée — suivi, refus — l'emporte sur une visite, qui n'est qu'un
+   fait en attente de réponse. */
 function etatRappro(r, id){
   if(suivisDe(r).indexOf(id) >= 0) return "suivi";
   if(refusDe(r).indexOf(id) >= 0)  return "refuse";
+  if(visiteDuDemandeur(r, id))     return "visite";
   return "";
 }
 /* les biens proposés qui n'ont pas encore reçu de réponse */
@@ -13500,6 +13606,14 @@ function boutonsReponse(i, id, etat){
     return `<span class="repnon">refusé</span>${actions}
       <button type="button" class="ricone" data-reproposer="${i}|${esc(id)}"
         title="Reproposer ce bien">${IC_REPROP}</button>`;
+  /* visité : le bien a été vu, la réponse reste à donner. Les deux
+     boutons de réponse restent donc là, c'est tout l'intérêt. */
+  if(etat === "visite")
+    return `<span class="repvis">visité</span>${actions}
+      <button type="button" class="ricone oui" data-suivre="${i}|${esc(id)}"
+        title="Mettre au suivi de ce demandeur">${IC_OK}</button>
+      <button type="button" class="ricone sup" data-refuser="${i}|${esc(id)}"
+        title="Refuser ce bien">${IC_NON}</button>`;
   return actions + `<button type="button" class="ricone oui" data-suivre="${i}|${esc(id)}"
       title="Mettre au suivi de ce demandeur">${IC_OK}</button>
     <button type="button" class="ricone sup" data-refuser="${i}|${esc(id)}"
@@ -13534,14 +13648,24 @@ function ligneRapproBien(b, i, etat, ou){
   const dejaDit = rech ? diteProposition(rech, o.id) : "";
   /* la visite à venir se lit sur la ligne, et s'annule d'un clic : c'est là
      qu'on la cherche, pas dans un onglet à part */
-  const visite = rech ? rdvDe({dossier:o.id, recherche:rech.id, vivants:true})
-    .filter(rdvAVenir)[0] : null;
+  const visite = rech ? visiteDuDemandeur(rech, o.id) : null;
+  const aVenir = visite && rdvAVenir(visite);
+  /* la visite d'une AUTRE recherche du même demandeur est signalée comme
+     telle : sans cela, on chercherait en vain dans quel rendez-vous de
+     cette fiche-ci elle a bien pu être prise */
+  const ailleurs = visite && rech && visite.recherche !== rech.id;
   const ec = `<span class="rapec">${pastillesEcarts(b)}${dejaDit
     ? `<span class="rapdit" title="Ce bien a déjà été proposé à ce demandeur">${
         esc(dejaDit)}</span>` : ""}${visite
-    ? `<button type="button" class="rapvis" data-rdvann="${esc(visite.id)}"
-        title="Cliquer pour annuler ce rendez-vous">${IC_AGENDA} visite le ${
-        esc(quandRdv(visite))}</button>` : ""}</span>`;
+    ? (aVenir && !ailleurs
+        ? `<button type="button" class="rapvis" data-rdvann="${esc(visite.id)}"
+            title="Cliquer pour annuler ce rendez-vous">${IC_AGENDA} visite le ${
+            esc(quandRdv(visite))}</button>`
+        : `<span class="rapvis fait" title="${esc(ailleurs
+            ? "Visite organisée sur une autre recherche de ce demandeur"
+            : "Visite déjà passée")}">${IC_AGENDA} ${aVenir ? "visite le " : "visité le "}${
+            esc(quandRdv(visite))}${ailleurs ? " · autre recherche" : ""}</span>`)
+    : ""}</span>`;
   const fin = `<span class="rapfin">${i === undefined || i === null ? ""
       : boutonsReponse(i, o.id, etat || "")}
       <button type="button" class="xbtn" data-open="${esc(o.id)}">Voir</button></span>`;
@@ -14707,6 +14831,7 @@ function blocRapproAcq(r, i){
   if(!res.biens.length) return rappel + `<p class="muted" style="margin:0">Aucun bien du
     portefeuille ne correspond à cette recherche.</p>` + blocEcartes(res.ecartes);
   const attente = res.biens.filter(b=> !etatRappro(r, b.d.id));
+  const vus     = res.biens.filter(b=> etatRappro(r, b.d.id) === "visite");
   const pris    = res.biens.filter(b=> etatRappro(r, b.d.id) === "suivi");
   const refu    = res.biens.filter(b=> etatRappro(r, b.d.id) === "refuse");
   const titre = (lib, n)=>`<h4 class="rapsous">${esc(lib)}
@@ -14716,6 +14841,10 @@ function blocRapproAcq(r, i){
     (attente.length ? attente.map(b=> ligneRapproBien(b, i, "")).join("")
       : `<p class="muted" style="margin:0 0 10px">Tous les biens proposés ont reçu une
          réponse.</p>`) +
+    /* les biens visités ont leur place à eux : ils ne sont plus à proposer,
+       et la réponse du demandeur reste à recueillir */
+    (vus.length ? titre("Visités — réponse à recueillir", vus.length) +
+      vus.map(b=> ligneRapproBien(b, i, "visite")).join("") : "") +
     (pris.length ? titre("Déjà au suivi", pris.length) +
       pris.map(b=> ligneRapproBien(b, i, "suivi")).join("") : "") +
     (refu.length ? titre("Refusés", refu.length) +
@@ -17607,87 +17736,194 @@ function renderAujourdhui(){
    La comparaison de deux périmètres garde l'ancienne mise en page, qui
    est faite pour tout montrer côte à côte.
    ===================================================================== */
-function nbEcheancesChaudes(cote){
-  return mandatsVenteCote(cote).filter(d=>{
-    const p = palierEcheance(d);
-    return p && p.cle === "chaud";
-  }).length;
+/* Les trois comptes séparés — mandats chauds, butoirs proches, diagnostics
+   à revoir — ont disparu avec les trois tuiles qui les portaient : c'est
+   désormais un seul compte, celui des DOSSIERS à traiter, que donne
+   `dossiersATraiter()` juste en dessous. Les trois cartes détaillées, elles,
+   servent toujours à la comparaison de deux périmètres. */
+
+/* =====================================================================
+   « DOSSIERS À TRAITER » — LES TROIS ALERTES EN UNE SEULE LISTE
+   ---------------------------------------------------------------------
+   Il y avait trois tableaux : mandats à échéance, dates butoir,
+   diagnostics. Trois listes à ouvrir l'une après l'autre, et le même
+   dossier qui revenait dans deux d'entre elles sans qu'on le voie.
+
+   Ce qu'on cherche le matin n'est pas « quels mandats expirent » mais
+   « sur quels dossiers dois-je faire quelque chose aujourd'hui ». La
+   réponse est une liste de DOSSIERS, un par ligne, avec ce qu'il y a à
+   y faire. Les trois alertes deviennent trois sortes de la même colonne.
+
+   Une ligne = un dossier. Jamais deux. Un dossier qui a trois alertes
+   les porte toutes dans sa dernière colonne, de la plus pressante à la
+   plus lointaine.
+   ===================================================================== */
+const ECHEANCE_CHAUDE_J = 60;          /* le palier « chaud » des mandats */
+/* le délai, tel qu'il se lit entre parenthèses derrière une alerte */
+function joursEntreParentheses(j){
+  if(j === null || j === undefined) return "";
+  if(j === 0) return "aujourd'hui";
+  return j < 0 ? "dépassé de " + (-j) + " j" : "dans " + j + " j";
 }
-function nbButoirsProches(cote){
-  let n = 0;
-  alertesCote(cote).forEach(d=> butoirsDe(d).forEach(b=>{
-    if(b.jours <= BUTOIR_HORIZON_J) n++;
-  }));
-  return n;
+/* Toutes les alertes d'un dossier, la plus pressante d'abord. `enVente`
+   dit si le mandat lui-même est à surveiller : un bien sous compromis
+   n'a plus d'échéance de mandat à craindre. */
+function alertesDossier(d, enVente){
+  const out = [];
+  if(enVente){
+    const j = joursAvant(echeanceMandat(d));
+    if(j !== null && j < ECHEANCE_CHAUDE_J)
+      out.push({genre:"mandat", page:"general", j,
+        etat: j < 0 ? "perime" : "urgent",
+        txt: (j < 0 ? "Mandat échu" : "Mandat bientôt à échéance")
+             + " (" + joursEntreParentheses(j) + ")"});
+  }
+  butoirsDe(d).forEach(b=>{
+    if(b.jours > BUTOIR_HORIZON_J) return;
+    out.push({genre:"butoir", page:"general", j:b.jours, etat:etatButoir(b.jours),
+      txt: b.quoi + " (" + joursEntreParentheses(b.jours) + ")"});
+  });
+  diagsAlerte(d).forEach(x=>{
+    out.push({genre:"diag", page:"diagnostics", j:x.p.jours,
+      etat: x.p.jours < 0 ? "perime" : "proche",
+      txt: x.nom + " (" + joursEntreParentheses(x.p.jours) + ")"});
+  });
+  return out.sort((a, b)=> a.j - b.j);
 }
-function nbDiagsARevoir(cote){
-  return alertesCote(cote).filter(d=> diagsAlerte(d).length).length;
+/* Les dossiers qui ont au moins une alerte. Le mandat se regarde sur les
+   biens dont ce périmètre suit le VENDEUR ; les butoirs et les
+   diagnostics sur tous ceux où il intervient, d'un côté ou de l'autre.
+   L'union des deux, sans doublon, fait la liste. */
+function dossiersATraiter(cote){
+  const vend = {};
+  mandatsVenteCote(cote).forEach(d=> vend[d.id] = 1);
+  const vus = {}, out = [];
+  alertesCote(cote).concat(mandatsVenteCote(cote)).forEach(d=>{
+    if(vus[d.id]) return;
+    vus[d.id] = 1;
+    const al = alertesDossier(d, !!vend[d.id]);
+    if(al.length) out.push({d, alertes:al, j:al[0].j});
+  });
+  return out.sort((a, b)=> a.j - b.j);
 }
-/* Les quatre listes d'alerte s'ouvrent sous leur tuile. Elles sont
-   dépliées à l'ouverture de l'application — c'est ce qu'on vient voir —
-   puis chacune se replie d'un clic et reste comme on l'a laissée : l'état
-   vit dans la page, pas dans la mémoire, et l'on retrouve donc tout ouvert
-   au prochain démarrage. */
-let AUJ_ALERTES = {ech:true, but:true, diag:true, avis:true};
-function basculerAlerte(k){
-  if(AUJ_ALERTES[k] === undefined) return false;
-  AUJ_ALERTES[k] = !AUJ_ALERTES[k];
-  renderAujourdhui();
-  return true;
+/* --------------------------------------------------- le tableau lui-même
+   Chaque cellule mène quelque part : le numéro de mandat au dossier, le
+   propriétaire à sa fiche d'identité, l'adresse au bien, et chaque alerte
+   à la page où elle se traite. Une liste où l'on ne peut rien faire
+   oblige à retrouver à la main ce qu'elle vient de nommer. */
+function tableauDossiersATraiter(cote){
+  const l = dossiersATraiter(cote);
+  if(!l.length) return `<p class="vzvide">Rien à traiter sur ce périmètre :
+    aucun mandat proche de son terme, aucune date butoir dans les trois
+    semaines, aucun diagnostic à renouveler.</p>`;
+  const cell = (contenu, cls, attr, bulle)=>
+    `<span class="trc ${cls}"${attr || ""}${bulle
+      ? ` data-bulle="${esc(bulle)}"` : ""}>${contenu}</span>`;
+  const lignes = l.map(x=>{
+    const d = x.d, b = d.bien || {}, c = critBien(d);
+    const num = (d.mandat && d.mandat.num) || "";
+    const prop = proprietaireCourt(d);
+    const adr = [b.adresse, [b.cp, b.ville].filter(Boolean).join(" ")]
+      .filter(Boolean).join(", ") || "adresse non renseignée";
+    const tout = x.alertes.map(a=> a.txt).join("  ·  ");
+    return `<div class="trrow">
+      ${cell(num ? "n° " + esc(num) : "<i>sans n°</i>", "trnum",
+        ` role="button" tabindex="0" data-dossgo="${esc(d.id)}|general"`,
+        "Ouvrir ce dossier")}
+      ${cell(esc(c.type || "Bien"), "trtype",
+        ` role="button" tabindex="0" data-dossgo="${esc(d.id)}|general"`,
+        "Ouvrir ce dossier")}
+      ${cell(esc(prop), "trprop",
+        prop === "—" ? "" : ` role="button" tabindex="0" data-oproprio="${esc(d.id)}"`,
+        prop === "—" ? "" : "Ouvrir la fiche de " + prop)}
+      ${cell(esc(adr), "tradr",
+        ` role="button" tabindex="0" data-dossgo="${esc(d.id)}|general"`, adr)}
+      <span class="trc tral" data-bulle="${esc(tout)}">${x.alertes.map(a=>
+        `<span class="tral1 ${a.etat}" role="button" tabindex="0"
+           data-dossgo="${esc(d.id)}|${a.page}">${esc(a.txt)}</span>`).join("")}</span>
+    </div>`;
+  }).join("");
+  return `<div class="trtab">
+    <div class="trrow tete">
+      <span class="trc trnum">Mandat</span>
+      <span class="trc trtype">Type de bien</span>
+      <span class="trc trprop">Propriétaire</span>
+      <span class="trc tradr">Adresse du bien</span>
+      <span class="trc tral">Ce qu'il y a à faire</span>
+    </div>${lignes}</div>`;
 }
+/* Les listes ne se déplient plus sous leur tuile : elles s'ouvrent dans
+   une fenêtre posée par-dessus la page (voir `ouvrirTiroirAuj`). */
+/* -------------------------------------------------------- LES TROIS TUILES
+   La page d'accueil ne montre plus que le tableau des dossiers en cours et
+   TROIS TUILES. Chacune porte un titre, le compte en grand dessous, et
+   ouvre sa liste dans une fenêtre POSÉE PAR-DESSUS la page.
+
+   Elles se dépliaient auparavant sous elles-mêmes, en poussant le reste
+   vers le bas : on perdait de vue ce qu'on venait de quitter, et la page
+   changeait de hauteur à chaque clic. Une fenêtre se referme et l'on est
+   exactement là où l'on était. */
 function tuilesAlertes(cote){
   const av = listesAvis(cote);
+  const aTraiter = dossiersATraiter(cote);
+  let rech = [];
+  try{ rech = tousLesRapprochements(); }catch(e){ rech = []; }
+  const sansRep = rech.reduce((t, x)=> t + x.attente, 0);
   const t = [
-    {k:"ech", n:nbEcheancesChaudes(cote), titre:"Mandats à échéance",
-     det:"à moins de deux mois", chaud:true,
-     total:mandatsVenteCote(cote).length, mot:"mandat en vente"},
-    {k:"but", n:nbButoirsProches(cote), titre:"Dates butoir",
-     det:"dans les trois semaines ou dépassées"},
-    {k:"diag", n:nbDiagsARevoir(cote), titre:"Diagnostics",
-     det:"à renouveler"},
+    {k:"trait", n:aTraiter.length, titre:"Dossiers à traiter",
+     det:"mandats à échéance, dates butoir et diagnostics",
+     mot:"dossier", chaud:true},
     {k:"avis", n:av.aFaire.length + av.attente.length, titre:"Suivi des avis",
-     det:av.aFaire.length + " à demander · " + av.attente.length + " sans réponse"}
+     det:av.aFaire.length + " à demander · " + av.attente.length + " sans réponse",
+     mot:"avis"},
+    {k:"rech", n:sansRep, titre:"Recherches",
+     det:rech.length + " demandeur" + (rech.length > 1 ? "s" : "")
+         + " en attente d'une réponse",
+     mot:"bien à proposer"}
   ];
-  return `<div class="altuiles">${t.map(x=>{
-    const ton = !x.n ? "calme" : x.chaud ? "chaud" : "att";
-    const ouvert = !!AUJ_ALERTES[x.k], tir = TIROIRS_AUJ[x.k];
-    return `<button type="button" class="altuile ${ton}${ouvert ? " on" : ""}"
-        data-tir="${x.k}" aria-expanded="${ouvert}">
+  return `<div class="altuiles">${t.map(x=> `
+    <button type="button" class="altuile grande ${!x.n ? "calme"
+        : x.chaud ? "chaud" : "att"}" data-tir="${x.k}">
+      <span class="t">${esc(x.titre)}</span>
       <span class="n">${x.n}</span>
-      <span class="txt"><span class="t">${esc(x.titre)}</span>
-        <span class="d">${esc(x.det)}</span></span>
-      <span class="fl">${ouvert ? "⌄" : "›"}</span></button>` +
-      (ouvert ? `<div class="alliste">${tir ? tir.corps() : ""}</div>` : "");
-  }).join("")}</div>`;
+      <span class="u">${esc(x.mot)}${x.n > 1 ? "s" : ""}</span>
+      <span class="d">${esc(x.det)}</span>
+    </button>`).join("")}</div>`;
 }
 /* le contenu de chaque tiroir, redessiné à chaque ouverture */
 const TIROIRS_AUJ = {
-  ech:  {titre:"Mandats arrivant à échéance",
-         sous:"Du plus pressé au plus lointain ; les paliers s'ouvrent et se referment.",
-         corps:()=> carteEcheances("g"), unique:true},
-  but:  {titre:"Dates butoir",
-         sous:"Rétractation, financement et compromis. La croix écarte une alerte traitée.",
-         corps:()=> carteButoirs("g"), unique:true},
-  diag: {titre:"Diagnostics à renouveler",
-         sous:"Périmés, ou qui le seront sous deux mois.",
-         corps:()=> carteDiagnostics("g"), unique:true},
+  trait:{titre:"Dossiers à traiter",
+         sous:"Un dossier par ligne, du plus pressant au plus lointain. "
+            + "Chaque élément de la ligne mène où il désigne.",
+         corps:()=> tableauDossiersATraiter("g"), unique:true, large:true},
   avis: {titre:"Suivi des avis",
          sous:"Les ventes signées à solliciter, et les demandes restées sans réponse.",
          corps:()=> carteAvis("g"), unique:true},
+  rech: {titre:"Recherches — demandeurs et biens en vente",
+         sous:"Ce que chaque demandeur n'a pas encore vu, ni refusé, ni visité.",
+         corps:()=> carteRapprochements()
+            || `<p class="vzvide">Aucun demandeur n'attend de réponse.</p>`,
+         unique:true, large:true},
   rep:  {titre:"Répartition du portefeuille",
          sous:"Par type de bien et par type de mandat, sur le même périmètre.",
          corps:()=> carteCamembert("g", "bien") + carteCamembert("g", "mandat")}
 };
+/* Les listes larges — un tableau, une liste de demandeurs — s'ouvrent
+   CENTRÉES et larges ; les autres gardent le tiroir latéral, qui va bien
+   à une colonne de lecture. Dans les deux cas, la page reste dessous :
+   on ne la quitte pas, on la recouvre. */
 function ouvrirTiroirAuj(k){
   const t = TIROIRS_AUJ[k];
   if(!t) return;
   TIROIR_OUVERT = k; SECTION_OUVERTE = "";
-  $("#secBox").classList.add("tiroir");
+  const b = $("#secBox");
+  b.classList.toggle("tiroir", !t.large);
+  b.classList.toggle("grand", !!t.large);
   $("#secCorps").className = "scorps" + (t.unique ? " unique" : "");
   $("#secTitre").textContent = t.titre;
   $("#secSous").textContent = t.sous;
   $("#secCorps").innerHTML = t.corps();
-  $("#secBox").hidden = false;
+  b.hidden = false;
 }
 /* une croix cliquée dans le tiroir redessine la page : le tiroir doit suivre */
 function majTiroirAuj(){
@@ -17702,13 +17938,15 @@ function construireAujourdhui(){
     `<div class="tdbduo egal${plein ? " plein" : ""}">${contenu}</div>`;
   /* en comparaison, chaque bloc se met en vis-à-vis d'une colonne à l'autre ;
      en vue simple, seuls la bannière, les tuiles et le tableau restent à l'écran */
+  /* En vue simple : le tableau des dossiers en cours EN TÊTE — c'est la
+     raison d'être de la page —, puis les trois tuiles, et rien d'autre.
+     Tout le reste s'ouvre par-dessus, à la demande. */
   const corps = AUJ_DUO
     ? [panneauStatuts, carteEcheances, carteButoirs, carteDiagnostics, carteAvis,
        c=>carteCamembert(c, "bien"), c=>carteCamembert(c, "mandat")]
         .map(f=> rang(AUJ_COTES.map(c=>f(c.k)).join(""))).join("")
-    : rang(tuilesAlertes("g"), true) +
-      (carteRapprochements() ? rang(carteRapprochements(), true) : "") +
-      rang(panneauStatuts("g"), true) +
+    : rang(panneauStatuts("g"), true) +
+      rang(tuilesAlertes("g"), true) +
       rang(`<div class="aujpied"><button type="button" class="xbtn" data-tir="rep">${
         ICONE_ANNEAU} Répartition par type de bien et de mandat</button></div>`, true);
   $("#aujBody").innerHTML =
@@ -20763,7 +21001,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-dossgo],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -20835,8 +21073,17 @@ document.addEventListener("click", e=>{
     return; }
   if(t.dataset.sect){ ouvrirSection(t.dataset.sect); return; }
   if(t.dataset.etape){ ouvrirEtape(t.dataset.etape); return; }
-  if(t.dataset.tir){
-    if(!basculerAlerte(t.dataset.tir)) ouvrirTiroirAuj(t.dataset.tir);
+  if(t.dataset.tir){ ouvrirTiroirAuj(t.dataset.tir); return; }
+  /* une cellule du tableau « Dossiers à traiter » : on ouvre le dossier à
+     la page que la cellule désigne, et la fenêtre se referme derrière */
+  if(t.dataset.dossgo){
+    const [id, page] = String(t.dataset.dossgo).split("|");
+    const all = allDossiers();
+    if(!all[id]){ toast("Dossier introuvable"); return; }
+    fermerSection();
+    D = migrate(all[id]); localStorage.setItem(LS_CUR, D.id);
+    renderAll(); activerOnglet(page || "general");
+    window.scrollTo(0, 0);
     return; }
   if(t.dataset.annul){ ouvrirAnnulation(); return; }
   if(t.dataset.dbien){ ouvrirDetail(); return; }
@@ -21053,6 +21300,10 @@ document.addEventListener("click", e=>{
   if(t.dataset.oproprio !== undefined){
     const d = dossiersVivants().filter(x=> x.id === t.dataset.oproprio)[0];
     if(!d) return;
+    /* appelé depuis une fenêtre posée par-dessus la page — la liste des
+       dossiers à traiter —, il faut la refermer : sans cela, la fiche
+       s'ouvre DERRIÈRE et l'on croit que le clic n'a rien fait */
+    fermerSection();
     const k = (d.vendeurs || []).findIndex(x=> x && !personneVide(x));
     if(k < 0){ toast("Aucun propriétaire saisi sur ce dossier"); return; }
     ouvrirPersonne(d.id + ":vendeurs:" + k);
@@ -26947,6 +27198,24 @@ const AIDE = [
   "regard et n'existe plus. Les mêmes icônes figurent sur la carte d'<b>Aujourd'hui</b>, "+
   "pour répondre sans ouvrir la fiche. Et la colonne <b>Sans réponse</b> de la liste des "+
   "recherches compte, pour chacune, ce qui attend encore votre avis."],
+ ["Un bien visité n'est plus un bien à proposer",
+  "Jusqu'ici, organiser une visite ne changeait rien à la place du bien : il restait "+
+  "parmi les biens <b>sans réponse</b>, et l'on pouvait le reproposer à quelqu'un qui "+
+  "venait de le voir. "+
+  "Désormais, dès qu'une visite est organisée, le bien passe dans un bloc à lui, "+
+  "<b>« Visités — réponse à recueillir »</b>, comme un bien écarté a le sien. Il sort "+
+  "des biens à proposer et du compte de la tuile <b>Recherches</b> d'Aujourd'hui. Les "+
+  "deux boutons de réponse — au suivi, refusé — restent sur la ligne : c'est tout "+
+  "l'intérêt, la visite faite, la réponse reste à donner. "+
+  "<b>Une visite appartient à la PERSONNE, pas à la fiche de recherche.</b> Monsieur X a "+
+  "deux recherches — une résidence principale, un investissement — et le même bien "+
+  "ressort sur les deux : la visite organisée depuis l'une <b>apparaît aussi sur "+
+  "l'autre</b>, avec la mention « autre recherche », et l'autre cesse de proposer ce "+
+  "bien. Deux recherches sont du même demandeur quand elles partagent au moins une "+
+  "personne du répertoire. "+
+  "Un <b>refus</b> l'emporte sur une visite — c'est une réponse, elle est plus forte "+
+  "qu'un fait — et une visite <b>annulée</b> ne compte plus : le bien revient aussitôt "+
+  "parmi ceux à proposer."],
  ["Proposer un bien par courriel",
   "L'<b>enveloppe</b>, sur la ligne d'un bien rapproché, ouvre une fenêtre : le "+
   "destinataire (pris au répertoire), un <b>modèle de message</b>, l'objet et le texte, "+
@@ -27384,23 +27653,55 @@ const AIDE = [
   "<b>Fiche avis</b> ouvre le dossier directement sur sa page Avis ; la <b>croix</b> écarte "+
   "la ligne sans rien envoyer — côté par côté —, et un rappel en bas de la carte permet de "+
   "tout rétablir."],
- ["Aujourd'hui — les tuiles d'alerte",
-  "La page s'ouvre sur <b>quatre tuiles</b> : mandats à échéance, dates butoir, "+
-  "diagnostics, suivi des avis. Chacune montre un <b>compte</b> — rouge quand il y a "+
-  "urgence, orangé quand il y a à faire, gris quand il n'y a rien — et porte sa "+
-  "<b>liste juste en dessous</b>. "+
-  "Les quatre listes sont <b>dépliées à l'ouverture de l'application</b> : c'est ce qu'on "+
-  "vient voir. Un clic sur une tuile la replie, un autre la rouvre, et elle reste comme on "+
-  "l'a laissée tant que la page est ouverte ; au démarrage suivant, tout est de nouveau "+
-  "déplié. Repliées, les quatre tuiles tiennent sur une ligne. "+
-  "Tout ce qui se faisait dans les anciennes cartes se fait dans la liste, croix d'alerte "+
-  "comprises, et le compteur de la tuile se met à jour aussitôt. "+
-  "Le <b>tableau des dossiers en cours</b> reste sous les yeux : c'est la raison d'être "+
-  "de la page. Les deux anneaux de répartition se trouvent derrière le bouton du bas, qui "+
-  "garde son tiroir sur le côté droit — on le referme par la croix, par <kbd>Échap</kbd> "+
-  "ou en cliquant à côté. "+
+ ["Aujourd'hui — le tableau, puis trois tuiles",
+  "La page d'accueil tient en deux choses : le <b>tableau des dossiers en cours</b>, en "+
+  "tête — c'est la raison d'être de la page —, et en dessous <b>trois tuiles</b>, de "+
+  "largeur égale, aussi larges à elles trois que le tableau. Rien d'autre. "+
+  "Chaque tuile porte son titre, puis le <b>compte en grand</b> : rouge quand il y a "+
+  "urgence, orangé quand il y a à faire, gris quand il n'y a rien. C'est le nombre qu'on "+
+  "lit de loin, pas le titre. "+
+  "<b>Un clic ouvre une fenêtre POSÉE PAR-DESSUS la page</b>, qui reste entière dessous. "+
+  "Les listes se dépliaient auparavant sous leur tuile, en poussant le reste vers le bas : "+
+  "on perdait de vue ce qu'on venait de quitter et la page changeait de hauteur à chaque "+
+  "clic. On referme par la croix, par <kbd>Échap</kbd> ou en cliquant à côté, et l'on est "+
+  "exactement là où l'on était. "+
+  "<b>1. Dossiers à traiter</b> — les mandats à échéance, les dates butoir et les "+
+  "diagnostics réunis. Voyez le chapitre suivant. "+
+  "<b>2. Suivi des avis</b> — les ventes signées à solliciter et les demandes restées "+
+  "sans réponse, dans la même fenêtre qu'avant. "+
+  "<b>3. Recherches</b> — ce qui était le tableau « Demandeurs et biens en vente ». Le "+
+  "grand nombre est celui des <b>biens à proposer</b>, tous demandeurs confondus ; la "+
+  "ligne du dessous dit combien de demandeurs attendent. "+
+  "Les deux anneaux de répartition restent derrière le bouton du bas, dans leur tiroir "+
+  "latéral. "+
   "La <b>comparaison de deux périmètres</b> garde l'ancienne présentation, toutes cartes "+
   "dépliées côte à côte : elle est faite pour tout montrer d'un coup."],
+ ["Dossiers à traiter : une ligne par dossier, et tout mène quelque part",
+  "Il y avait trois tableaux — mandats à échéance, dates butoir, diagnostics — à ouvrir "+
+  "l'un après l'autre, et le même dossier qui revenait dans deux d'entre eux sans qu'on le "+
+  "voie. Ce qu'on cherche le matin n'est pourtant pas « quels mandats expirent » mais "+
+  "<b>sur quels dossiers dois-je faire quelque chose aujourd'hui</b>. "+
+  "La réponse est <b>une liste de dossiers, un par ligne</b>, du plus pressant au plus "+
+  "lointain. Cinq colonnes : le <b>n° de mandat</b>, le <b>type de bien</b>, le "+
+  "<b>propriétaire</b> (le nom seul — c'est lui qu'on cherche), l'<b>adresse du bien</b>, "+
+  "et <b>ce qu'il y a à faire</b>. "+
+  "Un dossier qui porte trois alertes les porte <b>toutes sur sa ligne</b>, jamais sur "+
+  "trois lignes : un dossier compté trois fois à l'œil n'est plus un compte. Chaque "+
+  "alerte est une pastille colorée selon l'urgence et dit son intitulé avec le délai "+
+  "entre parenthèses — <b>Mandat bientôt à échéance (dans 14 j)</b> ou <b>Mandat "+
+  "échu</b> si la date est passée, <b>Butoir de financement (dans 10 j)</b>, <b>DPE "+
+  "(dépassé de 90 j)</b>. "+
+  "<b>Tout y est cliquable</b>, et chaque élément mène où il désigne : le numéro de "+
+  "mandat, le type et l'adresse ouvrent le <b>dossier</b> ; le nom du propriétaire ouvre "+
+  "<b>sa fiche</b> ; une pastille de diagnostic ouvre la page <b>Diagnostics</b> de ce "+
+  "dossier, une pastille de mandat ou de butoir sa page <b>Général</b>. La fenêtre se "+
+  "referme derrière vous. "+
+  "<b>Ce qui entre dans la liste :</b> un mandat en vente à <b>moins de deux mois</b> de "+
+  "son terme ou déjà échu ; une date butoir — rétractation, financement, compromis — "+
+  "<b>dans les trois semaines</b> ou dépassée ; un diagnostic périmé ou qui le sera sous "+
+  "<b>deux mois</b>. Un dossier sans aucune de ces trois choses n'y figure pas. "+
+  "Les trois tableaux détaillés d'avant n'ont pas disparu : ils servent toujours à la "+
+  "<b>comparaison de deux périmètres</b>, où l'on veut justement tout voir côte à côte."],
  ["Aujourd'hui — comparer deux périmètres",
   "Par défaut la page tient sur une seule colonne : le tableau des dossiers prend toute la "+
   "largeur, puis les mandats à échéance et les diagnostics se rangent côte à côte, et les deux "+
