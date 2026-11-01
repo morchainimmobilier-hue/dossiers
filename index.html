@@ -2725,7 +2725,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 1er novembre 2026, 12 h 10">Dossiers de vente</div>
+  <div class="brand" title="Version du 1er novembre 2026, 14 h 05">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2953,7 +2953,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>1er novembre 2026, 12 h 10</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>1er novembre 2026, 14 h 05</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -19428,13 +19428,23 @@ const TDTC = TDT + "text-align:center;white-space:nowrap;";
 const TITLE= `background:${C_TITR};color:${C_INK};font-size:14pt;font-weight:bold;text-align:center;padding:8px;letter-spacing:1px;` + FF;
 const SUBT = `background:${C_SOFT};color:${C_INK};font-weight:bold;text-align:center;padding:6px;border:1px solid ${C_BORD};font-size:11pt;` + FF;
 const FOOT = "text-align:center;color:#666666;font-size:8pt;line-height:1.5;margin:14px 0 0;" + FF;
-/* Largeur imposée au logo sur les deux documents : 7 cm, ni plus ni moins.
+/* Taille imposée au logo sur les deux documents — la fiche notaire et le
+   dossier de vente. La facture, elle, a son propre papier à en-tête et
+   n'entre pas ici.
+
+   Le logo tenait sur 7 cm de large. Le logo 2026 est presque carré : 7 cm de
+   large lui faisaient plus de 6 cm de haut, soit un en-tête qui prenait le
+   sixième de la page. Sa hauteur est donc divisée par 2,35 — et sa largeur
+   avec elle, car on ne déforme pas un logo : les proportions du fichier
+   choisi font loi, et l'échelle seule change.
+
    Word ignore la largeur CSS d'une image et s'en tient à sa taille naturelle :
-   il faut lui donner aussi les attributs width et height, en pixels — 7 cm font
-   265 px à 96 ppp. La hauteur suit les proportions réelles du fichier choisi. */
-const LOGO_L  = "7cm";
-const LOGO_CM = 7;
-const LOGO_PX = 265;
+   il faut lui donner aussi les attributs width et height, en pixels. 7 cm font
+   265 px à 96 ppp, et tout se divise ensuite par le même nombre. */
+const LOGO_DIV = 2.35;                // ce par quoi la hauteur est divisée
+const LOGO_CM = 7 / LOGO_DIV;         // ≈ 2,98 cm de large
+const LOGO_L  = LOGO_CM.toFixed(2) + "cm";
+const LOGO_PX = Math.round(265 / LOGO_DIV);
 const LOGO_RATIO = 0.26;              // proportions par défaut, à défaut de mesure
 function ratioLogo(){
   const r = num(L.agence && L.agence.logoRatio);
@@ -19446,7 +19456,8 @@ function imgLogo(){
     Math.max(1, Math.round(LOGO_PX * r))}" style="width:${LOGO_L};height:${
     (LOGO_CM * r).toFixed(2)}cm" alt="">`;
 }
-const LOGO_CELL = "7.4cm";            // la cellule laisse respirer les 7 cm
+/* la cellule laisse respirer le logo : 4 mm de plus que lui, à la même échelle */
+const LOGO_CELL = (7.4 / LOGO_DIV).toFixed(2) + "cm";
 const GAP  = '<div style="height:10px;font-size:1pt">&nbsp;</div>';
 const BG   = c => ` bgcolor="${c}"`;
 
@@ -25283,12 +25294,25 @@ function autoriser() {
   return true;
 }
 
-/** Facultatif : lancez cette fonction une fois depuis l'éditeur pour vérifier
- *  que tout répond correctement (menu « Exécuter »). */
+/** Facultatif : lancez cette fonction depuis l'éditeur pour voir où en est la
+ *  base — elle ne fait que LIRE.
+ *
+ *  Elle écrivait autrefois un enregistrement d'essai, ce qui remplaçait le
+ *  contenu du fichier par { essai: true }. La copie du jour le rattrapait,
+ *  mais une fonction de vérification n'a rien à faire dans les données :
+ *  elle est juste à côté d'« autoriser » dans la liste de l'éditeur, et son
+ *  nom n'annonce pas qu'elle efface. Elle ne touche plus à rien.           */
 function verifier() {
-  ecrireBase({ essai: true, date: new Date().toISOString() });
-  Logger.log(JSON.stringify(lireBase()));
-  Logger.log('dossier des pièces : ' + racinePieces().getUrl());
+  const base = lireBase();
+  const d = (base || {}).dossiers || {};
+  const l = (base || {}).listes || {};
+  Logger.log('Version du script : ' + VERSION_SCRIPT);
+  Logger.log('Base    : ' + fichierBase().getUrl());
+  Logger.log('Dossiers en base : ' + Object.keys(d).length);
+  Logger.log('Listes  : ' + Object.keys(l).length + ' rubrique(s)');
+  Logger.log('Pieces  : ' + racinePieces().getUrl());
+  Logger.log('Copies  : ' + dossierCopies().getUrl());
+  Logger.log('Rien n a ete modifie.');
 }`;
 /* =====================================================================
    SÉCURITÉ — DÉRIVATION DU MOT DE PASSE
@@ -27223,10 +27247,15 @@ const AIDE = [
   "Onglet Listes, section « Agence — logo et pied de page » : choisissez une image, elle "+
   "s'affiche en haut à gauche de la fiche notaire et du dossier de vente, le titre étant "+
   "centré sur la largeur qui reste à sa droite. Il est imprimé sur "+
-  "<b>7 cm de large exactement</b>, sa hauteur suivant ses propres proportions. Les "+
-  "dimensions sont inscrites en pixels dans l'image, faute de quoi Word s'en tiendrait à sa "+
-  "taille naturelle et la laisserait déborder. L'image est redimensionnée avant d'être "+
-  "conservée avec vos listes, et suit donc vos sauvegardes."],
+  "<b>2,98 cm de large</b>, sa hauteur suivant ses propres proportions — soit 2,61 cm "+
+  "pour le logo 2026, qui est presque carré. Il tenait jadis sur 7 cm de large : cela "+
+  "lui faisait plus de 6 cm de haut, et l'en-tête prenait le sixième de la page. Sa "+
+  "hauteur a donc été <b>divisée par 2,35</b>, et sa largeur avec elle : on ne déforme "+
+  "pas un logo, les proportions du fichier font loi et seule l'échelle change. "+
+  "Les dimensions sont inscrites en pixels dans l'image, faute de quoi Word s'en tiendrait "+
+  "à sa taille naturelle et la laisserait déborder. L'image est redimensionnée avant d'être "+
+  "conservée avec vos listes, et suit donc vos sauvegardes. "+
+  "La <b>facture</b> n'est pas concernée : elle a son propre papier à en-tête."],
  ["Les documents se remplissent aussi à la main",
   "Le dossier de vente est fait pour être imprimé et complété au stylo. Les colonnes de "+
   "<b>renouvellement des diagnostics</b> y figurent donc toujours, même si rien n'est périmé "+

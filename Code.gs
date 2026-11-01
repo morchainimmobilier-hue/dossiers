@@ -918,10 +918,23 @@ function autoriser() {
   return true;
 }
 
-/** Facultatif : lancez cette fonction une fois depuis l'éditeur pour vérifier
- *  que tout répond correctement (menu « Exécuter »). */
+/** Facultatif : lancez cette fonction depuis l'éditeur pour voir où en est la
+ *  base — elle ne fait que LIRE.
+ *
+ *  Elle écrivait autrefois un enregistrement d'essai, ce qui remplaçait le
+ *  contenu du fichier par { essai: true }. La copie du jour le rattrapait,
+ *  mais une fonction de vérification n'a rien à faire dans les données :
+ *  elle est juste à côté d'« autoriser » dans la liste de l'éditeur, et son
+ *  nom n'annonce pas qu'elle efface. Elle ne touche plus à rien.           */
 function verifier() {
-  ecrireBase({ essai: true, date: new Date().toISOString() });
-  Logger.log(JSON.stringify(lireBase()));
-  Logger.log('dossier des pièces : ' + racinePieces().getUrl());
+  const base = lireBase();
+  const d = (base || {}).dossiers || {};
+  const l = (base || {}).listes || {};
+  Logger.log('Version du script : ' + VERSION_SCRIPT);
+  Logger.log('Base    : ' + fichierBase().getUrl());
+  Logger.log('Dossiers en base : ' + Object.keys(d).length);
+  Logger.log('Listes  : ' + Object.keys(l).length + ' rubrique(s)');
+  Logger.log('Pieces  : ' + racinePieces().getUrl());
+  Logger.log('Copies  : ' + dossierCopies().getUrl());
+  Logger.log('Rien n a ete modifie.');
 }
