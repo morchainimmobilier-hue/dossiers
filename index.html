@@ -897,6 +897,27 @@ table.envois tr.repondu td.emode b{color:#166534}
 .ofsuite{margin:0;padding-left:20px;font-size:13.5px;line-height:1.6}
 .ofzone .rapsous,.ofliste .rapsous{margin-top:14px}
 .offrebox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+/* la composition de l'offre, sous le montant : ce qui va au vendeur, ce
+   qui va à l'agence */
+.ofdetail{display:block;font-size:11.5px;font-weight:500;color:var(--ink-2);
+  margin-top:3px;white-space:nowrap}
+.ofdetail b{font-weight:700;color:var(--ink)}
+/* et la négociation : combien de moins, et sur quoi */
+.ofnego{display:block;font-weight:400;font-size:12px;color:#b42318;margin-top:3px}
+.ofnego b{font-weight:700}
+.ofnego i{display:block;font-style:normal;font-size:11px;color:var(--ink-2)}
+.ofnego.nulle{color:#15803d;font-weight:600}
+.ofdoc{color:var(--accent)}
+/* le calcul, dans une fenêtre : quatre lignes alignées à droite */
+.ofcalc{grid-column:1/-1;border:1px solid var(--line);border-radius:8px;
+  background:#faf7f5;padding:9px 12px;margin:2px 0 4px}
+.ofcalcl{display:flex;justify-content:space-between;gap:16px;
+  font-size:13px;padding:2px 0}
+.ofcalcl b{font-variant-numeric:tabular-nums}
+.ofcalcl.tot{border-top:1px solid var(--line);margin-top:5px;padding-top:6px;
+  font-weight:700}
+.ofcalcl.p{font-size:12px;color:var(--ink-2);padding-left:14px}
+.ofcalc .ofdetail,.ofcalc .ofnego{white-space:normal}
 .offrebox .pf.wide,.offrebox > p{grid-column:1/-1}
 .offrebox textarea{width:100%;resize:vertical}
 /* choisir le bien sur lequel porte l'offre */
@@ -2790,7 +2811,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 1er novembre 2026, 15 h 10">Dossiers de vente</div>
+  <div class="brand" title="Version du 1er novembre 2026, 16 h 50">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3018,7 +3039,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>1er novembre 2026, 15 h 10</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>1er novembre 2026, 16 h 50</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3348,6 +3369,8 @@ const LISTS_DEFAULT = {
        + "J'ai le plaisir de vous transmettre une offre d'achat sur votre "
        + "{{typeMin}} de {{surface}} à {{ville}}.\n\n"
        + "Montant proposé : {{montantOffre}}\n"
+       + "Dont honoraires d'agence : {{honoOffre}}\n"
+       + "Net vous revenant : {{netOffre}}\n"
        + "Offre faite le {{dateOffre}}, valable jusqu'au {{validite}}\n"
        + "Conditions : {{conditions}}\n\n"
        + "Je reste à votre disposition pour en parler et recueillir votre "
@@ -3359,7 +3382,8 @@ const LISTS_DEFAULT = {
      corps:"Bonjour {{civilite}} {{nom}},\n\n"
        + "Le propriétaire du {{typeMin}} de {{surface}} à {{ville}} a étudié "
        + "votre offre. Il ne la retient pas en l'état, mais se déclare "
-       + "vendeur à {{montantOffre}}.\n\n"
+       + "vendeur à {{montantOffre}}, honoraires d'agence de {{honoOffre}} "
+       + "inclus.\n\n"
        + "Conditions : {{conditions}}\n\n"
        + "Dites-moi ce que vous en pensez : je reste à votre disposition "
        + "pour en discuter.\n\n"
@@ -3531,6 +3555,8 @@ const LISTS_DEFAULT = {
   prospects: [],
   /* LE PARCOURS D'ACHAT — une offre par ligne, voir « Le parcours d'achat » */
   offres: [],
+  /* par quelle voie une offre d'achat est arrivée, ou repartie */
+  modeEnvoi: ["Courriel", "SMS", "WhatsApp", "Courrier"],
   notaires: [{prenom:"Clémence", patronyme:"TORTEL",
               nom:"Maître Clémence TORTEL", adresse:"26-28, avenue Sixte Quenin",
               pays:"France", cp:"13200", ville:"ARLES", tel:"04 90 52 18 09",
@@ -3581,7 +3607,8 @@ const LIST_LABELS = {
   genreAction:"Genres d'action (historiques)",
   motifEcart:"Motifs d'écart d'un bien (demandeurs)",
   appelsClip:"Messages de la carte de contact (clips)",
-  paysPlus:"Pays ajoutés à la liste"
+  paysPlus:"Pays ajoutés à la liste",
+  modeEnvoi:"Modes d'envoi d'une offre d'achat"
 };
 
 /* carnets d'adresses : "card" = affichage en fiches, "row" = tableau compact */
@@ -6450,8 +6477,11 @@ function lignesTuile(cle){
   if(cle === "offres"){
     const of = offresDuBien(D.id);
     if(!of.length) l("Aucune offre", "pour l'instant", true);
-    else of.slice(0, 4).forEach(o=>
-      l(montantOffre(o), (etapeOffre(o) || {}).lib || "", !offreVive(o)));
+    else of.slice(0, 4).forEach(o=>{
+      const n = negoOffre(o);
+      l(montantOffre(o), (n.net === null ? "" : "net " + eur(n.net) + " · ")
+        + ((etapeOffre(o) || {}).lib || ""), !offreVive(o));
+    });
   }
   if(cle === "prix"){
     l("Prix FAI", eur0(num(D.prix.fai)), num(D.prix.fai) === null);
@@ -6500,7 +6530,7 @@ function piedTuile(cle){
     const vives = of.filter(offreVive);
     if(!of.length) return "Aucune offre reçue sur ce bien.";
     const prise = of.filter(o=> o.etat === "acceptee")[0];
-    if(prise) return `Offre <b>acceptée</b> — ${esc(montantOffre(prise))}`;
+    if(prise) return `Offre <b>acceptée</b> — ${esc(negoTexte(prise))}`;
     return `<b>${vives.length}</b> offre${vives.length > 1 ? "s" : ""} en jeu`
       + (of.length > vives.length
          ? ` · ${of.length - vives.length} close${of.length - vives.length > 1 ? "s" : ""}`
@@ -7592,8 +7622,27 @@ function tableauPieces(o){
   </div>`;
 }
 
-/* le terrain : les parcelles du bien, ou celles de sa résidence */
-function cibleParcelles(){
+/* -------------------------------------------- LES PARCELLES CADASTRALES
+   Elles appartiennent au SOL, donc à l'immeuble, et non au lot : les dix
+   appartements d'une copropriété sont bâtis sur les mêmes parcelles, et
+   les saisir dix fois serait dix occasions de se contredire.
+
+   `cibleParcelles` dit donc où elles vivent : sur la RÉSIDENCE dès que le
+   bien en a une — et c'est alors la même liste pour tous ses lots —, sur
+   le dossier sinon, pour une maison qui n'appartient à aucun immeuble.
+
+   `ires` ouvre la même table depuis la fiche de l'immeuble elle-même,
+   onglet Immeubles, où l'on ne passe par aucun dossier. C'est le même
+   tableau, la même liste, les mêmes parcelles : saisies d'un côté, elles
+   se lisent de l'autre.                                                 */
+function cibleParcelles(ires){
+  if(ires !== undefined && ires !== null && ires !== ""){
+    const r = (L.residences || [])[+ires];
+    if(r){
+      if(!Array.isArray(r.parcelles)) r.parcelles = [];
+      return {liste:r.parcelles, res:r, i:+ires};
+    }
+  }
   const r = residenceDuBien();
   if(r.nom){
     if(!Array.isArray(r.parcelles)) r.parcelles = [];
@@ -7602,37 +7651,49 @@ function cibleParcelles(){
   if(!Array.isArray(D.parcelles)) D.parcelles = [];
   return {liste:D.parcelles, res:null};
 }
-function tableauParcelles(){
-  const c = cibleParcelles();
+function tableauParcelles(ires){
+  const c = cibleParcelles(ires);
+  const chez = (ires === undefined || ires === null || ires === "")
+    ? "" : ":" + ires;
+  const lots = c.res ? dossiersDeImmeuble(c.res.nom).length : 0;
   const parc = c.liste.map((p,i)=>
-    `<tr><td><input type="text" data-parc="${i}:prefixe" value="${esc(p.prefixe||"")}"
+    `<tr><td><input type="text" data-parc="${i}:prefixe${chez}" value="${esc(p.prefixe||"")}"
         placeholder="000"></td>
-      <td><input type="text" data-parc="${i}:section" value="${esc(p.section||"")}"
+      <td><input type="text" data-parc="${i}:section${chez}" value="${esc(p.section||"")}"
         placeholder="ZA"></td>
-      <td><input type="text" data-parc="${i}:numero" value="${esc(p.numero||"")}"
+      <td><input type="text" data-parc="${i}:numero${chez}" value="${esc(p.numero||"")}"
         placeholder="1042"></td>
-      <td><input type="text" data-parc="${i}:lieudit" value="${esc(p.lieudit||"")}"
+      <td><input type="text" data-parc="${i}:lieudit${chez}" value="${esc(p.lieudit||"")}"
         placeholder="lieudit"></td>
-      <td><input type="text" data-parc="${i}:contenance" value="${esc(p.contenance||"")}"
-        placeholder="8a 72ca"></td>
-      <td class="cact"><button type="button" class="xbtn mini" data-parcdel="${i}"
-        title="Retirer cette parcelle">✕</button></td></tr>`).join("");
+      <td><input type="text" data-parc="${i}:contenance${chez}"
+        value="${esc(p.contenance||"")}" placeholder="8a 72ca"></td>
+      <td class="cact"><button type="button" class="xbtn mini"
+        data-parcdel="${i}${chez}" title="Retirer cette parcelle">✕</button></td></tr>`)
+    .join("");
   const tot = c.liste.reduce((t,p)=> t + (surfaceCadastrale(p.contenance) || 0), 0);
   return `<div class="dsec"><h4>Références cadastrales</h4>
-    ${c.res ? `<p class="dnote" style="margin:0 0 10px">Ce bien appartient à
+    ${chez ? `<p class="dnote" style="margin:0 0 10px">Les parcelles appartiennent au
+      <b>sol</b>, donc à l'immeuble : saisies ici, elles se reportent dans la fiche de
+      <b>tous ses lots</b>, volet « Le terrain ».${lots
+        ? ` <b>${lots}</b> dossier${lots > 1 ? "s" : ""} en dépend${
+            lots > 1 ? "ent" : ""} aujourd'hui.` : ""}</p>`
+      : c.res ? `<p class="dnote" style="margin:0 0 10px">Ce bien appartient à
       <b>${esc(c.res.nom)}</b> : les parcelles sont celles de la <b>résidence</b>, et
       servent à tous ses lots. Les saisir ici, c'est les saisir une fois pour
-      toutes.</p>` : ""}
+      toutes — et elles se retrouvent sur la fiche de l'immeuble, onglet
+      <b>Immeubles</b>.</p>` : ""}
     <div class="tdbscroll"><table class="grid-t parct">
       <tr><th style="width:68px">Préf.</th><th style="width:72px">Sect.</th>
         <th style="width:84px">N°</th><th>Lieudit</th>
         <th style="width:104px">Contenance</th><th class="cact"></th></tr>
       ${parc || `<tr><td colspan="6" class="muted">Aucune parcelle enregistrée.</td></tr>`}
-      ${tot ? `<tr class="tot"><td colspan="4">Contenance totale</td>
-        <td>${esc(tot.toLocaleString("fr-FR"))} m²</td><td></td></tr>` : ""}
+      ${c.liste.length ? `<tr class="tot"><td colspan="4">Contenance totale</td>
+        <td data-parctot="${esc(String(ires === undefined ? "" : ires))}">${
+          esc(tot.toLocaleString("fr-FR"))} m²</td><td></td></tr>` : ""}
     </table></div>
     <div class="dact"><button type="button" class="addbtn"
-      id="parcAjout">+ Ajouter une parcelle</button></div></div>`;
+      ${chez ? `data-parcadd="${esc(String(ires))}"` : 'id="parcAjout"'}
+      >+ Ajouter une parcelle</button></div></div>`;
 }
 
 /* --------------------------------------------------------- l'occupation */
@@ -8019,13 +8080,16 @@ function majTotauxPieces(){
   const z = document.getElementById("piecesTot");
   if(z) z.innerHTML = blocTotauxPieces(cibleBien().o);
 }
-function majTotalParcelles(){
-  const box = $("#detailCorps");
+function majTotalParcelles(ires){
+  const dansImmeuble = ires !== undefined && ires !== null && ires !== "";
+  const box = dansImmeuble ? $("#immBody") : $("#detailCorps");
   if(!box) return;
-  const t = cibleParcelles().liste
+  const t = cibleParcelles(ires).liste
     .reduce((n,p)=> n + (surfaceCadastrale(p.contenance) || 0), 0);
-  const td = box.querySelector("table.parct tr.tot td:nth-child(2)");
-  if(td) td.textContent = t.toLocaleString("fr-FR") + " m²";
+  const cible = dansImmeuble
+    ? box.querySelector(`[data-parctot="${ires}"]`)
+    : box.querySelector("table.parct tr.tot td:nth-child(2)");
+  if(cible) cible.textContent = t.toLocaleString("fr-FR") + " m²";
 }
 /* « 8a 72ca » → 872 m² ; l'inverse rend la notation d'usage du cadastre */
 function surfaceCadastrale(s){
@@ -8544,6 +8608,46 @@ function appliquerDernierPrix(){
 /* Un prix modifié à la main : correction de la dernière ligne, ou nouveau
    changement daté ? La question ne se pose que si la dernière ligne est
    antérieure à aujourd'hui. */
+/* ------------------------------------------- LA QUESTION ATTEND SON TOUR
+   « Le prix a changé : correction ou nouveau prix ? » est une bonne
+   question, et elle était posée au plus mauvais moment : à la seconde où
+   l'on quittait la case du prix — c'est-à-dire en passant aux honoraires,
+   juste à côté. La fenêtre sautait au milieu d'une saisie qui n'était pas
+   finie, et il fallait revenir cliquer dans la cellule pour continuer.
+
+   Le prix et les honoraires forment UN SEUL geste : on ne demande donc
+   rien tant que le curseur reste dans l'un des deux. La question n'arrive
+   qu'une fois le couple quitté — et une seule fois, quels que soient les
+   allers-retours entre les deux cases.
+
+   Le délai n'est pas un réglage de confort : entre le `focusout` d'un champ
+   et le `focus` du suivant, il n'y a aucun instant où le document sait où
+   le curseur va. Il faut lui laisser reprendre son souffle pour pouvoir le
+   lui demander.                                                          */
+let PRIX_MINUTEUR = null;
+/* Où s'arrête « le prix ». Pas aux deux cases : entre elles il y a le
+   bouton de l'historique, et une tabulation s'y pose au passage. On prend
+   donc l'ENCADRÉ qui porte le prix — la fenêtre de section, la carte — et
+   tant que le curseur y est, la saisie n'est pas finie. Quitter l'encadré,
+   fermer la fenêtre, cliquer ailleurs : là, on a fini. */
+function dansLeCadrePrix(el){
+  if(!el || !el.closest) return false;
+  const b = el.dataset ? el.dataset.b : "";
+  if(b === "prix.fai" || b === "prix.honoraires") return true;
+  if(el.id === "btnHisto") return true;
+  const cadre = el.closest("#secCorps,.popbox,.card");
+  return !!(cadre && cadre.querySelector('[data-b="prix.fai"]'));
+}
+function apresSaisiePrixPlusTard(){
+  clearTimeout(PRIX_MINUTEUR);
+  PRIX_MINUTEUR = setTimeout(()=>{
+    PRIX_MINUTEUR = null;
+    /* le curseur est resté dans l'encadré du prix : on n'a pas fini, et
+       c'est la case qu'on quittera en dernier qui posera la question */
+    if(dansLeCadrePrix(document.activeElement)) return;
+    apresSaisiePrix();
+  }, 180);
+}
 function apresSaisiePrix(){
   const l = derniereLigne();
   if(!l){ if(amorcerHisto()){ refreshCalcs(); autosave(); } return; }
@@ -9028,6 +9132,244 @@ function titrePersonne(p){
     return [p.civilite, p.raison].filter(Boolean).join(" ");
   return [p.civilite,p.prenom,(p.nom||"").toUpperCase()].filter(Boolean).join(" ");
 }
+/* =====================================================================
+   UN VENDEUR SE CRÉE PAR SON NOM
+   ---------------------------------------------------------------------
+   « + Ajouter un vendeur » posait une fiche vide, et l'on tapait par-dessus.
+   La même personne entrait donc deux fois dans l'application — vendeur d'un
+   dossier en 2024, vendeur d'un autre en 2026 —, avec deux adresses, deux
+   numéros, et deux histoires qui ne se parlaient pas.
+
+   On demande donc le NOM d'abord, et l'on cherche ce qui lui ressemble dans
+   le répertoire : les personnes ET les sociétés, car un vendeur est souvent
+   une SCI, et c'est sa dénomination qu'on tape. Trois lettres suffisent.
+   Reprendre une fiche, c'est hériter de son état civil, de ses coordonnées
+   et de tout ce qu'elle porte ailleurs ; créer un contact, c'est le dire
+   expressément.
+
+   C'est le même geste que pour une recherche — la fenêtre « Nouvelle
+   recherche » fait cela depuis longtemps —, étendu aux parties d'un
+   dossier, vendeurs comme acquéreurs.
+   ===================================================================== */
+
+/* Ce qu'on compare : la dénomination d'une société, le patronyme d'une
+   personne, et le prénom suivi du nom pour qui tape « jean dup ». */
+function nomsCherchables(f){
+  const l = [];
+  if(f.raison) l.push(f.raison);
+  if(f.nom)    l.push(f.nom);
+  if(f.prenom && f.nom) l.push(f.prenom + " " + f.nom);
+  if(f.nom && f.prenom) l.push(f.nom + " " + f.prenom);
+  return l;
+}
+function fichesParLeNom(txt){
+  const q = fold(String(txt || "").trim());
+  if(q.length < 2) return [];
+  return (L.personnes || []).filter(f=> f && !personneVide(f))
+    .map(f=>{
+      let pts = 0, raison = "";
+      const mieux = (p, r)=>{ if(p > pts){ pts = p; raison = r; } };
+      nomsCherchables(f).forEach(n=>{
+        const c = fold(n);
+        if(c === q)            mieux(130, "même nom");
+        else if(c.indexOf(q) === 0) mieux(110, "commence pareil");
+        else if(c.indexOf(q) > 0)   mieux(90,  "contient ce mot");
+      });
+      /* l'orthographe approximative : DURAN pour DURAND, VIDALE pour VIDAL */
+      if(!pts){
+        const pr = proximitePersonnes({nom:String(txt || "").trim(), prenom:""},
+                                      {nom:f.nom || f.raison || "", prenom:f.prenom});
+        if(pr.pts >= DUP_SEUIL) mieux(pr.pts, pr.raisons.join(", ") || "nom voisin");
+      }
+      return {f:f, pts:pts, raison:raison};
+    })
+    .filter(x=> x.pts > 0)
+    .sort((a,b)=> b.pts - a.pts
+      || triFr(nomPersonne(a.f) || a.f.raison || "", nomPersonne(b.f) || b.f.raison || ""))
+    .slice(0, 8);
+}
+let PART_NEUVE = null;
+function ouvrirNouvellePartie(kind){
+  const lib = kind === "vendeurs" ? "vendeur" : "acquéreur";
+  PART_NEUVE = {kind:kind, ecartes:[]};
+  popup({titre:"Nouveau " + lib, large:true,
+    corps:`<div class="partbox">
+      <p style="margin:0 0 10px">Le <b>nom</b> d'abord : s'il est déjà au répertoire —
+        une personne ou une <b>société</b> —, mieux vaut reprendre sa fiche que d'en
+        créer une seconde. Elle apporte son état civil, ses coordonnées, et tout ce
+        qu'elle porte dans vos autres dossiers.</p>
+      <div class="pf wide"><label for="pvNom">NOM, ou dénomination de la société</label>
+        <input type="text" id="pvNom" autocomplete="off"
+          placeholder="DURAND, SCI DES ARÈNES…"></div>
+      <div id="pvSug"></div>
+    </div>`,
+    boutons:[{lib:"Annuler"},
+      {lib:"Créer un nouveau contact", primaire:true,
+       action:()=> creerPartieNeuve(kind, ($("#pvNom") || {}).value || "")}]});
+  setTimeout(()=>{
+    const e = $("#pvNom");
+    if(e){ e.oninput = majSuggestionsPartie; e.focus(); }
+    const z = $("#popCorps");
+    if(z) z.onclick = ev=>{
+      const b = ev.target.closest("[data-pvpick],[data-pvnon]");
+      if(!b) return;
+      if(b.dataset.pvnon){
+        PART_NEUVE.ecartes.push(b.dataset.pvnon);
+        majSuggestionsPartie();
+        return;
+      }
+      fermerPopup();
+      reprendrePartie(kind, b.dataset.pvpick);
+    };
+    majSuggestionsPartie();
+  }, 40);
+}
+function majSuggestionsPartie(){
+  const z = $("#pvSug");
+  if(!z || !PART_NEUVE) return;
+  const txt = ($("#pvNom") || {}).value || "";
+  const l = fichesParLeNom(txt)
+    .filter(x=> PART_NEUVE.ecartes.indexOf(x.f.pid) < 0);
+  if(!l.length){
+    z.innerHTML = String(txt).trim().length >= 2
+      ? `<p class="muted" style="margin:12px 0 0">Personne de ce nom au répertoire :
+         « Créer un nouveau contact » ouvrira une fiche à ce nom.</p>`
+      : "";
+    return;
+  }
+  z.innerHTML = `<div class="mdnote mddup" style="margin:14px 0 0">
+    <b>${l.length > 1 ? "Ces fiches existent" : "Cette fiche existe"} déjà au
+    répertoire.</b> Cliquez pour la reprendre, avec ses coordonnées et son
+    histoire. Écartez s'il s'agit de quelqu'un d'autre.
+    ${l.map(x=>{
+      const f = x.f;
+      const quoi = quoiFichePersonne(f);
+      return `<div class="mddupl">
+        <div class="mddupq"><b>${esc(titrePersonne(f) || f.raison || "sans nom")}</b>
+          <span>${esc([f.tel1, f.email1, [f.cp, f.ville].filter(Boolean).join(" ")]
+            .filter(Boolean).join(" · ") || "aucune coordonnée")}</span>
+          ${quoi ? `<span>${esc(quoi)}</span>` : ""}
+          <em>${esc(x.raison)}${estMorale(f) ? " — société" : ""}</em></div>
+        <div class="mddupb">
+          <button type="button" class="dupoui" data-pvpick="${esc(f.pid)}"
+            >C'est ${estMorale(f) ? "elle" : "lui ou elle"} — reprendre la fiche</button>
+          <button type="button" class="dupnon" data-pvnon="${esc(f.pid)}"
+            >Ce n'est pas ${estMorale(f) ? "elle" : "la bonne personne"}</button>
+        </div></div>`;
+    }).join("")}</div>`;
+}
+/* reprendre une fiche du répertoire : le dossier n'en garde qu'une copie,
+   et c'est la fiche qui reste la vérité */
+function reprendrePartie(kind, pid){
+  const f = fichePersonne(pid);
+  if(!f){ toast("Fiche introuvable"); return; }
+  const p = blankPerson();
+  p.pid = pid;
+  rafraichirDepuisRepertoire(p);
+  (D[kind] = D[kind] || []).push(p);
+  renderPeople(kind); refreshAllVilles(); autosave(); renderPreview();
+  toast((titrePersonne(f) || f.raison || "Fiche") + " reprise du répertoire");
+  focusDernierePartie(kind);
+}
+/* un contact neuf : la fiche est créée au répertoire du même geste, sinon
+   elle n'y entrerait qu'à la première frappe suivante */
+function creerPartieNeuve(kind, nom){
+  const p = blankPerson();
+  const t = String(nom || "").trim();
+  if(t) p.nom = enMajuscules(t);
+  (D[kind] = D[kind] || []).push(p);
+  if(t){
+    const pid = inscrireAuRepertoire(p);
+    if(pid) p.pid = pid;
+    saveLists();
+  }
+  renderPeople(kind); refreshAllVilles(); autosave(); renderPreview();
+  focusDernierePartie(kind);
+}
+/* le curseur dans la civilité de la fiche qu'on vient d'ouvrir : c'est le
+   premier champ, et c'est lui qui décide si la dénomination apparaît */
+function focusDernierePartie(kind){
+  setTimeout(()=>{
+    const i = (D[kind] || []).length - 1;
+    const el = document.querySelector(`[data-b="${kind}.${i}.civilite"]`);
+    if(el){ el.focus(); if(el.scrollIntoView) el.scrollIntoView({block:"center"}); }
+  }, 60);
+}
+
+/* =====================================================================
+   DUPLIQUER UN MANDAT : L'ENDROIT, ET RIEN D'AUTRE
+   ---------------------------------------------------------------------
+   « Dupliquer » recopiait le dossier entier et ajoutait « bis » au numéro
+   de mandat : le prix, les dates, les diagnostics, l'historique, les
+   acquéreurs — tout ce qui appartient en propre à la vente précédente
+   repartait avec. On vendait ensuite un autre lot du même immeuble en
+   effaçant à la main ce qu'on avait dupliqué.
+
+   Deux biens d'un même immeuble n'ont en commun qu'une chose : l'ENDROIT.
+   On ne reprend donc que l'adresse et l'immeuble — et, parce que c'est le
+   cas le plus courant, on propose de reprendre le VENDEUR, en le nommant
+   pour qu'on sache ce qu'on accepte.
+   ===================================================================== */
+function ouvrirDuplication(){
+  persist(true);
+  const src = D;
+  const b = src.bien || {};
+  const adr = [b.adresse, b.adresse2, [b.cp, b.ville].filter(Boolean).join(" ")]
+    .filter(Boolean).join(" · ");
+  const res = String(b.residence || "").trim();
+  const vend = (src.vendeurs || []).filter(p=> p && nomPersonne(p));
+  const noms = vend.map(p=> titrePersonne(p) || nomPersonne(p)).join(" et ");
+  if(!adr && !res){
+    popup({titre:"Rien à dupliquer", genre:"erreur",
+      corps:`<p style="margin:0">Ce dossier n'a ni adresse ni immeuble : la
+        duplication n'aurait rien à reprendre. Utilisez <b>Nouveau</b>.</p>`});
+    return;
+  }
+  popup({titre:"Dupliquer ce mandat", large:true,
+    corps:`<p style="margin:0 0 10px">Le nouveau dossier reprend <b>l'endroit</b>, et
+      rien d'autre : ni numéro de mandat, ni prix, ni dates, ni diagnostics, ni
+      pièces jointes. Deux lots d'un même immeuble n'ont en commun que l'adresse.</p>
+      <div class="ofcalc">
+        <div class="ofcalcl"><span>Adresse du bien</span>
+          <b>${esc(adr || "non renseignée")}</b></div>
+        <div class="ofcalcl"><span>Immeuble</span>
+          <b>${esc(res || "aucun")}</b></div>
+      </div>
+      ${vend.length ? `<label class="chkline" style="margin-top:10px">
+        <input type="checkbox" id="dupVend" checked>
+        <span>Reprendre le vendeur : <b>${esc(noms)}</b></span></label>`
+        : `<p class="muted" style="margin:10px 0 0">Ce dossier n'a pas de vendeur
+           nommé : il n'y a rien à reprendre de ce côté.</p>`}`,
+    boutons:[{lib:"Annuler"}, {lib:"Créer le dossier", primaire:true, action:()=>{
+      const avecVendeur = vend.length && !!($("#dupVend") || {}).checked;
+      dupliquerMandat(src, avecVendeur);
+    }}]});
+}
+function dupliquerMandat(src, avecVendeur){
+  const b = src.bien || {};
+  const n = blankDossier();
+  /* l'endroit : l'adresse, et l'immeuble auquel elle appartient */
+  ["adresse", "adresse2", "cp", "ville", "pays", "quartier", "residence"]
+    .forEach(k=>{ if(b[k]) n.bien[k] = b[k]; });
+  /* La situation juridique suit l'immeuble : sans elle, le champ de la
+     résidence ne s'affiche même pas, et l'immeuble repris resterait
+     invisible. Elle ne décrit pas la vente, elle décrit l'endroit. */
+  if(n.bien.residence && b.sitJur) n.bien.sitJur = b.sitJur;
+  if(avecVendeur){
+    n.vendeurs = (src.vendeurs || []).filter(p=> p && nomPersonne(p))
+      .map(p=> Object.assign(blankPerson(), JSON.parse(JSON.stringify(p))));
+    if(!n.vendeurs.length) n.vendeurs = [blankPerson()];
+    /* le négociateur qui suivait le vendeur le suit encore */
+    if((src.nego || {}).vendeur) n.nego.vendeur = src.nego.vendeur;
+  }
+  D = n;
+  renderAll();
+  persist(true);
+  activerOnglet("mandat");
+  setTimeout(()=>{ const e = $("#refInput"); if(e) e.focus(); }, 80);
+  toast("Dossier créé — il reste à lui donner son numéro de mandat");
+}
+
 function renderPeople(kind){
   const arr = D[kind];
   const target = kind==="vendeurs" ? "#listV" : "#listA";
@@ -9819,6 +10161,7 @@ function renderImmeubles(){
         <button class="xbtn" data-bookdel="residences:${x.i}">Supprimer</button></h2>
       <div class="body plibody"${plie ? ' style="display:none"' : ''}>
         ${ficheCarnet("residences", x.r, x.i, null, true)}
+        <div class="immbloc immcad">${tableauParcelles(x.i)}</div>
         <div class="immbloc"><h3>Les dossiers de cet immeuble</h3>
           <div class="immlist">${listeImmeuble(x.r.nom)}</div></div>
       </div></div>`;
@@ -18914,6 +19257,85 @@ function montantOffre(o){
   const n = num((o || {}).montant);
   return n === null ? "—" : eur(n);
 }
+/* =====================================================================
+   CE QUE L'OFFRE FAIT AU PRIX
+   ---------------------------------------------------------------------
+   Un montant d'offre ne dit rien tout seul. « 235 000 » ne devient une
+   information qu'en regard des 250 000 demandés, et surtout qu'une fois
+   partagé entre ce qui revient au VENDEUR et ce qui revient à l'AGENCE :
+   une négociation de 15 000 € n'a pas le même goût selon qu'elle tombe
+   entière sur le net vendeur ou qu'elle rogne les honoraires.
+
+   L'offre porte donc ses PROPRES honoraires, repris du mandat et
+   modifiables : c'est souvent là que la discussion finit. Le net vendeur
+   de l'offre s'en déduit — montant moins honoraires —, exactement comme
+   le net vendeur du dossier se déduit du prix FAI.
+
+   `negoOffre` rend les six nombres d'un coup, et tout ce qui affiche une
+   offre les lit : la fenêtre de saisie, la ligne du volet, la carte du
+   bien, la tuile d'Aujourd'hui, la fenêtre d'acceptation et les
+   modèles de messages. Un seul calcul, partout le même.         */
+function honoOffre(o, d){
+  const h = num((o || {}).honoraires);
+  if(h !== null) return h;
+  /* une offre d'avant ce calcul n'en porte pas : le mandat fait foi */
+  const dd = d || dossierDuBien((o || {}).dossier);
+  return num(((dd || {}).prix || {}).honoraires);
+}
+function negoOffre(o){
+  const d = dossierDuBien((o || {}).dossier) || {};
+  const px = d.prix || {};
+  const faiD = num(px.fai), honoD = num(px.honoraires);
+  const netD = faiD === null ? null : faiD - (honoD || 0);
+  const m = num((o || {}).montant);
+  const h = honoOffre(o, d);
+  const netO = m === null ? null : m - (h || 0);
+  const moins = (a, b)=> (a === null || b === null) ? null : a - b;
+  return {faiD, honoD, netD, montant:m, hono:h, net:netO,
+          baisse: moins(faiD, m),
+          baisseNet: moins(netD, netO),
+          baisseHono: moins(honoD, h)};
+}
+/* le montant signé, pour une baisse : « −15 000 € », « +5 000 € », « = » */
+function ecartEur(v){
+  if(v === null || v === undefined) return "—";
+  if(!v) return "0 €";
+  return (v > 0 ? "−" : "+") + eur(Math.abs(v));
+}
+/* La composition de l'offre, en une ligne : ce que touche le vendeur, ce
+   que touche l'agence. Elle se lit partout où le montant s'affiche. */
+function resumeOffre(o){
+  const n = negoOffre(o);
+  if(n.montant === null) return "";
+  return `<span class="ofdetail">net vendeur <b>${esc(eur(n.net))}</b>
+    · honoraires <b>${esc(n.hono === null ? "—" : eur(n.hono))}</b></span>`;
+}
+/* Et la négociation : combien de moins qu'au mandat, et sur quoi. */
+function resumeNego(o){
+  const n = negoOffre(o);
+  if(n.montant === null || n.baisse === null) return "";
+  if(!n.baisse && !n.baisseHono)
+    return `<span class="ofnego nulle">au prix du mandat</span>`;
+  const bits = [];
+  if(n.baisseNet !== null)
+    bits.push(`${esc(ecartEur(n.baisseNet))} sur le net vendeur`);
+  if(n.baisseHono !== null)
+    bits.push(`${esc(ecartEur(n.baisseHono))} sur les honoraires`);
+  return `<span class="ofnego"><b>négociation ${esc(ecartEur(n.baisse))}</b>${
+    bits.length ? `<i>${bits.join("  ·  ")}</i>` : ""}</span>`;
+}
+/* la même chose en texte nu, pour une infobulle ou un message */
+function negoTexte(o){
+  const n = negoOffre(o);
+  if(n.montant === null) return "";
+  const l = [eur(n.montant) + " — net vendeur " + eur(n.net)
+             + ", honoraires " + (n.hono === null ? "—" : eur(n.hono))];
+  if(n.baisse !== null)
+    l.push("négociation " + ecartEur(n.baisse)
+      + (n.baisseNet !== null ? " (" + ecartEur(n.baisseNet) + " net vendeur" : "")
+      + (n.baisseHono !== null ? ", " + ecartEur(n.baisseHono) + " honoraires)" : ")"));
+  return l.join(" · ");
+}
 /* à qui le message s'adresse quand on transmet : une offre du demandeur
    va au propriétaire, une contre-proposition du propriétaire au demandeur */
 function destinataireOffre(o){
@@ -19000,15 +19422,27 @@ function ouvrirOffre(opt){
          + "-" + String(x.getDate()).padStart(2, "0");
   };
   const prix = num((d.prix || {}).fai);
+  const honoD = num((d.prix || {}).honoraires);
+  /* Les honoraires de l'offre partent de ceux du mandat — ou de ceux de
+     l'offre précédente quand la négociation est engagée : c'est là qu'on
+     en est, pas au point de départ. */
+  const hono0 = suite ? honoOffre(suite, d) : honoD;
   const fil = suite ? chaineOffre(suite) : [];
+  const modes = (L.modeEnvoi || []);
+  /* le fichier choisi attend l'enregistrement : il n'est rangé qu'une fois
+     l'offre créée, sinon une pièce resterait seule dans le Drive */
+  let fichier = null;
   popup({titre: suite ? "Contre-proposition" : "Offre d'achat", large:true,
     corps:`<div class="offrebox">
       <p class="mdnote" style="margin:0 0 10px"><b>${esc(intituleBien(d))}</b><br>
         ${esc(bienDe(d))}${prix === null ? ""
-          : ` — au prix de <b>${esc(eur(prix))}</b>`}</p>
+          : ` — au prix de <b>${esc(eur(prix))}</b>${honoD === null ? ""
+            : `, dont <b>${esc(eur(honoD))}</b> d'honoraires, net vendeur
+               <b>${esc(eur(prix - honoD))}</b>`}`}</p>
       ${fil.length ? `<div class="offil">${fil.map(x=>
-          `<span class="ofpas"><i>${esc(libAuteurOffre(x))}</i>${
-            esc(montantOffre(x))}</span>`).join("")}</div>` : ""}
+          `<span class="ofpas" title="${esc(negoTexte(x))}"><i>${
+            esc(libAuteurOffre(x))}</i>${esc(montantOffre(x))}</span>`).join("")}</div>`
+        : ""}
       <div class="pf"><label for="ofQui">De la part ${
         auteur === "vend" ? "du propriétaire, au demandeur" : "du demandeur"}</label>
         ${cands.length > 1 && !suite
@@ -19020,27 +19454,91 @@ function ouvrirOffre(opt){
                   || nomDemandeurOffre({recherche:dejaId}))}">
              <input type="hidden" id="ofQui" value="${esc(dejaId)}">`}
       </div>
-      <div class="pf"><label for="ofMontant">Montant proposé (€)</label>
+      <div class="pf"><label for="ofMode">Mode d'envoi de l'offre</label>
+        <span class="withadd"><select id="ofMode" data-ofmode="ofMode">
+          <option value=""></option>${modes.map(x=>
+            `<option${x === (o.mode || "") ? " selected" : ""}>${esc(x)}</option>`)
+            .join("")}</select>
+        <button type="button" class="addinline" data-addlist="list:modeEnvoi"
+          data-target="ofMode" data-attr="data-ofmode"
+          title="Ajouter un mode d'envoi">+</button></span></div>
+      <div class="pf"><label for="ofMontant">Montant proposé, honoraires inclus (€)</label>
         <input type="text" id="ofMontant" inputmode="numeric"
           value="${esc(o.montant || "")}" placeholder="${
             prix === null ? "0" : esc(String(prix))}"></div>
+      <div class="pf"><label for="ofHono">Honoraires d'agence (€)</label>
+        <input type="text" id="ofHono" inputmode="numeric"
+          value="${esc(hono0 === null ? "" : String(hono0))}" placeholder="0"></div>
       <div class="pf"><label for="ofDate">Date de l'offre</label>
         <input type="date" id="ofDate" value="${esc(auj())}"></div>
       <div class="pf"><label for="ofValid">Valable jusqu'au</label>
         <input type="date" id="ofValid" value="${esc(dans(OFFRE_VALIDITE_J))}"></div>
+      <div class="pf wide"><label for="ofDoc">Le document de l'offre</label>
+        <input type="file" id="ofDoc"
+          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,image/*,application/pdf"></div>
       <div class="pf wide"><label for="ofCond">Conditions</label>
-        <textarea id="ofCond" rows="3" placeholder="sous réserve d'obtention d'un prêt, "${
-          ""}>${esc(o.conditions || "")}</textarea></div>
+        <textarea id="ofCond" rows="3"
+          placeholder="sous réserve d'obtention d'un prêt, ">${
+          esc(o.conditions || "")}</textarea></div>
+      <div class="ofcalc" id="ofResume"></div>
     </div>`,
     boutons:[{lib:"Annuler"}, {lib:"Enregistrer l'offre", primaire:true, action:()=>{
       const v = id=> String(($("#" + id) || {}).value || "").trim();
       const montant = v("ofMontant");
       if(num(montant) === null){ toast("Il manque le montant de l'offre"); return; }
-      enregistrerOffre({dossier:d.id, recherche:v("ofQui"), auteur,
-        montant, date:v("ofDate") || auj(), validite:v("ofValid"),
+      const neuve = enregistrerOffre({dossier:d.id, recherche:v("ofQui"), auteur,
+        montant, honoraires:v("ofHono"), mode:v("ofMode"),
+        date:v("ofDate") || auj(), validite:v("ofValid"),
         conditions:v("ofCond"), suiteDe: suite ? suite.id : ""});
+      if(neuve && fichier) joindreAOffre(neuve.id, fichier);
     }}]});
-  setTimeout(()=>{ const e = $("#ofMontant"); if(e) e.focus(); }, 40);
+  /* le calcul suit la frappe : on voit tout de suite ce que l'offre laisse
+     au vendeur, et ce qu'elle coûte à chacun */
+  const recalcul = ()=>{
+    const z = $("#ofResume");
+    if(!z) return;
+    const faux = {dossier:d.id, montant:($("#ofMontant") || {}).value,
+                  honoraires:($("#ofHono") || {}).value};
+    const n = negoOffre(faux);
+    if(n.montant === null){
+      z.innerHTML = `<span class="muted">Saisissez le montant : le net vendeur et
+        la négociation s'affichent ici.</span>`;
+      return;
+    }
+    z.innerHTML = `<div class="ofcalcl"><span>Net vendeur</span>
+        <b>${esc(eur(n.net))}</b></div>
+      <div class="ofcalcl"><span>Honoraires d'agence</span>
+        <b>${esc(n.hono === null ? "—" : eur(n.hono))}</b></div>
+      ${n.baisse === null ? "" : `<div class="ofcalcl tot"><span>Négociation</span>
+        <b>${esc(ecartEur(n.baisse))}</b></div>
+      <div class="ofcalcl p"><span>dont sur le net vendeur</span>
+        <b>${esc(ecartEur(n.baisseNet))}</b></div>
+      <div class="ofcalcl p"><span>dont sur les honoraires</span>
+        <b>${esc(ecartEur(n.baisseHono))}</b></div>`}`;
+  };
+  setTimeout(()=>{
+    const m = $("#ofMontant"), h = $("#ofHono"), f = $("#ofDoc");
+    if(m){ m.oninput = recalcul; m.focus(); }
+    if(h) h.oninput = recalcul;
+    if(f) f.onchange = ()=>{ fichier = (f.files || [])[0] || null; };
+    recalcul();
+  }, 40);
+}
+/* Le document de l'offre rejoint les pièces de l'affaire, rubrique
+   « Actes & Facturation » — là où vivent déjà le mandat et le compromis —
+   et l'offre en garde le nom pour qu'on la retrouve d'un clic. */
+async function joindreAOffre(idOffre, fichier){
+  const o = offreParId(idOffre);
+  if(!o || !fichier) return;
+  try{
+    const p = await ajouterPiece(sujetDossier({id:o.dossier}), fichier,
+                                 "Actes & Facturation");
+    if(!p) return;
+    o.piece = p.id; o.pieceNom = p.nom;
+    saveLists();
+    renderApresOffre();
+    toast("Document joint à l'offre");
+  }catch(e){ if(window.console) console.error(e); }
 }
 /* Depuis la fiche d'un demandeur, le bien n'est pas connu : on le choisit
    parmi ceux qu'il suit, qu'on lui a proposés, ou qu'il a visités. Pas
@@ -19086,7 +19584,12 @@ function enregistrerOffre(f){
   const r = (L.prospects || []).filter(x=> x && x.id === f.recherche)[0] || null;
   const o = {id:idOffre(), dossier:f.dossier, recherche:f.recherche,
     nom: r ? libelleAcquereur(r) : "", auteur:f.auteur || "acq",
-    montant:f.montant, date:f.date, validite:f.validite || "",
+    montant:f.montant,
+    /* les honoraires de CETTE offre : c'est souvent là que la discussion
+       finit, et le net vendeur s'en déduit */
+    honoraires: f.honoraires === undefined ? "" : f.honoraires,
+    mode: f.mode || "", piece:"", pieceNom:"",
+    date:f.date, validite:f.validite || "",
     conditions:f.conditions || "", etat:"", transmisLe:"", reponduLe:"",
     motif:"", suiteDe:f.suiteDe || "", compromis:"",
     cree:Date.now(), par:quiSuisJe()};
@@ -19098,13 +19601,14 @@ function enregistrerOffre(f){
   l.push(o);
   const quoi = o.auteur === "vend" ? "Contre-proposition du propriétaire"
                                    : "Offre d'achat";
-  if(r) noterJournal(r, quoi, nomCourtBien(o.dossier) + " — " + montantOffre(o),
-                     "", o.dossier);
+  const dit = negoTexte(o) + (o.mode ? " · reçue par " + o.mode : "");
+  if(r) noterJournal(r, quoi, nomCourtBien(o.dossier) + " — " + dit, "", o.dossier);
   else noterAction({genre:quoi, dossier:o.dossier,
-                    texte:montantOffre(o) + " — " + nomDemandeurOffre(o)});
+                    texte:dit + " — " + nomDemandeurOffre(o)});
   saveLists();
   renderApresOffre();
   toast(quoi + " enregistrée — " + montantOffre(o));
+  return o;
 }
 
 /* ------------------------------------------- transmettre, par courriel ou
@@ -19112,7 +19616,14 @@ function enregistrerOffre(f){
    « offre » pour que le bon soit proposé en tête. */
 function motsDeOffre(o){
   const d = dossierDuBien(o.dossier) || {};
+  const n = negoOffre(o);
   return {montantOffre: montantOffre(o),
+          netOffre: n.net === null ? "" : eur(n.net),
+          honoOffre: n.hono === null ? "" : eur(n.hono),
+          negociation: n.baisse === null ? "" : ecartEur(n.baisse),
+          baisseNet: n.baisseNet === null ? "" : ecartEur(n.baisseNet),
+          baisseHono: n.baisseHono === null ? "" : ecartEur(n.baisseHono),
+          modeEnvoi: String(o.mode || ""),
           dateOffre: isoValide(o.date) ? fdate(o.date) : "",
           validite: isoValide(o.validite) ? fdate(o.validite) : "",
           conditions: String(o.conditions || "").trim() || "aucune condition particulière",
@@ -19141,6 +19652,7 @@ function transmettreOffre(id){
     corps:`<div class="offrebox">
       <p class="mdnote" style="margin:0 0 10px"><b>${esc(montantOffre(o))}</b> —
         ${esc(nomDemandeurOffre(o))}<br>${esc(intituleBien(d || {}))}</p>
+      <div class="ofcalc">${resumeOffre(o)}${resumeNego(o)}</div>
       <p style="margin:0">L'offre part ${vers === "demandeur"
         ? "au <b>demandeur</b>" : "au <b>propriétaire</b>"}. Choisissez la voie ;
         le message se prépare avec le modèle « offre » de votre bibliothèque.</p>
@@ -19171,6 +19683,7 @@ function ouvrirReponseOffre(id){
       <p class="mdnote" style="margin:0 0 10px"><b>${esc(montantOffre(o))}</b> —
         ${esc(nomDemandeurOffre(o))}<br>${esc(intituleBien(
           dossierDuBien(o.dossier) || {}))}</p>
+      <div class="ofcalc">${resumeOffre(o)}${resumeNego(o)}</div>
       <div class="pf wide"><label for="ofMotif">Motif, si la réponse est non</label>
         <input type="text" id="ofMotif" placeholder="trop bas, un autre acquéreur…"></div>
     </div>`,
@@ -19313,6 +19826,7 @@ function accepterOffre(id){
   popup({titre:"Offre acceptée", genre:"ok",
     corps:`<p style="margin:0 0 8px"><b>${esc(montantOffre(o))}</b> —
       ${esc(nomDemandeurOffre(o))}.</p>
+      <div class="ofcalc">${resumeOffre(o)}${resumeNego(o)}</div>
       <ul class="ofsuite">
         <li>La <b>date de l'offre</b> est posée sur le dossier, qui passe
           « sous offre ».</li>
@@ -19432,21 +19946,28 @@ function ligneOffre(o, ou){
     boutons.push(`<button type="button" class="xbtn" data-ofechec="${esc(o.id)}"
       title="La vente ne se fait pas : le bien revient aux autres demandeurs"
       >Sans suite</button>`);
+  if(o.piece) boutons.push(`<button type="button" class="xbtn"
+    data-ofdoc="${esc(o.id)}" title="${esc(o.pieceNom || "Le document de l'offre")}"
+    >Le document</button>`);
   if(d) boutons.push(`<button type="button" class="xbtn"
     data-open="${esc(o.dossier)}">Voir le bien</button>`);
   boutons.push(`<button type="button" class="xbtn sup"
     data-ofdel="${esc(o.id)}">Supprimer</button>`);
   return `<div class="ofrow ${cls}">
     <span class="ofmontant">${esc(montantOffre(o))}
-      <i>${esc(libAuteurOffre(o))}${isoValide(o.date) ? " · " + esc(fdate(o.date)) : ""}</i>
+      <i>${esc(libAuteurOffre(o))}${isoValide(o.date) ? " · " + esc(fdate(o.date)) : ""}${
+        o.mode ? " · " + esc(o.mode) : ""}</i>
+      ${resumeOffre(o)}
     </span>
-    <span class="ofqui">${esc(qui)}${
+    <span class="ofqui">${esc(qui)}${resumeNego(o)}${
       o.conditions ? `<em>${esc(o.conditions)}</em>` : ""}${
       isoValide(o.validite) && !e.clos
-        ? `<em>valable jusqu'au ${esc(fdate(o.validite))}</em>` : ""}</span>
+        ? `<em>valable jusqu'au ${esc(fdate(o.validite))}</em>` : ""}${
+      o.pieceNom ? `<em class="ofdoc">${esc(o.pieceNom)}</em>` : ""}</span>
     <span class="ofetape"><span class="ofpast ${cls}">${esc(e.lib || "")}</span>${
       fil.length > 1 ? `<span class="offil petit">${fil.map(x=>
-        `<span class="ofpas${x.id === o.id ? " ici" : ""}"><i>${
+        `<span class="ofpas${x.id === o.id ? " ici" : ""}" title="${
+          esc(negoTexte(x))}"><i>${
           esc(libAuteurOffre(x))}</i>${esc(montantOffre(x))}</span>`).join("")}</span>`
         : ""}</span>
     <span class="offin">${boutons.join("")}</span>
@@ -22319,13 +22840,15 @@ document.addEventListener("input", e=>{
     }
   }
   if(t.dataset.parc !== undefined){
-    const [i,champ] = t.dataset.parc.split(":");
-    const cp = cibleParcelles();
+    /* « 2:section » depuis un dossier, « 2:section:5 » depuis la fiche de
+       l'immeuble n° 5 du carnet : la même liste, prise par l'autre bout */
+    const [i, champ, ires] = t.dataset.parc.split(":");
+    const cp = cibleParcelles(ires);
     const p = cp.liste[+i];
     if(p){ p[champ] = t.value;
       /* celles d'une résidence vivent dans les listes, pas dans le dossier */
       if(cp.res) saveLists(); else autosave();
-      majTotalParcelles(); }
+      majTotalParcelles(ires); }
   }
   if(t.dataset.annot !== undefined){
     const a = (D.annulations || [])[+t.dataset.annot];
@@ -22496,7 +23019,7 @@ document.addEventListener("focusout", e=>{
     return;
   }
   if(t.dataset.b === "prix.fai" || t.dataset.b === "prix.honoraires"){
-    apresSaisiePrix(); return;
+    apresSaisiePrixPlusTard(); return;
   }
   const b = t.dataset.b;
   if(b && b.startsWith("dates.")) verifierChronologie(b.slice(6));
@@ -22824,7 +23347,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -22920,10 +23443,22 @@ document.addEventListener("click", e=>{
   if(t.dataset.dbien){ ouvrirDetail(); return; }
   if(t.dataset.avis){ actionAvis(t.dataset.avis); return; }
   if(t.dataset.parcdel !== undefined){
-    const cp = cibleParcelles();
-    cp.liste.splice(+t.dataset.parcdel, 1);
+    const [k, ires] = String(t.dataset.parcdel).split(":");
+    const cp = cibleParcelles(ires);
+    cp.liste.splice(+k, 1);
     if(cp.res) saveLists(); else autosave();
-    renderDetail(); majDetail(); return;
+    if(ires === undefined) { renderDetail(); majDetail(); }
+    else renderImmeubles();
+    return;
+  }
+  /* la même main, depuis la fiche de l'immeuble */
+  if(t.dataset.parcadd !== undefined){
+    const cp = cibleParcelles(t.dataset.parcadd);
+    cp.liste.push({prefixe:"", section:"", numero:"", lieudit:"", contenance:""});
+    saveLists(); renderImmeubles();
+    const der = $$(`[data-parc$=":prefixe:${t.dataset.parcadd}"]`).pop();
+    if(der) der.focus();
+    return;
   }
   if(t.dataset.piecedel !== undefined){
     cibleBien().o.pieces.splice(+t.dataset.piecedel, 1);
@@ -22942,6 +23477,10 @@ document.addEventListener("click", e=>{
   if(t.dataset.ofcomp){ calerCompromis(t.dataset.ofcomp); return; }
   if(t.dataset.ofechec){ echecOffre(t.dataset.ofechec); return; }
   if(t.dataset.ofdel){ supprimerOffre(t.dataset.ofdel); return; }
+  if(t.dataset.ofdoc){
+    const o = offreParId(t.dataset.ofdoc);
+    if(o) ouvrirPieces(sujetDossier({id:o.dossier}), "Actes & Facturation");
+    return; }
   /* un second mode d'équipement : le « + » l'ouvre, la croix le referme.
      Le bouton vit dans un <label> — sans cela le clic irait aussi déplier
      la liste du champ en dessous. */
@@ -23025,8 +23564,7 @@ document.addEventListener("click", e=>{
     }
     renderPreview(); return;
   }
-  if(t.dataset.add){ D[t.dataset.add].push(blankPerson());
-    renderPeople(t.dataset.add); refreshAllVilles(); autosave(); renderPreview(); return; }
+  if(t.dataset.add){ ouvrirNouvellePartie(t.dataset.add); return; }
   if(t.dataset.del){ const [k,i]=t.dataset.del.split(":");
     D[k].splice(+i,1); renderPeople(k); refreshAllVilles(); autosave(); renderPreview(); return; }
   if(t.dataset.diagdel !== undefined){
@@ -25196,13 +25734,7 @@ $("#renCorps").addEventListener("change", e=>{
 $("#renCreer").onclick = creerDepuisRenouvellement;
 
 $("#btnNew").onclick = choisirNouveauDossier;
-$("#btnDup").onclick = ()=>{
-  persist(true);
-  D = JSON.parse(JSON.stringify(D));
-  D.id = "d"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  D.mandat.num = (D.mandat.num||"") + " bis";
-  renderAll(); persist(true); toast("Dossier dupliqué");
-};
+$("#btnDup").onclick = ouvrirDuplication;
 $("#btnWord").onclick = ()=>exportWord(currentDoc);
 $("#btnWordBoth").onclick = ()=>{ exportWord("fn"); setTimeout(()=>exportWord("et"), 600); };
 $("#btnPrint").onclick = printDoc;
@@ -27763,6 +28295,21 @@ const AIDE = [
   "Numéro, type et date de signature se saisissent dans la barre du haut, une seule fois. Le "+
   "numéro sert de référence partout : titre des documents, nom des fichiers Word, liste "+
   "« Mes dossiers »."],
+ ["Dupliquer : l'endroit, et rien d'autre",
+  "<b>Dupliquer</b> recopiait le dossier entier et ajoutait « bis » au numéro de "+
+  "mandat : le prix, les dates, les diagnostics, l'historique, les acquéreurs — tout ce "+
+  "qui appartient en propre à la vente précédente repartait avec, et il fallait "+
+  "l'effacer à la main. "+
+  "Deux biens d'un même immeuble n'ont en commun qu'une chose : l'<b>endroit</b>. Le "+
+  "bouton ne reprend donc que l'<b>adresse du bien</b> — avec son complément, son code "+
+  "postal, sa commune et son quartier — et l'<b>immeuble</b> auquel elle appartient. "+
+  "Ni numéro de mandat, ni type, ni date, ni prix, ni historique, ni dates clés, ni "+
+  "surface, ni diagnostics, ni pièces jointes. "+
+  "Une fenêtre vous montre ce qui sera repris avant de créer quoi que ce soit, et "+
+  "propose de <b>reprendre le vendeur</b> — en le <b>nommant</b>, pour que vous sachiez "+
+  "ce que vous acceptez. Décochez, et le nouveau dossier n'a pas de vendeur. "+
+  "Le dossier s'ouvre alors sur <b>Le mandat</b>, curseur dans le numéro : c'est la "+
+  "seule chose qui manque pour qu'il existe."],
  ["La pastille d'avancement",
   "À droite du mandat, elle suit les dates clés saisies dans l'onglet Général : EN VENTE tant "+
   "qu'aucune date n'est renseignée, puis SOUS OFFRE, SOUS COMPROMIS et VENDU. C'est la date la "+
@@ -27939,6 +28486,21 @@ const AIDE = [
  ["Vendeurs et acquéreurs",
   "Une fiche par personne, autant que nécessaire. Le premier champ, « Qualité / civilité », "+
   "propose M., Mme, M. et Mme, indivision, SCI, succession, société."],
+ ["Un vendeur se crée par son nom",
+  "« + Ajouter un vendeur » posait une fiche vide, et l'on tapait par-dessus — si bien "+
+  "que la même personne entrait deux fois dans l'application, avec deux adresses et "+
+  "deux histoires qui ne se parlaient pas. "+
+  "Le bouton demande maintenant le <b>nom</b> d'abord. Dès la deuxième lettre, les "+
+  "fiches du répertoire qui lui ressemblent remontent : les <b>personnes</b> comme les "+
+  "<b>sociétés</b> — un vendeur est souvent une SCI, et c'est sa dénomination qu'on "+
+  "tape. L'orthographe approximative est pardonnée : « DURAN » trouve DURAND, et "+
+  "« arenes » trouve la SCI DES ARÈNES. "+
+  "<b>Reprendre une fiche</b>, c'est hériter de son état civil, de ses coordonnées et "+
+  "de tout ce qu'elle porte ailleurs — la fenêtre vous dit où elle figure déjà. "+
+  "<b>Créer un nouveau contact</b> ouvre une fiche au nom tapé, qui entre au répertoire "+
+  "du même geste. Et « Ce n'est pas la bonne personne » écarte une proposition sans la "+
+  "revoir. "+
+  "Le même bouton, et la même fenêtre, valent pour les <b>acquéreurs</b>."],
  ["Deux cases pour les prénoms",
   "La fiche porte <b>« Prénom »</b> — le premier, celui dont on se sert — et <b>« Autres "+
   "prénoms »</b>, qui n'existent que pour l'état civil. On n'écrit à personne avec trois "+
@@ -28074,6 +28636,17 @@ const AIDE = [
   "colonne Variation montre l'écart avec la ligne précédente, en euros et en pourcentage. Si "+
   "vous modifiez le prix directement dans la fiche, l'application vous demande s'il s'agit "+
   "d'un changement à dater d'aujourd'hui ou d'une correction de la dernière ligne."],
+ ["Le prix et les honoraires se saisissent d'un seul trait",
+  "Cette question — « correction ou nouveau prix ? » — était posée au plus mauvais "+
+  "moment : à la seconde où l'on quittait la case du prix, c'est-à-dire en passant aux "+
+  "<b>honoraires</b>, juste à côté. La fenêtre sautait au milieu d'une saisie qui "+
+  "n'était pas finie, et il fallait revenir cliquer dans la cellule pour continuer. "+
+  "Le prix et les honoraires forment <b>un seul geste</b> : tant que le curseur reste "+
+  "dans l'encadré du prix — l'une des deux cases, le bouton de l'historique entre les "+
+  "deux —, rien n'est demandé. La question n'arrive qu'une fois l'encadré quitté, et "+
+  "une seule fois, quels que soient les allers-retours. "+
+  "Les deux valeurs partent alors <b>ensemble</b> à l'historique : un prix et ses "+
+  "honoraires ne se datent pas séparément."],
  ["Un mandat qui prend la suite d'un autre",
   "Le mandat arrive à échéance, le vendeur signe le suivant : le bien n'a pas changé, les "+
   "vendeurs non plus, et tout retaper serait absurde — c'est d'ailleurs ainsi qu'on finit "+
@@ -28374,6 +28947,17 @@ const AIDE = [
   "saisir une fois pour toutes. La fiche le dit en toutes lettres pour qu'on ne les "+
   "ressaisisse pas lot après lot. Pour une maison ou un terrain, elles appartiennent au "+
   "dossier."],
+ ["Saisir le cadastre sur la fiche de l'immeuble",
+  "Les parcelles appartiennent au <b>sol</b>, donc à l'immeuble : les dix appartements "+
+  "d'une copropriété sont bâtis sur les mêmes, et les saisir dix fois serait dix "+
+  "occasions de se contredire. "+
+  "Elles se saisissent donc aussi — et c'est souvent plus naturel — depuis l'onglet "+
+  "<b>Immeubles</b>, sur la fiche de l'immeuble lui-même, section <b>Références "+
+  "cadastrales</b>, sous ses équipements. La note vous dit combien de dossiers en "+
+  "dépendent aujourd'hui. "+
+  "C'est la <b>même liste</b> des deux côtés : une parcelle saisie sur l'immeuble "+
+  "apparaît aussitôt au volet « Le terrain » de chacun de ses lots, et l'inverse est "+
+  "vrai. La contenance totale se recalcule à la frappe."],
  ["Tous les dossiers d'un immeuble",
   "Partout où un immeuble est nommé, un bouton compte les dossiers qui s'y rattachent et "+
   "ouvre leur liste : dans l'onglet Général sous la résidence (« Les voir tous ») et au bas "+
@@ -29274,6 +29858,36 @@ const AIDE = [
   "Chaque ligne d'offre porte, en pastille, l'étape où elle en est et depuis combien "+
   "de jours elle y est. Au bout de <b>trois jours</b> sans réponse, elle passe en rouge "+
   "et remonte en tête de la tuile d'Aujourd'hui."],
+ ["L'offre dit ce qu'elle laisse au vendeur",
+  "Un montant d'offre ne dit rien tout seul. « 235 000 » ne devient une information "+
+  "qu'en regard des 250 000 demandés, et surtout qu'une fois partagé entre ce qui "+
+  "revient au <b>vendeur</b> et ce qui revient à l'<b>agence</b> : une négociation de "+
+  "15 000 € n'a pas le même goût selon qu'elle tombe entière sur le net vendeur ou "+
+  "qu'elle rogne les honoraires. "+
+  "L'offre porte donc ses <b>propres honoraires</b>, repris du mandat et modifiables — "+
+  "c'est souvent là que la discussion finit. Le <b>net vendeur de l'offre</b> s'en "+
+  "déduit : montant moins honoraires, exactement comme le net vendeur du dossier se "+
+  "déduit du prix FAI. "+
+  "Dans la fenêtre de saisie, le calcul <b>suit la frappe</b> : net vendeur, honoraires, "+
+  "négociation totale, et la part de cette négociation qui tombe sur le net vendeur et "+
+  "celle qui tombe sur les honoraires. "+
+  "<b>Partout où le montant d'une offre s'affiche</b> — la ligne du volet, la carte du "+
+  "bien, la tuile d'Aujourd'hui, les fenêtres de transmission, de réponse et "+
+  "d'acceptation — ces deux lignes l'accompagnent. Une contre-proposition se lit de la "+
+  "même façon, et repart des honoraires de l'offre en cours, non de ceux du mandat : "+
+  "c'est là qu'on en est. "+
+  "Les modèles de messages peuvent les écrire : {{netOffre}}, {{honoOffre}}, "+
+  "{{negociation}}, {{baisseNet}}, {{baisseHono}}."],
+ ["Par quelle voie l'offre est arrivée, et son document",
+  "La fenêtre de saisie demande le <b>mode d'envoi</b> — courriel, SMS, WhatsApp, "+
+  "courrier —, choisi dans une liste que le <b>+</b> allonge comme toutes les autres. "+
+  "Elle se gère depuis l'onglet <b>Listes</b>, section « Modes d'envoi d'une offre "+
+  "d'achat ». Le mode se lit ensuite sous le montant, avec la date. "+
+  "Le <b>document de l'offre</b> — celui que le demandeur vous a adressé, signé — se "+
+  "dépose dans la même fenêtre. Il rejoint les <b>pièces de l'affaire</b>, rubrique "+
+  "« Actes & Facturation », là où vivent déjà le mandat et le compromis, et part dans "+
+  "votre Drive comme toutes les autres pièces. L'offre en garde le nom, et le bouton "+
+  "<b>Le document</b>, sur sa ligne, rouvre le tiroir où il est rangé."],
  ["La contre-proposition : le fil des montants",
   "Le propriétaire qui répond « 245 000 et c'est d'accord » n'a ni accepté ni refusé. "+
   "La <b>contre-proposition</b> est donc une offre neuve, faite de l'autre côté de la "+
