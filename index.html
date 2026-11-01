@@ -997,6 +997,19 @@ td.hvar.hausse{color:#15803d}
 .popbox .modalbody{display:block;font-size:13.5px;line-height:1.6;color:var(--ink)}
 .popbox .modalbody b{color:var(--navy)}
 .popbox .modalfoot{justify-content:flex-end}
+/* le « + » d'un second mode d'équipement : il vit contre l'intitulé, pas
+   contre le champ — c'est l'intitulé qu'il double */
+.pf label .eqplus{margin-left:7px;width:19px;height:19px;padding:0;
+  border:1px solid var(--field-line);border-radius:5px;background:#fff;
+  color:var(--accent);font:700 13px/1 inherit;cursor:pointer;
+  vertical-align:-4px;display:inline-flex;align-items:center;
+  justify-content:center}
+.pf label .eqplus:hover{background:var(--accent-soft);border-color:var(--accent)}
+.pf label .eqplus.moins{color:#b42318;font-size:11px}
+.pf label .eqplus.moins:hover{background:#fdeceb;border-color:#b42318}
+.pf.second > label{color:var(--ink-3)}
+@media (max-width:760px){ .pf label .eqplus{width:30px;height:30px;
+  vertical-align:-9px;font-size:15px} }
 .addinline.contact{color:var(--ink-2)}
 .addinline.contact:hover{color:#0b7a3b;border-color:#0b7a3b;background:#eefaf2}
 .addinline.contact[data-mail]:hover{color:var(--navy);border-color:var(--navy);
@@ -2712,7 +2725,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 31 octobre 2026, 19 h 25">Dossiers de vente</div>
+  <div class="brand" title="Version du 1er novembre 2026, 12 h 10">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2940,7 +2953,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>31 octobre 2026, 19 h 25</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>1er novembre 2026, 12 h 10</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3174,6 +3187,26 @@ const PAYS = ["France","Belgique","Suisse","Luxembourg","Monaco","Allemagne","An
   "Italie","Maroc","Île Maurice","Pays-Bas","Pologne","Portugal","République tchèque",
   "Royaume-Uni","Sénégal","Suède","Tunisie","Autre"];
 
+/* ------------------------------------------------- un pays qui manque ----
+   La liste ci-dessus est celle des pays qu'on rencontre neuf fois sur dix.
+   Le dixième existe quand même : un vendeur domicilié en Israël, un
+   acquéreur au Brésil. Le « + » du champ Pays l'ajoute — une fois, depuis
+   n'importe quelle fiche — et il se range dans la liste `paysPlus`, qui
+   voyage avec toutes les autres listes : saisi sur un dossier, il est
+   proposé sur tous, et il survit à la base partagée.
+
+   « Autre » reste le dernier choix de la liste : c'est une réponse, pas un
+   pays, et sa place est au bout. */
+function paysAjoutes(){
+  let l = null;
+  try{ l = L.paysPlus; }catch(e){ l = null; }     /* avant l'init des listes */
+  return (l || []).map(x=> String(x || "").trim()).filter(Boolean);
+}
+function paysOptions(){
+  const sup = paysAjoutes().filter(p=> PAYS.indexOf(p) < 0).sort(triFr);
+  return PAYS.filter(p=> p !== "Autre").concat(sup, ["Autre"]);
+}
+
 /* Indicatifs téléphoniques des pays proposés ci-dessus. À défaut d'indication
    dans le numéro saisi, c'est celui du pays de la personne qui s'applique. */
 const INDICATIFS = {
@@ -3333,6 +3366,8 @@ const LISTS_DEFAULT = {
   ecs:        ["Chauffe-eau électrique","Chauffe-eau thermodynamique",
                "Chaudière gaz individuelle","Chaudière mixte (chauffage + eau chaude)",
                "Solaire","Collective","Autre"],
+  /* les pays ajoutés à la main, en plus de ceux que `PAYS` propose */
+  paysPlus:   [],
   /* le bail d'un bien loué : ce qu'il faut savoir avant de promettre une
      date de libération à un acquéreur */
   typeBail:   ["Location vide","Location meublée","Bail mobilité","Bail étudiant",
@@ -3443,7 +3478,8 @@ const LIST_LABELS = {
   condSusp:"Financement", motifResil:"Motifs de résiliation d'un mandat",
   genreAction:"Genres d'action (historiques)",
   motifEcart:"Motifs d'écart d'un bien (demandeurs)",
-  appelsClip:"Messages de la carte de contact (clips)"
+  appelsClip:"Messages de la carte de contact (clips)",
+  paysPlus:"Pays ajoutés à la liste"
 };
 
 /* carnets d'adresses : "card" = affichage en fiches, "row" = tableau compact */
@@ -5389,7 +5425,7 @@ function optionsFor(kind, path){
     return LISTES_ORDRE.indexOf(cle) >= 0 ? l : l.sort(triFr);
   }
   if(kind.startsWith("book:")) return (L[kind.slice(5)]||[]).map(x=>x.nom).sort(triFr);
-  if(kind==="pays") return PAYS.slice();
+  if(kind==="pays") return paysOptions();
   if(kind==="on" || kind==="yn") return ["OUI","NON"];
   return [];
 }
@@ -5476,9 +5512,14 @@ function controlRaw(path,kind,v,grp,attr){
       `data-attr="${attr}" title="Rechercher dans la liste">${LOUPE}</button>` +
       `<button type="button" class="addinline" data-addlist="${kind}" data-target="${path}" ` +
       `data-attr="${attr}" title="Ajouter une valeur à cette liste">+</button></span>`;
-  if(kind === "pays")   // même gabarit, sans boutons, pour garder les champs alignés
+  /* Le pays n'a pas de loupe — vingt-six entrées se parcourent à l'œil —,
+     mais il a bien son « + » : un pays qui manque s'ajoute d'ici. Le vide
+     à gauche garde le champ aligné sur les autres. */
+  if(kind === "pays")
     return `<span class="withadd">${html}<span class="addspacer"></span>` +
-           `<span class="addspacer"></span></span>`;
+      `<button type="button" class="addinline" data-addlist="list:paysPlus" ` +
+      `data-target="${path}" data-attr="${attr}" ` +
+      `title="Ajouter un pays qui manque à la liste">+</button></span>`;
   /* le prix de vente ouvre son historique */
   if(path === "prix.fai" && attr === "data-b")
     return `<span class="withadd">${html}` +
@@ -5779,8 +5820,13 @@ function controlBase(path,kind,v,grp,attr){
       data-grp="${grp}" data-role="ville" list="dl-${grp}-ville" autocomplete="off">
       <datalist id="dl-${grp}-ville"></datalist>`;
   if(kind==="pays"){
+    /* un pays saisi autrefois, retiré de la liste depuis, reste proposé :
+       sinon une reprise de données le ferait disparaître sans le dire */
+    const cur = String(v || "France");
+    const opts = paysOptions();
+    const liste = opts.indexOf(cur) < 0 ? [cur].concat(opts) : opts;
     return `<select ${a} data-grp="${grp}" data-role="pays">` +
-      PAYS.map(o=>`<option${o===(v||"France")?" selected":""}>${esc(o)}</option>`).join("") +
+      liste.map(o=>`<option${o===cur?" selected":""}>${esc(o)}</option>`).join("") +
       `</select>`;
   }
   /* une valeur qui n'est pas (ou plus) dans la liste reste proposée : sinon une
@@ -6075,7 +6121,8 @@ function typeBienLisible(dossier){
   return b.type === "Autre" ? (b.typeAutre || "Autre") : (b.type || "");
 }
 function surfaceLisible(){
-  const n = num((D.detail || {}).surface);
+  /* pour un immeuble, c'est le total de ses logements — voir surfaceDuBien */
+  const n = surfaceDuBien(D);
   return n === null ? "" : n.toLocaleString("fr-FR") + " m²";
 }
 /* ------------------------------------------------ l'en-tête du dossier */
@@ -6399,8 +6446,10 @@ const CHAMPS_VOLET = {
          "occupation.debut", "occupation.fin", "occupation.loyer"]
       : ["occupation.statut"];
   },
+  /* l'immeuble ne porte plus les équipements : ils sont dans ses logements,
+     et sa surface est le total des leurs — on ne compte pas deux fois */
   immeuble: ()=> ["detail.surface", "detail.terrain", "detail.charges",
-                  "detail.taxe", "detail.chauffage", "detail.ecs"]
+                  "detail.taxe"]
 };
 function rempli(v){
   return v !== undefined && v !== null && String(v).trim() !== "";
@@ -6421,9 +6470,12 @@ function remplissageVolet(cle){
   if(/^lg:/.test(cle)){
     const g = (logementsDe(D) || []).filter(x=> x && x.id === cle.slice(3))[0];
     if(!g) return null;
+    /* le chauffage et l'eau chaude appartiennent désormais au logement :
+       ils comptent dans SON remplissage, et plus dans celui de l'immeuble */
     const vals = [(g.detail || {}).surface, (g.detail || {}).pieces,
                   (g.detail || {}).chambres, (g.occupation || {}).statut,
-                  (g.pieces || []).length ? "oui" : ""];
+                  (g.pieces || []).length ? "oui" : "",
+                  (g.detail || {}).chauffage, (g.detail || {}).ecs];
     const n = vals.filter(rempli).length;
     return {n, total:vals.length, mot:n + " renseignement sur " + vals.length};
   }
@@ -6807,13 +6859,135 @@ const DETAIL_D = [
   {t:"Charges et impôts", f:[
     ["charges",   "Charges de copropriété (€/an)", "money", "", estCoproBien],
     ["taxe",      "Taxe foncière (€/an)",          "money"]
-  ]},
-  {t:"Équipements du lot", f:[
-    ["chauffage", "Chauffage",              "list:chauffage", "wide"],
-    ["froid",     "Refroidissement",        "list:froid", "wide"],
-    ["ecs",       "Production d'eau chaude","list:ecs", "wide"]
   ]}
 ];
+/* --------------------------------------------- LES TROIS ÉQUIPEMENTS ----
+   Chauffage, refroidissement, eau chaude. Ils ne sont plus un bloc de
+   trois listes ordinaires, et ce pour deux raisons.
+
+   La première : un bien en a souvent DEUX pour le même usage — un chauffage
+   central et un insert, un ballon électrique et un chauffe-eau solaire. Le
+   second s'ajoute par le « + » posé contre l'intitulé. Et c'est le fait de
+   l'avoir doublé qui donne au premier son rang : tant qu'il est seul, c'est
+   « Chauffage » ; dès qu'un second arrive, il devient « Chauffage
+   principal ». On ne demande jamais de déclarer un rang pour rien.
+
+   La seconde : dans un IMMEUBLE, ces trois champs n'appartiennent pas à
+   l'immeuble. Un immeuble de quatre logements se chauffe rarement d'un seul
+   tenant, et le dire une fois pour tout le bâtiment, c'est se tromper trois
+   fois sur quatre. Ils se saisissent donc logement par logement ; la page de
+   l'immeuble les RELIT, sans les saisir.                                  */
+const EQUIPEMENTS = [
+  ["chauffage", "Chauffage", "Chauffage principal", "Chauffage secondaire",
+   "list:chauffage"],
+  ["froid", "Refroidissement", "Refroidissement principal",
+   "Refroidissement secondaire", "list:froid"],
+  ["ecs", "Production d'eau chaude", "Production d'eau chaude principale",
+   "Production d'eau chaude secondaire", "list:ecs"]
+];
+/* La présence de la CLEF — et non d'une valeur — dit qu'un second mode a été
+   demandé : sans cela, le champ disparaîtrait sous les doigts avant qu'on
+   ait eu le temps d'y choisir quoi que ce soit. */
+function aSecondMode(o, k){
+  return Object.prototype.hasOwnProperty.call((o || {}).detail || {}, k + "2");
+}
+function valeursEquip(det, k){
+  return [(det || {})[k], (det || {})[k + "2"]]
+    .map(x=> String(x || "").trim()).filter(Boolean);
+}
+/* Ce qu'un document écrit : les deux modes à la suite, et pour un immeuble,
+   ce que disent ses logements — sans répéter deux fois le même. */
+function equipementLisible(d, k){
+  const dd = d || D;
+  if(estImmeuble(dd)){
+    const vus = [];
+    logementsDe(dd).forEach(g=> valeursEquip(g.detail, k).forEach(v=>{
+      if(vus.every(x=> fold(x) !== fold(v))) vus.push(v);
+    }));
+    return vus.join(" · ");
+  }
+  return valeursEquip(dd.detail, k).join(" · ");
+}
+/* Une annonce ne liste pas les modes : elle nomme le principal. « Chauffage
+   central · insert » est juste sur une fiche technique et boiteux dans une
+   phrase ; le second mode y gagne à se taire. */
+function equipementPrincipal(d, k){
+  const t = equipementLisible(d, k);
+  return t ? t.split(" · ")[0] : "";
+}
+function blocEquipements(o, chemin, titre, note){
+  const champs = EQUIPEMENTS.map(([k, lab, labP, labS, kind])=>{
+    const deux = aSecondMode(o, k);
+    const plus = `<button type="button" class="eqplus"
+      data-equipadd="${esc(chemin)}|${esc(k)}"
+      title="Ajouter un second mode">+</button>`;
+    const un = `<div class="pf wide"><label><span class="eql">${
+      esc(deux ? labP : lab)}</span>${deux ? "" : plus}</label>${
+      control(chemin + "detail." + k, kind)}</div>`;
+    if(!deux) return un;
+    return un + `<div class="pf wide second"><label><span class="eql">${esc(labS)}</span>
+      <button type="button" class="eqplus moins"
+      data-equipdel="${esc(chemin)}|${esc(k)}"
+      title="Retirer ce second mode">✕</button></label>${
+      control(chemin + "detail." + k + "2", kind)}</div>`;
+  }).join("");
+  return `<div class="dsec"><h4>${esc(titre)}</h4><div class="dgrid">${champs}</div>
+    ${note ? `<p class="dnote">${note}</p>` : ""}</div>`;
+}
+/* Les équipements d'un immeuble, relus de ses logements : trois lignes, en
+   lecture seule, et le nom du logement en regard quand ils diffèrent. */
+function bilanEquipImmeuble(){
+  const l = logementsDe(D);
+  const lignes = EQUIPEMENTS.map(([k, lab])=>{
+    const par = l.map((g, i)=> ({nom:nomLogement(g, i),
+                                 v:valeursEquip(g.detail, k).join(" · ")}))
+                 .filter(x=> x.v);
+    let dit;
+    if(!par.length) dit = `<span class="muted">non renseigné</span>`;
+    else if(par.every(x=> fold(x.v) === fold(par[0].v)) && par.length === l.length)
+      dit = esc(par[0].v) + ` <i>— tous les logements</i>`;
+    else dit = par.map(x=> `${esc(x.v)} <i>— ${esc(x.nom)}</i>`).join("<br>");
+    return `<div class="pf wide"><label>${esc(lab)}</label>
+      <div class="calc">${dit}</div></div>`;
+  }).join("");
+  return `<div class="dsec"><h4>Les équipements</h4>
+    <div class="dgrid">${lignes}</div>
+    <p class="dnote">Ils se saisissent dans <b>chaque logement</b>, et non ici :
+      un immeuble de plusieurs logements se chauffe rarement d'un seul tenant.
+      Cette lecture n'est qu'un récapitulatif.</p></div>`;
+}
+/* « logements.0.|chauffage » : de qui l'on parle, et de quel équipement. */
+function cibleEquip(ref){
+  const s = String(ref || ""), i = s.indexOf("|");
+  if(i < 0) return {o:null, k:""};
+  const chemin = s.slice(0, i), k = s.slice(i + 1);
+  return {o: chemin ? get(D, chemin.replace(/\.$/, "")) : D, k};
+}
+/* On quitte le champ en cours AVANT de redessiner : un champ retiré du
+   document alors qu'il a le curseur envoie une dernière fois son ancienne
+   valeur, et c'est elle qui serait enregistrée. */
+function quitterChamp(){
+  const a = document.activeElement;
+  if(a && typeof a.blur === "function") a.blur();
+}
+function ouvrirSecondMode(ref){
+  const {o, k} = cibleEquip(ref);
+  if(!o || !k) return;
+  quitterChamp();
+  o.detail = o.detail || {};
+  if(!aSecondMode(o, k)) o.detail[k + "2"] = "";
+  autosave(); renderDetail(); majDetail();
+  const el = document.querySelector(`#detailCorps [data-b$="detail.${k}2"]`);
+  if(el) el.focus();
+}
+function fermerSecondMode(ref){
+  const {o, k} = cibleEquip(ref);
+  if(!o || !k) return;
+  quitterChamp();
+  /* suppression franche : le champ s'en va, et ce qu'il portait avec lui */
+  if(o.detail) delete o.detail[k + "2"];
+  autosave(); renderDetail(); majDetail();
+}
 /* La loi Carrez et les charges de copropriété n'ont de sens que sur un lot de
    copropriété : les montrer ailleurs, c'est inviter à les remplir pour rien.
    L'étage, lui, ne veut rien dire ailleurs que sur un appartement. */
@@ -6952,7 +7126,50 @@ function cibleBien(){
   return g ? {o:g, chemin:"logements." + l.indexOf(g) + ".", lg:true}
            : {o:D, chemin:"", lg:false};
 }
-function estImmeubleBien(){ return (D.bien || {}).type === "Immeuble"; }
+function estImmeuble(d){ return ((d || D).bien || {}).type === "Immeuble"; }
+function estImmeubleBien(){ return estImmeuble(D); }
+/* ------------------------------------- LA SURFACE D'UN IMMEUBLE ----------
+   Un immeuble n'a pas de surface à lui : il a celle de ses logements, mise
+   bout à bout. La saisir à part, c'est entretenir deux chiffres pour une
+   seule mesure — et ils finissent toujours par se contredire. Le total des
+   logements fait donc loi, exactement comme le détail des pièces fait loi
+   sur la surface d'un appartement.
+
+   Chaque logement donne sa surface de la même façon : son détail de pièces
+   s'il est saisi, sinon le chiffre porté à la main. */
+function surfaceLogements(d){
+  const l = logementsDe(d || D);
+  let t = 0, vus = 0;
+  l.forEach(g=>{
+    const dep = depouillePieces(g);
+    const su = dep ? dep.surface : num((g.detail || {}).surface);
+    if(su){ t += su; vus++; }
+  });
+  return vus ? Math.round(t * 100) / 100 : null;
+}
+/* La surface qu'on ANNONCE, d'où qu'elle vienne : le total des logements
+   pour un immeuble, la surface habitable sinon, et à défaut la loi Carrez —
+   qui dit la même chose sur un lot de copropriété. */
+function surfaceDuBien(d){
+  const dd = d || D, det = dd.detail || {};
+  if(estImmeuble(dd)){
+    const t = surfaceLogements(dd);
+    if(t !== null) return t;
+  }
+  const s = num(det.surface);
+  return s === null ? num(det.carrez) : s;
+}
+/* On l'inscrit aussi dans le dossier : les documents et la base partagée y
+   liront la surface sans avoir à refaire la somme. */
+function majDepuisLogements(d){
+  const dd = d || D;
+  if(!estImmeuble(dd)) return false;
+  const t = surfaceLogements(dd);
+  if(t === null) return false;
+  dd.detail = dd.detail || {};
+  dd.detail.surface = String(t).replace(".", ",");
+  return true;
+}
 /* Un appartement et un local partagent la même question : à quel étage, et
    l'immeuble a-t-il un ascenseur. Une maison, un terrain, non. */
 function estApptOuLocal(){
@@ -7373,7 +7590,14 @@ function pageImmeuble(){
       Un immeuble se décrit logement par logement : c'est ainsi qu'on en donne la
       surface, le nombre de chambres et ce que chacun rapporte.</p>`}
     <div class="dact"><button type="button" class="addbtn" data-lgadd="1"
-      >+ Ajouter un logement</button></div></div>
+      >+ Ajouter un logement</button></div>
+    ${t.surface ? `<p class="dnote">Le total des surfaces —
+      <b>${esc(m2(t.surface).toLocaleString("fr-FR"))} m²</b> — EST la surface de
+      l'immeuble : c'est elle qui s'affiche en tête de la fiche et dans le tableau
+      des biens, et elle ne se saisit pas ailleurs.</p>`
+      : `<p class="dnote">La surface de l'immeuble se compose de celles de ses
+      logements : donnez-les logement par logement, le total se fait tout seul et
+      s'affiche en tête de la fiche comme dans le tableau des biens.</p>`}</div>
   <div class="dsec"><h4>Ce que l'immeuble offre</h4>
     <div class="pbilan">
       ${pastilleLue("Extérieur", pastilleImmeuble(["terrasse","balcon","jardin"]),
@@ -7389,10 +7613,7 @@ function pageImmeuble(){
   <p class="dnote">Les charges et la taxe foncière sont celles de <b>l'immeuble
     entier</b> : elles ne se divisent pas par logement, et ne se saisissent donc
     qu'ici.</p>
-  ${blocDetail(D, "", {t:"Équipements de l'immeuble", f:[
-      ["chauffage", "Chauffage",              "list:chauffage", "wide"],
-      ["froid",     "Refroidissement",        "list:froid", "wide"],
-      ["ecs",       "Production d'eau chaude","list:ecs", "wide"]]})}
+  ${bilanEquipImmeuble()}
   <div class="dsec"><h4>Observations</h4>${control("detail.observations","area")}</div>`;
 }
 
@@ -7406,6 +7627,10 @@ function renderDetail(){
   const c = cibleBien();
   const o = c.o, chemin = c.chemin;
   majDepuisPieces(o);
+  /* la surface d'un immeuble est le total de ses logements : on l'inscrit
+     dans le dossier pour que les documents et la base partagée la lisent
+     sans refaire la somme */
+  majDepuisLogements(D);
   const pages = pagesBien();
   const rail = `<nav class="bienrail" aria-label="Volets de la fiche du bien">
     ${pages.map(x=> `<button type="button" class="mitem${x.sous ? " sous" : ""}${
@@ -7504,7 +7729,14 @@ function renderDetail(){
       blocDetail(o, chemin, surf) +
       blocDetail(o, chemin, DETAIL_G[1]) +
       (g ? "" : blocDetail(D, "", DETAIL_D[0])) +
-      (g ? "" : blocDetail(o, chemin, DETAIL_D[1])) +
+      blocEquipements(o, chemin,
+        g ? "Les équipements de ce logement" : "Les équipements",
+        g ? `Chauffage, refroidissement et eau chaude appartiennent au
+             <b>logement</b> : c'est ici qu'ils se saisissent, et la page de
+             l'immeuble les relit. Le <b>+</b> ajoute un second mode.`
+          : `Le <b>+</b> ajoute un second mode — un insert en plus du chauffage
+             central, un chauffe-eau solaire en plus du ballon. Le premier
+             devient alors le mode <b>principal</b>.`) +
       (g ? blocOccupation(o, chemin) : "") +
       (g ? "" : `<div class="dsec"><h4>Observations</h4>${
         control("detail.observations","area")}</div>`);
@@ -7588,6 +7820,7 @@ function rafraichirDepuisPieces(){
   if(!box) return;
   const cible = cibleBien().o;
   majDepuisPieces(cible);
+  majDepuisLogements(D);
   box.querySelectorAll("[data-dcalc]").forEach(el=>
     el.textContent = cible.detail[el.dataset.dcalc] || "—");
   majTotauxPieces();
@@ -13523,7 +13756,6 @@ function critBien(d){
   const r = book("residences", b.residence);
   const dpe = (d.diags || []).filter(x=> x.nom === "DPE")[0] || {};
   const dep = depouillePieces(d);
-  const surf = num(det.surface);
   return {
     id: d.id,
     mandat: (d.mandat || {}).num || "",
@@ -13532,8 +13764,10 @@ function critBien(d){
     cp: String(b.cp || "").trim(),
     adresse: lotDe(d),
     fai: num((d.prix || {}).fai),
-    /* à défaut de surface habitable, la loi Carrez dit la même chose */
-    surface: surf === null ? num(det.carrez) : surf,
+    /* La surface d'un immeuble est le total de ses logements ; à défaut de
+       surface habitable, la loi Carrez dit la même chose. Tout cela est
+       rassemblé dans `surfaceDuBien`, lue ici comme à l'écran. */
+    surface: surfaceDuBien(d),
     terrain: num(det.terrain),
     /* Le détail des pièces fait loi, et il est lu ICI, sur le dossier tel
        qu'il est rangé — sans attendre qu'on l'ouvre pour que les comptes se
@@ -21688,7 +21922,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-occ],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -21798,6 +22032,11 @@ document.addEventListener("click", e=>{
   if(t.dataset.bpage){ BIEN.page = t.dataset.bpage; renderDetail(); return; }
   if(t.dataset.lgadd !== undefined){ ajouterLogement(); return; }
   if(t.dataset.lgdel !== undefined){ retirerLogement(t.dataset.lgdel); return; }
+  /* un second mode d'équipement : le « + » l'ouvre, la croix le referme.
+     Le bouton vit dans un <label> — sans cela le clic irait aussi déplier
+     la liste du champ en dessous. */
+  if(t.dataset.equipadd){ e.preventDefault(); ouvrirSecondMode(t.dataset.equipadd); return; }
+  if(t.dataset.equipdel){ e.preventDefault(); fermerSecondMode(t.dataset.equipdel); return; }
   if(t.dataset.occ !== undefined){
     const [chemin, statut] = t.dataset.occ.split("|");
     const avant = get(D, chemin + "occupation.statut");
@@ -22409,15 +22648,22 @@ function depiler(){
   return true;
 }
 
+/* Quelques listes se nomment mal au moment de l'ajout : on n'ajoute pas
+   « des pays ajoutés à la liste », on ajoute UN pays, et ce qu'on saisit
+   n'est pas une « valeur » mais son nom. */
+const AJOUT_LIBRE = { paysPlus:{titre:"un pays", champ:"Nom du pays"} };
 function openAdd(kind, target, attr){
   empiler();
   const isBook = kind.startsWith("book:");
   const key = kind.slice(5);
-  const cols = isBook ? BOOKS[key].cols : [["valeur","Valeur","text","wide"]];
+  const nomme = (!isBook && AJOUT_LIBRE[key]) || null;
+  const cols = isBook ? BOOKS[key].cols
+    : [["valeur", nomme ? nomme.champ : "Valeur", "text", "wide"]];
   modalCtx = {mode:"add", key, isBook, target, attr};
   $("#modalOk").hidden = false;
   $("#modalTitle").textContent = "Ajouter — " +
-    (isBook ? BOOKS[key].title : (LIST_LABELS[key] || key));
+    (isBook ? BOOKS[key].title
+            : (nomme ? nomme.titre : (LIST_LABELS[key] || key)));
   $("#modalBody").innerHTML = cols.map(([f,lab,kd,w,gs])=>
     kd === "sep"
       ? `<div class="pfsep">${esc(lab)}</div>`
@@ -22470,6 +22716,9 @@ function confirmAdd(){
   saveLists();
   const {target, attr} = modalCtx;
   if(depiler()){                       // on revient à la fenêtre précédente
+    /* la fenêtre restituée porte ses anciennes options : on les refait, sans
+       quoi le pays tout juste ajouté n'y serait pas */
+    rebuildPays();
     appliquerValeur(attr, target, nom);
   } else {
     $("#modal").hidden = true; modalCtx = null;
@@ -24115,7 +24364,7 @@ let FICHIER = null, FICHIER_NOM = "", FICHIER_MAJ = 0, FICHIER_ETAT = "";
 const LS_WEB = "mi_web_v1";
 /* le script à déposer dans Google Apps Script, proposé à la copie */
 const SCRIPT_GOOGLE = `/**
- * Base en ligne pour « Dossiers de vente »  —  version 11
+ * Base en ligne pour « Dossiers de vente »  —  version 12
  * ---------------------------------------------------------------------------
  * À coller dans un projet Google Apps Script, puis à déployer en application
  * web. Les données sont enregistrées dans votre propre Google Drive : rien ne
@@ -26315,6 +26564,19 @@ function rebuildSelects(){
       optionsFor(kind, path)
         .map(o=>`<option${o===cur?" selected":""}>${esc(o)}</option>`).join("");
   });
+  rebuildPays();
+}
+/* Les listes de pays sont ailleurs que sur le dossier — carnets, fenêtre
+   d'ajout, fiches de personnes — et ne portent donc pas `data-b`. Un pays
+   ajouté doit pourtant apparaître partout, sans attendre un redessin. */
+function rebuildPays(){
+  $$('select[data-role="pays"]').forEach(sel=>{
+    const cur = sel.value;
+    const opts = paysOptions();
+    const liste = (cur && opts.indexOf(cur) < 0) ? [cur].concat(opts) : opts;
+    sel.innerHTML = liste
+      .map(o=>`<option${o===cur?" selected":""}>${esc(o)}</option>`).join("");
+  });
 }
 function findKind(path){
   if(path==="mandat.type") return "list:mandat";
@@ -26488,6 +26750,9 @@ function migrate(d){
       rafraichirDepuisRepertoire(q);
       return q; });
   });
+  /* la surface d'un immeuble se recompose de ses logements dès l'ouverture
+     du dossier : les tableaux et les documents la lisent telle quelle */
+  majDepuisLogements(out);
   return out;
 }
 
@@ -26738,6 +27003,16 @@ const AIDE = [
   "6 200 codes postaux est intégrée et la commune s'inscrit toute seule (ou vous choisissez "+
   "parmi les communes du code postal). Pour les autres pays, code postal et ville se saisissent "+
   "librement."],
+ ["Un pays qui manque à la liste",
+  "La liste des pays est celle qu'on rencontre neuf fois sur dix. Le dixième existe quand "+
+  "même : un vendeur domicilié en <b>Israël</b>, un acquéreur au Brésil. Le <b>+</b> à "+
+  "droite du champ Pays l'ajoute — depuis n'importe quelle fiche, dossier, vendeur, "+
+  "acquéreur ou répertoire. "+
+  "Il suffit de le faire <b>une fois</b> : le pays rejoint vos listes, il est proposé "+
+  "partout ensuite, il survit à la fermeture de l'application et il voyage avec la base "+
+  "partagée. L'onglet <b>Listes</b> en tient le compte, sous « Pays ajoutés à la liste », "+
+  "où vous pouvez en retirer un. « Autre » reste toujours le dernier choix : c'est une "+
+  "réponse, pas un pays."],
  ["Vendeurs et acquéreurs",
   "Une fiche par personne, autant que nécessaire. Le premier champ, « Qualité / civilité », "+
   "propose M., Mme, M. et Mme, indivision, SCI, succession, société."],
@@ -27111,6 +27386,36 @@ const AIDE = [
   "pastilles <b>Extérieur</b> et <b>Pkg / Garage</b> passent au vert dès qu'<b>un</b> "+
   "logement répond oui : un immeuble dont un seul lot a un garage a bien un garage à "+
   "vendre."],
+ ["L'immeuble : sa surface est celle de ses logements",
+  "Un immeuble n'a pas de surface à lui : il a <b>celle de ses logements, mise bout à "+
+  "bout</b>. Donnez-les logement par logement — par le détail des pièces ou à la main — "+
+  "et le total se fait tout seul. C'est lui qui s'affiche <b>en tête de la fiche du "+
+  "bien</b>, à côté du type, et <b>dans le tableau des biens</b>, colonne surface. "+
+  "Il n'y a donc aucune surface à saisir sur l'immeuble lui-même : deux chiffres pour "+
+  "une seule mesure finissent toujours par se contredire. Corrigez la surface d'un "+
+  "logement, et le total suit immédiatement, partout."],
+ ["L'immeuble : les équipements sont dans chaque logement",
+  "<b>Chauffage, refroidissement et production d'eau chaude</b> ne se saisissent plus sur "+
+  "l'immeuble : ils appartiennent à <b>chaque logement</b>, dans son volet, sous « Les "+
+  "équipements de ce logement ». Un immeuble de quatre logements se chauffe rarement d'un "+
+  "seul tenant, et le dire une fois pour tout le bâtiment, c'est se tromper trois fois sur "+
+  "quatre. "+
+  "La page <b>L'immeuble en entier</b> en donne la <b>lecture</b> : le mode, et le nom du "+
+  "logement en regard quand ils diffèrent. Quand tous les logements s'accordent, la ligne "+
+  "le dit en un mot — « tous les logements ». Cette lecture ne se saisit pas ; c'est un "+
+  "récapitulatif."],
+ ["Un second mode de chauffage, de froid ou d'eau chaude",
+  "Un bien a souvent <b>deux modes</b> pour le même usage : un chauffage central et un "+
+  "insert, un ballon électrique et un chauffe-eau solaire. Le petit <b>+</b> posé contre "+
+  "l'intitulé du champ ouvre le second. "+
+  "Dès qu'il existe, le premier devient « <b>Chauffage principal</b> », et le nouveau "+
+  "« Chauffage secondaire » — de même pour le refroidissement et pour l'eau chaude. Tant "+
+  "qu'il n'y en a qu'un, il s'appelle simplement « Chauffage » : on ne demande pas de "+
+  "déclarer un rang pour rien. La <b>croix</b> à côté du second le retire, et le premier "+
+  "reprend son nom nu. "+
+  "La <b>fiche de présentation</b> écrit les deux modes à la suite ; l'<b>annonce</b>, "+
+  "elle, ne retient que le principal — « chauffage central · insert » est juste sur une "+
+  "fiche technique et boiteux dans une phrase."],
  ["Le détail des pièces remplit les caractéristiques",
   "Nommez les pièces — « séjour », « chambre », « salle de bain », « WC », « cave », "+
   "choisis dans une <b>liste déroulante</b> que le bouton <b>+</b> complète pour tous vos "+
@@ -31169,6 +31474,7 @@ function tableauxDeLaFiche(d){
   dit = bloc("Confort et équipements");
   dit("Chauffage", o.chauffage);
   dit("Climatisation", o.froid);
+  dit("Eau chaude", o.ecs);
   dit("Annexes", o.annexes.length ? o.annexes.join(", ") : null);
   if(o.copro && o.ascenseur) dit("Ascenseur", "oui");
 
@@ -31766,7 +32072,8 @@ function donneesPubli(dossier){
     cp: b.cp || "",
     residence: b.residence || "",
     copro: estCoproBien(D2),
-    surface: m2(det.surface),
+    /* un immeuble annonce le total de ses logements */
+    surface: estImmeuble(D2) ? surfaceDuBien(D2) : m2(det.surface),
     carrez: m2(det.carrez),
     terrain: m2(det.terrain),
     pieces: num(det.pieces),
@@ -31776,8 +32083,14 @@ function donneesPubli(dossier){
     etages: String(det.etages || "").trim(),
     exposition: det.exposition || "",
     etat: det.etat || "",
-    chauffage: det.chauffage || "",
-    froid: det.froid || "",
+    /* les deux modes à la suite, et pour un immeuble ce que ses logements
+       portent — le document écrit ce qui est vrai, pas ce qui est saisi ici */
+    chauffage: equipementLisible(D2, "chauffage"),
+    froid: equipementLisible(D2, "froid"),
+    ecs: equipementLisible(D2, "ecs"),
+    /* ce que l'annonce retient : le mode principal, et lui seul */
+    chauffagePrinc: equipementPrincipal(D2, "chauffage"),
+    froidPrinc: equipementPrincipal(D2, "froid"),
     charges: num(det.charges),
     taxe: num(det.taxe),
     annexes: [],
@@ -31980,7 +32293,7 @@ function corpsPubli(style, graine){
   if(o.piscine) atouts.push("piscine collective");
   if(o.parkingColl) atouts.push("parking collectif");
   rangement.forEach(a=> atouts.push(a));
-  if(o.chauffage) atouts.push(o.chauffage.toLowerCase());
+  if(o.chauffagePrinc) atouts.push(o.chauffagePrinc.toLowerCase());
   if(o.terrain !== null) atouts.push("terrain " + deDevant(m2txt(o.terrain)));
 
   const adj = adjectifs(o, fem);
@@ -33262,7 +33575,7 @@ function pucesProposees(){
   if(o.ascenseur) p.push("Ascenseur");
   if(o.piscine) p.push("Piscine collective");
   if(o.exposition) p.push("Exposition " + o.exposition.toLowerCase());
-  if(o.chauffage) p.push(o.chauffage);
+  if(o.chauffagePrinc) p.push(o.chauffagePrinc);
   return p.slice(0, 6);
 }
 /* ------------------------------------------------- les légendes du Récit
@@ -33303,8 +33616,8 @@ function phrasesDuBien(){
   /* enfin ce qui qualifie le bien dans son ensemble */
   if(o.exposition) pousse("expo", "Exposition " + o.exposition.toLowerCase());
   if(o.etat) pousse("etat", cap(o.type) + " " + enEtat(o.etat, bienFeminin(o.type)));
-  if(o.chauffage) pousse("chauf", cap(o.chauffage));
-  if(o.froid) pousse("froid", cap(o.froid));
+  if(o.chauffagePrinc) pousse("chauf", cap(o.chauffagePrinc));
+  if(o.froidPrinc) pousse("froid", cap(o.froidPrinc));
   if(o.piscine) pousse("piscine", "Résidence avec piscine");
   if(o.ascenseur) pousse("asc", "Résidence avec ascenseur");
   if(o.parkingColl) pousse("pkc", "Parking collectif");
