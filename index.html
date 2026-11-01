@@ -855,6 +855,65 @@ table.envois tr.repondu td.emode b{color:#166534}
 /* « on ne sait pas » n'est pas « non » : gris, et non ambre */
 .rapmanque{background:#f8f4f2;color:#65554b;border:1px dashed #ded2ce;border-radius:6px;
   padding:1px 7px;font-size:11.5px}
+/* ------------------------------------------------ LE PARCOURS D'ACHAT
+   La ligne d'une offre : le montant en premier et en gros — c'est ce qu'on
+   vient y lire —, puis de qui et sur quoi, puis l'étape, puis les gestes.
+   Sur un écran étroit, les quatre colonnes se mettent les unes sous les
+   autres : une offre se saisit et se suit aussi bien sur tablette. */
+.ofrow{display:grid;grid-template-columns:auto minmax(0,1.4fr) minmax(0,1.1fr) auto;
+  gap:12px;align-items:center;border:1px solid var(--line);border-radius:8px;
+  background:#fff;padding:9px 12px;margin-bottom:7px;font-size:13px}
+.ofrow:last-child{margin-bottom:0}
+.ofrow.att{box-shadow:inset 3px 0 0 var(--accent)}
+.ofrow.retard{box-shadow:inset 3px 0 0 #b42318;border-color:#f3c7c2}
+.ofrow.ok{box-shadow:inset 3px 0 0 #15803d;border-color:#bbf7d0}
+.ofrow.non,.ofrow.old{background:#faf7f5;color:var(--ink-2)}
+.ofmontant{font-weight:800;font-size:17px;white-space:nowrap;line-height:1.15}
+.ofmontant i{display:block;font-style:normal;font-weight:500;font-size:11px;
+  color:var(--ink-3);letter-spacing:.2px}
+.ofqui{min-width:0;font-weight:600}
+.ofqui em{display:block;font-style:normal;font-weight:400;font-size:11.5px;
+  color:var(--ink-2)}
+.ofetape{min-width:0;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.ofpast{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;
+  font-weight:700;background:var(--accent-soft);color:var(--bandeau);
+  border:1px solid #e6cfc3}
+.ofpast.retard{background:#fdeceb;color:#b42318;border-color:#f3c7c2}
+.ofpast.ok{background:#dcfce7;color:#14532d;border-color:#86efac}
+.ofpast.non,.ofpast.old{background:#f1ebe8;color:#6b5b53;border-color:#e0d4ce}
+/* le fil de la négociation : 230 000 → 245 000 → 238 000 */
+.offil{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 4px}
+.offil.petit{margin:0}
+.ofpas{display:inline-flex;flex-direction:column;line-height:1.1;
+  padding:2px 8px;border-radius:6px;background:#f6f1ed;border:1px solid var(--line);
+  font-size:12px;font-weight:700}
+.ofpas i{font-style:normal;font-weight:400;font-size:9.5px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.3px}
+.ofpas.ici{background:var(--accent-soft);border-color:var(--accent);
+  color:var(--bandeau)}
+.offin{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.offin .xbtn.fort{background:var(--accent);border-color:var(--accent);color:#fff}
+.offin .xbtn.fort:hover{background:var(--marque-fonce);border-color:var(--marque-fonce)}
+.ofsuite{margin:0;padding-left:20px;font-size:13.5px;line-height:1.6}
+.ofzone .rapsous,.ofliste .rapsous{margin-top:14px}
+.offrebox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.offrebox .pf.wide,.offrebox > p{grid-column:1/-1}
+.offrebox textarea{width:100%;resize:vertical}
+/* choisir le bien sur lequel porte l'offre */
+.ofchoix{display:flex;flex-direction:column;gap:7px}
+.ofbien{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:8px;
+  border:1px solid var(--line);background:#fff;cursor:pointer;font:inherit}
+.ofbien:hover{border-color:var(--accent);background:var(--accent-soft)}
+.ofbien b{display:block}
+.ofbien span{display:block;font-size:12px;color:var(--ink-2)}
+.ofbien em{font-style:normal;font-size:12px;font-weight:700}
+@media (max-width:900px){
+  .ofrow{grid-template-columns:1fr;gap:7px}
+  .offin{justify-content:flex-start}
+  .offin .xbtn{min-height:38px;padding:0 14px}
+  .offrebox{grid-template-columns:1fr}
+  .ofetape{align-items:flex-start}
+}
 .ecartes{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
 .ecartes > summary{cursor:pointer;font-size:12px;color:var(--ink-2);
   list-style:none;display:flex;align-items:center;gap:6px}
@@ -1906,8 +1965,14 @@ table.tdb.statuts tr.adet.vide td{color:var(--ink-3);font-style:italic;text-alig
    Trois, de largeur égale, et ensemble aussi larges que le tableau des
    dossiers en cours qui les surplombe. Le titre, puis le COMPTE en grand
    dessous : c'est le nombre qu'on vient lire de loin, pas le titre. */
-.altuiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;
+/* Quatre tuiles depuis le parcours d'achat. Elles tiennent sur une ligne
+   sur un écran de bureau, deux par deux sur une tablette en portrait, et
+   l'une sous l'autre sur un téléphone — la grille s'en charge seule, sans
+   qu'on ait à compter les tuiles. */
+.altuiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;
   margin-bottom:18px}
+@media (max-width:1180px){ .altuiles{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:620px){ .altuiles{grid-template-columns:1fr} }
 .altuile{display:flex;flex-direction:column;align-items:center;gap:0;
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
   padding:14px 17px 15px;box-shadow:var(--shadow);text-align:center;font:inherit;
@@ -2725,7 +2790,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 1er novembre 2026, 14 h 05">Dossiers de vente</div>
+  <div class="brand" title="Version du 1er novembre 2026, 15 h 10">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2953,7 +3018,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>1er novembre 2026, 14 h 05</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>1er novembre 2026, 15 h 10</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3270,6 +3335,34 @@ const LISTS_DEFAULT = {
        + "Quel sentiment gardez-vous de ce {{typeMin}} ? N'hésitez pas à me "
        + "dire franchement ce qui vous a plu et ce qui vous a retenu : cela "
        + "m'aidera à vous proposer la suite.\n\n"
+       + "Bien à vous,\n{{nego}}\n{{negotel}}\n{{agence}}"},
+    /* --------------------------------------------- transmettre une offre
+       Deux modèles, parce qu'une offre se transmet dans les deux sens :
+       au propriétaire quand elle vient du demandeur, au demandeur quand
+       le propriétaire contre-propose. Les mots de l'offre — montant,
+       validité, conditions — s'écrivent {{montantOffre}}, {{validite}},
+       {{conditions}} : ils ne valent que dans ce contexte-là. */
+    {id:"c-offre-prop", nom:"Offre d'achat — au propriétaire", contexte:"offre",
+     objet:"Offre d'achat de {{montantOffre}} — {{type}} à {{ville}}",
+     corps:"Bonjour {{civilite}} {{nom}},\n\n"
+       + "J'ai le plaisir de vous transmettre une offre d'achat sur votre "
+       + "{{typeMin}} de {{surface}} à {{ville}}.\n\n"
+       + "Montant proposé : {{montantOffre}}\n"
+       + "Offre faite le {{dateOffre}}, valable jusqu'au {{validite}}\n"
+       + "Conditions : {{conditions}}\n\n"
+       + "Je reste à votre disposition pour en parler et recueillir votre "
+       + "réponse. Si elle vous convient, nous enchaînons sur la signature "
+       + "du compromis chez le notaire.\n\n"
+       + "Bien à vous,\n{{nego}}\n{{negotel}}\n{{agence}}"},
+    {id:"c-offre-contre", nom:"Contre-proposition — au demandeur", contexte:"offre",
+     objet:"Réponse du propriétaire — {{type}} à {{ville}}",
+     corps:"Bonjour {{civilite}} {{nom}},\n\n"
+       + "Le propriétaire du {{typeMin}} de {{surface}} à {{ville}} a étudié "
+       + "votre offre. Il ne la retient pas en l'état, mais se déclare "
+       + "vendeur à {{montantOffre}}.\n\n"
+       + "Conditions : {{conditions}}\n\n"
+       + "Dites-moi ce que vous en pensez : je reste à votre disposition "
+       + "pour en discuter.\n\n"
        + "Bien à vous,\n{{nego}}\n{{negotel}}\n{{agence}}"}],
   /* ------------------------------------ la bibliothèque de messages WhatsApp
      WhatsApp n'a ni objet ni pièce jointe : un message, et c'est tout. Mais
@@ -3290,6 +3383,13 @@ const LISTS_DEFAULT = {
     {id:"w-conf-court", contexte:"confirmation", nom:"Confirmation — en deux lignes",
      texte:"Bonjour {{nom}}, c'est bien noté : {{date}} à {{heure}}, "
        + "{{lieu}}. À tout à l'heure. {{nego}}"},
+    {id:"w-offre", contexte:"offre", nom:"Offre d'achat — à transmettre",
+     texte:"Bonjour {{nom}},\n\n"
+       + "Une offre d'achat vient d'être faite sur le {{typeMin}} de "
+       + "{{surface}} à {{ville}} : {{montantOffre}}, valable jusqu'au "
+       + "{{validite}}.\n\n"
+       + "Conditions : {{conditions}}\n\n"
+       + "Je vous appelle pour en parler. {{nego}} — {{negotel}}"},
     {id:"w-ann", contexte:"annulation", nom:"Annulation — ton courant",
      texte:"Bonjour {{nom}},\n\n"
        + "Je suis au regret d'annuler notre rendez-vous du {{date}} à "
@@ -3429,6 +3529,8 @@ const LISTS_DEFAULT = {
   reponseVente: ["OUI","NON","En cours"],
   reponseRdv:   ["OUI","NON","RDV en attente"],
   prospects: [],
+  /* LE PARCOURS D'ACHAT — une offre par ligne, voir « Le parcours d'achat » */
+  offres: [],
   notaires: [{prenom:"Clémence", patronyme:"TORTEL",
               nom:"Maître Clémence TORTEL", adresse:"26-28, avenue Sixte Quenin",
               pays:"France", cp:"13200", ville:"ARLES", tel:"04 90 52 18 09",
@@ -3660,6 +3762,8 @@ const PAGES_PROSPECT = [
            "@vente","venteFaite","venteCompromis","venteVendu",
            "@suivi","rdv","nego","contact"]},
   {cle:"rappro",  lib:"Biens à rapprocher", champs:[]},
+  /* le parcours d'achat : les offres du demandeur, et leurs quatre étapes */
+  {cle:"offres",  lib:"Offres et compromis", champs:[]},
   {cle:"journal", lib:"Historique", champs:[]}
 ];
 
@@ -3886,7 +3990,10 @@ const CONTEXTES_MAIL = [
   ["relance",      "Relance d'un demandeur",
    "proposé depuis une action dont le genre parle de relance"],
   ["vendeur",      "Au propriétaire",
-   "proposé depuis une action portant sur un bien, pour écrire au vendeur"]
+   "proposé depuis une action portant sur un bien, pour écrire au vendeur"],
+  ["offre",        "Transmettre une offre d'achat",
+   "proposé quand on transmet une offre au propriétaire, ou une "
+   + "contre-proposition au demandeur"]
 ];
 /* Ranger la bibliothèque existante sans rien demander : le nom du modèle
    dit presque toujours à quoi il sert. Ce qui ne se devine pas reste
@@ -3911,7 +4018,9 @@ const CONTEXTES_WA = [
    "proposé quand un participant est marqué « confirmer par WhatsApp » à la "
    + "création d'une visite"],
   ["annulation",   "Annulation d'un rendez-vous",
-   "proposé quand on annule un rendez-vous en prévenant par WhatsApp"]
+   "proposé quand on annule un rendez-vous en prévenant par WhatsApp"],
+  ["offre",        "Transmettre une offre d'achat",
+   "proposé quand on transmet une offre par WhatsApp"]
 ];
 function idWa(){
   return "wa" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -5921,6 +6030,11 @@ const SCHEMA_GENERAL = [
  {col:1,t:"Demandeurs pour ce bien",n:"",id:"cardAcqs",cle:"acqs",f:[
    ["@acqs","","acqs"]
  ]},
+ /* le parcours d'achat, pris du côté du bien : qui a fait une offre, de
+    combien, et où elle en est */
+ {col:1,t:"Offres reçues",n:"",id:"cardOffres",cle:"offres",f:[
+   ["@offres","","offres"]
+ ]},
  {col:1,t:"Mobilier",n:"6",cle:"mobilier",f:[
    ["mobilier.liste","Liste de meubles","area"],
    ["mobilier.annexe","Liste détaillée sur document annexe","on"]
@@ -6045,6 +6159,7 @@ function lignesSection(sec){
     if(kind==="annul") return boutonAnnulation();
     if(kind==="annuls") return carteAnnulations();
     if(kind==="acqs") return carteAcquereursBien();
+    if(kind==="offres") return carteOffresBien();
     if(kind==="recap"){
       const [txt,empty] = recapValue(path);
       return `<div class="recap${empty?" empty":""}" data-recap="${path}">${esc(txt)}</div>`;
@@ -6103,7 +6218,11 @@ const ICG = {
     <path d="M3 11h18v6H3z"/><path d="M6 17v3M18 17v3"/></svg>`,
   annulees:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
     stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/>
-    <path d="m9 9 6 6M15 9l-6 6"/></svg>`
+    <path d="m9 9 6 6M15 9l-6 6"/></svg>`,
+  offres:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round"><path d="M3 12.5 7 8.5l3.5 3 2-2
+    3 3"/><path d="M12.5 9.5 16 6l2.5 2.5"/><path d="M3 20h18"/>
+    <path d="M18 6h3v3"/></svg>`
 };
 /* « 5 rue Balze 13200 ARLES », sans répéter ce que l'adresse contient déjà */
 function adresseBienCourte(){
@@ -6328,6 +6447,12 @@ function lignesTuile(cle){
         !!((x.ecarts || []).length || (x.flous || []).length)));
     if(!list.length) l("Personne", "pour l'instant", true);
   }
+  if(cle === "offres"){
+    const of = offresDuBien(D.id);
+    if(!of.length) l("Aucune offre", "pour l'instant", true);
+    else of.slice(0, 4).forEach(o=>
+      l(montantOffre(o), (etapeOffre(o) || {}).lib || "", !offreVive(o)));
+  }
   if(cle === "prix"){
     l("Prix FAI", eur0(num(D.prix.fai)), num(D.prix.fai) === null);
     l("Honoraires TTC", eur0(num(D.prix.honoraires)), num(D.prix.honoraires) === null);
@@ -6369,6 +6494,17 @@ function piedTuile(cle){
     if(!list.length) return "Aucune recherche en cours ne porte sur ce bien.";
     return `<b>${list.length}</b> recherche${list.length > 1 ? "s" : ""} en cours` +
       (net ? ` · <b>${net}</b> sans réserve` : " · toutes avec un écart");
+  }
+  if(cle === "offres"){
+    const of = offresDuBien(D.id);
+    const vives = of.filter(offreVive);
+    if(!of.length) return "Aucune offre reçue sur ce bien.";
+    const prise = of.filter(o=> o.etat === "acceptee")[0];
+    if(prise) return `Offre <b>acceptée</b> — ${esc(montantOffre(prise))}`;
+    return `<b>${vives.length}</b> offre${vives.length > 1 ? "s" : ""} en jeu`
+      + (of.length > vives.length
+         ? ` · ${of.length - vives.length} close${of.length - vives.length > 1 ? "s" : ""}`
+         : "");
   }
   if(cle === "mobilier") return "Repris tel quel sur le dossier de vente.";
   if(cle === "annulees") return "Les dates et le client de chaque tentative.";
@@ -6506,6 +6642,16 @@ function tuilesDuBien(){
             mot:dem.length > 1 ? "demandeurs" : "demandeur",
             det:dem.length ? "recherches en cours qui portent sur ce bien"
                            : "aucune recherche ne porte sur ce bien"});
+  /* les offres reçues : la tuile n'apparaît que s'il y en a, ou si le
+     dossier est déjà sous offre — ailleurs, elle ne dirait rien */
+  const of = offresDuBien(D.id);
+  out.push({cle:"sec:offres", titre:"Offres reçues", compte:of.length,
+            mot:of.length > 1 ? "offres" : "offre",
+            det: of.filter(o=> o.etat === "acceptee").length
+                   ? "une offre acceptée — le compromis suit"
+                   : of.length ? "offres reçues sur ce bien"
+                               : "aucune offre reçue",
+            si:()=> of.length > 0 || isoValide((D.dates || {}).offre)});
   return out.filter(t=> !t.si || t.si());
 }
 function tuileBien(t){
@@ -10722,7 +10868,10 @@ function ouvrirEnvoiCourriel(opt){
     return;
   }
   const pers = o.pid ? fichePersonne(o.pid) : null;
-  const mots = motsDuCourriel(dossier, pers || {});
+  /* `extra` : les mots que seul l'appelant connaît — le montant d'une
+     offre, sa validité, ses conditions. Ils s'ajoutent au dictionnaire
+     commun et s'écrivent {{montantOffre}}, {{validite}}… dans un modèle. */
+  const mots = motsDuCourriel(dossier, pers || {}, o.extra);
   const m0 = modeles[0];
   const avecFiche = !!d;
   popup({titre:"Écrire un courriel", large:true,
@@ -10816,8 +10965,8 @@ function ouvrirEnvoiWa(opt){
   const f = o.pid ? fichePersonne(o.pid) : null;
   const tel = String((f && (f.tel1 || f.tel2)) || "").trim();
   if(!tel){ toast("Aucun téléphone connu pour cette personne"); return; }
-  const mots = motsDuCourriel(d || migrate(blankDossier()), f || {});
-  ouvrirChoixWa("libre", mots, texte=>{
+  const mots = motsDuCourriel(d || migrate(blankDossier()), f || {}, o.extra);
+  ouvrirChoixWa(o.contexte || "libre", mots, texte=>{
     window.open("https://wa.me/" + numeroWa(tel)
       + (texte ? "?text=" + encodeURIComponent(texte) : ""), "_blank", "noopener");
   }, function(){});
@@ -14322,6 +14471,7 @@ function visiteDuDemandeur(r, id){
   const ids = recherchesDuMemeDemandeur(r).map(x=> x.id).filter(Boolean);
   if(!ids.length) return null;
   const l = (L.rdv || []).filter(x=> x && !x.annule && x.dossier === id
+    && x.genre !== "compromis"
     && ids.indexOf(x.recherche) >= 0);
   if(!l.length) return null;
   const avenir = l.filter(rdvAVenir)
@@ -14995,6 +15145,7 @@ function brouillonRdv(){
   return {titre:v("rdvTitre"), lieu:v("rdvLieu"), adresse:v("rdvAdresse"),
           date:v("rdvDate"), heure:v("rdvHeure") || "10", min:v("rdvMin") || "00",
           duree:v("rdvDuree") || String(DUREE_VISITE), gens: RDV.gens.slice(),
+          genre: RDV.genre || "visite",
           fiche: !!(document.getElementById("rdvPJ") || {}).checked};
 }
 function ouvrirContactDeVisite(){
@@ -15025,7 +15176,20 @@ function ouvrirContactDeVisite(){
    nul : une visite s'organise aussi depuis le bien lui-même, sans
    demandeur attitré — le propriétaire et l'agent suffisent à en faire un
    rendez-vous, et l'on ajoute qui l'on veut à la main. */
-function ouvrirVisite(i, id, repris){
+/* `opt.genre` : « compromis » pour le rendez-vous de signature. C'est le
+   même rendez-vous — même agenda, mêmes confirmations — et seuls changent
+   son intitulé, le titre de la fenêtre et le mot laissé au journal. Un
+   rendez-vous de compromis n'est PAS une visite : le rapprochement ne doit
+   pas le lire comme telle, sans quoi un bien passerait « visité » le jour
+   où l'on signe. */
+const GENRES_RDV = {
+  visite:    {fenetre:"Organiser une visite",    titre:"Visite ",
+              journal:"Visite organisée"},
+  compromis: {fenetre:"Caler le compromis",      titre:"Signature du compromis — ",
+              journal:"Compromis calé"}
+};
+function genreRdv(g){ return GENRES_RDV[g] || GENRES_RDV.visite; }
+function ouvrirVisite(i, id, repris, opt){
   const r = (i === null || i === undefined || +i < 0)
     ? null : (L.prospects || [])[+i];
   const d = dossierDuBien(id);
@@ -15040,14 +15204,16 @@ function ouvrirVisite(i, id, repris){
   const b = repris || {};
   const vHeure = b.heure || "10", vMin = b.min || "00";
   const vDuree = b.duree || String(DUREE_VISITE);
+  const gr = String((opt && opt.genre) || b.genre || "visite");
+  const G = genreRdv(gr);
   RDV = {gens: b.gens ? b.gens.slice() : participantsParDefaut(d, r),
          dossier: d.id, recherche: (r || {}).id || "", mode: "",
-         i: (r ? +i : -1), bien: id};
-  popup({titre:"Organiser une visite", large:true,
+         i: (r ? +i : -1), bien: id, genre: gr};
+  popup({titre:G.fenetre, large:true,
     corps:`<div class="rdvbox">
       <div class="pf plein"><label for="rdvTitre">Intitulé du rendez-vous</label>
         <input type="text" id="rdvTitre" value="${esc(b.titre
-          || ("Visite " + intituleBien(d)))}">
+          || (G.titre + intituleBien(d)))}">
       </div>
       <div class="pf"><label for="rdvLieu">Lieu du rendez-vous</label>
         <select id="rdvLieu">${lieux.map(x=>
@@ -15168,7 +15334,8 @@ async function creerVisite(i, d, f, gens){
   const r = i >= 0 ? (L.prospects || [])[i] : null;
   const b = bornesRdv(f.date, f.heure, f.duree);
   if(!b){ toast("Il manque la date ou l'heure du rendez-vous"); return; }
-  const titre = String(f.titre || "").trim() || ("Visite " + intituleBien(d));
+  const gr = String(RDV.genre || "visite"), G = genreRdv(gr);
+  const titre = String(f.titre || "").trim() || (G.titre + intituleBien(d));
   const texte = texteDuRdv(d, gens);
   const invites = gens.filter(x=> x.invite && x.email).map(x=> x.email);
 
@@ -15182,6 +15349,7 @@ async function creerVisite(i, d, f, gens){
   }
 
   const fiche = {id: idRdv(), dossier: d.id, recherche: (r || {}).id || "",
+    genre: gr,
     titre, lieu: f.adresse, debut: b.debut.toISOString(), fin: b.fin.toISOString(),
     gens: gens.map(x=> Object.assign({}, x)), ev:"", voie:"",
     cree: Date.now(), par: quiSuisJe(), annule: 0, motif:""};
@@ -15191,10 +15359,14 @@ async function creerVisite(i, d, f, gens){
     L.rdv.push(fiche);
     const quand = b.debut.toLocaleDateString("fr-FR") + " à "
       + b.debut.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"});
-    if(r) noterJournal(r, "Visite organisée", nomCourtBien(d.id) + " — le "
+    if(r) noterJournal(r, G.journal, nomCourtBien(d.id) + " — le "
       + quand + " · " + ou, "", d.id, fiche.id);
-    else noterAction({genre:"Visite organisée", dossier:d.id, rdv:fiche.id,
+    else noterAction({genre:G.journal, dossier:d.id, rdv:fiche.id,
       texte:"le " + quand + " · " + ou});
+    /* un compromis calé depuis une offre s'y rattache : c'est ce qui fait
+       passer l'offre de « compromis à caler » à « compromis le … » */
+    if(gr === "compromis" && typeof rattacherCompromis === "function")
+      rattacherCompromis(fiche.id);
     saveLists();
     renderApresReponse();
     if(pageActive() === "histobien") renderHistoBien();
@@ -16754,6 +16926,7 @@ function vueProspFiche(){
   if(page.cle === "secteur")      corps = pageSecteur(i);
   else if(page.cle === "journal") corps = pageJournal(i);
   else if(page.cle === "rappro")  corps = `<div class="rapzone">${blocRapproAcq(r, i)}</div>`;
+  else if(page.cle === "offres")  corps = blocOffresRecherche(r, i);
   else if(page.cle === "recherche")
     corps = bandeauRecherche(i) + champsProspect(i, page.champs, true);
   else corps = champsProspect(i, page.champs);
@@ -16779,6 +16952,7 @@ function vueProspFiche(){
              zones du secteur, les lignes de l'historique */
           const n = p.cle === "rappro" ? biensSansReponse(r).length
                   : p.cle === "journal" ? journalDe(r).length
+                  : p.cle === "offres" ? offresDuDemandeur(r).filter(offreVive).length
                   : p.cle === "secteur" ? zonesDe(r).length : 0;
           return `<button class="mitem${p.cle === page.cle ? " on" : ""}"
             data-pgo="${p.cle}">${esc(p.lib)}${n ? ` <b>${n}</b>` : ""}</button>`;
@@ -18637,6 +18811,707 @@ function renderAujourdhui(){
   }
 }
 /* =====================================================================
+   LE PARCOURS D'ACHAT
+   ---------------------------------------------------------------------
+   Entre « le demandeur a visité » et « le dossier passe sous compromis »,
+   il manquait tout un morceau du métier : l'OFFRE. Elle existait sous la
+   forme d'une date tapée à la main sur le dossier — « Date de l'offre
+   d'achat » —, sans montant, sans auteur, sans réponse, et sans aucun
+   lien avec le demandeur qui l'avait faite. Les deux moitiés de
+   l'application, les biens d'un côté et les demandeurs de l'autre, ne se
+   rejoignaient donc jamais là où la vente se décide.
+
+   UNE OFFRE EST UN OBJET, comme le rendez-vous. Elle porte un montant,
+   une date, une validité, des conditions, et elle appartient au
+   DEMANDEUR — pas à la recherche par laquelle on y est arrivé. Monsieur X
+   qui mène deux recherches ne fait qu'une offre, exactement comme il ne
+   fait qu'une visite : c'est la même règle que pour les rendez-vous, et
+   pour la même raison.
+
+   QUATRE ÉTAPES, et pas une de plus :
+
+     Émise  →  Transmise au propriétaire  →  Réponse  →  Compromis
+
+   La réponse a trois issues : acceptée, refusée, ou CONTRE-PROPOSITION.
+   La contre-proposition n'est pas un troisième état bâtard : c'est une
+   offre nouvelle, de l'autre côté de la table, chaînée à la précédente.
+   On garde ainsi la suite des montants — 230 000, puis 245 000, puis
+   238 000 — et le fil de la négociation se lit d'un coup d'œil. Celui qui
+   reprend le dossier six mois plus tard sait qui a cédé, et de combien.
+
+   QUAND UNE OFFRE EST ACCEPTÉE, quatre choses s'enchaînent toutes seules,
+   parce que les oublier coûte cher :
+     · la date de l'offre s'inscrit sur le dossier, qui passe « sous offre » ;
+     · le demandeur est versé aux ACQUÉREURS du dossier, s'il n'y est pas ;
+     · les AUTRES demandeurs qui suivaient ce bien l'écartent, motif « sous
+       offre » — et il leur revient tout seul si l'offre n'aboutit pas ;
+     · le rendez-vous de compromis est proposé dans la foulée.
+
+   OÙ CELA SE LIT. Des deux côtés, et c'est tout l'intérêt : volet « Offres
+   et compromis » sur la fiche de recherche, carte « Offres reçues » sur le
+   dossier du bien — où deux offres concurrentes se comparent enfin —, et
+   tuile « Parcours d'achat » sur Aujourd'hui, qui ne montre que ce qui
+   attend quelque chose de vous.
+   ===================================================================== */
+
+/* au bout de combien de jours une réponse attendue devient une relance */
+const OFFRE_RETARD_J = 3;
+/* la validité d'une offre, à défaut d'autre chose : une semaine */
+const OFFRE_VALIDITE_J = 7;
+
+function offresToutes(){
+  if(!Array.isArray(L.offres)) L.offres = [];
+  return L.offres;
+}
+function idOffre(){
+  return "of" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+}
+function offreParId(id){
+  return offresToutes().filter(x=> x && x.id === id)[0] || null;
+}
+/* les offres portant sur un bien, de la plus récente à la plus ancienne */
+function offresDuBien(id){
+  return offresToutes().filter(x=> x && x.dossier === id)
+    .sort((a, b)=> String(b.date || "").localeCompare(String(a.date || ""))
+                || (b.cree || 0) - (a.cree || 0));
+}
+/* Comme pour les visites : une offre appartient au demandeur. On la
+   retrouve donc par TOUTES les recherches de la même personne. */
+function offresDuDemandeur(r){
+  if(!r) return [];
+  const ids = recherchesDuMemeDemandeur(r).map(x=> x.id).filter(Boolean);
+  if(!ids.length) return [];
+  return offresToutes().filter(x=> x && ids.indexOf(x.recherche) >= 0)
+    .sort((a, b)=> String(b.date || "").localeCompare(String(a.date || "")));
+}
+/* une offre encore en jeu : ni refusée, ni remplacée par une contre-offre */
+function offreVive(o){
+  return !!o && o.etat !== "refusee" && o.etat !== "contre";
+}
+function offreEnJeuDuBien(id){
+  const l = offresDuBien(id).filter(offreVive);
+  return l.filter(x=> x.etat === "acceptee")[0] || l[0] || null;
+}
+/* le fil d'une négociation : de la première offre à celle-ci */
+function chaineOffre(o){
+  const vue = {}, l = [];
+  let x = o;
+  while(x && !vue[x.id]){ vue[x.id] = 1; l.unshift(x); x = offreParId(x.suiteDe); }
+  return l;
+}
+function derniereDeLaChaine(o){
+  let x = o, saut = 0;
+  for(;;){
+    const suite = offresToutes().filter(y=> y && y.suiteDe === x.id)[0];
+    if(!suite || ++saut > 40) return x;
+    x = suite;
+  }
+}
+function libAuteurOffre(o){
+  return (o || {}).auteur === "vend" ? "le propriétaire" : "le demandeur";
+}
+function montantOffre(o){
+  const n = num((o || {}).montant);
+  return n === null ? "—" : eur(n);
+}
+/* à qui le message s'adresse quand on transmet : une offre du demandeur
+   va au propriétaire, une contre-proposition du propriétaire au demandeur */
+function destinataireOffre(o){
+  return (o || {}).auteur === "vend" ? "demandeur" : "proprietaire";
+}
+function rechercheDeOffre(o){
+  return (L.prospects || []).filter(x=> x && x.id === (o || {}).recherche)[0] || null;
+}
+function nomDemandeurOffre(o){
+  const r = rechercheDeOffre(o);
+  return (r && libelleAcquereur(r)) || (o || {}).nom || "demandeur";
+}
+/* ------------------------------------------------------- L'ÉTAPE DU JOUR
+   Ce qui attend quelque chose de vous, et depuis combien de temps. C'est
+   ce que la tuile d'Aujourd'hui lit, et ce que la ligne d'une offre
+   affiche : une seule réponse à « où en est-on ». */
+function etapeOffre(o){
+  if(!o) return null;
+  if(o.etat === "contre")
+    return {cle:"contre", lib:"remplacée par une contre-proposition", clos:true};
+  if(o.etat === "refusee")
+    return {cle:"refusee", lib:"refusée" + (o.motif ? " — " + o.motif : ""), clos:true};
+  if(o.etat === "acceptee"){
+    if(o.compromis && rdvParId(o.compromis) && !rdvParId(o.compromis).annule){
+      const rv = rdvParId(o.compromis);
+      return {cle:"compromisCale", lib:"compromis le " + quandRdv(rv), clos:true};
+    }
+    return {cle:"compromis", lib:"compromis à caler", action:"Caler le compromis",
+            urgence:2};
+  }
+  if(o.etat === "transmise"){
+    const j = isoValide(o.transmisLe) ? -joursAvant(o.transmisLe) : null;
+    const retard = j !== null && j >= OFFRE_RETARD_J;
+    return {cle:"attente",
+            lib:"réponse " + (destinataireOffre(o) === "demandeur"
+                  ? "du demandeur" : "du propriétaire") + " attendue"
+                + (j === null ? "" : (j === 0 ? " depuis aujourd'hui"
+                                              : " depuis " + j + " j")),
+            action:"Réponse", retard, urgence: retard ? 1 : 3, jours:j};
+  }
+  return {cle:"transmettre",
+          lib:"à transmettre " + (destinataireOffre(o) === "demandeur"
+                ? "au demandeur" : "au propriétaire"),
+          action:"Transmettre", urgence:0};
+}
+/* toutes les offres qui attendent quelque chose, la plus pressante d'abord */
+function offresEnCours(){
+  return offresToutes().filter(offreVive)
+    .map(o=> ({o, e: etapeOffre(o)}))
+    .filter(x=> x.e && !x.e.clos)
+    .sort((a, b)=> (a.e.urgence - b.e.urgence)
+                || String(a.o.date || "").localeCompare(String(b.o.date || "")));
+}
+
+/* =====================================================================
+   SAISIR UNE OFFRE
+   ---------------------------------------------------------------------
+   Cinq champs, pas un de plus : qui, combien, quand, jusqu'à quand, et
+   sous quelles conditions. Le reste — le bien, le demandeur — est déjà
+   connu de l'endroit d'où l'on vient.
+   ===================================================================== */
+function ouvrirOffre(opt){
+  const o = opt || {};
+  const d = dossierDuBien(o.dossier);
+  if(!d){ toast("Bien introuvable"); return; }
+  const suite = o.suiteDe ? offreParId(o.suiteDe) : null;
+  /* une contre-proposition vient de l'autre côté de la table */
+  const auteur = o.auteur || (suite ? (suite.auteur === "acq" ? "vend" : "acq") : "acq");
+  const cands = o.recherche
+    ? [{id:o.recherche, nom:(rechercheDeOffre({recherche:o.recherche})
+        ? libelleAcquereur(rechercheDeOffre({recherche:o.recherche})) : "")}]
+    : acquereursPourBien(d).map(x=> ({id:x.r.id, nom:x.nom}));
+  const dejaId = suite ? suite.recherche : (o.recherche || (cands[0] || {}).id || "");
+  if(!dejaId && !cands.length){
+    popup({titre:"Aucun demandeur rapproché", genre:"erreur",
+      corps:`<p style="margin:0">Une offre se fait au nom d'un demandeur, et aucune
+        recherche en cours ne porte sur ce bien. Ouvrez la fiche du demandeur et
+        faites l'offre depuis son volet <b>Offres et compromis</b>.</p>`});
+    return;
+  }
+  const dans = j=>{
+    const x = new Date(Date.now() + j * 86400000);
+    return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0")
+         + "-" + String(x.getDate()).padStart(2, "0");
+  };
+  const prix = num((d.prix || {}).fai);
+  const fil = suite ? chaineOffre(suite) : [];
+  popup({titre: suite ? "Contre-proposition" : "Offre d'achat", large:true,
+    corps:`<div class="offrebox">
+      <p class="mdnote" style="margin:0 0 10px"><b>${esc(intituleBien(d))}</b><br>
+        ${esc(bienDe(d))}${prix === null ? ""
+          : ` — au prix de <b>${esc(eur(prix))}</b>`}</p>
+      ${fil.length ? `<div class="offil">${fil.map(x=>
+          `<span class="ofpas"><i>${esc(libAuteurOffre(x))}</i>${
+            esc(montantOffre(x))}</span>`).join("")}</div>` : ""}
+      <div class="pf"><label for="ofQui">De la part ${
+        auteur === "vend" ? "du propriétaire, au demandeur" : "du demandeur"}</label>
+        ${cands.length > 1 && !suite
+          ? `<select id="ofQui">${cands.map(c=>
+              `<option value="${esc(c.id)}"${c.id === dejaId ? " selected" : ""}
+                >${esc(c.nom)}</option>`).join("")}</select>`
+          : `<input type="text" id="ofQuiTxt" disabled value="${
+              esc((cands.filter(c=> c.id === dejaId)[0] || cands[0] || {}).nom
+                  || nomDemandeurOffre({recherche:dejaId}))}">
+             <input type="hidden" id="ofQui" value="${esc(dejaId)}">`}
+      </div>
+      <div class="pf"><label for="ofMontant">Montant proposé (€)</label>
+        <input type="text" id="ofMontant" inputmode="numeric"
+          value="${esc(o.montant || "")}" placeholder="${
+            prix === null ? "0" : esc(String(prix))}"></div>
+      <div class="pf"><label for="ofDate">Date de l'offre</label>
+        <input type="date" id="ofDate" value="${esc(auj())}"></div>
+      <div class="pf"><label for="ofValid">Valable jusqu'au</label>
+        <input type="date" id="ofValid" value="${esc(dans(OFFRE_VALIDITE_J))}"></div>
+      <div class="pf wide"><label for="ofCond">Conditions</label>
+        <textarea id="ofCond" rows="3" placeholder="sous réserve d'obtention d'un prêt, "${
+          ""}>${esc(o.conditions || "")}</textarea></div>
+    </div>`,
+    boutons:[{lib:"Annuler"}, {lib:"Enregistrer l'offre", primaire:true, action:()=>{
+      const v = id=> String(($("#" + id) || {}).value || "").trim();
+      const montant = v("ofMontant");
+      if(num(montant) === null){ toast("Il manque le montant de l'offre"); return; }
+      enregistrerOffre({dossier:d.id, recherche:v("ofQui"), auteur,
+        montant, date:v("ofDate") || auj(), validite:v("ofValid"),
+        conditions:v("ofCond"), suiteDe: suite ? suite.id : ""});
+    }}]});
+  setTimeout(()=>{ const e = $("#ofMontant"); if(e) e.focus(); }, 40);
+}
+/* Depuis la fiche d'un demandeur, le bien n'est pas connu : on le choisit
+   parmi ceux qu'il suit, qu'on lui a proposés, ou qu'il a visités. Pas
+   parmi tout le portefeuille — une offre se fait sur un bien qu'on a vu. */
+function ouvrirOffreDepuisRecherche(i){
+  const r = (L.prospects || [])[i];
+  if(!r){ toast("Recherche introuvable"); return; }
+  const vus = {};
+  const add = id=>{ if(id && !vus[id]) vus[id] = 1; };
+  suivisDe(r).forEach(add);
+  try{ biensSansReponse(r).forEach(b=> add(b.d.id)); }catch(e){}
+  (L.rdv || []).forEach(x=>{ if(x && !x.annule && x.recherche === r.id) add(x.dossier); });
+  recherchesDuMemeDemandeur(r).forEach(x=>
+    (L.rdv || []).forEach(y=>{ if(y && !y.annule && y.recherche === x.id) add(y.dossier); }));
+  const liste = Object.keys(vus).map(dossierDuBien).filter(Boolean)
+    .filter(d=> stade(d).cls !== "vendu");
+  if(!liste.length){
+    popup({titre:"Aucun bien à ce demandeur", genre:"erreur",
+      corps:`<p style="margin:0">Une offre se fait sur un bien qu'on lui a
+        <b>proposé</b>, qu'il <b>suit</b> ou qu'il a <b>visité</b>. Passez d'abord
+        par le volet <b>Biens à rapprocher</b>.</p>`});
+    return;
+  }
+  if(liste.length === 1){ ouvrirOffre({dossier:liste[0].id, recherche:r.id}); return; }
+  popup({titre:"Sur quel bien ?", large:true,
+    corps:`<div class="ofchoix">${liste.map(d=>
+      `<button type="button" class="ofbien" data-ofpick="${esc(d.id)}">
+        <b>${esc(intituleBien(d))}</b>
+        <span>${esc(bienDe(d))}</span>
+        <em>${esc(eur(num((d.prix || {}).fai)) || "prix non renseigné")}</em>
+      </button>`).join("")}</div>`,
+    boutons:[{lib:"Annuler"}]});
+  const z = $("#popCorps");
+  if(z) z.onclick = e=>{
+    const b = e.target.closest("[data-ofpick]");
+    if(!b) return;
+    fermerPopup();
+    ouvrirOffre({dossier:b.dataset.ofpick, recherche:r.id});
+  };
+}
+function enregistrerOffre(f){
+  const l = offresToutes();
+  const r = (L.prospects || []).filter(x=> x && x.id === f.recherche)[0] || null;
+  const o = {id:idOffre(), dossier:f.dossier, recherche:f.recherche,
+    nom: r ? libelleAcquereur(r) : "", auteur:f.auteur || "acq",
+    montant:f.montant, date:f.date, validite:f.validite || "",
+    conditions:f.conditions || "", etat:"", transmisLe:"", reponduLe:"",
+    motif:"", suiteDe:f.suiteDe || "", compromis:"",
+    cree:Date.now(), par:quiSuisJe()};
+  /* la précédente de la chaîne sort du jeu : c'est la nouvelle qui vit */
+  if(o.suiteDe){
+    const av = offreParId(o.suiteDe);
+    if(av){ av.etat = "contre"; av.reponduLe = auj(); }
+  }
+  l.push(o);
+  const quoi = o.auteur === "vend" ? "Contre-proposition du propriétaire"
+                                   : "Offre d'achat";
+  if(r) noterJournal(r, quoi, nomCourtBien(o.dossier) + " — " + montantOffre(o),
+                     "", o.dossier);
+  else noterAction({genre:quoi, dossier:o.dossier,
+                    texte:montantOffre(o) + " — " + nomDemandeurOffre(o)});
+  saveLists();
+  renderApresOffre();
+  toast(quoi + " enregistrée — " + montantOffre(o));
+}
+
+/* ------------------------------------------- transmettre, par courriel ou
+   WhatsApp — les mêmes modèles que partout ailleurs, avec le contexte
+   « offre » pour que le bon soit proposé en tête. */
+function motsDeOffre(o){
+  const d = dossierDuBien(o.dossier) || {};
+  return {montantOffre: montantOffre(o),
+          dateOffre: isoValide(o.date) ? fdate(o.date) : "",
+          validite: isoValide(o.validite) ? fdate(o.validite) : "",
+          conditions: String(o.conditions || "").trim() || "aucune condition particulière",
+          demandeur: nomDemandeurOffre(o),
+          bien: intituleBien(d)};
+}
+function transmettreOffre(id){
+  const o = offreParId(id);
+  if(!o) return;
+  const vers = destinataireOffre(o);
+  const d = dossierDuBien(o.dossier);
+  const r = rechercheDeOffre(o);
+  /* le pid de celui à qui l'on écrit : le vendeur du dossier, ou le
+     demandeur de la recherche */
+  const pid = vers === "demandeur"
+    ? premierPidProspect(r)
+    : ((d && (d.vendeurs || [])[0]) || {}).pid || "";
+  const faire = voie=>{
+    o.etat = "transmise"; o.transmisLe = auj();
+    if(r) noterJournal(r, "Offre transmise",
+      nomCourtBien(o.dossier) + " — " + montantOffre(o) + " · " + voie, "", o.dossier);
+    saveLists();
+    renderApresOffre();
+  };
+  popup({titre:"Transmettre l'offre", large:true,
+    corps:`<div class="offrebox">
+      <p class="mdnote" style="margin:0 0 10px"><b>${esc(montantOffre(o))}</b> —
+        ${esc(nomDemandeurOffre(o))}<br>${esc(intituleBien(d || {}))}</p>
+      <p style="margin:0">L'offre part ${vers === "demandeur"
+        ? "au <b>demandeur</b>" : "au <b>propriétaire</b>"}. Choisissez la voie ;
+        le message se prépare avec le modèle « offre » de votre bibliothèque.</p>
+    </div>`,
+    boutons:[{lib:"Annuler"},
+      {lib:"Par WhatsApp", action:()=>{
+        faire("WhatsApp");
+        ouvrirEnvoiWa({dossierId:o.dossier, pid, contexte:"offre",
+                       extra:motsDeOffre(o)});
+      }},
+      {lib:"Noter comme transmise", action:()=> faire("de vive voix")},
+      {lib:"Par courriel", primaire:true, action:()=>{
+        faire("courriel");
+        ouvrirEnvoiCourriel({dossierId:o.dossier, pid, contexte:"offre",
+                             extra:motsDeOffre(o)});
+      }}]});
+}
+
+/* --------------------------------------------------------- LA RÉPONSE
+   Trois issues, et la troisième en est une vraie : le propriétaire qui
+   répond « 245 000 et c'est d'accord » n'a ni accepté ni refusé. */
+function ouvrirReponseOffre(id){
+  const o = offreParId(id);
+  if(!o) return;
+  const qui = destinataireOffre(o) === "demandeur" ? "du demandeur" : "du propriétaire";
+  popup({titre:"Réponse " + qui, large:true,
+    corps:`<div class="offrebox">
+      <p class="mdnote" style="margin:0 0 10px"><b>${esc(montantOffre(o))}</b> —
+        ${esc(nomDemandeurOffre(o))}<br>${esc(intituleBien(
+          dossierDuBien(o.dossier) || {}))}</p>
+      <div class="pf wide"><label for="ofMotif">Motif, si la réponse est non</label>
+        <input type="text" id="ofMotif" placeholder="trop bas, un autre acquéreur…"></div>
+    </div>`,
+    boutons:[{lib:"Annuler"},
+      {lib:"Refusée", action:()=> refuserOffre(id, ($("#ofMotif") || {}).value || "")},
+      {lib:"Contre-proposition", action:()=> ouvrirOffre({dossier:o.dossier,
+        recherche:o.recherche, suiteDe:o.id})},
+      {lib:"Acceptée", primaire:true, action:()=> accepterOffre(id)}]});
+}
+function refuserOffre(id, motif){
+  const o = offreParId(id);
+  if(!o) return;
+  o.etat = "refusee"; o.reponduLe = auj();
+  o.motif = String(motif || "").trim();
+  const r = rechercheDeOffre(o);
+  if(r) noterJournal(r, "Offre refusée", nomCourtBien(o.dossier) + " — "
+    + montantOffre(o) + (o.motif ? " · " + o.motif : ""), "", o.dossier);
+  saveLists();
+  renderApresOffre();
+  toast("Offre refusée");
+}
+
+/* =====================================================================
+   L'OFFRE EST ACCEPTÉE — CE QUI S'ENCHAÎNE
+   ---------------------------------------------------------------------
+   Quatre gestes qu'on faisait à la main, et qu'on oubliait : la date sur
+   le dossier, l'acquéreur dans sa case, les autres demandeurs prévenus,
+   le compromis au calendrier. Ils tiennent en un clic, et chacun se défait
+   si la vente tombe.
+   ===================================================================== */
+/* `dossierDuBien` rend une COPIE : on peut la lire, pas l'écrire. Quand le
+   parcours d'achat pose une date ou un acquéreur, il faut donc viser le
+   bon objet — celui qui est ouvert est vivant et s'enregistre comme
+   d'habitude ; un autre se relit du rangement et s'y réécrit. Oublier cette
+   distinction, c'est modifier un dossier dans le vide. */
+function dossierAEcrire(id){
+  if(D && D.id === id) return {d:D, vivant:true};
+  const d = dossierDuBien(id);
+  return d ? {d:d, vivant:false} : null;
+}
+function ecrireDossier(x){
+  if(!x || !x.d) return false;
+  if(x.vivant){ persist(true); return true; }
+  const all = allDossiers();
+  x.d.maj = Date.now();
+  all[x.d.id] = x.d;
+  try{ localStorage.setItem(LS_DOSS, JSON.stringify(all)); }
+  catch(e){ toast("Sauvegarde impossible (espace du navigateur saturé)"); return false; }
+  return true;
+}
+function verserAcquereur(d, r){
+  if(!d || !r) return false;
+  const gens = personnesProspect(r);
+  if(!gens.length) return false;
+  const deja = (p)=> (d.acquereurs || []).some(a=> a &&
+    ((p.pid && a.pid === p.pid) || (a.nom && fold(a.nom) === fold(p.nom || ""))));
+  /* un acquéreur vierge, posé à la création du dossier, se laisse remplir */
+  const vides = (d.acquereurs || []).filter(a=> !nomPersonne(a));
+  let pose = false;
+  gens.forEach(p=>{
+    if(!p || !p.nom || deja(p)) return;
+    const f = p.pid ? fichePersonne(p.pid) : null;
+    const cible = vides.length ? vides.shift() : (d.acquereurs.push(blankPerson()),
+      d.acquereurs[d.acquereurs.length - 1]);
+    cible.pid = p.pid || cible.pid;
+    cible.civilite = (f && f.civilite) || p.civilite || cible.civilite;
+    cible.nom = p.nom; cible.prenom = prenomUsuel(p) || p.prenom || "";
+    cible.tel1 = p.tel || cible.tel1; cible.email1 = p.email || cible.email1;
+    if(typeof rafraichirDepuisRepertoire === "function") rafraichirDepuisRepertoire(cible);
+    pose = true;
+  });
+  return pose;
+}
+/* Les autres demandeurs : le bien sort de ce qu'on peut leur proposer, avec
+   le motif « sous offre ». Le refus est marqué AUTOMATIQUE — c'est ce qui
+   permet de le lever tout seul si l'offre n'aboutit pas. */
+function ecarterConcurrents(dossierId, sauf){
+  const garde = sauf || [];
+  let n = 0;
+  (L.prospects || []).forEach((r, i)=>{
+    if(!r || garde.indexOf(r.id) >= 0) return;
+    if(refusDe(r).indexOf(dossierId) >= 0) return;
+    /* on n'écarte que ceux à qui ce bien était proposé ou suivi */
+    const concerne = suivisDe(r).indexOf(dossierId) >= 0
+      || biensSansReponse(r).some(b=> b.d.id === dossierId)
+      || !!visiteDuDemandeur(r, dossierId);
+    if(!concerne) return;
+    poserRefus(i, refusFiches(r).concat([{id:dossierId, date:auj(),
+      motif:"sous offre", qui:quiSuisJe(), auto:"offre"}]));
+    noterJournal(r, "Bien écarté", nomCourtBien(dossierId) + " — sous offre",
+                 "", dossierId);
+    n++;
+  });
+  return n;
+}
+/* et l'inverse, quand l'offre tombe : seuls les refus AUTOMATIQUES se
+   lèvent. Un demandeur qui avait dit non de lui-même continue de dire non. */
+function rendreAuxConcurrents(dossierId){
+  let n = 0;
+  (L.prospects || []).forEach((r, i)=>{
+    if(!r) return;
+    const avant = refusFiches(r);
+    const apres = avant.filter(x=> !(x.id === dossierId && x.auto === "offre"));
+    if(apres.length === avant.length) return;
+    poserRefus(i, apres);
+    noterJournal(r, "Bien reproposé", nomCourtBien(dossierId)
+      + " — l'offre n'a pas abouti", "", dossierId);
+    n++;
+  });
+  return n;
+}
+function accepterOffre(id){
+  const o = offreParId(id);
+  if(!o) return;
+  const cible = dossierAEcrire(o.dossier);
+  const d = cible ? cible.d : null;
+  const r = rechercheDeOffre(o);
+  o.etat = "acceptee"; o.reponduLe = auj(); o.motif = "";
+  /* les autres offres en jeu sur ce bien tombent : une seule est acceptée */
+  offresDuBien(o.dossier).forEach(x=>{
+    if(x.id !== o.id && offreVive(x) && x.etat !== "acceptee"){
+      x.etat = "refusee"; x.reponduLe = auj();
+      x.motif = x.motif || "un autre acquéreur";
+    }
+  });
+  let versee = false;
+  if(d){
+    d.dates = d.dates || {};
+    if(!isoValide(d.dates.offre)) d.dates.offre = isoValide(o.date) ? o.date : auj();
+    versee = verserAcquereur(d, r);
+    ecrireDossier(cible);
+  }
+  const ecartes = ecarterConcurrents(o.dossier,
+    r ? recherchesDuMemeDemandeur(r).map(x=> x.id) : []);
+  if(r) noterJournal(r, "Offre acceptée",
+    nomCourtBien(o.dossier) + " — " + montantOffre(o), "", o.dossier);
+  saveLists();
+  if(D && d && D.id === d.id && typeof renderAll === "function") renderAll();
+  renderApresOffre();
+  popup({titre:"Offre acceptée", genre:"ok",
+    corps:`<p style="margin:0 0 8px"><b>${esc(montantOffre(o))}</b> —
+      ${esc(nomDemandeurOffre(o))}.</p>
+      <ul class="ofsuite">
+        <li>La <b>date de l'offre</b> est posée sur le dossier, qui passe
+          « sous offre ».</li>
+        ${versee ? `<li>Le demandeur est versé aux <b>acquéreurs</b> du dossier.</li>`
+          : ""}
+        ${ecartes ? `<li><b>${ecartes}</b> autre${ecartes > 1 ? "s" : ""} demandeur${
+          ecartes > 1 ? "s" : ""} ${ecartes > 1 ? "ont" : "a"} écarté ce bien, motif
+          « sous offre ». Il leur reviendra si l'offre n'aboutit pas.</li>` : ""}
+        <li>Reste à caler le <b>rendez-vous de compromis</b>.</li>
+      </ul>`,
+    boutons:[{lib:"Plus tard"},
+      {lib:"Caler le compromis", primaire:true, action:()=> calerCompromis(o.id)}]});
+}
+/* la vente tombe : tout se défait, et les concurrents récupèrent le bien */
+function echecOffre(id){
+  const o = offreParId(id);
+  if(!o) return;
+  const cible = dossierAEcrire(o.dossier);
+  const d = cible ? cible.d : null;
+  popup({titre:"L'offre n'a pas abouti ?", genre:"erreur",
+    corps:`<p style="margin:0 0 8px">L'offre de <b>${esc(montantOffre(o))}</b> passe en
+      refusée, la <b>date d'offre</b> est retirée du dossier — qui repasse « en vente » —
+      et le bien <b>revient</b> aux demandeurs qui l'avaient écarté pour cette
+      raison-là.</p>
+      <p class="muted" style="margin:0">Ceux qui l'avaient refusé d'eux-mêmes gardent
+      leur refus.</p>`,
+    boutons:[{lib:"Annuler"}, {lib:"L'offre n'a pas abouti", primaire:true, action:()=>{
+      o.etat = "refusee"; o.reponduLe = auj();
+      o.motif = o.motif || "n'a pas abouti";
+      if(d && d.dates && isoValide(d.dates.offre) && !isoValide(d.dates.compromis)){
+        d.dates.offre = "";
+        ecrireDossier(cible);
+      }
+      const n = rendreAuxConcurrents(o.dossier);
+      const r = rechercheDeOffre(o);
+      if(r) noterJournal(r, "Offre sans suite", nomCourtBien(o.dossier)
+        + " — " + montantOffre(o), "", o.dossier);
+      saveLists();
+      if(D && d && D.id === d.id && typeof renderAll === "function") renderAll();
+      renderApresOffre();
+      toast(n ? "Bien rendu à " + n + " demandeur" + (n > 1 ? "s" : "")
+              : "Offre sans suite");
+    }}]});
+}
+/* ------------------------------------------------- le rendez-vous de compromis
+   C'est un rendez-vous comme un autre : même fenêtre, même agenda, mêmes
+   confirmations aux participants. Seuls changent son intitulé et le mot
+   qu'il laisse au journal. */
+function calerCompromis(id){
+  const o = offreParId(id);
+  if(!o) return;
+  const r = rechercheDeOffre(o);
+  const i = r ? indexProspect(r.id) : -1;
+  OFFRE_EN_COURS = o.id;
+  ouvrirVisite(i, o.dossier, null, {genre:"compromis"});
+}
+/* l'offre à laquelle rattacher le rendez-vous qu'on est en train de créer */
+let OFFRE_EN_COURS = "";
+function rattacherCompromis(rdvId){
+  const o = OFFRE_EN_COURS ? offreParId(OFFRE_EN_COURS) : null;
+  OFFRE_EN_COURS = "";
+  if(!o) return;
+  o.compromis = rdvId;
+  saveLists();
+  renderApresOffre();
+}
+function supprimerOffre(id){
+  const o = offreParId(id);
+  if(!o) return;
+  popup({titre:"Supprimer cette offre ?", genre:"erreur",
+    corps:`<p style="margin:0">L'offre de <b>${esc(montantOffre(o))}</b> et ce qu'elle
+      porte seront effacés. ${o.etat === "acceptee"
+        ? "Le dossier garde sa date d'offre et ses acquéreurs : à vous de les corriger."
+        : ""} C'est définitif.</p>`,
+    boutons:[{lib:"Annuler"}, {lib:"Supprimer", primaire:true, action:()=>{
+      const l = offresToutes();
+      const k = l.indexOf(o);
+      if(k >= 0) l.splice(k, 1);
+      /* la chaîne ne doit pas rester pendue dans le vide */
+      l.forEach(x=>{ if(x.suiteDe === id) x.suiteDe = o.suiteDe || ""; });
+      saveLists();
+      renderApresOffre();
+      toast("Offre supprimée");
+    }}]});
+}
+
+/* =====================================================================
+   CE QUE L'ON VOIT
+   ===================================================================== */
+/* la ligne d'une offre. `ou` dit de quel côté on la regarde :
+   « rech » depuis la fiche du demandeur — on nomme le bien ;
+   « bien » depuis le dossier — on nomme le demandeur ;
+   « auj »  depuis la tuile — on nomme les deux, en une ligne.            */
+function ligneOffre(o, ou){
+  const e = etapeOffre(o) || {};
+  const d = dossierDuBien(o.dossier);
+  const cls = e.cle === "refusee" ? "non"
+            : e.cle === "contre" ? "old"
+            : e.cle === "compromisCale" ? "ok"
+            : e.cle === "compromis" ? "ok"
+            : e.retard ? "retard" : "att";
+  const qui = ou === "bien" ? nomDemandeurOffre(o)
+            : ou === "auj" ? nomDemandeurOffre(o) + " — " + nomCourtBien(o.dossier)
+            : nomCourtBien(o.dossier);
+  const fil = chaineOffre(o);
+  const boutons = [];
+  if(e.cle === "transmettre")
+    boutons.push(`<button type="button" class="xbtn fort"
+      data-oftrans="${esc(o.id)}">Transmettre</button>`);
+  if(e.cle === "attente")
+    boutons.push(`<button type="button" class="xbtn fort"
+      data-ofrep="${esc(o.id)}">Réponse</button>`);
+  if(e.cle === "compromis")
+    boutons.push(`<button type="button" class="xbtn fort"
+      data-ofcomp="${esc(o.id)}">Caler le compromis</button>`);
+  if(o.etat === "acceptee")
+    boutons.push(`<button type="button" class="xbtn" data-ofechec="${esc(o.id)}"
+      title="La vente ne se fait pas : le bien revient aux autres demandeurs"
+      >Sans suite</button>`);
+  if(d) boutons.push(`<button type="button" class="xbtn"
+    data-open="${esc(o.dossier)}">Voir le bien</button>`);
+  boutons.push(`<button type="button" class="xbtn sup"
+    data-ofdel="${esc(o.id)}">Supprimer</button>`);
+  return `<div class="ofrow ${cls}">
+    <span class="ofmontant">${esc(montantOffre(o))}
+      <i>${esc(libAuteurOffre(o))}${isoValide(o.date) ? " · " + esc(fdate(o.date)) : ""}</i>
+    </span>
+    <span class="ofqui">${esc(qui)}${
+      o.conditions ? `<em>${esc(o.conditions)}</em>` : ""}${
+      isoValide(o.validite) && !e.clos
+        ? `<em>valable jusqu'au ${esc(fdate(o.validite))}</em>` : ""}</span>
+    <span class="ofetape"><span class="ofpast ${cls}">${esc(e.lib || "")}</span>${
+      fil.length > 1 ? `<span class="offil petit">${fil.map(x=>
+        `<span class="ofpas${x.id === o.id ? " ici" : ""}"><i>${
+          esc(libAuteurOffre(x))}</i>${esc(montantOffre(x))}</span>`).join("")}</span>`
+        : ""}</span>
+    <span class="offin">${boutons.join("")}</span>
+  </div>`;
+}
+/* ------------------------------------------- le volet de la fiche de recherche */
+function blocOffresRecherche(r, i){
+  const l = offresDuDemandeur(r);
+  const vives = l.filter(offreVive), closes = l.filter(x=> !offreVive(x));
+  const biens = acquereursPourBien ? null : null;   /* (sans objet ici) */
+  const choix = suivisDe(r).concat(biensSansReponse(r).map(b=> b.d.id))
+    .filter((x, k, t)=> x && t.indexOf(x) === k);
+  const titre = (lib, n)=>`<h4 class="rapsous">${esc(lib)}<span class="cnt">${n}</span></h4>`;
+  return `<div class="ofzone">
+    <div class="dact" style="margin:0 0 12px">
+      <button type="button" class="addbtn" data-ofadd="${i}"
+        >+ Saisir une offre d'achat</button></div>
+    ${l.length ? "" : `<p class="muted" style="margin:0">Aucune offre pour ce demandeur.
+      ${choix.length ? "Le bouton ci-dessus la saisit sur l'un des biens qu'il suit ou "
+        + "qui lui ont été proposés." : "Proposez-lui d'abord un bien : l'offre se fait "
+        + "sur un bien rapproché."}</p>`}
+    ${vives.length ? titre("En cours", vives.length)
+      + vives.map(o=> ligneOffre(o, "rech")).join("") : ""}
+    ${closes.length ? titre("Closes", closes.length)
+      + closes.map(o=> ligneOffre(o, "rech")).join("") : ""}
+  </div>`;
+}
+/* --------------------------------------------- la carte du dossier du bien */
+function carteOffresBien(){
+  const l = offresDuBien((D || {}).id);
+  if(!l.length) return `<p class="muted" style="margin:0">Aucune offre sur ce bien.
+    Les offres se saisissent depuis la fiche d'un demandeur, volet
+    <b>Offres et compromis</b>, ou par le bouton ci-dessous.</p>
+    <div class="dact"><button type="button" class="addbtn"
+      data-ofaddbien="${esc((D || {}).id)}">+ Saisir une offre d'achat</button></div>`;
+  /* classées par montant décroissant : c'est la question qu'on se pose */
+  const vives = l.filter(offreVive).sort((a, b)=>
+    (num(b.montant) || 0) - (num(a.montant) || 0));
+  const closes = l.filter(x=> !offreVive(x));
+  const titre = (lib, n)=>`<h4 class="rapsous">${esc(lib)}<span class="cnt">${n}</span></h4>`;
+  return (vives.length ? titre("En jeu", vives.length)
+      + vives.map(o=> ligneOffre(o, "bien")).join("") : "")
+    + (closes.length ? titre("Closes", closes.length)
+      + closes.map(o=> ligneOffre(o, "bien")).join("") : "")
+    + `<div class="dact"><button type="button" class="addbtn"
+        data-ofaddbien="${esc((D || {}).id)}">+ Saisir une offre d'achat</button></div>`;
+}
+/* ------------------------------------------------ la tuile d'Aujourd'hui */
+function tableauParcours(){
+  const l = offresEnCours();
+  if(!l.length) return `<p class="vzvide">Aucune offre n'attend de réponse.</p>`;
+  return `<div class="ofliste">${l.map(x=> ligneOffre(x.o, "auj")).join("")}</div>`;
+}
+/* on redessine ce qui est à l'écran, et lui seul */
+function renderApresOffre(){
+  const p = pageActive();
+  if(p === "prospects") renderProspects();
+  if(p === "aujourdhui") renderAujourdhui();
+  if(p === "bien" || p === "mandat") renderGeneral();
+  if(SECTION_OUVERTE === "offres") majSectionOuverte();
+  if(TIROIR_OUVERT === "parcours") majTiroirAuj();
+  if(SUIVI_REDESSIN) SUIVI_REDESSIN();
+}
+
+/* =====================================================================
    LA PAGE AUJOURD'HUI, EN VUE SIMPLE
    ---------------------------------------------------------------------
    Quatre tuiles donnent le compte de chaque alerte, et chacune déplie sa
@@ -18779,6 +19654,10 @@ function tuilesAlertes(cote){
   let rech = [];
   try{ rech = tousLesRapprochements(); }catch(e){ rech = []; }
   const sansRep = rech.reduce((t, x)=> t + x.attente, 0);
+  let parc = [];
+  try{ parc = offresEnCours(); }catch(e){ parc = []; }
+  const enRetard = parc.filter(x=> x.e.retard).length;
+  const aCaler = parc.filter(x=> x.e.cle === "compromis").length;
   /* Le mot de l'unité est donné AU SINGULIER ET AU PLURIEL. Ajouter un
      « s » à la fin d'un groupe de mots donnait « bien à proposers » :
      « proposer » est un verbe, il ne s'accorde pas. Écrire les deux
@@ -18793,7 +19672,15 @@ function tuilesAlertes(cote){
     {k:"rech", n:sansRep, titre:"Recherches",
      det:rech.length + " demandeur" + (rech.length > 1 ? "s" : "")
          + " en attente d'une réponse",
-     un:"bien à proposer", plur:"biens à proposer"}
+     un:"bien à proposer", plur:"biens à proposer"},
+    /* le parcours d'achat : ce qui attend un geste de vous, et rien d'autre */
+    {k:"parcours", n:parc.length, titre:"Parcours d'achat",
+     det: parc.length
+       ? [enRetard ? enRetard + " en retard" : "",
+          aCaler ? aCaler + " compromis à caler" : ""].filter(Boolean).join(" · ")
+         || "offres à transmettre"
+       : "aucune offre en cours",
+     un:"offre en cours", plur:"offres en cours", chaud: !!enRetard}
   ];
   return `<div class="altuiles">${t.map(x=> `
     <button type="button" class="altuile grande ${!x.n ? "calme"
@@ -18818,6 +19705,10 @@ const TIROIRS_AUJ = {
          corps:()=> carteRapprochements()
             || `<p class="vzvide">Aucun demandeur n'attend de réponse.</p>`,
          unique:true, large:true},
+  parcours:{titre:"Parcours d'achat — les offres en cours",
+         sous:"De l'offre au compromis : ce qui attend un geste de vous, "
+            + "le plus pressant d'abord.",
+         corps:()=> tableauParcours(), unique:true, large:true},
   rep:  {titre:"Répartition du portefeuille",
          sous:"Par type de bien et par type de mandat, sur le même périmètre.",
          corps:()=> carteCamembert("g", "bien") + carteCamembert("g", "mandat")}
@@ -21933,7 +22824,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -22043,6 +22934,14 @@ document.addEventListener("click", e=>{
   if(t.dataset.bpage){ BIEN.page = t.dataset.bpage; renderDetail(); return; }
   if(t.dataset.lgadd !== undefined){ ajouterLogement(); return; }
   if(t.dataset.lgdel !== undefined){ retirerLogement(t.dataset.lgdel); return; }
+  /* ------------------------------------------------- le parcours d'achat */
+  if(t.dataset.ofadd !== undefined){ ouvrirOffreDepuisRecherche(+t.dataset.ofadd); return; }
+  if(t.dataset.ofaddbien){ ouvrirOffre({dossier:t.dataset.ofaddbien}); return; }
+  if(t.dataset.oftrans){ transmettreOffre(t.dataset.oftrans); return; }
+  if(t.dataset.ofrep){ ouvrirReponseOffre(t.dataset.ofrep); return; }
+  if(t.dataset.ofcomp){ calerCompromis(t.dataset.ofcomp); return; }
+  if(t.dataset.ofechec){ echecOffre(t.dataset.ofechec); return; }
+  if(t.dataset.ofdel){ supprimerOffre(t.dataset.ofdel); return; }
   /* un second mode d'équipement : le « + » l'ouvre, la croix le referme.
      Le bouton vit dans un <label> — sans cela le clic irait aussi déplier
      la liste du champ en dessous. */
@@ -28349,6 +29248,70 @@ const AIDE = [
   "Un <b>refus</b> l'emporte sur une visite — c'est une réponse, elle est plus forte "+
   "qu'un fait — et une visite <b>annulée</b> ne compte plus : le bien revient aussitôt "+
   "parmi ceux à proposer."],
+ ["Le parcours d'achat : de l'offre au compromis",
+  "Entre la visite et le compromis, il y a l'<b>offre</b> — et elle n'existait pas dans "+
+  "l'application : il n'y avait qu'une date à taper à la main sur le dossier du bien, "+
+  "sans montant, sans auteur, sans réponse. "+
+  "Une offre est désormais un <b>objet</b>, comme le rendez-vous : un montant, une date, "+
+  "une validité, des conditions. Et comme le rendez-vous, elle appartient au "+
+  "<b>demandeur</b>, pas à la recherche par laquelle on y est arrivé : Monsieur X qui "+
+  "mène deux recherches ne fait qu'une offre, et ses deux fiches la montrent. "+
+  "Elle se lit des <b>deux côtés</b> : volet <b>Offres et compromis</b> sur la fiche de "+
+  "la recherche, carte <b>Offres reçues</b> sur le dossier du bien — où deux offres "+
+  "concurrentes se comparent enfin, classées par montant. Et la tuile <b>Parcours "+
+  "d'achat</b>, sur Aujourd'hui, ne montre que ce qui attend un geste de vous."],
+ ["Les quatre étapes d'une offre",
+  "<b>Émise</b> — le bouton « Saisir une offre d'achat », sur le volet du demandeur ou "+
+  "sur la carte du bien. Depuis le demandeur, l'application propose les biens qu'il "+
+  "suit, qu'on lui a proposés ou qu'il a visités : une offre ne se fait pas sur un bien "+
+  "qu'il n'a jamais vu. "+
+  "<b>Transmise</b> — par courriel, par WhatsApp, ou « de vive voix » quand vous avez "+
+  "décroché votre téléphone. Le message part avec le modèle du contexte <b>offre</b>, "+
+  "où s'écrivent {{montantOffre}}, {{dateOffre}}, {{validite}} et {{conditions}}. "+
+  "<b>Réponse</b> — acceptée, refusée, ou contre-proposition. "+
+  "<b>Compromis</b> — le rendez-vous de signature, dans votre agenda Google comme une "+
+  "visite, avec les confirmations aux participants. "+
+  "Chaque ligne d'offre porte, en pastille, l'étape où elle en est et depuis combien "+
+  "de jours elle y est. Au bout de <b>trois jours</b> sans réponse, elle passe en rouge "+
+  "et remonte en tête de la tuile d'Aujourd'hui."],
+ ["La contre-proposition : le fil des montants",
+  "Le propriétaire qui répond « 245 000 et c'est d'accord » n'a ni accepté ni refusé. "+
+  "La <b>contre-proposition</b> est donc une offre neuve, faite de l'autre côté de la "+
+  "table et <b>chaînée</b> à la précédente — qui sort du jeu sans disparaître. "+
+  "On lit ainsi la suite des montants d'un coup d'œil : 235 000 du demandeur, 245 000 du "+
+  "propriétaire, 238 000 du demandeur. Six mois plus tard, on sait qui a cédé et de "+
+  "combien. Une seule offre d'une chaîne est en jeu à la fois : la dernière."],
+ ["Ce qui s'enchaîne quand une offre est acceptée",
+  "Quatre choses, parce que les oublier coûte cher : "+
+  "la <b>date de l'offre</b> s'inscrit sur le dossier, qui passe « sous offre » ; "+
+  "le <b>demandeur est versé aux acquéreurs</b> du dossier, avec ses coordonnées, s'il "+
+  "n'y est pas déjà ; "+
+  "les <b>autres demandeurs</b> qui suivaient ce bien, ou à qui il avait été proposé, "+
+  "l'écartent avec le motif « sous offre » ; "+
+  "et le <b>rendez-vous de compromis</b> vous est proposé dans la foulée. "+
+  "Les autres offres encore en jeu sur ce bien passent en refusées, motif « un autre "+
+  "acquéreur » : il n'y a qu'une offre acceptée par bien. "+
+  "Une fenêtre vous dit ce qui vient de se faire, point par point — rien ne se passe "+
+  "dans votre dos."],
+ ["Quand l'offre n'aboutit pas",
+  "Une vente peut tomber. Le bouton <b>Sans suite</b>, sur une offre acceptée, défait "+
+  "tout : l'offre passe en refusée, la <b>date d'offre est retirée</b> du dossier — qui "+
+  "repasse « en vente » —, et le bien <b>revient</b> aux demandeurs qui l'avaient "+
+  "écarté pour cette raison-là. "+
+  "Ceux qui l'avaient refusé d'eux-mêmes, eux, gardent leur refus et leur motif : "+
+  "l'application distingue un écart <b>automatique</b> d'une réponse donnée, et ne "+
+  "revient jamais sur la seconde. "+
+  "La date d'offre n'est retirée que si le <b>compromis n'est pas signé</b> : passé ce "+
+  "point, c'est une autre histoire, et elle se règle sur le dossier."],
+ ["Le compromis est un rendez-vous, mais pas une visite",
+  "« Caler le compromis » ouvre la <b>même fenêtre</b> qu'une visite : mêmes "+
+  "participants, même agenda Google, mêmes confirmations par courriel ou WhatsApp. "+
+  "Seuls changent son intitulé — « Signature du compromis — … » — et le mot qu'il "+
+  "laisse à l'historique. "+
+  "Mais il est enregistré comme un <b>compromis</b>, et non comme une visite : sans "+
+  "cela, le rapprochement aurait fait passer le bien en « visité » le jour de la "+
+  "signature, ce qui n'a aucun sens. Une fois calé, l'offre affiche « compromis le … » "+
+  "et sort de la tuile d'Aujourd'hui : il n'y a plus rien à y faire."],
  ["Proposer un bien par courriel",
   "L'<b>enveloppe</b>, sur la ligne d'un bien rapproché, ouvre une fenêtre : le "+
   "destinataire (pris au répertoire), un <b>modèle de message</b>, l'objet et le texte, "+
