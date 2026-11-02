@@ -911,6 +911,28 @@ table.envois tr.repondu td.emode b{color:#166534}
 /* le nom qu'on tape existe peut-être déjà : la suggestion se glisse SOUS le
    champ, sans pousser quoi que ce soit ni redessiner la fiche */
 .nomsug:empty{display:none}
+/* ------------------------------------- les personnes d'une société
+   Un bloc par personne, dans la fiche de la société : le même grain que
+   les fiches de vendeurs, en un cran plus discret — ce sont des fiches
+   dans une fiche. */
+.rclib{font-style:normal;font-size:10.5px;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.3px}
+.socsep{margin-top:4px}
+.socbloc{grid-column:1/-1;border:1px solid var(--line);border-radius:10px;
+  background:#faf7f5;padding:12px 14px 10px}
+.socrow{border:1px solid var(--line);border-radius:8px;background:#fff;
+  padding:8px 11px 10px;margin-bottom:9px}
+.socrow:last-of-type{margin-bottom:10px}
+.socrow > header{display:flex;align-items:center;gap:9px;margin:0 0 8px;
+  padding-bottom:7px;border-bottom:1px solid var(--line-2)}
+.socrow > header .idx{flex:0 0 auto;width:21px;height:21px;border-radius:50%;
+  background:var(--accent-soft);color:var(--bandeau);font:700 11px/21px inherit;
+  text-align:center}
+.socrow > header .who{flex:1 1 auto;min-width:0;font-weight:650;
+  color:var(--bandeau);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.socrow .pgrid{padding:0}
+.socbloc .dnote{margin:2px 0 0}
+@media (max-width:760px){ .socbloc{padding:10px} .socrow{padding:8px} }
 .nomsugl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px}
 .nomsugt{font-size:11px;color:var(--ink-3);text-transform:uppercase;
   letter-spacing:.3px}
@@ -2828,7 +2850,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 1er novembre 2026, 17 h 30">Dossiers de vente</div>
+  <div class="brand" title="Version du 2 novembre 2026, 13 h 15">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3056,7 +3078,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>1er novembre 2026, 17 h 30</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>2 novembre 2026, 13 h 15</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3574,6 +3596,16 @@ const LISTS_DEFAULT = {
   offres: [],
   /* par quelle voie une offre d'achat est arrivée, ou repartie */
   modeEnvoi: ["Courriel", "SMS", "WhatsApp", "Courrier"],
+  /* À QUI est ce numéro, à qui est cette adresse. Une fiche porte deux
+     téléphones et deux courriels : sans libellé, on ne sait pas lequel
+     appeler, et l'on tombe sur Madame en croyant joindre Monsieur. */
+  libelleTel:  ["Monsieur", "Madame", "Portable", "Fixe", "Bureau", "Les deux"],
+  libelleMail: ["Monsieur", "Madame", "Personnel", "Bureau", "Les deux"],
+  /* le rôle d'une personne dans la société qu'elle représente */
+  roleRepr: ["Gérant", "Gérante", "Gérant majoritaire", "Co-gérant",
+             "Président", "Associé", "Associé majoritaire", "Mandataire",
+             "Représentant légal", "Héritier", "Indivisaire", "Usufruitier",
+             "Nu-propriétaire", "Tuteur", "Curateur"],
   notaires: [{prenom:"Clémence", patronyme:"TORTEL",
               nom:"Maître Clémence TORTEL", adresse:"26-28, avenue Sixte Quenin",
               pays:"France", cp:"13200", ville:"ARLES", tel:"04 90 52 18 09",
@@ -3625,7 +3657,10 @@ const LIST_LABELS = {
   motifEcart:"Motifs d'écart d'un bien (demandeurs)",
   appelsClip:"Messages de la carte de contact (clips)",
   paysPlus:"Pays ajoutés à la liste",
-  modeEnvoi:"Modes d'envoi d'une offre d'achat"
+  modeEnvoi:"Modes d'envoi d'une offre d'achat",
+  libelleTel:"Libellés d'un téléphone (à qui il est)",
+  libelleMail:"Libellés d'un email (à qui il est)",
+  roleRepr:"Rôles dans une société ou une indivision"
 };
 
 /* carnets d'adresses : "card" = affichage en fiches, "row" = tableau compact */
@@ -4134,6 +4169,10 @@ function loadListesDepuis(v){
     if(!n.nom) n.nom = libelleNotaire(n);
   });
   if(!Array.isArray(out.residences)) out.residences = [];
+  /* le répertoire suit le même modèle que les dossiers : deux téléphones,
+     deux courriels, leurs libellés, et les personnes d'une société */
+  if(Array.isArray(out.personnes))
+    out.personnes.forEach(f=> normaliserPersonne(f));
   (out.diagnostiqueurs||[]).forEach(x=>{ ["adresse","pays","cp","ville"]
     .forEach(k=>{ if(x[k]===undefined) x[k]=""; }); if(!x.pays) x.pays="France"; });
   out.condSusp = (out.condSusp||[]).map(v=> v === "Aucune" ? "Aucun" : v);
@@ -4721,10 +4760,63 @@ const QUEST_COND = {
 };
 function questVisible(k){ const f = QUEST_COND[k]; return f ? f() : true; }
 
+/* =====================================================================
+   UNE SEULE FICHE DE PERSONNE
+   ---------------------------------------------------------------------
+   Il y avait trois modèles de personne dans l'application : celle d'un
+   dossier (un téléphone, un courriel), celle du répertoire (deux de
+   chaque), celle d'un demandeur (un nom, un téléphone, un courriel). La
+   même personne se racontait donc différemment selon la porte par laquelle
+   on arrivait, et ce qu'on avait saisi d'un côté manquait de l'autre.
+
+   Il n'y en a plus qu'un, et c'est celui du RÉPERTOIRE : deux téléphones,
+   deux adresses électroniques, et pour chacun un LIBELLÉ — « Monsieur »,
+   « Madame », « Bureau » — car un couple a deux numéros sur une seule
+   fiche, et il faut savoir lequel appeler.
+
+   Une ENTITÉ JURIDIQUE — SCI, SARL, succession, indivision — porte en plus
+   autant de personnes qu'il en faut, chacune avec son RÔLE : gérant,
+   gérant majoritaire, associé, mandataire. Ce ne sont pas des champs de
+   plus sur la société : ce sont des personnes, qui ont leur fiche au
+   répertoire comme toutes les autres.                                   */
 function blankPerson(){
   return {civilite:"",raison:"",civiliteRepr:"",prenom:"",prenoms:"",nom:"",nomNaissance:"",dateNaissance:"",lieuNaissance:"",
-          nationalite:"",profession:"",sitMat:"",tel1:"",email1:"",
+          nationalite:"",profession:"",sitMat:"",
+          tel1:"",telLib1:"",tel2:"",telLib2:"",
+          email1:"",mailLib1:"",email2:"",mailLib2:"",
+          /* les représentants d'une société : voir `blocRepresentants` */
+          repr:[],
           memeAdresse:false,adresse:"",pays:"France",cp:"",ville:""};
+}
+/* un représentant : une personne du répertoire, et le rôle qu'elle tient */
+function representantVide(){
+  return {pid:"", civilite:"", prenom:"", nom:"", role:"",
+          tel1:"", telLib1:"", email1:"", mailLib1:""};
+}
+/* ------------------------------------------------------------ LA REPRISE
+   Avant, une société n'avait qu'UN représentant, écrit dans ses propres
+   cases : `civiliteRepr` pour sa civilité, et `nom` / `prenom` — ceux-là
+   mêmes qui servent à une personne physique. Il devient la première
+   personne de la société, avec le rôle « Représentant légal », et les cases
+   empruntées sont rendues : une société n'a ni prénom ni nom de famille.
+
+   L'opération ne se joue qu'une fois, et seulement s'il n'y a pas déjà des
+   personnes : on ne défait pas une saisie plus récente. */
+function normaliserPersonne(p){
+  if(!p || typeof p !== "object") return p;
+  if(!Array.isArray(p.repr)) p.repr = [];
+  /* La reprise court AVANT que les listes soient prêtes — c'est elle qui
+     les prépare. On ne peut donc pas appeler `estMorale`, qui lit une
+     constante déclarée plus bas : une société se reconnaît ici à sa
+     DÉNOMINATION, ce qui suffit et ne dépend de rien. */
+  if(String(p.raison || "").trim() && !p.repr.length && (p.nom || p.prenom)){
+    p.repr.push(Object.assign(representantVide(), {
+      civilite: p.civiliteRepr || "", prenom: p.prenom || "",
+      nom: p.nom || "", role: "Représentant légal"}));
+    p.nom = ""; p.prenom = ""; p.prenoms = ""; p.civiliteRepr = "";
+  }
+  p.repr = p.repr.filter(Boolean).map(x=> Object.assign(representantVide(), x));
+  return p;
 }
 /* =====================================================================
    UNE PERSONNE, UNE FICHE — LE RÉPERTOIRE GÉNÉRAL
@@ -4750,9 +4842,10 @@ function blankPerson(){
    sur un dossier vieux de deux ans qu'on réimprimerait.
    ===================================================================== */
 function fichePersonneVide(){
+  /* la fiche du répertoire n'a plus rien de plus que les autres : c'est
+     ELLE qui est devenue le modèle commun */
   return Object.assign(blankPerson(), {
-    pid:"", fonction:"", note:"", maj:0, cree:0,
-    tel2:"", email2:""
+    pid:"", fonction:"", note:"", maj:0, cree:0
   });
 }
 function idFichePersonne(){
@@ -4763,7 +4856,8 @@ function idFichePersonne(){
    le dossier, pas la personne. */
 const CHAMPS_FICHE = ["civilite","raison","civiliteRepr","prenom","prenoms","nom",
   "nomNaissance","dateNaissance","lieuNaissance","nationalite","profession","sitMat",
-  "tel1","tel2","email1","email2","adresse","pays","cp","ville"];
+  "tel1","telLib1","tel2","telLib2","email1","mailLib1","email2","mailLib2",
+  "adresse","pays","cp","ville"];
 function fichePersonne(pid){
   if(!pid) return null;
   return (L.personnes || []).filter(f=> f && f.pid === pid)[0] || null;
@@ -4859,8 +4953,22 @@ function enrolerLesPersonnes(){
     ["vendeurs","acquereurs"].forEach(k=>{
       (d[k] || []).forEach(p=>{
         if(!p || personneVide(p)) return;
+        /* la société rend d'abord les cases de son représentant : sans cela
+           le répertoire les garderait, et les rendrait au dossier */
+        const avant = JSON.stringify(p.repr || []);
+        normaliserPersonne(p);
+        if(JSON.stringify(p.repr || []) !== avant) bouge = true;
         const pid = inscrireAuRepertoire(p);
         if(pid && p.pid !== pid){ p.pid = pid; bouge = true; }
+        /* les personnes de la société ont elles aussi leur fiche */
+        (p.repr || []).forEach(x=>{
+          if(!x || !(x.nom || x.prenom)) return;
+          const brut = Object.assign(blankPerson(), {civilite:x.civilite,
+            prenom:x.prenom, nom:x.nom, tel1:x.tel1, telLib1:x.telLib1,
+            email1:x.email1, mailLib1:x.mailLib1, pid:x.pid});
+          const q = inscrireAuRepertoire(brut);
+          if(q && x.pid !== q){ x.pid = q; bouge = true; }
+        });
       });
     });
   });
@@ -4873,7 +4981,9 @@ function enrolerLesPersonnes(){
     (r.personnes || []).forEach(p=>{
       if(!p || !(p.nom || p.prenom)) return;
       const brut = Object.assign(blankPerson(), {civilite:p.civilite, nom:p.nom,
-        prenom:p.prenom, tel1:p.tel, email1:p.email, pid:p.pid});
+        prenom:p.prenom, tel1:p.tel, telLib1:p.telLib1, tel2:p.tel2,
+        telLib2:p.telLib2, email1:p.email, mailLib1:p.mailLib1,
+        email2:p.email2, mailLib2:p.mailLib2, pid:p.pid});
       const pid = inscrireAuRepertoire(brut);
       if(pid) p.pid = pid;
     });
@@ -9007,19 +9117,204 @@ const CIV_PHYSIQUES = ["M.","Mme","M. et Mme"];
 function estMorale(p){
   return !!(p && p.civilite && !CIV_PHYSIQUES.includes(p.civilite));
 }
+/* Le schéma d'une fiche de personne. UN SEUL, pour le dossier comme pour le
+   répertoire : c'est lui qui garantit qu'on voit partout la même chose.
+
+   Les champs d'état civil d'une PERSONNE PHYSIQUE n'ont pas de sens sur une
+   société — une SCI n'a ni date de naissance ni situation matrimoniale —,
+   et ses représentants, eux, ont leur propre bloc. D'où la condition
+   `estPhysique` : la fiche d'une société est courte, et c'est normal. */
+function estPhysique(p){ return !estMorale(p); }
 const PF = [
   ["civilite","Qualité / civilité","list:qualite"],
   ["raison","Dénomination","text","wide",estMorale],
-  ["@repr","Représentant légal","sep","",estMorale],
-  ["civiliteRepr","Qualité / civilité","list:civilite","",estMorale],
-  ["prenom","Prénom","text"],["prenoms","Autres prénoms","text"],["nom","NOM","text"],
-  ["nomNaissance","Nom de naissance","text"],["dateNaissance","Date de naissance","date"],
-  ["lieuNaissance","Lieu de naissance","text"],["nationalite","Nationalité","list:nationalite"],
-  ["profession","Profession","text"],["sitMat","Situation matrimoniale","list:sitMat"],
-  ["tel1","Téléphone","text"],["email1","Email","text"],
+  ["prenom","Prénom","text","",estPhysique],
+  ["prenoms","Autres prénoms","text","",estPhysique],
+  ["nom","NOM","text","",estPhysique],
+  ["nomNaissance","Nom de naissance","text","",estPhysique],
+  ["dateNaissance","Date de naissance","date","",estPhysique],
+  ["lieuNaissance","Lieu de naissance","text","",estPhysique],
+  ["nationalite","Nationalité","list:nationalite","",estPhysique],
+  ["profession","Profession","text","",estPhysique],
+  ["sitMat","Situation matrimoniale","list:sitMat","",estPhysique],
+  ["@coord","Coordonnées","sep"],
+  ["tel1","Téléphone","text"],["telLib1","Ce téléphone est celui de","list:libelleTel"],
+  ["tel2","Autre téléphone","text"],
+  ["telLib2","Cet autre téléphone est celui de","list:libelleTel"],
+  ["email1","Email","text"],["mailLib1","Cet email est celui de","list:libelleMail"],
+  ["email2","Autre email","text"],
+  ["mailLib2","Cet autre email est celui de","list:libelleMail"],
+  ["@adr","Adresse","sep"],
   ["adresse","Adresse","text","wide"],
   ["cp","Code postal","cp"],["ville","Ville","ville"],["pays","Pays","pays"]
 ];
+
+/* =====================================================================
+   LES PERSONNES D'UNE SOCIÉTÉ
+   ---------------------------------------------------------------------
+   Une SCI vend, une succession vend, une indivision vend. Jusqu'ici la
+   fiche n'avait qu'une case « Représentant légal » : un seul nom, aucun
+   rôle, et rien pour la SCI à deux gérants ou la succession à quatre
+   héritiers. On écrivait les autres dans les observations, où aucun
+   document n'est jamais allé les chercher.
+
+   Une entité juridique porte donc AUTANT DE PERSONNES QU'IL EN FAUT,
+   chacune avec son RÔLE — gérant, gérant majoritaire, associé, héritier —
+   pris dans une liste qu'on allonge comme les autres.
+
+   Ces personnes ne sont pas des champs de plus sur la société : ce sont
+   des personnes, et elles entrent au RÉPERTOIRE comme toutes les autres.
+   Le gérant d'une SCI qui vend aujourd'hui et achète demain en son nom
+   propre n'a qu'une fiche, et « Sa fiche » l'ouvre d'ici.
+
+   `ref` dit à qui appartient le bloc, parce qu'il s'affiche aux deux
+   endroits où une personne se saisit :
+     · « d:vendeurs:0 » — la première partie vendeuse du dossier ouvert ;
+     · « r:pe3f8a »     — une fiche du répertoire.
+   ===================================================================== */
+function reprDe(p){
+  if(!p) return [];
+  if(!Array.isArray(p.repr)) p.repr = [];
+  return p.repr;
+}
+function hoteRepr(ref){
+  const bouts = String(ref || "").split(":");
+  if(bouts[0] === "d"){
+    const p = (D[bouts[1]] || [])[+bouts[2]];
+    return p ? {p:p, dossier:true, kind:bouts[1], i:+bouts[2]} : null;
+  }
+  if(bouts[0] === "r"){
+    const f = fichePersonne(bouts[1]);
+    return f ? {p:f, dossier:false} : null;
+  }
+  return null;
+}
+/* le nom d'un représentant, tel qu'on le lit : « M. Luc ROUX — gérant » */
+function nomRepr(x){
+  const n = [String((x || {}).prenom || "").trim(),
+             enMajuscules((x || {}).nom || "")].filter(Boolean).join(" ");
+  const civ = String((x || {}).civilite || "").trim();
+  return [civ, n].filter(Boolean).join(" ").trim();
+}
+function libelleRepr(x){
+  const n = nomRepr(x) || "sans nom";
+  return (x || {}).role ? n + " — " + x.role.toLowerCase() : n;
+}
+/* Tous les représentants d'une personne, y compris l'ancien « représentant
+   légal » saisi quand il n'y avait qu'une case pour lui. */
+function representants(p){
+  const l = reprDe(p).filter(x=> x && (x.nom || x.prenom));
+  return l;
+}
+function blocRepresentants(p, ref){
+  if(!p || !estMorale(p)) return "";
+  const l = reprDe(p);
+  const quoi = String(p.civilite || "").trim();
+  const mot = /indivis|success/i.test(quoi) ? "les personnes" : "les représentants";
+  const lignes = l.map((x, i)=>{
+    const ch = (champ, lab, kd, large)=>{
+      const path = ref + "|" + i + "|" + champ;
+      let h;
+      if(kd === "liste"){
+        const cle = champ === "role" ? "roleRepr"
+                  : champ === "telLib1" ? "libelleTel"
+                  : champ === "mailLib1" ? "libelleMail" : "qualite";
+        const vals = (L[cle] || []);
+        const v = String(x[champ] || "");
+        h = `<span class="withadd"><select data-repr="${esc(path)}"><option value=""></option>${
+          vals.map(o=> `<option${o === v ? " selected" : ""}>${esc(o)}</option>`).join("")}${
+          v && vals.indexOf(v) < 0 ? `<option selected>${esc(v)}</option>` : ""}</select>
+          <button type="button" class="addinline" data-addlist="list:${cle}"
+            data-target="${esc(path)}" data-attr="data-repr"
+            title="Ajouter une valeur à cette liste">+</button></span>`;
+      } else {
+        h = `<input type="text" data-repr="${esc(path)}"
+          value="${esc(x[champ] || "")}" autocomplete="off">`;
+      }
+      return `<div class="pf${large ? " wide" : ""}"><label>${esc(lab)}</label>${h}</div>`;
+    };
+    return `<div class="socrow">
+      <header><span class="idx">${i + 1}</span>
+        <span class="who">${esc(libelleRepr(x))}</span>
+        ${x.pid ? `<button type="button" class="xbtn" data-vpers="${esc(x.pid)}"
+            title="Sa fiche au répertoire des personnes">Sa fiche</button>` : ""}
+        <button type="button" class="xbtn sup" data-reprdel="${esc(ref)}|${i}"
+          >Retirer</button></header>
+      <div class="pgrid">
+        ${ch("role", "Rôle", "liste")}
+        ${ch("civilite", "Civilité", "liste")}
+        ${ch("prenom", "Prénom", "text")}
+        ${ch("nom", "NOM", "text")}
+        ${ch("tel1", "Téléphone", "text")}
+        ${ch("telLib1", "Ce téléphone est celui de", "liste")}
+        ${ch("email1", "Email", "text")}
+        ${ch("mailLib1", "Cet email est celui de", "liste")}
+      </div></div>`;
+  }).join("");
+  return `<div class="pfsep socsep">${esc(quoi || "La société")} — ${esc(mot)}</div>
+    <div class="socbloc">
+      ${lignes || `<p class="muted" style="margin:0 0 10px">Aucune personne enregistrée.
+        Une société signe par quelqu'un : ajoutez-la, avec son rôle.</p>`}
+      <div class="dact"><button type="button" class="addbtn"
+        data-repradd="${esc(ref)}">+ Ajouter une personne</button></div>
+      <p class="dnote">Ces personnes entrent au <b>répertoire</b> comme toutes les
+        autres : le gérant qui vend aujourd'hui par sa SCI et achète demain en son
+        nom propre n'a qu'une fiche.</p>
+    </div>`;
+}
+/* la saisie d'un champ de représentant : on écrit, on inscrit, on redessine
+   le seul intitulé de la ligne — jamais le champ où le curseur se trouve */
+function ecrireRepr(ref, i, champ, val, fin){
+  const h = hoteRepr(ref);
+  if(!h) return;
+  const l = reprDe(h.p);
+  const x = l[+i];
+  if(!x) return;
+  x[champ] = val;
+  /* le nom complet ouvre une fiche au répertoire, comme pour une partie */
+  if(fin && (x.nom || x.prenom)){
+    const brut = Object.assign(blankPerson(), {civilite:x.civilite, prenom:x.prenom,
+      nom:x.nom, tel1:x.tel1, telLib1:x.telLib1, email1:x.email1,
+      mailLib1:x.mailLib1, pid:x.pid});
+    const pid = inscrireAuRepertoire(brut);
+    if(pid) x.pid = pid;
+    saveLists();
+  }
+  if(h.dossier) autosave(); else saveLists();
+  /* l'intitulé de la ligne suit, et rien d'autre ne bouge */
+  const zone = document.querySelector(`[data-repr="${ref}|${i}|${champ}"]`);
+  const tete = zone ? zone.closest(".socrow") : null;
+  const qui = tete ? tete.querySelector(".who") : null;
+  if(qui) qui.textContent = libelleRepr(x);
+}
+function ajouterRepr(ref){
+  const h = hoteRepr(ref);
+  if(!h) return;
+  reprDe(h.p).push(representantVide());
+  if(h.dossier){ autosave(); renderPeople(h.kind); refreshAllVilles(); renderPreview(); }
+  else { saveLists(); renderRepertoire(); }
+  setTimeout(()=>{
+    const der = $$(`[data-repr^="${ref}|"]`).filter(x=> /\|nom$/.test(x.dataset.repr)).pop();
+    if(der){ der.focus(); if(der.scrollIntoView) der.scrollIntoView({block:"center"}); }
+  }, 60);
+}
+function retirerRepr(ref, i){
+  const h = hoteRepr(ref);
+  if(!h) return;
+  const l = reprDe(h.p);
+  const x = l[+i];
+  const nom = libelleRepr(x);
+  popup({titre:"Retirer cette personne ?", genre:"erreur",
+    corps:`<p style="margin:0"><b>${esc(nom)}</b> ne représentera plus cette société
+      dans ce dossier. <b>Sa fiche du répertoire n'est pas touchée</b> : elle reste,
+      avec tout ce qu'elle porte ailleurs.</p>`,
+    boutons:[{lib:"Annuler"}, {lib:"Retirer", primaire:true, action:()=>{
+      l.splice(+i, 1);
+      if(h.dossier){ autosave(); renderPeople(h.kind); refreshAllVilles(); renderPreview(); }
+      else { saveLists(); renderRepertoire(); }
+      toast("Personne retirée");
+    }}]});
+}
 
 /* ------------------------------------------- l'identité d'une personne ---
    Le nom affiché — « ARNOUX Jean », ou la dénomination d'une société. C'est
@@ -9059,7 +9354,13 @@ function pidDepuis(nom){ return nom ? "pe" + empreinte(nom) : ""; }
 /* une personne d'une fiche prospect : ce que demande la fiche découverte,
    et rien de plus — l'état civil complet se saisit au compromis, pas ici */
 function personneProspect(){
-  return {civilite:"", nom:"", prenom:"", tel:"", email:""};
+  /* mêmes coordonnées que partout ailleurs. `tel` et `email` gardent leur
+     nom d'origine — ils sont écrits dans toutes les fiches déjà saisies —
+     et ne sont rien d'autre que le premier téléphone et le premier
+     courriel du modèle commun. */
+  return {civilite:"", nom:"", prenom:"",
+          tel:"", telLib1:"", tel2:"", telLib2:"",
+          email:"", mailLib1:"", email2:"", mailLib2:""};
 }
 /* identifiant d'une fiche de carnet : l'horloge et un grain de hasard, pour
    que deux appareils qui ajoutent une fiche en même temps n'en fassent pas une */
@@ -9451,7 +9752,8 @@ function renderPeople(kind){
       <header><span class="idx">${i+1}</span><span class="who">${esc(who)}</span>${memeAdr}
       ${suj ? trombone(suj, "Pièces") : ""}
       <button class="xbtn" data-del="${kind}:${i}">Supprimer</button>
-      </header><div class="pgrid">${fields}</div></div>`;
+      </header><div class="pgrid">${fields}</div>${
+        blocRepresentants(p, "d:" + kind + ":" + i)}</div>`;
   }).join("") || `<p class="muted" style="margin:0 0 4px">Aucun ${
     singular.toLowerCase()} enregistré. Le bouton ci-dessous demande son
     <b>nom</b> : s'il est déjà au répertoire, vous reprendrez sa fiche plutôt
@@ -10690,17 +10992,13 @@ function champsFichePersonne(f, court){
     return `<div class="pf${w === "wide" ? " wide" : ""}">` +
            `<label>${esc(lab)}</label>${h}</div>`;
   };
-  /* la fiche du répertoire garde une ligne de plus que celle d'un dossier :
-     un second téléphone et une seconde adresse électronique, parce qu'une
-     personne qu'on retrouve d'une vente à l'autre en a souvent deux */
+  /* le même schéma que partout ailleurs : c'est tout l'intérêt */
   const champs = PF.map(([k, lab, kd, w, cond])=>{
     if(cond && !cond(f)) return "";
     if(kd === "sep") return `<div class="pfsep">${esc(lab)}</div>`;
-    let h = unChamp(k, lab, kd, w);
-    if(k === "tel1") h += unChamp("tel2", "Autre téléphone", "text");
-    if(k === "email1") h += unChamp("email2", "Autre email", "text");
-    return h;
+    return unChamp(k, lab, kd, w);
   }).join("");
+  const repr = blocRepresentants(f, "r:" + (f.pid || ""));
   const dos = dossiersDeLaPersonne(f.pid), rec = recherchesDeLaPersonne(f.pid);
   const met = carnetsDeLaPersonne(f.pid), inter = interventionsMetier(f.pid);
   return `<div class="pgrid">${champs}
@@ -10709,7 +11007,7 @@ function champsFichePersonne(f, court){
                      `fp${i}`, "data-book")}</div>
       <div class="pf wide"><label>Observations</label>
         ${controlRaw(`personnes:${i}:note`, "area", f.note || "", `fp${i}`, "data-book")}
-      </div></div>` + (court ? "" : `
+      </div></div>` + repr + (court ? "" : `
     ${met.length ? `<div class="mdsect" style="margin-top:16px"><h4>Son métier</h4>
       <div class="seczones">${met.map(x=> `<div class="seczone">
         <span class="szg"></span>
@@ -11294,12 +11592,21 @@ function destinatairesCourriel(o){
     out.push({nom: nom || m, email:m, quoi: quoi || ""});
   };
   const f = o.pid ? fichePersonne(o.pid) : null;
-  if(f){ met(nomUsuel(f), f.email1, "sa fiche"); met(nomUsuel(f), f.email2, "sa fiche"); }
+  if(f) mailsDe(f).forEach(x=>
+    met(nomUsuel(f), x.val, x.lib || "sa fiche"));
   const d = o.d;
-  if(d) ["vendeurs","acquereurs"].forEach(k=>
-    (d[k] || []).filter(p=> p && !personneVide(p)).forEach(p=>
-      met(titrePersonne(p), p.email1 || p.email,
-          k === "vendeurs" ? "vendeur" : "acquéreur")));
+  if(d) ["vendeurs","acquereurs"].forEach(k=>{
+    const role = k === "vendeurs" ? "vendeur" : "acquéreur";
+    (d[k] || []).filter(p=> p && !personneVide(p)).forEach(p=>{
+      mailsDe(p).forEach(x=> met(titrePersonne(p), x.val,
+        [role, x.lib].filter(Boolean).join(" · ")));
+      /* une société signe par quelqu'un : son courriel aussi est un
+         destinataire, et souvent le seul qui réponde */
+      representants(p).forEach(r=> mailsDe(r).forEach(x=>
+        met(nomRepr(r) || titrePersonne(p), x.val,
+            [role, r.role || "représentant"].filter(Boolean).join(" · "))));
+    });
+  });
   return out;
 }
 function ouvrirEnvoiCourriel(opt){
@@ -12171,8 +12478,13 @@ function texteDossier(d){
   Object.keys(d.dates || {}).forEach(k=>{ add(fdate(d.dates[k])); });
   ["vendeurs","acquereurs"].forEach(k=> (d[k] || []).forEach(p=>{
     ["civilite","raison","civiliteRepr","prenom","prenoms","nom","nomNaissance",
-     "lieuNaissance","profession","tel1","email1","adresse","cp","ville",
-     "pays"].forEach(f=> add(p[f]));
+     "lieuNaissance","profession","tel1","tel2","email1","email2","adresse",
+     "cp","ville","pays"].forEach(f=> add(p[f]));
+    /* le gérant d'une SCI est souvent le seul nom qu'on ait en tête */
+    (Array.isArray(p.repr) ? p.repr : []).forEach(r=>{
+      if(!r) return;
+      ["civilite","prenom","nom","role","tel1","email1"].forEach(f=> add(r[f]));
+    });
   }));
   const nt = d.notaire || {};
   ["vendeur","acquereur","vendeurContact","acquereurContact",
@@ -12196,9 +12508,14 @@ function texteDossier(d){
 function textePersonne(p){
   const b = [];
   ["civilite","raison","civiliteRepr","prenom","prenoms","nom","nomNaissance",
-   "lieuNaissance","nationalite","profession","sitMat","tel1","email1","adresse",
-   "cp","ville","pays"]
+   "lieuNaissance","nationalite","profession","sitMat","tel1","tel2","email1",
+   "email2","adresse","cp","ville","pays"]
     .forEach(k=>{ if(p[k]) b.push(String(p[k])); });
+  (Array.isArray(p.repr) ? p.repr : []).forEach(r=>{
+    if(!r) return;
+    ["civilite","prenom","nom","role","tel1","email1"].forEach(k=>{
+      if(r[k]) b.push(String(r[k])); });
+  });
   if(p.dateNaissance){ b.push(fdate(p.dateNaissance)); b.push(p.dateNaissance); }
   return fold(b.join(" "));
 }
@@ -17191,14 +17508,28 @@ function blocsPersonnesProspect(i){
   return l.map((p, k)=>`<div class="ppers" id="pp_${i}_${k}">
       <header><span class="who">${esc(nomPersonneProspect(p) ||
         "Demandeur " + (k + 1))}</span>
+        ${p.pid ? `<button type="button" class="xbtn" data-vpers="${esc(p.pid)}"
+          title="Sa fiche au répertoire : état civil, adresse, et le reste"
+          >Sa fiche</button>` : ""}
         ${l.length > 1 ? `<button type="button" class="xbtn sup"
           data-ppdel="${i}:${k}">Supprimer</button>` : ""}</header>
       <div class="pgrid">
         ${champPersonneProspect(i, k, "civilite", "Civilité", "list:civilite")}
         ${champPersonneProspect(i, k, "nom", "Nom", "text")}
         ${champPersonneProspect(i, k, "prenom", "Prénom", "text")}
+        <div class="pfsep">Coordonnées</div>
         ${champPersonneProspect(i, k, "tel", "Téléphone", "text")}
-        ${champPersonneProspect(i, k, "email", "Email", "text", true)}
+        ${champPersonneProspect(i, k, "telLib1", "Ce téléphone est celui de",
+          "list:libelleTel")}
+        ${champPersonneProspect(i, k, "tel2", "Autre téléphone", "text")}
+        ${champPersonneProspect(i, k, "telLib2", "Cet autre téléphone est celui de",
+          "list:libelleTel")}
+        ${champPersonneProspect(i, k, "email", "Email", "text")}
+        ${champPersonneProspect(i, k, "mailLib1", "Cet email est celui de",
+          "list:libelleMail")}
+        ${champPersonneProspect(i, k, "email2", "Autre email", "text")}
+        ${champPersonneProspect(i, k, "mailLib2", "Cet autre email est celui de",
+          "list:libelleMail")}
       </div></div>`).join("") +
     `<button class="addbtn" data-ppadd="${i}">+ Ajouter une personne</button>`;
 }
@@ -17318,10 +17649,16 @@ function bandeauRecherche(i){
 /* le contact d'une personne : ce que dit sa fiche du répertoire d'abord,
    ce que porte la recherche à défaut */
 function contactDuDemandeur(p){
+  /* la fiche du répertoire d'abord — c'est elle qui porte le modèle
+     complet —, ce que la recherche a sous la main à défaut */
   const f = p && p.pid ? fichePersonne(p.pid) : null;
-  return {tel:(f && f.tel1) || (p || {}).tel || "",
-          mail:(f && f.email1) || (p || {}).email || "",
-          tel2:(f && f.tel2) || "", mail2:(f && f.email2) || ""};
+  const base = f || Object.assign({}, p || {},
+    {tel1:(p || {}).tel, email1:(p || {}).email});
+  const t = telsDe(base), m = mailsDe(base);
+  return {tel:(t[0] || {}).val || "", telLib:(t[0] || {}).lib || "",
+          tel2:(t[1] || {}).val || "", telLib2:(t[1] || {}).lib || "",
+          mail:(m[0] || {}).val || "", mailLib:(m[0] || {}).lib || "",
+          mail2:(m[1] || {}).val || "", mailLib2:(m[1] || {}).lib || ""};
 }
 /* Les coordonnées, posées à la suite du titre de la fiche : le téléphone et
    le courriel, chacun avec son bouton — WhatsApp, courriel. Le prénom ne
@@ -17333,15 +17670,16 @@ function coordDemandeurs(r){
   const plus = gens.length > 1;
   const bouts = gens.map(p=>{
     const c = contactDuDemandeur(p);
-    const un = (v, attr, titre, ic)=> v
-      ? `<span class="rcoord"><span>${esc(v)}</span>
+    const un = (v, lib, attr, titre, ic)=> v
+      ? `<span class="rcoord"><span>${esc(v)}${
+           lib ? ` <i class="rclib">${esc(lib)}</i>` : ""}</span>
          <button type="button" class="addinline contact" ${attr}="${esc(v)}"
            data-pid="${esc(p.pid || "")}" data-rech="${esc((r || {}).id || "")}"
-           title="${esc(titre)}">${ic}</button></span>` : "";
-    const tout = un(c.tel, "data-wa", "Envoyer un message WhatsApp", IC_MSG)
-      + un(c.tel2, "data-wa", "Envoyer un message WhatsApp", IC_MSG)
-      + un(c.mail, "data-mail", "Écrire un courriel", IC_MAIL)
-      + un(c.mail2, "data-mail", "Écrire un courriel", IC_MAIL);
+           title="${esc(titre + (lib ? " — " + lib : ""))}">${ic}</button></span>` : "";
+    const tout = un(c.tel, c.telLib, "data-wa", "Envoyer un message WhatsApp", IC_MSG)
+      + un(c.tel2, c.telLib2, "data-wa", "Envoyer un message WhatsApp", IC_MSG)
+      + un(c.mail, c.mailLib, "data-mail", "Écrire un courriel", IC_MAIL)
+      + un(c.mail2, c.mailLib2, "data-mail", "Écrire un courriel", IC_MAIL);
     if(!tout) return "";
     return (plus ? `<b>${esc(prenomUsuel(p) || nomPersonneProspect(p))}</b>` : "") + tout;
   }).filter(Boolean);
@@ -21022,8 +21360,11 @@ function blocPersonneFN(p){
   }
   if(p.profession) lines.push("Profession : " + p.profession);
   if(p.sitMat) lines.push("Situation matrimoniale : " + p.sitMat);
-  if(p.tel1)   lines.push("Tél : " + p.tel1);
-  if(p.email1) lines.push("Email : " + p.email1);
+  const tels = telsDe(p), mails = mailsDe(p);
+  if(tels.length)  lines.push((tels.length > 1 ? "Tél. : " : "Tél : ")
+    + coordLisible(tels));
+  if(mails.length) lines.push((mails.length > 1 ? "Emails : " : "Email : ")
+    + coordLisible(mails));
   const ad = adrPers(p);
   if(ad) lines.push("Adresse : " + ad);
   return lines.filter(Boolean).map(esc).join("<br>");
@@ -21067,8 +21408,39 @@ function nomEntite(p){
   return estMorale(p) ? [p.civilite, (p.raison||"").trim()].filter(Boolean).join(" ") : "";
 }
 function nomRepresentant(p){
+  /* les personnes de la société, avec leur rôle ; à défaut, l'ancienne
+     case « représentant légal », qui n'en nommait qu'un et sans rôle */
+  const l = representants(p);
+  if(l.length)
+    return "Représentée par " + l.map(x=>{
+      const n = nomRepr(x);
+      return x.role ? n + ", " + x.role.toLowerCase() : n;
+    }).join(", ");
   const n = nomCivil(p);
   return n ? "Représentée par " + n : "";
+}
+/* ------------------------------------------------- LIRE LES COORDONNÉES
+   Une fiche porte deux téléphones et deux courriels, chacun avec son
+   libellé. Tout ce qui AFFICHE une personne passe par ici : les documents,
+   la carte de contact, les destinataires d'un courriel, le vCard. Ainsi
+   « 06 14 25 25 47 (Monsieur) » se lit partout de la même façon, et le
+   second numéro n'est jamais oublié parce qu'un lecteur ne le connaissait
+   pas. */
+function telsDe(p){
+  const o = p || {};
+  return [[o.tel1 || o.tel, o.telLib1], [o.tel2, o.telLib2]]
+    .map(([v, lib])=> ({val:String(v || "").trim(), lib:String(lib || "").trim()}))
+    .filter(x=> x.val);
+}
+function mailsDe(p){
+  const o = p || {};
+  return [[o.email1 || o.email, o.mailLib1], [o.email2, o.mailLib2]]
+    .map(([v, lib])=> ({val:String(v || "").trim(), lib:String(lib || "").trim()}))
+    .filter(x=> x.val);
+}
+/* « 06 14 25 25 47 (Monsieur) · 04 90 00 00 00 (Bureau) » */
+function coordLisible(l){
+  return l.map(x=> x.val + (x.lib ? " (" + x.lib + ")" : "")).join("  ·  ");
 }
 /* l'intitulé court d'une personne, pour les en-têtes de fiches */
 /* une fiche est vide si ni dénomination, ni nom, ni prénom */
@@ -21085,15 +21457,18 @@ function blocPersonneET(p, i, total, mot, gros, petit){
   if(total > 1) lines.push(G(esc(mot) + " " + (i+1)));
   if(estMorale(p)){
     lines.push(G(esc("NOM : " + nomEntite(p))));
-    if(p.nom || p.prenom) lines.push(Pt(esc(nomRepresentant(p))));
+    const rp = nomRepresentant(p);
+    if(rp) lines.push(Pt(esc(rp)));
   } else {
     lines.push(G(esc("NOM : " + nomCivil(p))));
   }
   if(p.adresse) lines.push(Pt(esc("ADRESSE : " + p.adresse)));
   const cv = [p.cp,p.ville,(p.pays&&p.pays!=="France")?p.pays:""].filter(Boolean).join(" ");
   if(cv) lines.push(Pt(IND + esc(cv)));
-  if(p.tel1)   lines.push(Pt(esc("Tél : " + p.tel1)));
-  if(p.email1) lines.push(Pt(esc("Email : " + p.email1)));
+  telsDe(p).forEach(x=> lines.push(Pt(esc("Tél : " + x.val
+    + (x.lib ? " (" + x.lib + ")" : "")))));
+  mailsDe(p).forEach(x=> lines.push(Pt(esc("Email : " + x.val
+    + (x.lib ? " (" + x.lib + ")" : "")))));
   return lines.join("<br>");
 }
 function blocsPersonnes(arr,fn){
@@ -21849,9 +22224,22 @@ function civiliteEntiere(c){
 function nomAvis(p){
   if(!p || personneVide(p)) return "";
   const soc = estMorale(p);
-  const civ = civiliteEntiere(soc ? p.civiliteRepr : p.civilite);
+  /* une société : on écrit à la personne qui la représente, et à défaut à
+     la dénomination elle-même */
+  if(soc){
+    const r = representants(p)[0];
+    if(r){
+      const c = civiliteEntiere(r.civilite);
+      const n = String(r.nom || "").toUpperCase().trim();
+      if(n) return [c, n].filter(Boolean).join(" ");
+    }
+    const vieux = (p.nom || "").toUpperCase().trim();
+    if(vieux) return [civiliteEntiere(p.civiliteRepr), vieux].filter(Boolean).join(" ");
+    return (p.raison || "").trim();
+  }
+  const civ = civiliteEntiere(p.civilite);
   const nom = (p.nom || "").toUpperCase().trim();
-  if(!nom) return soc ? (p.raison || "").trim() : civ;
+  if(!nom) return civ;
   return [civ, nom].filter(Boolean).join(" ");
 }
 /* « Monsieur et Madame DUPONT » quand le nom est commun, sinon chacun le sien */
@@ -22085,15 +22473,22 @@ function mailAvisHtml(cote){
    venue. Le choix est retenu dans le dossier. */
 function contactsAvis(cote, champ){
   const vus = {};
-  return (D[cote] || []).filter(p=> p && !personneVide(p))
-    .map(p=>({qui: nomAvis(p) || titrePersonne(p) || "—",
-              val: String(p[champ] || "").trim()}))
-    .filter(x=>{
-      if(!x.val) return false;
-      const k = fold(x.val);
-      if(vus[k]) return false;                 // deux époux, une seule adresse
-      vus[k] = 1; return true;
-    });
+  const out = [];
+  const met = (qui, x)=>{
+    if(!x.val) return;
+    const k = fold(x.val);
+    if(vus[k]) return;                         // deux époux, une seule adresse
+    vus[k] = 1;
+    out.push({qui: qui + (x.lib ? " — " + x.lib : ""), val:x.val});
+  };
+  (D[cote] || []).filter(p=> p && !personneVide(p)).forEach(p=>{
+    const qui = nomAvis(p) || titrePersonne(p) || "—";
+    (champ === "tel1" ? telsDe(p) : mailsDe(p)).forEach(x=> met(qui, x));
+    representants(p).forEach(r=>
+      (champ === "tel1" ? telsDe(r) : mailsDe(r))
+        .forEach(x=> met(nomRepr(r) || qui, x)));
+  });
+  return out;
 }
 function contactRetenu(cote, champ, garde){
   const l = contactsAvis(cote, champ);
@@ -22950,6 +23345,11 @@ document.addEventListener("input", e=>{
       autosave(); rafraichirDepuisPieces(); majDetail();
     }
   }
+  if(t.dataset.repr !== undefined){
+    const b = String(t.dataset.repr).split("|");
+    ecrireRepr(b[0], b[1], b[2], t.value, false);
+    return;
+  }
   if(t.dataset.parc !== undefined){
     /* « 2:section » depuis un dossier, « 2:section:5 » depuis la fiche de
        l'immeuble n° 5 du carnet : la même liste, prise par l'autre bout */
@@ -23127,6 +23527,11 @@ document.addEventListener("focusout", e=>{
   /* un nom de pièce tapé à la main : on numérote une fois le champ quitté */
   if(t.dataset.piece !== undefined && /:nom$/.test(t.dataset.piece)){
     if(numeroterPieces()){ autosave(); renderDetail(); majDetail(); }
+    return;
+  }
+  if(t.dataset.repr !== undefined){
+    const b = String(t.dataset.repr).split("|");
+    ecrireRepr(b[0], b[1], b[2], t.value, true);
     return;
   }
   if(t.dataset.b === "prix.fai" || t.dataset.b === "prix.honoraires"){
@@ -23458,7 +23863,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -23677,6 +24082,12 @@ document.addEventListener("click", e=>{
   }
   if(t.dataset.add){ ouvrirNouvellePartie(t.dataset.add); return; }
   if(t.dataset.sugpick){ adopterSugNom(t.dataset.sugpick); return; }
+  if(t.dataset.repradd){ ajouterRepr(t.dataset.repradd); return; }
+  if(t.dataset.reprdel){
+    const k = String(t.dataset.reprdel).lastIndexOf("|");
+    retirerRepr(String(t.dataset.reprdel).slice(0, k),
+                String(t.dataset.reprdel).slice(k + 1));
+    return; }
   if(t.dataset.sugnon){
     const z = document.querySelector(`[data-nomsug="${t.dataset.sugnon}"]`);
     if(z) z.innerHTML = "";
@@ -28323,6 +28734,10 @@ function migrate(d){
       if(!q.pid && nomPersonne(q)) q.pid = pidDepuis(nomPersonne(q));
       /* la fiche du répertoire fait foi : on en recopie l'état civil */
       rafraichirDepuisRepertoire(q);
+      /* …puis seulement, une société rend les cases qu'elle empruntait à
+         son représentant. Dans l'autre ordre, la fiche du répertoire —
+         écrite avant la reprise — les lui rendrait aussitôt. */
+      normaliserPersonne(q);
       return q; });
   });
   /* la surface d'un immeuble se recompose de ses logements dès l'ouverture
@@ -28644,6 +29059,48 @@ const AIDE = [
   "aviez commencé à taper « Gali » — ce qui ouvre une fiche au répertoire sous ce nom "+
   "tronqué —, adopter la vraie <b>efface</b> ce brouillon, pourvu qu'il ne serve nulle "+
   "part ailleurs."],
+ ["Une seule fiche de personne, partout",
+  "Il y avait trois modèles de personne dans l'application : celle d'un <b>dossier</b> "+
+  "(un téléphone, un courriel), celle du <b>répertoire</b> (deux de chaque), celle d'un "+
+  "<b>demandeur</b> (un nom, un téléphone, un courriel). La même personne se racontait "+
+  "donc différemment selon la porte par laquelle on arrivait, et ce qu'on avait saisi "+
+  "d'un côté manquait de l'autre. "+
+  "Il n'y en a plus qu'un, et c'est celui du répertoire : <b>deux téléphones, deux "+
+  "adresses électroniques</b>, l'état civil complet, l'adresse. Vendeur, acquéreur, "+
+  "fiche du répertoire : la même grille, dans le même ordre. Le demandeur, lui, mène à "+
+  "sa fiche par le bouton <b>Sa fiche</b> — c'est la même."],
+ ["À qui est ce numéro : le libellé",
+  "Deux téléphones sur une fiche, c'est bien ; savoir lequel appeler, c'est mieux. "+
+  "Chaque téléphone et chaque courriel porte donc un <b>libellé</b> — « Monsieur », "+
+  "« Madame », « Portable », « Bureau », « Personnel » — choisi dans une liste que le "+
+  "<b>+</b> allonge comme toutes les autres. Elles se gèrent depuis l'onglet "+
+  "<b>Listes</b>, sections « Libellés d'un téléphone » et « Libellés d'un email ». "+
+  "Le libellé suit le numéro <b>partout</b> : « 06 14 25 25 47 (Monsieur) » sur la "+
+  "fiche notaire et le dossier de vente, dans la liste des destinataires d'un courriel, "+
+  "dans les contacts d'une demande d'avis, et sous le titre d'une fiche de recherche. "+
+  "On ne tombe plus sur Madame en croyant joindre Monsieur."],
+ ["Une société, et les personnes qui la représentent",
+  "Une SCI vend, une succession vend, une indivision vend. La fiche n'avait qu'une case "+
+  "« Représentant légal » : un seul nom, aucun rôle, et rien pour la SCI à deux gérants "+
+  "ou la succession à quatre héritiers — on écrivait les autres dans les observations, "+
+  "où aucun document n'est jamais allé les chercher. "+
+  "Dès que la <b>qualité</b> est celle d'une entité juridique — SCI, SARL, société, "+
+  "indivision, succession —, la fiche ouvre un bloc <b>« les représentants »</b> où "+
+  "l'on ajoute <b>autant de personnes qu'il en faut</b>. Chacune porte son <b>rôle</b> "+
+  "— gérant, gérant majoritaire, associé, héritier, mandataire — pris dans une liste "+
+  "modifiable, et ses propres coordonnées avec leur libellé. "+
+  "Ce ne sont pas des champs de plus sur la société : ce sont des <b>personnes</b>, et "+
+  "elles entrent au répertoire comme toutes les autres. Le gérant qui vend aujourd'hui "+
+  "par sa SCI et achète demain en son nom propre n'a qu'une fiche, et le bouton "+
+  "<b>Sa fiche</b> l'ouvre d'ici. "+
+  "Une société n'a plus ni prénom, ni nom de famille, ni date de naissance : ces "+
+  "cases-là appartiennent aux personnes physiques, et sa fiche à elle est courte. "+
+  "<b>Vos dossiers déjà saisis sont repris :</b> le représentant écrit à l'ancienne "+
+  "devient la première personne de la société, avec le rôle « Représentant légal », "+
+  "sans rien perdre. "+
+  "Les documents suivent : le dossier de vente écrit « Représentée par M. Luc ROUX, "+
+  "représentant légal, Mme Claire VIDAL, gérant majoritaire ». Les courriels aussi : "+
+  "l'adresse d'un gérant est un destinataire, et souvent le seul qui réponde."],
  ["Deux cases pour les prénoms",
   "La fiche porte <b>« Prénom »</b> — le premier, celui dont on se sert — et <b>« Autres "+
   "prénoms »</b>, qui n'existent que pour l'état civil. On n'écrit à personne avec trois "+
