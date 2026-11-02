@@ -908,6 +908,23 @@ table.envois tr.repondu td.emode b{color:#166534}
 .ofnego i{display:block;font-style:normal;font-size:11px;color:var(--ink-2)}
 .ofnego.nulle{color:#15803d;font-weight:600}
 .ofdoc{color:var(--accent)}
+/* le nom qu'on tape existe peut-être déjà : la suggestion se glisse SOUS le
+   champ, sans pousser quoi que ce soit ni redessiner la fiche */
+.nomsug:empty{display:none}
+.nomsugl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px}
+.nomsugt{font-size:11px;color:var(--ink-3);text-transform:uppercase;
+  letter-spacing:.3px}
+.nomsugb{display:inline-flex;align-items:baseline;gap:6px;padding:3px 10px;
+  border-radius:999px;border:1px solid var(--accent);background:var(--accent-soft);
+  color:var(--bandeau);font:600 12px/1.2 inherit;cursor:pointer}
+.nomsugb:hover{background:var(--accent);color:#fff}
+.nomsugb:hover i{color:#f3e0d8}
+.nomsugb i{font-style:normal;font-weight:400;font-size:11px;color:var(--ink-2)}
+.nomsugx{width:22px;height:22px;padding:0;border-radius:6px;border:1px solid var(--line);
+  background:#fff;color:var(--ink-3);font-size:11px;line-height:1;cursor:pointer}
+.nomsugx:hover{border-color:#b42318;color:#b42318}
+@media (max-width:760px){ .nomsugb{padding:7px 12px;font-size:13px}
+  .nomsugx{width:30px;height:30px} }
 /* le calcul, dans une fenêtre : quatre lignes alignées à droite */
 .ofcalc{grid-column:1/-1;border:1px solid var(--line);border-radius:8px;
   background:#faf7f5;padding:9px 12px;margin:2px 0 4px}
@@ -2811,7 +2828,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 1er novembre 2026, 16 h 50">Dossiers de vente</div>
+  <div class="brand" title="Version du 1er novembre 2026, 17 h 30">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3039,7 +3056,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>1er novembre 2026, 16 h 50</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>1er novembre 2026, 17 h 30</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -9208,7 +9225,13 @@ function ouvrirNouvellePartie(kind){
        action:()=> creerPartieNeuve(kind, ($("#pvNom") || {}).value || "")}]});
   setTimeout(()=>{
     const e = $("#pvNom");
-    if(e){ e.oninput = majSuggestionsPartie; e.focus(); }
+    /* on ne crée pas un contact sans nom : il ne s'afficherait même pas,
+       puisqu'une fiche vide ne se montre plus */
+    const pieds = $$("#popPieds button");
+    const creer = pieds[pieds.length - 1];
+    const armer = ()=>{ if(creer) creer.disabled = !String(e.value || "").trim(); };
+    if(e){ e.oninput = ()=>{ armer(); majSuggestionsPartie(); }; e.focus(); }
+    armer();
     const z = $("#popCorps");
     if(z) z.onclick = ev=>{
       const b = ev.target.closest("[data-pvpick],[data-pvnon]");
@@ -9258,39 +9281,60 @@ function majSuggestionsPartie(){
         </div></div>`;
     }).join("")}</div>`;
 }
+/* La place où la nouvelle partie va s'asseoir. Un dossier porte toujours au
+   moins une fiche, vide tant que personne n'est nommé : c'est celle-là qu'on
+   remplit, sinon le premier vendeur créé en laisserait une blanche derrière
+   lui. */
+function placePartie(kind){
+  const arr = (D[kind] = D[kind] || []);
+  for(let i = 0; i < arr.length; i++)
+    if(arr[i] && personneVide(arr[i])) return i;
+  arr.push(blankPerson());
+  return arr.length - 1;
+}
 /* reprendre une fiche du répertoire : le dossier n'en garde qu'une copie,
    et c'est la fiche qui reste la vérité */
 function reprendrePartie(kind, pid){
   const f = fichePersonne(pid);
   if(!f){ toast("Fiche introuvable"); return; }
-  const p = blankPerson();
+  const i = placePartie(kind);
+  const p = D[kind][i];
   p.pid = pid;
   rafraichirDepuisRepertoire(p);
-  (D[kind] = D[kind] || []).push(p);
   renderPeople(kind); refreshAllVilles(); autosave(); renderPreview();
   toast((titrePersonne(f) || f.raison || "Fiche") + " reprise du répertoire");
-  focusDernierePartie(kind);
+  focusPartie(kind, i);
 }
 /* un contact neuf : la fiche est créée au répertoire du même geste, sinon
    elle n'y entrerait qu'à la première frappe suivante */
 function creerPartieNeuve(kind, nom){
-  const p = blankPerson();
+  const i = placePartie(kind);
+  const p = D[kind][i];
   const t = String(nom || "").trim();
   if(t) p.nom = enMajuscules(t);
-  (D[kind] = D[kind] || []).push(p);
   if(t){
     const pid = inscrireAuRepertoire(p);
     if(pid) p.pid = pid;
     saveLists();
   }
   renderPeople(kind); refreshAllVilles(); autosave(); renderPreview();
-  focusDernierePartie(kind);
+  focusPartie(kind, i);
+}
+/* une fiche du répertoire est-elle utilisée quelque part ? Un dossier, une
+   recherche, ou même une autre partie du dossier ouvert. */
+function ficheServieAilleurs(pid){
+  if(!pid) return false;
+  try{
+    if((dossiersDeLaPersonne(pid) || []).length) return true;
+    if((recherchesDeLaPersonne(pid) || []).length) return true;
+  }catch(e){ return true; }        /* dans le doute, on ne supprime rien */
+  return ["vendeurs","acquereurs"].some(k=>
+    (D[k] || []).filter(x=> x && x.pid === pid).length > 1);
 }
 /* le curseur dans la civilité de la fiche qu'on vient d'ouvrir : c'est le
    premier champ, et c'est lui qui décide si la dénomination apparaît */
-function focusDernierePartie(kind){
+function focusPartie(kind, i){
   setTimeout(()=>{
-    const i = (D[kind] || []).length - 1;
     const el = document.querySelector(`[data-b="${kind}.${i}.civilite"]`);
     if(el){ el.focus(); if(el.scrollIntoView) el.scrollIntoView({block:"center"}); }
   }, 60);
@@ -9370,8 +9414,17 @@ function dupliquerMandat(src, avecVendeur){
   toast("Dossier créé — il reste à lui donner son numéro de mandat");
 }
 
+/* Une fiche VIDE n'est pas une fiche : tant que personne n'est nommé, la
+   page ne montre qu'une invitation et son bouton. « Vendeur 1 » entièrement
+   blanc donnait à croire qu'un vendeur était là, et invitait à taper dans
+   ses cases plutôt qu'à passer par le bouton — qui est pourtant le seul
+   endroit où l'on vous dit que la personne existe peut-être déjà. */
+function partiesVisibles(kind){
+  const arr = D[kind] || [];
+  return arr.filter(p=> p && !personneVide(p)).length ? arr : [];
+}
 function renderPeople(kind){
-  const arr = D[kind];
+  const arr = partiesVisibles(kind);
   const target = kind==="vendeurs" ? "#listV" : "#listA";
   const singular = kind==="vendeurs" ? "Vendeur" : "Acquéreur";
   const tag = kind==="vendeurs" ? "v" : "a";
@@ -9383,8 +9436,12 @@ function renderPeople(kind){
       if(kd === "sep") return `<div class="pfsep">${esc(lab)}</div>`;
       const path = `${kind}.${i}.${k}`;
       const adr = ["adresse","pays","cp","ville"].includes(k);
+      /* sous le NOM et sous la dénomination, la place d'une suggestion :
+         on écrit un nom qui existe peut-être déjà ailleurs */
+      const sug = (k === "nom" || k === "raison")
+        ? `<div class="nomsug" data-nomsug="${kind}.${i}.${k}"></div>` : "";
       return `<div class="pf${w==="wide"?" wide":""}${adr && lie ? " lie" : ""}">` +
-             `<label>${esc(lab)}</label>` + control(path,kd,`${tag}${i}`) + `</div>`;
+             `<label>${esc(lab)}</label>` + control(path,kd,`${tag}${i}`) + sug + `</div>`;
     }).join("");
     const memeAdr = i > 0
       ? `<label class="chkline hdr"><input type="checkbox" data-meme="${kind}:${i}"` +
@@ -9393,12 +9450,61 @@ function renderPeople(kind){
     return `<div class="person" id="pers_${kind}_${i}">
       <header><span class="idx">${i+1}</span><span class="who">${esc(who)}</span>${memeAdr}
       ${suj ? trombone(suj, "Pièces") : ""}
-      ${arr.length>1?`<button class="xbtn" data-del="${kind}:${i}">Supprimer</button>`:""}
+      <button class="xbtn" data-del="${kind}:${i}">Supprimer</button>
       </header><div class="pgrid">${fields}</div></div>`;
-  }).join("") || `<p class="muted">Aucun ${singular.toLowerCase()}.</p>`;
+  }).join("") || `<p class="muted" style="margin:0 0 4px">Aucun ${
+    singular.toLowerCase()} enregistré. Le bouton ci-dessous demande son
+    <b>nom</b> : s'il est déjà au répertoire, vous reprendrez sa fiche plutôt
+    que d'en créer une seconde.</p>`;
 
-  $("#cntV").textContent = D.vendeurs.length>1 ? "("+D.vendeurs.length+")" : "";
-  $("#cntA").textContent = D.acquereurs.length>1 ? "("+D.acquereurs.length+")" : "";
+  const compte = k=> (D[k] || []).filter(p=> p && !personneVide(p)).length;
+  $("#cntV").textContent = compte("vendeurs") > 1 ? "("+compte("vendeurs")+")" : "";
+  $("#cntA").textContent = compte("acquereurs") > 1 ? "("+compte("acquereurs")+")" : "";
+}
+/* ------------------------------------------- LE NOM QU'ON TAPE EXISTE DÉJÀ
+   La fenêtre « + Ajouter un vendeur » cherche dans le répertoire. Mais on
+   peut aussi taper un nom à même la fiche — en corrigeant, en complétant
+   une partie reprise d'un mandat lu —, et il n'y avait alors rien pour
+   dire que la personne était déjà connue. La même recherche se fait donc
+   SOUS le champ, à la frappe, et un clic adopte la fiche trouvée.
+
+   On s'exclut soi-même, et l'on exclut les personnes déjà présentes dans ce
+   dossier : se proposer à soi-même n'aide personne.                      */
+function majSugNom(kind, i, k){
+  const z = document.querySelector(`[data-nomsug="${kind}.${i}.${k}"]`);
+  if(!z) return;
+  const p = (D[kind] || [])[+i] || {};
+  const txt = String(p[k] || "").trim();
+  const pris = {};
+  ["vendeurs","acquereurs"].forEach(c=> (D[c] || []).forEach(x=>{
+    if(x && x.pid) pris[x.pid] = 1; }));
+  const l = fichesParLeNom(txt).filter(x=> x.f.pid && !pris[x.f.pid]).slice(0, 4);
+  if(!l.length){ z.innerHTML = ""; return; }
+  z.innerHTML = `<div class="nomsugl"><span class="nomsugt">Déjà au répertoire :</span>${
+    l.map(x=> `<button type="button" class="nomsugb"
+      data-sugpick="${kind}.${i}|${esc(x.f.pid)}"
+      title="Reprendre cette fiche, avec ses coordonnées">${
+      esc(titrePersonne(x.f) || x.f.raison || "sans nom")}${
+      x.f.ville ? `<i>${esc(x.f.ville)}</i>` : ""}</button>`).join("")}
+    <button type="button" class="nomsugx" data-sugnon="${kind}.${i}.${k}"
+      title="Ce n'est pas la même personne">✕</button></div>`;
+}
+function adopterSugNom(ref){
+  const [ou, pid] = String(ref || "").split("|");
+  const [kind, i] = ou.split(".");
+  const f = fichePersonne(pid);
+  const p = (D[kind] || [])[+i];
+  if(!f || !p){ toast("Fiche introuvable"); return; }
+  /* « Gali » tapé à la main a pu ouvrir une fiche au répertoire, sous ce
+     nom tronqué. En adoptant la vraie, on efface celle-là — mais seulement
+     si elle ne sert nulle part ailleurs : une fiche qu'un autre dossier
+     utilise n'est pas un brouillon. */
+  const brouillon = p.pid && p.pid !== pid ? p.pid : "";
+  p.pid = pid;
+  rafraichirDepuisRepertoire(p);
+  if(brouillon && !ficheServieAilleurs(brouillon)) retirerFichePersonne(brouillon);
+  renderPeople(kind); refreshAllVilles(); autosave(); renderPreview();
+  toast((titrePersonne(f) || f.raison || "Fiche") + " reprise du répertoire");
 }
 
 /* recopie l'adresse de la personne précédente sur celles qui la partagent */
@@ -22659,8 +22765,13 @@ document.addEventListener("input", e=>{
       }
       const card = t.closest(".person");
       if(card){ const p = D[kind][+i];
-        card.querySelector(".who").textContent = titrePersonne(p)
+        const w = card.querySelector(".who");
+        if(w) w.textContent = titrePersonne(p)
           || (kind==="vendeurs"?"Vendeur ":"Acquéreur ") + (+i+1); }
+      /* le nom qu'on écrit existe peut-être déjà : on le dit SOUS le champ,
+         sans rien redessiner d'autre — le curseur ne bouge pas */
+      const m = /^(vendeurs|acquereurs)\.(\d+)\.(nom|raison)$/.exec(t.dataset.b);
+      if(m) majSugNom(m[1], m[2], m[3]);
       /* changer la qualité fait apparaître ou disparaître la dénomination */
       if(/\.civilite$/.test(t.dataset.b)){
         renderPeople(kind); refreshAllVilles();
@@ -23347,7 +23458,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -23565,8 +23676,17 @@ document.addEventListener("click", e=>{
     renderPreview(); return;
   }
   if(t.dataset.add){ ouvrirNouvellePartie(t.dataset.add); return; }
+  if(t.dataset.sugpick){ adopterSugNom(t.dataset.sugpick); return; }
+  if(t.dataset.sugnon){
+    const z = document.querySelector(`[data-nomsug="${t.dataset.sugnon}"]`);
+    if(z) z.innerHTML = "";
+    return; }
   if(t.dataset.del){ const [k,i]=t.dataset.del.split(":");
-    D[k].splice(+i,1); renderPeople(k); refreshAllVilles(); autosave(); renderPreview(); return; }
+    D[k].splice(+i,1);
+    /* le dossier garde toujours une place, même vide : c'est elle que la
+       prochaine création remplira, et la page montre l'invitation */
+    if(!D[k].length) D[k].push(blankPerson());
+    renderPeople(k); refreshAllVilles(); autosave(); renderPreview(); return; }
   if(t.dataset.diagdel !== undefined){
     const i = +t.dataset.diagdel, d = D.diags[i];
     /* un diagnostic ajouté à la main disparaît, un standard est simplement retiré */
@@ -28501,6 +28621,29 @@ const AIDE = [
   "du même geste. Et « Ce n'est pas la bonne personne » écarte une proposition sans la "+
   "revoir. "+
   "Le même bouton, et la même fenêtre, valent pour les <b>acquéreurs</b>."],
+ ["Pas de fiche vide : une invitation, et le bouton",
+  "Un dossier neuf affichait une fiche « Vendeur 1 » entièrement blanche. Elle donnait "+
+  "à croire qu'un vendeur était là, et invitait à taper dans ses cases plutôt qu'à "+
+  "passer par le bouton — qui est pourtant le seul endroit où l'on vous dit que la "+
+  "personne existe peut-être déjà. "+
+  "Tant que personne n'est nommé, la page ne montre donc qu'une <b>phrase</b> et le "+
+  "<b>bouton</b>. Le premier vendeur créé prend la place laissée libre : il n'en reste "+
+  "jamais une blanche derrière lui. Et le <b>dernier</b> vendeur peut être supprimé — "+
+  "l'invitation revient. "+
+  "Le bouton « Créer un nouveau contact » reste <b>éteint</b> tant qu'aucun nom n'est "+
+  "tapé : une fiche sans nom ne s'afficherait même pas."],
+ ["Le nom tapé dans la fiche cherche aussi",
+  "La fenêtre du bouton n'est pas le seul endroit où l'on écrit un nom : on corrige une "+
+  "partie, on complète un mandat lu, on reprend une saisie. La <b>même recherche</b> se "+
+  "fait donc <b>sous le champ NOM</b>, à la frappe — et sous la dénomination d'une "+
+  "société. "+
+  "Une ou deux pastilles apparaissent : « Déjà au répertoire : M. Marc GALINETTE ». Un "+
+  "clic adopte la fiche avec ses coordonnées ; la croix écarte la proposition. Le champ "+
+  "où vous tapez n'est jamais redessiné, le curseur ne bouge pas. "+
+  "Les personnes <b>déjà présentes dans ce dossier</b> ne se proposent pas, et si vous "+
+  "aviez commencé à taper « Gali » — ce qui ouvre une fiche au répertoire sous ce nom "+
+  "tronqué —, adopter la vraie <b>efface</b> ce brouillon, pourvu qu'il ne serve nulle "+
+  "part ailleurs."],
  ["Deux cases pour les prénoms",
   "La fiche porte <b>« Prénom »</b> — le premier, celui dont on se sert — et <b>« Autres "+
   "prénoms »</b>, qui n'existent que pour l'état civil. On n'écrit à personne avec trois "+
