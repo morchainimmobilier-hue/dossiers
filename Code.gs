@@ -394,7 +394,7 @@ function dossierChemin(parties) {
 
 /** Drive accepte presque tout, mais la barre oblique couperait l'arborescence. */
 function nettoieNom(s) {
-  return String(s || '').replace(/[\\/]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 120);
+  return String(s || '').replace(/[\\\\/]+/g, '-').replace(/\\s+/g, ' ').trim().slice(0, 120);
 }
 
 /** Un nom déjà pris dans ce dossier reçoit un suffixe plutôt qu'un doublon. */
@@ -462,7 +462,7 @@ function agendaCreer(q) {
     } catch (err) { fichier = null; }
   }
   let texte = String(q.texte || '');
-  if (fichier) texte += '\n\nFiche du bien : ' + fichier.getUrl();
+  if (fichier) texte += '\\n\\nFiche du bien : ' + fichier.getUrl();
 
   /* la voie complète : le service avancé, qui sait joindre un fichier */
   if (fichier && typeof Calendar !== 'undefined' && Calendar.Events) {

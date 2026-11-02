@@ -915,6 +915,25 @@ table.envois tr.repondu td.emode b{color:#166534}
    Un bloc par personne, dans la fiche de la société : le même grain que
    les fiches de vendeurs, en un cran plus discret — ce sont des fiches
    dans une fiche. */
+/* ------------------------------------- UNE COORDONNÉE ET SON LIBELLÉ
+   Le numéro, son bouton de contact, puis « à qui il est » et le « + » qui
+   allonge la liste — le tout dans UNE case. Le libellé n'a pas de titre :
+   il est posé dans la continuité du numéro, et se lit comme sa suite. */
+.coordpair{display:flex;align-items:center;gap:5px;min-width:0}
+.coordpair > input{flex:1 1 auto;min-width:0}
+.coordpair > .coordlib{flex:0 0 auto;width:112px;min-width:0;
+  background:#fbf7f5;color:var(--ink-2);font-size:12.5px}
+.coordpair > .coordlib:focus{color:var(--ink)}
+.coordpair > .addinline{flex:0 0 auto}
+/* une case qui porte un numéro, son bouton, son libellé et le « + » a
+   besoin de deux places : sans quoi le numéro se lit à moitié. Deux
+   coordonnées par ligne, donc — c'est la hauteur de l'ancien rang de
+   huit cases, en deux fois moins d'intitulés. */
+.pgrid > .pf.duo{grid-column:span 2}
+@media (max-width:1150px){ .coordpair > .coordlib{width:104px} }
+@media (max-width:760px){
+  .coordpair > .coordlib{width:92px;font-size:12px}
+}
 .rclib{font-style:normal;font-size:10.5px;color:var(--ink-3);
   text-transform:uppercase;letter-spacing:.3px}
 .socsep{margin-top:4px}
@@ -2850,7 +2869,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 2 novembre 2026, 13 h 15">Dossiers de vente</div>
+  <div class="brand" title="Version du 2 novembre 2026, 14 h 45">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3078,7 +3097,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>2 novembre 2026, 13 h 15</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>2 novembre 2026, 14 h 45</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4857,7 +4876,7 @@ function idFichePersonne(){
 const CHAMPS_FICHE = ["civilite","raison","civiliteRepr","prenom","prenoms","nom",
   "nomNaissance","dateNaissance","lieuNaissance","nationalite","profession","sitMat",
   "tel1","telLib1","tel2","telLib2","email1","mailLib1","email2","mailLib2",
-  "adresse","pays","cp","ville"];
+  "adresse","adresse2","pays","cp","ville"];
 function fichePersonne(pid){
   if(!pid) return null;
   return (L.personnes || []).filter(f=> f && f.pid === pid)[0] || null;
@@ -5704,7 +5723,10 @@ const SANS_AJOUT = ["list:chargeHono","list:baseHono","list:coteHono",
 
 /* grp relie pays / cp / ville d'une même adresse */
 function control(path,kind,grp){
-  return controlRaw(path, kind, get(D,path) ?? "", grp, "data-b");
+  const vLib = kind === "coord"
+    ? (get(D, cheminVoisin(path, champLibelle(String(path).split(/[.:]/).pop()))) ?? "")
+    : "";
+  return controlRaw(path, kind, get(D,path) ?? "", grp, "data-b", vLib);
 }
 /* ---------------------------------------------------------- OUI / NON ----
    Deux cases côte à côte prenaient deux fois la place pour une seule réponse.
@@ -5766,7 +5788,59 @@ const LOUPE = `<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true
   `<circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.8"/>` +
   `<path d="M10.7 10.7 L14 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 
-function controlRaw(path,kind,v,grp,attr){
+/* à quel libellé répond chaque coordonnée, et dans quelle liste il se prend */
+const LIB_COORD = {
+  tel1:  ["telLib1",  "libelleTel"],  tel2:  ["telLib2",  "libelleTel"],
+  email1:["mailLib1", "libelleMail"], email2:["mailLib2", "libelleMail"],
+  /* une fiche de demandeur nomme autrement ses deux premiers champs */
+  tel:   ["telLib1",  "libelleTel"],  email: ["mailLib1", "libelleMail"]
+};
+function champLibelle(k){ return (LIB_COORD[k] || [])[0] || ""; }
+/* le chemin d'un champ voisin : « vendeurs.0.tel1 » → « vendeurs.0.telLib1 »,
+   « personnes:3:tel1 » → « personnes:3:telLib1 ». Le séparateur diffère
+   selon l'endroit ; le dernier morceau, lui, est toujours le nom du champ. */
+function cheminVoisin(path, champ){
+  const t = String(path);
+  const prop = t.split(/[.:]/).pop();
+  return t.slice(0, t.length - prop.length) + champ;
+}
+function controlRaw(path,kind,v,grp,attr,vLib){
+  /* ------------------------------------------------- UNE COORDONNÉE
+     Le numéro et le libellé de celui à qui il est, dans la même case. */
+  if(kind === "coord"){
+    const prop = String(path).split(/[.:]/).pop();
+    const def = LIB_COORD[prop] || ["", "libelleTel"];
+    const chemin = cheminVoisin(path, def[0]);
+    const liste = (L[def[1]] || []);
+    const val = String(vLib == null ? "" : vLib);
+    const a = `${attr}="${esc(path)}"`;
+    const estMail = /mail/i.test(prop);
+    const bouton = estMail
+      ? `<button type="button" class="addinline contact" data-mail
+           title="Écrire un courriel">${IC_MAIL}</button>`
+      : `<button type="button" class="addinline contact" data-wa
+           title="Envoyer un message WhatsApp">${IC_MSG}</button>`;
+    return `<span class="coordpair">
+      <input type="text" ${a} value="${esc(v)}" autocomplete="off">
+      ${bouton}
+      <select ${attr}="${esc(chemin)}" class="coordlib"
+        title="À qui ${estMail ? "cette adresse" : "ce numéro"} appartient"
+        ><option value="">—</option>${liste.map(o=>
+          `<option${o === val ? " selected" : ""}>${esc(o)}</option>`).join("")}${
+        val && liste.indexOf(val) < 0 ? `<option selected>${esc(val)}</option>` : ""
+      }</select>
+      <button type="button" class="addinline" data-addlist="list:${def[1]}"
+        data-target="${esc(chemin)}" data-attr="${esc(attr)}"
+        title="Ajouter un libellé à cette liste">+</button></span>`;
+  }
+  /* ------------------------------------- LA PREMIÈRE LIGNE D'ADRESSE
+     Elle porte le « + » qui ouvre la seconde, quand il en faut une. */
+  if(kind === "adresse1"){
+    const dedans = controlBase(path, "text", v, grp, attr);
+    return `<span class="withadd">${dedans}
+      <button type="button" class="addinline" data-adr2="${esc(attr)}|${esc(path)}"
+        title="Ajouter une seconde ligne d'adresse">+</button></span>`;
+  }
   const html = controlBase(path,kind,v,grp,attr);
   if(kind === "echeance") return `<span class="fech">${html}</span>`;
   if((kind.startsWith("list:") || kind.startsWith("book:")) && !SANS_AJOUT.includes(kind))
@@ -9128,7 +9202,7 @@ function estPhysique(p){ return !estMorale(p); }
 const PF = [
   ["civilite","Qualité / civilité","list:qualite"],
   ["raison","Dénomination","text","wide",estMorale],
-  ["prenom","Prénom","text","",estPhysique],
+  ["prenom","Prénom principal","text","",estPhysique],
   ["prenoms","Autres prénoms","text","",estPhysique],
   ["nom","NOM","text","",estPhysique],
   ["nomNaissance","Nom de naissance","text","",estPhysique],
@@ -9137,17 +9211,55 @@ const PF = [
   ["nationalite","Nationalité","list:nationalite","",estPhysique],
   ["profession","Profession","text","",estPhysique],
   ["sitMat","Situation matrimoniale","list:sitMat","",estPhysique],
+  /* Le libellé — « Monsieur », « Bureau » — n'a pas de titre à lui : il est
+     posé DANS la case du numéro, à sa droite. Une case par coordonnée au
+     lieu de deux : la fiche tient sur deux lignes au lieu de quatre, et
+     l'on comprend du premier coup d'œil à qui appartient ce numéro-là. */
   ["@coord","Coordonnées","sep"],
-  ["tel1","Téléphone","text"],["telLib1","Ce téléphone est celui de","list:libelleTel"],
-  ["tel2","Autre téléphone","text"],
-  ["telLib2","Cet autre téléphone est celui de","list:libelleTel"],
-  ["email1","Email","text"],["mailLib1","Cet email est celui de","list:libelleMail"],
-  ["email2","Autre email","text"],
-  ["mailLib2","Cet autre email est celui de","list:libelleMail"],
+  ["tel1","Téléphone 1","coord"],["tel2","Téléphone 2","coord"],
+  ["email1","Email 1","coord"],["email2","Email 2","coord"],
   ["@adr","Adresse","sep"],
-  ["adresse","Adresse","text","wide"],
+  ["adresse","Adresse","adresse1","wide"],
+  ["adresse2","Complément d'adresse","text","wide",aDeuxLignes],
   ["cp","Code postal","cp"],["ville","Ville","ville"],["pays","Pays","pays"]
 ];
+/* La seconde ligne d'adresse ne s'affiche que si on l'a demandée — ou si
+   elle porte déjà quelque chose. Même règle que le second mode de
+   chauffage : on ne montre pas une case vide à tout le monde pour le cas
+   où l'un en aurait besoin. C'est la présence de la CLEF qui compte, et
+   non sa valeur : sinon le champ disparaîtrait avant qu'on y tape. */
+function aDeuxLignes(p){
+  return !!(p && (String(p.adresse2 || "").trim()
+    || Object.prototype.hasOwnProperty.call(p, "adresse2on")));
+}
+/* « data-b|vendeurs.0.adresse » : l'attribut dit où l'on est, le chemin
+   dit qui. Trois endroits, une seule façon de les atteindre. */
+function ouvrirSecondeAdresse(ref){
+  const i = String(ref).indexOf("|");
+  const attr = String(ref).slice(0, i), path = String(ref).slice(i + 1);
+  let p = null, apres = null;
+  if(attr === "data-b"){
+    const b = path.split(".");                 /* vendeurs.0.adresse */
+    p = (D[b[0]] || [])[+b[1]];
+    apres = ()=>{ autosave(); renderPeople(b[0]); refreshAllVilles(); renderPreview(); };
+  } else if(attr === "data-book"){
+    const b = path.split(":");                 /* personnes:3:adresse */
+    p = (L[b[0]] || [])[+b[1]];
+    apres = ()=>{ saveLists(); renderRepertoire(); };
+  } else if(attr === "data-pper"){
+    const b = path.split(":");                 /* 0:1:adresse */
+    p = (((L.prospects || [])[+b[0]] || {}).personnes || [])[+b[1]];
+    apres = ()=>{ saveLists(); renderProspects(); };
+  }
+  if(!p){ toast("Fiche introuvable"); return; }
+  if(!Object.prototype.hasOwnProperty.call(p, "adresse2on")) p.adresse2on = 1;
+  if(p.adresse2 === undefined) p.adresse2 = "";
+  if(apres) apres();
+  setTimeout(()=>{
+    const e = document.querySelector(`[${attr}="${cheminVoisin(path, "adresse2")}"]`);
+    if(e){ e.focus(); if(e.scrollIntoView) e.scrollIntoView({block:"center"}); }
+  }, 60);
+}
 
 /* =====================================================================
    LES PERSONNES D'UNE SOCIÉTÉ
@@ -9215,6 +9327,30 @@ function blocRepresentants(p, ref){
     const ch = (champ, lab, kd, large)=>{
       const path = ref + "|" + i + "|" + champ;
       let h;
+      /* une coordonnée et son libellé dans la même case — comme partout */
+      if(kd === "coord"){
+        const def = LIB_COORD[champ] || ["telLib1", "libelleTel"];
+        const pLib = ref + "|" + i + "|" + def[0];
+        const vals = (L[def[1]] || []);
+        const v = String(x[def[0]] || "");
+        const estMail = /mail/i.test(champ);
+        h = `<span class="coordpair">
+          <input type="text" data-repr="${esc(path)}" value="${esc(x[champ] || "")}"
+            autocomplete="off">
+          <button type="button" class="addinline contact" ${
+            estMail ? "data-mail" : "data-wa"} title="${
+            estMail ? "Écrire un courriel" : "Envoyer un message WhatsApp"}">${
+            estMail ? IC_MAIL : IC_MSG}</button>
+          <select data-repr="${esc(pLib)}" class="coordlib"><option value="">—</option>${
+            vals.map(o=> `<option${o === v ? " selected" : ""}>${esc(o)}</option>`)
+              .join("")}${v && vals.indexOf(v) < 0
+                ? `<option selected>${esc(v)}</option>` : ""}</select>
+          <button type="button" class="addinline" data-addlist="list:${def[1]}"
+            data-target="${esc(pLib)}" data-attr="data-repr"
+            title="Ajouter un libellé à cette liste">+</button></span>`;
+        return `<div class="pf duo${large ? " wide" : ""}">` +
+               `<label>${esc(lab)}</label>${h}</div>`;
+      }
       if(kd === "liste"){
         const cle = champ === "role" ? "roleRepr"
                   : champ === "telLib1" ? "libelleTel"
@@ -9245,10 +9381,8 @@ function blocRepresentants(p, ref){
         ${ch("civilite", "Civilité", "liste")}
         ${ch("prenom", "Prénom", "text")}
         ${ch("nom", "NOM", "text")}
-        ${ch("tel1", "Téléphone", "text")}
-        ${ch("telLib1", "Ce téléphone est celui de", "liste")}
-        ${ch("email1", "Email", "text")}
-        ${ch("mailLib1", "Cet email est celui de", "liste")}
+        ${ch("tel1", "Téléphone", "coord")}
+        ${ch("email1", "Email", "coord")}
       </div></div>`;
   }).join("");
   return `<div class="pfsep socsep">${esc(quoi || "La société")} — ${esc(mot)}</div>
@@ -9741,7 +9875,8 @@ function renderPeople(kind){
          on écrit un nom qui existe peut-être déjà ailleurs */
       const sug = (k === "nom" || k === "raison")
         ? `<div class="nomsug" data-nomsug="${kind}.${i}.${k}"></div>` : "";
-      return `<div class="pf${w==="wide"?" wide":""}${adr && lie ? " lie" : ""}">` +
+      return `<div class="pf${w==="wide"?" wide":""}${kd==="coord"?" duo":""}${
+               adr && lie ? " lie" : ""}">` +
              `<label>${esc(lab)}</label>` + control(path,kd,`${tag}${i}`) + sug + `</div>`;
     }).join("");
     const memeAdr = i > 0
@@ -9814,7 +9949,7 @@ function appliquerMemeAdresse(kind){
   const arr = D[kind];
   for(let i=1; i<arr.length; i++){
     if(!arr[i].memeAdresse) continue;
-    ["adresse","pays","cp","ville"].forEach(k=> arr[i][k] = arr[i-1][k]);
+    ["adresse","adresse2","pays","cp","ville"].forEach(k=> arr[i][k] = arr[i-1][k]);
   }
 }
 function majAdressesLiees(kind){
@@ -10988,8 +11123,9 @@ function vuePersonneFiche(){
 function champsFichePersonne(f, court){
   const i = (L.personnes || []).indexOf(f);
   const unChamp = (k, lab, kd, w)=>{
-    const h = controlRaw(`personnes:${i}:${k}`, kd, f[k] || "", `fp${i}`, "data-book");
-    return `<div class="pf${w === "wide" ? " wide" : ""}">` +
+    const h = controlRaw(`personnes:${i}:${k}`, kd, f[k] || "", `fp${i}`, "data-book",
+                         f[champLibelle(k)] || "");
+    return `<div class="pf${w === "wide" ? " wide" : ""}${kd === "coord" ? " duo" : ""}">` +
            `<label>${esc(lab)}</label>${h}</div>`;
   };
   /* le même schéma que partout ailleurs : c'est tout l'intérêt */
@@ -17499,8 +17635,10 @@ function champPersonneProspect(i, k, cle, lab, kind, large){
   const chemin = `${i}:${k}:${cle}`;
   const h = kind === "list:civilite"
     ? controlBase(chemin, kind, p[cle] || "", `pp${i}${k}`, "data-pper")
-    : controlRaw(chemin, kind, p[cle] || "", `pp${i}${k}`, "data-pper");
-  return `<div class="pf${large ? " wide" : ""}"><label>${esc(lab)}</label>${h}</div>`;
+    : controlRaw(chemin, kind, p[cle] || "", `pp${i}${k}`, "data-pper",
+                 p[champLibelle(cle)] || "");
+  return `<div class="pf${large ? " wide" : ""}${kind === "coord" ? " duo" : ""}">` +
+         `<label>${esc(lab)}</label>${h}</div>`;
 }
 function blocsPersonnesProspect(i){
   const r = L.prospects[i] || {};
@@ -17518,18 +17656,10 @@ function blocsPersonnesProspect(i){
         ${champPersonneProspect(i, k, "nom", "Nom", "text")}
         ${champPersonneProspect(i, k, "prenom", "Prénom", "text")}
         <div class="pfsep">Coordonnées</div>
-        ${champPersonneProspect(i, k, "tel", "Téléphone", "text")}
-        ${champPersonneProspect(i, k, "telLib1", "Ce téléphone est celui de",
-          "list:libelleTel")}
-        ${champPersonneProspect(i, k, "tel2", "Autre téléphone", "text")}
-        ${champPersonneProspect(i, k, "telLib2", "Cet autre téléphone est celui de",
-          "list:libelleTel")}
-        ${champPersonneProspect(i, k, "email", "Email", "text")}
-        ${champPersonneProspect(i, k, "mailLib1", "Cet email est celui de",
-          "list:libelleMail")}
-        ${champPersonneProspect(i, k, "email2", "Autre email", "text")}
-        ${champPersonneProspect(i, k, "mailLib2", "Cet autre email est celui de",
-          "list:libelleMail")}
+        ${champPersonneProspect(i, k, "tel", "Téléphone 1", "coord")}
+        ${champPersonneProspect(i, k, "tel2", "Téléphone 2", "coord")}
+        ${champPersonneProspect(i, k, "email", "Email 1", "coord")}
+        ${champPersonneProspect(i, k, "email2", "Email 2", "coord")}
       </div></div>`).join("") +
     `<button class="addbtn" data-ppadd="${i}">+ Ajouter une personne</button>`;
 }
@@ -21342,7 +21472,7 @@ function chk(v,on){ return (v===on ? "☒" : "☐"); }
 function ouinon(v){ return `${chk(v,"OUI")} OUI &nbsp;&nbsp; ${chk(v,"NON")} NON`; }
 function adrPers(p){
   const pa = p.pays && p.pays!=="France" ? p.pays : "";
-  return [p.adresse,p.cp,p.ville,pa].filter(Boolean).join(" ");
+  return [p.adresse,p.adresse2,p.cp,p.ville,pa].filter(Boolean).join(" ");
 }
 
 function blocPersonneFN(p){
@@ -21463,6 +21593,7 @@ function blocPersonneET(p, i, total, mot, gros, petit){
     lines.push(G(esc("NOM : " + nomCivil(p))));
   }
   if(p.adresse) lines.push(Pt(esc("ADRESSE : " + p.adresse)));
+  if(p.adresse2) lines.push(Pt(IND + esc(p.adresse2)));
   const cv = [p.cp,p.ville,(p.pays&&p.pays!=="France")?p.pays:""].filter(Boolean).join(" ");
   if(cv) lines.push(Pt(IND + esc(cv)));
   telsDe(p).forEach(x=> lines.push(Pt(esc("Tél : " + x.val
@@ -23863,7 +23994,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -24083,6 +24214,7 @@ document.addEventListener("click", e=>{
   if(t.dataset.add){ ouvrirNouvellePartie(t.dataset.add); return; }
   if(t.dataset.sugpick){ adopterSugNom(t.dataset.sugpick); return; }
   if(t.dataset.repradd){ ajouterRepr(t.dataset.repradd); return; }
+  if(t.dataset.adr2){ ouvrirSecondeAdresse(t.dataset.adr2); return; }
   if(t.dataset.reprdel){
     const k = String(t.dataset.reprdel).lastIndexOf("|");
     retirerRepr(String(t.dataset.reprdel).slice(0, k),
@@ -29075,10 +29207,27 @@ const AIDE = [
   "« Madame », « Portable », « Bureau », « Personnel » — choisi dans une liste que le "+
   "<b>+</b> allonge comme toutes les autres. Elles se gèrent depuis l'onglet "+
   "<b>Listes</b>, sections « Libellés d'un téléphone » et « Libellés d'un email ». "+
+  "<b>Il n'a pas de titre à lui</b> et ne prend pas de case : il se pose dans la "+
+  "continuité du numéro, à sa droite, et se lit comme sa suite. Les intitulés sont "+
+  "courts — <b>TÉLÉPHONE 1</b>, <b>TÉLÉPHONE 2</b>, <b>EMAIL 1</b>, <b>EMAIL 2</b> — "+
+  "et quatre cases suffisent là où il en fallait huit. Sur tablette, chaque "+
+  "coordonnée prend la largeur de la fiche, numéro et libellé côte à côte. "+
   "Le libellé suit le numéro <b>partout</b> : « 06 14 25 25 47 (Monsieur) » sur la "+
   "fiche notaire et le dossier de vente, dans la liste des destinataires d'un courriel, "+
   "dans les contacts d'une demande d'avis, et sous le titre d'une fiche de recherche. "+
   "On ne tombe plus sur Madame en croyant joindre Monsieur."],
+ ["Une seconde ligne d'adresse, quand il en faut une",
+  "Un bâtiment, un étage, un lieu-dit, « chez M. et Mme X » : certaines adresses ne "+
+  "tiennent pas sur une ligne, et on les tassait jusqu'ici dans la première, où les "+
+  "documents les imprimaient d'un bloc. "+
+  "Un <b>+</b> contre le champ <b>ADRESSE</b> ouvre une seconde ligne, "+
+  "<b>Complément d'adresse</b> — exactement comme sur la fiche d'un bien. Elle "+
+  "n'apparaît que si vous la demandez : une fiche ordinaire garde son adresse d'une "+
+  "seule ligne, et rien ne s'allonge pour rien. "+
+  "Ce qu'on y écrit <b>reste</b> : la ligne se rouvre d'elle-même à la prochaine "+
+  "ouverture de la fiche, et les documents — fiche notaire, dossier de vente — "+
+  "l'écrivent sous la première, à sa place. La case « <b>Même adresse que le "+
+  "précédent</b> » la recopie aussi."],
  ["Une société, et les personnes qui la représentent",
   "Une SCI vend, une succession vend, une indivision vend. La fiche n'avait qu'une case "+
   "« Représentant légal » : un seul nom, aucun rôle, et rien pour la SCI à deux gérants "+
