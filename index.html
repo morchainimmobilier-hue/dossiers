@@ -202,10 +202,22 @@ main{flex:1;min-width:0;max-width:1240px;margin:0 auto;padding:22px 0 80px}
 /* la fiche descriptive se tient à côté : même forme, ton sobre — c'est un
    document qu'on sort, pas un geste de suivi */
 .hfiche{color:var(--bandeau);background:var(--accent-soft);border-color:#e3c6ba}
-/* avant le mandat, il n'y a pas de chiffres : on dit pourquoi plutôt que
-   d'aligner trois tirets */
-.hattente{font-size:12.5px;color:var(--ink-3);max-width:230px;line-height:1.4}
-.hattente b{color:var(--ink-2);font-weight:600}
+/* avant le mandat, il n'y a pas de prix : il y a une FOURCHETTE, et elle
+   prend la place des trois chiffres — même geste, même endroit */
+.hestim{display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap;
+  background:none;border:1px dashed var(--line);border-radius:10px;
+  padding:7px 14px 8px;cursor:pointer;font:inherit;color:inherit;text-align:left;
+  transition:border-color .14s ease,background .14s ease}
+.hestim:hover{border-color:var(--accent);background:var(--accent-soft)}
+.hestim .hel{display:flex;flex-direction:column;gap:1px}
+.hestim .lab{font-size:10.5px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--ink-3)}
+.hestim .val{font-size:17px;font-weight:700;color:var(--navy);white-space:nowrap}
+.hestim.vide .val{color:var(--ink-3)}
+.hestim .hnote{flex:1 1 100%;font-size:11.5px;color:var(--ink-3);line-height:1.35;
+  max-width:340px}
+/* les autres prénoms, à côté du nom : ce qui sépare deux homonymes */
+.autrespre{font-style:normal;font-weight:500;color:var(--ink-3);font-size:12.5px}
 .hfiche:hover{background:#f2ddd4;border-color:var(--accent);box-shadow:var(--shadow)}
 .hfiche:active{background:#ecd2c7}
 @media(max-width:860px){.hact span br{display:none}}
@@ -2670,22 +2682,9 @@ table.tdb .puce.resilie{background:#897466}
 .mdt.avant{background:var(--line-2);color:var(--ink-3)}
 
 /* ---------------------------------------- les biens d'avant le mandat ---
-   Deux pages de même facture que Dossiers, en plus sobres : il n'y a ni
-   prix ni photo à montrer, seulement où l'on en est. */
-.prelist{display:flex;flex-direction:column;gap:8px;margin-top:6px}
-.prerow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-  border:1px solid var(--line);border-radius:10px;background:#fff;
-  padding:11px 14px}
-.prerow .grow{flex:1}
-.precol{display:flex;flex-direction:column;gap:2px;min-width:0}
-.precol b{font-size:13.5px;color:var(--navy);overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap}
-.precol span{font-size:12.5px;color:var(--ink-2);overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap}
-.precol{flex:0 0 auto;max-width:300px}
-.preprop{min-width:150px}
-.prequoi{min-width:200px;max-width:420px}
-.predate{font-size:11.5px;color:var(--ink-3)}
+   Ils n'ont plus de page à eux : ils sont dans le tableau des Dossiers,
+   groupés sous leur statut. Ne restent ici que la couleur de ce statut,
+   la frise de leurs trois pas, et la ligne de prospection. */
 .dstat.prospection{background:#ede9fe;color:#6d28d9}
 .dstat.estimation{background:#e0f2fe;color:#0369a1}
 .pill.prospection{background:#ede9fe;color:#6d28d9}
@@ -2702,8 +2701,6 @@ table.tdb .puce.resilie{background:#897466}
   .prosrow{grid-template-columns:1fr 1fr}
   .prosrow .pf:nth-child(3){grid-column:1/-1}
   .prosrow .xbtn{grid-column:1/-1;justify-self:start}
-  .prerow{gap:8px}
-  .precol{max-width:none;flex:1 1 100%}
 }
 
 /* la zone de dépôt, quand un fichier survole */
@@ -2796,7 +2793,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 3 novembre 2026, 17 h 45">Dossiers de vente</div>
+  <div class="brand" title="Version du 3 novembre 2026, 20 h 00">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2831,8 +2828,6 @@ table.tdb .puce.resilie{background:#897466}
   <!-- à gauche, tout ce qui porte sur l'ensemble des dossiers -->
   <div class="tab glob" data-p="aujourdhui">Aujourd'hui</div>
   <div class="tab glob" data-p="tdb">Tableau de bord</div>
-  <div class="tab glob" data-p="prospection">Prospection</div>
-  <div class="tab glob" data-p="estimation">Estimation</div>
   <div class="tab glob" data-p="dossiers">Dossiers</div>
   <div class="tab glob" data-p="prospects">Recherches</div>
   <div class="tab glob" data-p="immeubles">Immeubles</div>
@@ -2959,9 +2954,6 @@ table.tdb .puce.resilie{background:#897466}
     </div>
   </div>
 
-  <div class="panel" id="p-prospection"><div id="prospBody"></div></div>
-  <div class="panel" id="p-estimation"><div id="estimBody"></div></div>
-
   <div class="panel" id="p-avis"><div id="avisBody"></div></div>
 
   <div class="panel" id="p-histobien"><div id="histoBienBody"></div></div>
@@ -3025,7 +3017,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>3 novembre 2026, 17 h 45</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>3 novembre 2026, 20 h 00</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4862,6 +4854,30 @@ function inscrireAuRepertoire(p){
   if(change) f.maj = Date.now();
   return f.pid;
 }
+/* ------------------------------------------------- DEUX FOIS LE MÊME NOM
+   L'identifiant d'une fiche est DÉDUIT du nom : c'est ce qui permet à deux
+   appareils de reconnaître la même personne sans se concerter, et de ne pas
+   la créer deux fois. Mais la déduction ne vaut que pour la PREMIÈRE : deux
+   DURAND Jean dans la même ville, cela existe, et le second se faisait
+   avaler par le premier — sa fiche n'était jamais créée, et ses
+   coordonnées venaient écraser celles de son homonyme.
+
+   Quand on crée un contact EXPRESSÉMENT — « Créer un nouveau contact »,
+   « Ajouter une personne » —, on a vu la liste des homonymes sous les yeux
+   et l'on a choisi d'en ajouter un de plus. L'identifiant déduit est alors
+   pris s'il est libre, et tiré au sort s'il ne l'est pas.
+
+   Ce n'est PAS le cas de la frappe ordinaire dans une fiche, ni d'une
+   reprise de fichier : là, retrouver la personne par son nom est
+   exactement ce qu'on veut. */
+function creerFichePersonne(p){
+  if(!p || personneVide(p)) return "";
+  if(!p.pid){
+    const deduit = pidPersonne(p);
+    p.pid = (deduit && !fichePersonne(deduit)) ? deduit : idFichePersonne();
+  }
+  return inscrireAuRepertoire(p);
+}
 /* l'inverse : la fiche du répertoire recopiée dans la personne d'un dossier */
 function rafraichirDepuisRepertoire(p){
   const f = fichePersonne(p && p.pid);
@@ -5020,7 +5036,7 @@ function blankDossier(){
        prospection, elle, tient dans le journal — voir « LES BIENS D'AVANT
        LE MANDAT ». */
     sansMandat:false, mandatPrisLe:"",
-    estim:{rdv:"", remise:"", voie:""},
+    estim:{rdv:"", remise:"", voie:"", mini:"", maxi:""},
     fin:{condSusp:"",condSuspAutre:"",depot:"",depot5:false,depotMontant:""},
     pret:{montant:"",taux:"",duree:"",banque:"",courtier:"",courtierTel:"",courtierEmail:""},
     mobilier:{liste:"",annexe:""},
@@ -5868,7 +5884,12 @@ function valeurVoisine(bouton){
      du bandeau d'une recherche, qui affiche les coordonnées sans les saisir */
   const direct = (bouton.dataset.wa || bouton.dataset.mail || "").trim();
   if(direct) return direct;
-  const zone = bouton.closest(".withadd");
+  /* La case d'une coordonnée s'appelle `.coordpair` depuis que le libellé
+     l'a rejointe ; celle des autres champs, `.withadd`. Le bouton cherchait
+     la seconde seulement, et ne trouvait donc plus rien à côté d'un
+     téléphone ni d'un courriel : « Aucun numéro renseigné » alors qu'il
+     était là, sous ses yeux. */
+  const zone = bouton.closest(".coordpair,.withadd");
   const el = zone ? zone.querySelector("input") : null;
   return el ? el.value.trim() : "";
 }
@@ -5903,8 +5924,11 @@ function contexteDuBouton(bouton){
   if(bouton && bouton.dataset.pid)
     return {pid:bouton.dataset.pid, role:"demandeur",
             recherche:bouton.dataset.rech || ""};
-  const zone = bouton && bouton.parentElement;
-  const champ = zone ? zone.querySelector("[data-b],[data-book],[data-pper]") : null;
+  /* la même case que ci-dessus : `.coordpair` pour une coordonnée,
+     `.withadd` pour les autres champs */
+  const zone = bouton && (bouton.closest(".coordpair,.withadd") || bouton.parentElement);
+  const champ = zone ? zone.querySelector("input[data-b],input[data-book],input[data-pper]")
+                     : null;
   if(!champ) return {};
   const b = champ.dataset.b || "";
   let m = /^(vendeurs|acquereurs)\.(\d+)\./.exec(b);
@@ -6593,8 +6617,7 @@ function heroDossier(){
           title="La fiche descriptive du bien : la voir telle qu'elle partira,
 et l'enregistrer en PDF">
           ${IC_FICHEDESC}<span>Fiche<br>descriptive</span></button>
-        ${sansMandat(D) ? `<span class="hattente">Prix et honoraires se saisissent
-          <b>à la prise de mandat</b></span>` : `
+        ${sansMandat(D) ? cartoucheEstimation() : `
         ${chiffre("Prix FAI", eur0(num(D.prix.fai)))}
         ${chiffre("Honoraires TTC", eur0(num(D.prix.honoraires)),
                   D.prix.charge ? "charge " + D.prix.charge.toLowerCase() : "")}
@@ -8976,7 +8999,7 @@ function majOnglets(){
 }
 /* Le bandeau du haut décrit le dossier ouvert : il n'a pas lieu d'être sur les
    onglets qui portent sur l'ensemble des dossiers, ni sur l'aide. */
-const ONGLETS_SANS_MANDAT = ["aujourdhui","tdb","dossiers","prospection","estimation",
+const ONGLETS_SANS_MANDAT = ["aujourdhui","tdb","dossiers",
   "prospects","immeubles","repertoire","listes","aide"];
 /* Les pages du dossier ouvert ne sont plus dans la barre du haut : elles
    tiennent dans une colonne à gauche, toutes visibles d'un coup. */
@@ -9082,8 +9105,6 @@ function activerOnglet(p){
   if(p==="avis")       renderAvis();
   if(p==="histobien")  renderHistoBien();
   if(p==="dossiers")   renderDossiers();
-  if(p==="prospection") renderPreMandat("prospection");
-  if(p==="estimation")  renderPreMandat("estimation");
   if(p==="prospects"){ renderProspects(); autosize(); }
   if(p==="tdb")        renderTdb();
   if(p==="aujourdhui") renderAujourdhui();
@@ -9488,8 +9509,9 @@ function majSuggestionsRepr(){
     ${l.map(x=>{
       const f = x.f;
       return `<div class="mddupl">
-        <div class="mddupq"><b>${esc(titrePersonne(f) || "sans nom")}</b>
-          <span>${esc(coordLisible(telsDe(f)) || "aucune coordonnée")}</span>
+        <div class="mddupq"><b>${esc(titrePersonne(f) || "sans nom")}${
+            f.prenoms ? ` <i class="autrespre">${esc(f.prenoms)}</i>` : ""}</b>
+          <span>${esc(ceQuiDistingue(f) || "aucune coordonnée")}</span>
           <em>${esc(x.raison)}</em></div>
         <div class="mddupb">
           <button type="button" class="dupoui" data-rnpick="${esc(f.pid)}"
@@ -9526,7 +9548,7 @@ function creerReprNeuf(ref, nom, role){
   const t = String(nom || "").trim();
   if(!t) return;
   const brut = Object.assign(blankPerson(), {nom: enMajuscules(t)});
-  const pid = inscrireAuRepertoire(brut);
+  const pid = creerFichePersonne(brut);
   if(!pid){ toast("Fiche impossible à créer"); return; }
   saveLists();
   if(!poserLienRepr(ref, pid, role)) return;
@@ -9725,7 +9747,31 @@ function nomsCherchables(f){
   if(f.nom)    l.push(f.nom);
   if(f.prenom && f.nom) l.push(f.prenom + " " + f.nom);
   if(f.nom && f.prenom) l.push(f.nom + " " + f.prenom);
+  /* Deux DURAND Jean se distinguent par leurs AUTRES prénoms. Encore
+     faut-il pouvoir les chercher : « Jean Pierre DURAND » doit répondre,
+     et « Pierre » seul aussi — c'est souvent ainsi qu'on se souvient de
+     celui qu'on veut. */
+  const autres = String(f.prenoms || "").trim();
+  if(autres){
+    l.push(autres);
+    if(f.nom){
+      l.push(autres + " " + f.nom);
+      l.push([f.prenom, autres, f.nom].filter(Boolean).join(" "));
+      l.push([f.nom, f.prenom, autres].filter(Boolean).join(" "));
+    }
+  }
   return l;
+}
+/* CE QUI DISTINGUE une fiche de ses homonymes, dans l'ordre où cela
+   tranche : les autres prénoms d'abord — c'est l'état civil qui sépare deux
+   DURAND Jean —, puis la ville, puis le premier numéro. Rendu court : une
+   pastille de choix n'est pas une fiche. */
+function ceQuiDistingue(f){
+  if(!f) return "";
+  return [String(f.prenoms || "").trim(),
+          String(f.ville || "").trim(),
+          (telsDe(f)[0] || {}).val || ""]
+    .filter(Boolean).join("  ·  ");
 }
 function fichesParLeNom(txt){
   const q = fold(String(txt || "").trim());
@@ -9740,6 +9786,15 @@ function fichesParLeNom(txt){
         else if(c.indexOf(q) === 0) mieux(110, "commence pareil");
         else if(c.indexOf(q) > 0)   mieux(90,  "contient ce mot");
       });
+      /* « Jean Luc DURAND » pour un DURAND Jean dont les autres prénoms sont
+         « Luc André » : les mots y sont tous, mais pas dans cet ordre et pas
+         d'un seul tenant. On les compte donc un à un. */
+      if(pts < 110){
+        const mots = q.split(/\s+/).filter(x=> x.length >= 2);
+        const sac = fold(nomsCherchables(f).join(" ")).split(/\s+/).filter(Boolean);
+        if(mots.length > 1 && mots.every(m=> sac.some(x=> x.indexOf(m) === 0)))
+          mieux(105, "tous les mots y sont");
+      }
       /* l'orthographe approximative : DURAN pour DURAND, VIDALE pour VIDAL */
       if(!pts){
         const pr = proximitePersonnes({nom:String(txt || "").trim(), prenom:""},
@@ -9816,7 +9871,8 @@ function majSuggestionsPartie(){
       const f = x.f;
       const quoi = quoiFichePersonne(f);
       return `<div class="mddupl">
-        <div class="mddupq"><b>${esc(titrePersonne(f) || f.raison || "sans nom")}</b>
+        <div class="mddupq"><b>${esc(titrePersonne(f) || f.raison || "sans nom")}${
+            f.prenoms ? ` <i class="autrespre">${esc(f.prenoms)}</i>` : ""}</b>
           <span>${esc([f.tel1, f.email1, [f.cp, f.ville].filter(Boolean).join(" ")]
             .filter(Boolean).join(" · ") || "aucune coordonnée")}</span>
           ${quoi ? `<span>${esc(quoi)}</span>` : ""}
@@ -9861,7 +9917,8 @@ function creerPartieNeuve(kind, nom){
   const t = String(nom || "").trim();
   if(t) p.nom = enMajuscules(t);
   if(t){
-    const pid = inscrireAuRepertoire(p);
+    /* un homonyme n'est pas la même personne : voir `creerFichePersonne` */
+    const pid = creerFichePersonne(p);
     if(pid) p.pid = pid;
     saveLists();
   }
@@ -10031,11 +10088,16 @@ function majSugNom(kind, i, k){
   const l = fichesParLeNom(txt).filter(x=> x.f.pid && !pris[x.f.pid]).slice(0, 4);
   if(!l.length){ z.innerHTML = ""; return; }
   z.innerHTML = `<div class="nomsugl"><span class="nomsugt">Déjà au répertoire :</span>${
-    l.map(x=> `<button type="button" class="nomsugb"
+    l.map(x=> {
+      /* deux homonymes se ressemblent comme deux gouttes d'eau : ce qui les
+         sépare — la ville, le numéro — se lit SUR la pastille, sinon on
+         clique au hasard */
+      const quoi = ceQuiDistingue(x.f);
+      return `<button type="button" class="nomsugb"
       data-sugpick="${kind}.${i}|${esc(x.f.pid)}"
       title="Reprendre cette fiche, avec ses coordonnées">${
       esc(titrePersonne(x.f) || x.f.raison || "sans nom")}${
-      x.f.ville ? `<i>${esc(x.f.ville)}</i>` : ""}</button>`).join("")}
+      quoi ? `<i>${esc(quoi)}</i>` : ""}</button>`; }).join("")}
     <button type="button" class="nomsugx" data-sugnon="${kind}.${i}.${k}"
       title="Ce n'est pas la même personne">✕</button></div>`;
 }
@@ -13145,10 +13207,12 @@ const IC_POUBELLE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden
    ouverture on revient au portefeuille du jour — les biens EN VENTE —,
    qui est ce qu'on vient voir neuf fois sur dix. Les vendus et les
    résiliés sont toujours là, à un choix de distance. */
-/* La page s'ouvre désormais sur TOUT : les biens en prospection, ceux en
-   estimation et les mandats, groupés par statut. « Tout avoir au même
-   endroit » n'a de sens que si l'on n'a rien à décocher pour le voir. */
-const DOSS_F_VIDE = {type:"", ville:"", stade:"", dpe:"",
+/* La page porte TOUS les biens — prospection, estimation, mandats —, mais
+   elle s'ouvre sur les <b>biens en vente</b> : c'est le portefeuille du
+   jour, ce qu'on vient voir neuf fois sur dix. Les autres statuts sont à
+   un choix de distance dans le filtre, et « Tout voir » les rend tous,
+   groupés. */
+const DOSS_F_VIDE = {type:"", ville:"", stade:"vente", dpe:"",
   prixMin:"", prixMax:"", surfMin:"", surfMax:""};
 let DOSS_F = Object.assign({}, DOSS_F_VIDE);
 /* L'ordre du métier, et non l'ordre alphabétique : on prospecte, on estime,
@@ -13241,7 +13305,7 @@ function barreFiltres(){
     <div class="dfc fraz dfraz">
       <p class="dfcompte" id="dossCompte"></p>
       <button type="button" class="tbtn light mini" data-dfraz="1" id="dossRaz"
-        data-bulle="Revenir à tous les dossiers,&#10;sans aucun filtre"
+        data-bulle="Revenir au portefeuille du jour : les biens en vente,&#10;sans aucun autre filtre"
         >Tout voir</button></div>
   </div>`;
 }
@@ -13290,7 +13354,12 @@ function renderDossiersListe(){
       <div class="dcol dtyp">
         <b>${esc(c.type || "Bien")}</b>
         <span class="dprix${sansMandat(d) ? " avant" : ""}">${sansMandat(d)
-          ? esc((()=>{ const v = dateStatut(d);
+          ? esc((()=>{
+              /* la fourchette d'estimation, si elle est posée : c'est le
+                 chiffre du moment. Sinon, la date du dernier fait. */
+              const f = fourchetteLisible(d);
+              if(f) return f;
+              const v = dateStatut(d);
               return v ? (phaseBien(d) === "estimation" ? "estimation du " : "action du ")
                          + fdate(v) : "rien de daté"; })())
           : (c.fai === null ? "prix à saisir" : esc(eur(c.fai)))}</span>
@@ -13376,11 +13445,12 @@ function renderDossiersListe(){
        mandat, les acquéreurs, les notaires, les imprimés ;
      · la frise « Mandat → Acte » devient « Prospection · Estimation ·
        Prise de mandat » ;
+     · il se range dans la page Dossiers sous son propre groupe, et porte
+       sa propre ligne au tableau d'Aujourd'hui ;
      · le propriétaire y est un PROSPECT, pas encore un vendeur ;
-     · il figure dans la page Dossiers, groupé avec les siens, et sur sa
-       ligne du tableau d'Aujourd'hui — mais ni au tableau de bord ni dans
-       les rapprochements : il n'y a rien à compter tant qu'il n'y a pas
-       de prix, et rien à proposer tant qu'il n'y a pas de mandat.
+     · il ne compte ni au tableau de bord, ni dans les rapprochements :
+       il n'y a rien à compter tant qu'il n'y a pas de prix, et rien à
+       proposer tant qu'il n'y a pas de mandat.
 
    SON STATUT SE CALCULE, il ne se choisit pas : c'est la plus récente
    des dates saisies qui le dit. Une estimation du 12 mars après un appel
@@ -13430,15 +13500,9 @@ function phaseBien(d){
   return (e && (!p || e >= p)) ? "estimation" : "prospection";
 }
 const PHASES = [
-  {k:"prospection", lib:"PROSPECTION", cls:"prospection", menu:"Prospection"},
-  {k:"estimation",  lib:"ESTIMATION",  cls:"estimation",  menu:"Estimation"}
+  {k:"prospection", lib:"PROSPECTION", cls:"prospection"},
+  {k:"estimation",  lib:"ESTIMATION",  cls:"estimation"}
 ];
-function dossiersSansMandat(phase){
-  return Object.values(allDossiers())
-    .map(d=> (D && D.id === d.id) ? D : d)
-    .filter(d=> d && sansMandat(d) && !dossierVierge(d))
-    .filter(d=> !phase || phaseBien(d) === phase);
-}
 /* ------------------------------------------------- la frise des trois pas */
 function frisePreMandat(){
   const ph = phaseBien(D);
@@ -13544,6 +13608,70 @@ function retirerLigneProspection(id){
       toast("Ligne retirée");
     }}]});
 }
+/* ------------------------------------------- LA FOURCHETTE D'ESTIMATION
+   Un bien d'avant le mandat n'a pas de prix : il a une FOURCHETTE, celle
+   qu'on annonce au propriétaire. Elle prend, dans le bandeau, la place que
+   les trois chiffres occupent sur un mandat — c'est le même geste, au même
+   endroit, et l'on y clique pour la saisir comme on clique sur le prix. */
+function cartoucheEstimation(){
+  const e = estimDe(D);
+  const mn = num(e.mini), mx = num(e.maxi);
+  const vide = mn === null && mx === null;
+  return `<button type="button" class="hestim${vide ? " vide" : ""}" data-estimprix="1"
+      title="Saisir, modifier ou retirer la fourchette d'estimation">
+    <span class="hel"><span class="lab">Prix mini</span><span class="val">${
+      esc(mn === null ? "—" : eur0(mn))}</span></span>
+    <span class="hel"><span class="lab">Prix maxi</span><span class="val">${
+      esc(mx === null ? "—" : eur0(mx))}</span></span>
+    ${vide ? `<span class="hnote">à saisir — le prix de vente, lui, se fixe à la
+      prise de mandat</span>` : ""}</button>`;
+}
+function ouvrirPrixEstimation(){
+  const e = estimDe(D);
+  const avait = num(e.mini) !== null || num(e.maxi) !== null;
+  popup({titre:"Fourchette d'estimation", large:true,
+    corps:`<p class="muted" style="margin:0 0 12px">La fourchette annoncée au
+        propriétaire. Elle n'est pas un prix de vente : celui-ci se fixe à la
+        <b>prise de mandat</b>, et remplacera alors ce cartouche.</p>
+      <div class="pgrid" style="padding:0">
+        <div class="pf"><label for="peMini">Prix mini</label>
+          ${controlRaw("peMini", "money", e.mini || "", "pe", "data-pe")}</div>
+        <div class="pf"><label for="peMaxi">Prix maxi</label>
+          ${controlRaw("peMaxi", "money", e.maxi || "", "pe", "data-pe")}</div>
+      </div>`,
+    boutons:[{lib:"Annuler"}].concat(avait
+        ? [{lib:"Retirer la fourchette", action:()=>{
+            D.estim = Object.assign(estimDe(D), {mini:"", maxi:""});
+            autosave(); renderBien(); renderDossiersListe();
+            toast("Fourchette retirée");
+          }}] : [],
+      [{lib:"Enregistrer", primaire:true, action:()=>{
+        const lire = k=>{
+          const el = document.querySelector(`[data-pe="${k}"]`);
+          return el ? String(el.value || "").trim() : "";
+        };
+        const mn = lire("peMini"), mx = lire("peMaxi");
+        /* une fourchette à l'envers ne veut rien dire : on la remet d'endroit
+           plutôt que de refuser la saisie */
+        const a2 = num(mn), b2 = num(mx);
+        D.estim = Object.assign(estimDe(D),
+          (a2 !== null && b2 !== null && a2 > b2) ? {mini:mx, maxi:mn}
+                                                  : {mini:mn, maxi:mx});
+        autosave(); renderBien(); renderDossiersListe();
+        toast("Fourchette enregistrée");
+      }}])});
+  setTimeout(()=>{ const el = document.querySelector('[data-pe="peMini"]');
+    if(el) el.focus(); }, 40);
+}
+/* « 180 000 à 200 000 € », ou l'une des deux bornes si l'autre manque */
+function fourchetteLisible(d){
+  const e = estimDe(d);
+  const mn = num(e.mini), mx = num(e.maxi);
+  if(mn !== null && mx !== null) return eur0(mn) + " à " + eur0(mx);
+  if(mn !== null) return "à partir de " + eur0(mn);
+  if(mx !== null) return "jusqu'à " + eur0(mx);
+  return "";
+}
 /* ---------------------------------------------------------- L'ESTIMATION
    Deux dates et une voie : le rendez-vous, puis la remise. Rien de plus —
    une estimation se prépare ailleurs, elle se NOTE ici. */
@@ -13570,9 +13698,10 @@ function ouvrirEstimation(){
             title="Ajouter une voie à cette liste">+</button></span></div>
       </div>`,
     boutons:[{lib:"Annuler"}, {lib:"Enregistrer", primaire:true, action:()=>{
-      D.estim = {rdv: ($("#esRdv") || {}).value || "",
-                 remise: ($("#esRem") || {}).value || "",
-                 voie: ($("#esVoie") || {}).value || ""};
+      D.estim = Object.assign(estimDe(D), {
+        rdv: ($("#esRdv") || {}).value || "",
+        remise: ($("#esRem") || {}).value || "",
+        voie: ($("#esVoie") || {}).value || ""});
       autosave(); renderBien(); majStade();
       toast("Estimation enregistrée");
     }}]});
@@ -13587,9 +13716,9 @@ function ouvrirPriseDeMandat(){
   const e = estimDe(D);
   popup({titre:"Prise de mandat", large:true,
     corps:`<p style="margin:0 0 10px">Le bien <b>${esc(adresseBienCourte()
-        || "sans adresse")}</b> passe <b>sous mandat</b>. Il rejoindra
-        <b>en vente</b> et quittera le menu ${esc(phaseBien(D) === "estimation"
-        ? "Estimation" : "Prospection")}.</p>
+        || "sans adresse")}</b> passe <b>sous mandat</b>. Dans la page
+        <b>Dossiers</b>, il quittera le groupe « ${esc(phaseBien(D) === "estimation"
+        ? "En estimation" : "En prospection")} » pour « <b>En vente</b> ».</p>
       <p class="muted" style="margin:0 0 10px">Les pages <b>Le mandat</b>,
         <b>Acquéreurs</b>, <b>Notaires</b> et <b>Imprimés</b> reviennent au menu, et
         le numéro de mandat, son type, sa date, le prix et les honoraires se
@@ -13613,69 +13742,6 @@ function ouvrirPriseDeMandat(){
       toast("Mandat pris — le bien passe aux ventes");
     }}]});
 }
-/* ------------------------------------------------- les deux pages du menu */
-function renderPreMandat(phase){
-  const z = $(phase === "estimation" ? "#estimBody" : "#prospBody");
-  if(!z) return;
-  const l = dossiersSansMandat(phase).sort((a, b)=>{
-    const x = phase === "estimation" ? dateEstimation(a) : dateProspection(a);
-    const y = phase === "estimation" ? dateEstimation(b) : dateProspection(b);
-    return String(y || "").localeCompare(String(x || ""));
-  });
-  const def = PHASES.filter(p=> p.k === phase)[0] || PHASES[0];
-  const ligne = d=>{
-    const b = d.bien || {};
-    const prop = (d.vendeurs || []).filter(x=> x && !personneVide(x))
-      .map(x=> titrePersonne(x)).filter(Boolean);
-    const dte = phase === "estimation" ? dateEstimation(d) : dateProspection(d);
-    const quoi = phase === "estimation"
-      ? (()=>{ const e = estimDe(d);
-          return [isoValide(e.rdv) ? "rendez-vous le " + fdate(e.rdv) : "",
-                  isoValide(e.remise) ? "remise le " + fdate(e.remise) : ""]
-            .filter(Boolean).join("  ·  ") || "rien de daté"; })()
-      : (()=>{ const a = actionsProspection(d.id);
-          const der = a[a.length - 1];
-          return a.length
-            ? a.length + (a.length > 1 ? " actions" : " action")
-              + (der ? "  ·  " + der.genre + (der.texte ? " : " + der.texte : "") : "")
-            : "aucune action notée"; })();
-    return `<div class="prerow">
-      <div class="precol">
-        <b>${esc(typeBienLisible(d) || "Bien")}</b>
-        <span>${esc([b.adresse, [b.cp, b.ville].filter(Boolean).join(" ")]
-          .filter(Boolean).join(", ") || "adresse à saisir")}</span>
-      </div>
-      <div class="precol preprop">
-        <b>${esc(prop.join(" et ") || "propriétaire à saisir")}</b>
-        <span>prospect</span>
-      </div>
-      <div class="precol prequoi"><span>${esc(quoi)}</span>
-        ${dte ? `<span class="predate">${esc(fdate(dte))}</span>` : ""}</div>
-      <span class="grow"></span>
-      <span class="dstat ${esc(def.cls)}">${esc(def.lib)}</span>
-      <button type="button" class="dbul act" data-menuact="bien:${esc(d.id)}"
-        data-bulle="Créer une action" aria-label="Créer une action">${IC_PLUSACT}</button>
-      <div class="dpile">
-        <button type="button" class="dmini" data-open="${esc(d.id)}"
-          data-bulle="Ouvrir le bien" aria-label="Ouvrir le bien">${IC_OUVRIR}</button>
-        <button type="button" class="dmini sup" data-dossdel="${esc(d.id)}"
-          data-bulle="Supprimer le bien" aria-label="Supprimer le bien"
-          >${IC_POUBELLE}</button>
-      </div></div>`;
-  };
-  z.innerHTML = `<div class="dosszone"><div class="card dosscard">
-    <div class="body">
-      <p class="muted" style="margin:0 0 4px">${phase === "estimation"
-        ? "Les biens dont l'estimation est le fait le plus récent. Un nouvel appel au propriétaire les ramène en prospection."
-        : "Les biens travaillés avant tout mandat. Dès qu'une estimation est datée après la dernière action, le bien passe en estimation."}
-        <b>${l.length}</b> bien${l.length > 1 ? "s" : ""}.</p>
-      ${l.length ? `<div class="prelist">${l.map(ligne).join("")}</div>`
-        : `<p class="muted" style="margin:10px 0 0">Aucun bien ${
-            phase === "estimation" ? "en estimation" : "en prospection"} pour l'instant.
-            Le bouton <b>Nouveau</b> du bandeau en crée un.</p>`}
-    </div></div></div>`;
-}
-
 /* =====================================================================
    TABLEAU DE BORD
    ---------------------------------------------------------------------
@@ -24510,7 +24576,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-phase],[data-pre],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
+    "[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],[data-proposer],[data-visite],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -24544,6 +24610,7 @@ document.addEventListener("click", e=>{
     else                         ouvrirPriseDeMandat();
     return;
   }
+  if(t.dataset.estimprix){ ouvrirPrixEstimation(); return; }
   if(t.dataset.prosadd){ ajouterLigneProspection(); return; }
   if(t.dataset.prosdel){ retirerLigneProspection(t.dataset.prosdel); return; }
   if(t.dataset.neuf){
@@ -25194,9 +25261,7 @@ document.addEventListener("click", e=>{
         localStorage.setItem(LS_DOSS, JSON.stringify(all));
         noterSuppression(id);
         if(D.id === id){ D = blankDossier(); renderAll(); }
-        if(PAGE === "prospection" || PAGE === "estimation") renderPreMandat(PAGE);
-        else renderDossiers();
-        toast("Dossier supprimé");
+        renderDossiers(); toast("Dossier supprimé");
       }}]});
     return;
   }
@@ -26114,7 +26179,17 @@ function proximitePersonnes(a, b){
   if(exact){ pts += 35; rais.push("même nom"); }
   else if(proche){ pts += 25; rais.push("nom approchant"); }
   const pa = dupPrenom(a), pb = dupPrenom(b);
-  if(pa && pb && pa === pb){ pts += 25; rais.push("même prénom"); }
+  if(pa && pb && pa === pb){
+    pts += 25; rais.push("même prénom");
+    /* Le prénom principal ne tranche pas toujours : deux DURAND Jean se
+       distinguent par ce qui suit. Des autres prénoms RENSEIGNÉS DES DEUX
+       CÔTÉS et différents sont une preuve que ce ne sont pas les mêmes —
+       on ne porte pas deux jeux de prénoms. */
+    const sa = dupMots((a || {}).prenoms), sb = dupMots((b || {}).prenoms);
+    if(sa && sb && sa !== sb && !dupProche(sa, sb)){
+      pts -= 25; rais.push("autres prénoms différents");
+    }
+  }
   else if(pa && pb && dupProche(pa, pb)){ pts += 15; rais.push("prénom approchant"); }
   const da = String((a || {}).dateNaissance || ""), db = String((b || {}).dateNaissance || "");
   if(da && db && da === db){ pts += 45; rais.push("même date de naissance"); }
@@ -29340,7 +29415,7 @@ function migrate(d){
       texte:"", photos:[], puces:[], legendes:{}, clip:""}, x));
   out.sansMandat = !!d.sansMandat;
   out.mandatPrisLe = String(d.mandatPrisLe || "");
-  out.estim = Object.assign({rdv:"", remise:"", voie:""},
+  out.estim = Object.assign({rdv:"", remise:"", voie:"", mini:"", maxi:""},
                             (d.estim && typeof d.estim === "object") ? d.estim : {});
   out.annulations = (Array.isArray(d.annulations) ? d.annulations : [])
     .filter(Boolean).map(x=> Object.assign({
@@ -29445,9 +29520,9 @@ const AIDE = [
   "<b>Un mandat ne tombe pas du ciel.</b> On prospecte, on est reçu, on estime, et parfois "+
   "seulement on signe. Tout ce travail-là ne tenait nulle part : on perdait la trace de ce "+
   "qu'on avait déjà tenté, et l'on rappelait deux fois le même propriétaire. "+
-  "Deux menus s'ajoutent donc entre <b>Tableau de bord</b> et <b>Dossiers</b> — qui "+
-  "s'appelait « Mes dossiers » — : <b>Prospection</b> et <b>Estimation</b>, qui ne "+
-  "montrent chacun que les siens. "+
+  "Ils ont donc leur place dans la page <b>Dossiers</b> — qui s'appelait « Mes "+
+  "dossiers » —, groupés sous <b>En prospection</b> et <b>En estimation</b>, avant les "+
+  "mandats. "+
   "<b>Un bien d'avant le mandat est un dossier comme un autre</b> : la même fiche du bien, "+
   "le même propriétaire, les mêmes pièces jointes, le même historique. Quatre pages "+
   "n'ont simplement pas lieu d'être et quittent le menu — <b>Le mandat</b>, "+
@@ -29459,15 +29534,18 @@ const AIDE = [
   "saisies qui le dit. Une estimation du 25 octobre après un appel du 2 donne un bien "+
   "« en estimation » ; un nouvel appel le 5 novembre le ramène en prospection — et c'est "+
   "la vérité du terrain. "+
-  "<b>Où il se voit.</b> Dans son menu, dans le tableau de la page <b>Dossiers</b> — "+
-  "groupé avec les siens — et sur la ligne qui lui revient dans le tableau "+
-  "d'<b>Aujourd'hui</b>. Pas au <b>tableau de bord</b> ni dans les <b>rapprochements</b> : "+
-  "il n'y a rien à compter ni à proposer tant qu'il n'y a pas de mandat."],
+  "<b>Où il se voit.</b> Dans le tableau de la page <b>Dossiers</b>, groupé avec les "+
+  "siens, et sur la ligne qui lui revient dans le tableau d'<b>Aujourd'hui</b>. Pas au "+
+  "<b>tableau de bord</b> ni dans les <b>rapprochements</b> : il n'y a rien à compter ni "+
+  "à proposer tant qu'il n'y a pas de mandat."],
  ["La page Dossiers : tout au même endroit, groupé par statut",
   "« Les ventes » s'appelle <b>Dossiers</b>, et son tableau les porte <b>tous</b> : les "+
-  "biens en prospection, ceux en estimation, et les mandats. La page s'ouvre désormais "+
-  "<b>sans aucun filtre</b> — elle montrait auparavant les seuls biens en vente. "+
-  "Ils y sont <b>groupés par statut</b>, dans l'ordre du métier : <b>En prospection</b>, "+
+  "biens en prospection, ceux en estimation, et les mandats — il n'y a plus de page "+
+  "séparée pour les deux premiers. "+
+  "La page s'ouvre sur les <b>biens en vente</b>, le portefeuille du jour ; les autres "+
+  "statuts sont à un choix de distance dans le filtre <b>Statut</b>, et « <b>Tout voir</b> » "+
+  "les rend tous. "+
+  "Ils sont <b>groupés par statut</b>, dans l'ordre du métier : <b>En prospection</b>, "+
   "<b>En estimation</b>, <b>En vente</b>, <b>Sous offre</b>, <b>Sous compromis</b>, "+
   "<b>Vendu</b>, <b>Mandat résilié</b>. Chaque groupe porte sa pastille de couleur et son "+
   "compte ; à l'intérieur, l'ordre reste celui du prix, du moins cher au plus cher. "+
@@ -29506,6 +29584,20 @@ const AIDE = [
   "<b>Une ligne de prospection EST une action</b> : elle est déjà dans l'historique du "+
   "bien au moment où vous la tapez, et elle y restera après la prise de mandat. Il n'y a "+
   "donc rien à reprendre le jour de la signature — rien n'aura bougé."],
+ ["La fourchette d'estimation, dans le bandeau",
+  "Un bien d'avant le mandat n'a pas de prix : il a une <b>fourchette</b>, celle qu'on "+
+  "annonce au propriétaire. Elle occupe, dans le bandeau du bien, la place exacte des "+
+  "trois chiffres d'un mandat — <b>Prix mini</b> et <b>Prix maxi</b> —, et l'on y clique "+
+  "comme on clique sur le prix. "+
+  "La fenêtre qui s'ouvre les <b>saisit</b>, les <b>modifie</b>, et « <b>Retirer la "+
+  "fourchette</b> » les efface — ce bouton n'apparaît que lorsqu'il y a quelque chose à "+
+  "retirer. Une fourchette tapée à l'envers se <b>remet d'endroit</b> toute seule : "+
+  "240 000 puis 210 000 donnent 210 000 à 240 000. "+
+  "Elle se lit aussi dans la page <b>Dossiers</b>, à la place du prix, sur la ligne du "+
+  "bien. "+
+  "<b>Ce n'est pas un prix de vente</b> : celui-ci se fixe à la prise de mandat, et "+
+  "remplace alors le cartouche par les trois chiffres habituels. La fourchette, elle, "+
+  "reste sur le dossier."],
  ["L'estimation : deux dates et une voie",
   "Le deuxième pas ouvre la fenêtre <b>Estimation</b>. Trois champs, pas un de plus : la "+
   "<b>date du rendez-vous</b>, la <b>date de remise</b> de l'estimation, et <b>par quelle "+
@@ -29520,8 +29612,8 @@ const AIDE = [
   "là que la saisie reprend : le numéro, le type, la date, puis le prix et les honoraires. "+
   "<b>Rien n'est perdu.</b> Les lignes de prospection et les dates de l'estimation restent "+
   "dans l'<b>historique du bien</b>, le propriétaire devient <b>vendeur</b>, et le bien "+
-  "quitte le menu <b>Prospection</b> — mais il était déjà dans <b>Dossiers</b>, et il y "+
-  "reste, simplement rangé dans un autre groupe."],
+  "change de groupe dans la page <b>Dossiers</b> : il quitte « En prospection » pour "+
+  "« En vente »."],
  ["La page Publicité a été retirée",
   "Elle composait des annonces et des clips pour les réseaux sociaux. Le résultat ne "+
   "valait pas le temps qu'il demandait : la page entière a été <b>retirée</b>, avec son "+
@@ -29816,6 +29908,26 @@ const AIDE = [
   "l'invitation revient. "+
   "Le bouton « Créer un nouveau contact » reste <b>éteint</b> tant qu'aucun nom n'est "+
   "tapé : une fiche sans nom ne s'afficherait même pas."],
+ ["Deux personnes, le même nom",
+  "<b>Ce qui n'allait pas.</b> L'identifiant d'une fiche est déduit de son nom — c'est "+
+  "ainsi que deux appareils reconnaissent la même personne sans se concerter. Mais deux "+
+  "<b>DURAND Jean</b> calculaient le même : le second ne recevait pas de fiche, il se "+
+  "fondait dans celle du premier, <b>dont il écrasait le téléphone et l'adresse</b>. "+
+  "Un seul était proposé parce qu'il n'y en avait réellement qu'un. "+
+  "<b>Désormais</b>, quand vous créez un contact expressément — « Créer un nouveau "+
+  "contact », « Ajouter une personne » —, l'identifiant du nom est pris s'il est libre et "+
+  "<b>tiré au sort s'il est déjà occupé</b> : deux homonymes font deux fiches. Taper un "+
+  "nom dans une fiche existante, ou reprendre un fichier, continue de <b>retrouver</b> la "+
+  "personne par son nom : c'est ce qu'on veut dans ces cas-là. "+
+  "<b>Pour les distinguer</b>, la pastille et la fenêtre de choix écrivent, à côté du "+
+  "nom, ce qui les sépare : les <b>autres prénoms</b> d'abord — c'est l'état civil qui "+
+  "tranche —, puis la <b>ville</b>, puis le <b>premier numéro</b>. "+
+  "<b>La recherche suit</b> : « Pierre » trouve Jean <b>Pierre</b> Marie DURAND, et "+
+  "« Jean Luc DURAND » trouve celui dont les prénoms suivants portent Luc — les mots y "+
+  "sont tous, l'ordre n'a pas d'importance. "+
+  "<b>Le contrôle de doublon</b> en tient compte lui aussi : deux fiches de même nom et "+
+  "de même prénom principal, mais dont les <b>prénoms suivants diffèrent</b>, ne sont "+
+  "plus signalées comme la même personne. On ne porte pas deux jeux de prénoms."],
  ["Le nom tapé dans la fiche cherche aussi",
   "La fenêtre du bouton n'est pas le seul endroit où l'on écrit un nom : on corrige une "+
   "partie, on complète un mandat lu, on reprend une saisie. La <b>même recherche</b> se "+
