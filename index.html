@@ -2793,7 +2793,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 3 novembre 2026, 20 h 00">Dossiers de vente</div>
+  <div class="brand" title="Version du 3 novembre 2026, 23 h 15">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3017,7 +3017,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>3 novembre 2026, 20 h 00</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>3 novembre 2026, 23 h 15</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -14144,9 +14144,21 @@ const AUJ_STATUTS = [
 const AUJ_ACQUIS = AUJ_STATUTS.filter(s=> !s.potentiel).map(s=> s.cls);
 /* une fiche ouverte puis laissée vide n'a pas à figurer dans ces listes */
 function dossierEntame(d){
-  return OBLIGATOIRES.some(([p])=> get(d, p)) ||
-         !!(d.bien && (d.bien.adresse || d.bien.ville)) ||
-         (d.vendeurs || []).some(v=> v && (v.nom || v.prenom));
+  if(OBLIGATOIRES.some(([p])=> get(d, p))) return true;
+  if(d.bien && (d.bien.adresse || d.bien.ville)) return true;
+  if((d.vendeurs || []).some(v=> v && (v.nom || v.prenom))) return true;
+  /* Un bien d'avant le mandat n'a ni numéro ni prix : ce qui l'entame, ce
+     sont SES propres traces — un rendez-vous d'estimation, une fourchette,
+     une ligne de prospection. Sans cela il n'existait nulle part tant qu'on
+     n'avait pas tapé son adresse, ce qui n'est pas toujours la première
+     chose qu'on sait d'un bien. */
+  if(d.sansMandat){
+    const e = (d.estim && typeof d.estim === "object") ? d.estim : {};
+    if(e.rdv || e.remise || e.mini || e.maxi) return true;
+    if(d.id && actionsProspection(d.id).length) return true;
+    if(d.bien && (d.bien.type || d.bien.residence)) return true;
+  }
+  return false;
 }
 function bienDe(d){
   return [d.bien && d.bien.adresse, d.bien && d.bien.ville]
@@ -14154,7 +14166,13 @@ function bienDe(d){
 }
 /* les mandats vivants, tous statuts confondus : la matière de cette page */
 function mandatsEnCours(){
-  return Object.values(allDossiers()).filter(d=>
+  /* Le dossier OUVERT est pris tel qu'il est à l'écran, pas tel qu'il a été
+     écrit : un bien créé à l'instant n'est pas encore dans le stockage, et
+     il manquait au tableau jusqu'à la première sauvegarde. C'est la règle
+     que `dossiersVivants` suit déjà ; elle vaut ici aussi. */
+  const all = Object.assign({}, allDossiers());
+  if(D && D.id) all[D.id] = D;
+  return Object.values(all).filter(d=>
     dossierEntame(d) && AUJ_STATUTS.some(s=>s.cls === stade(d).cls));
 }
 
@@ -14202,7 +14220,14 @@ function nomPerimetre(cote){ return perimetre(cote) || "Agence MANARANCHE"; }
 function suitLeDossier(qui, d){
   if(!qui) return true;
   const n = d.nego || {};
-  return n.vendeur === qui || n.acquereur === qui;
+  if(n.vendeur === qui || n.acquereur === qui) return true;
+  /* Un bien d'avant le mandat que personne ne suit n'appartient à personne
+     — et la page du suivi, qui est celle du mandat, n'existe pas encore
+     pour lui. Le cacher à tous les périmètres le ferait disparaître sans
+     que rien ne le dise : on le montre donc partout, jusqu'à ce qu'un
+     négociateur lui soit attaché. */
+  if(d.sansMandat && !n.vendeur && !n.acquereur) return true;
+  return false;
 }
 /* Le mandat lui-même : il appartient à celui qui suit le VENDEUR. Sur le
    périmètre « agence », seuls comptent les mandats dont le vendeur est suivi
@@ -26608,8 +26633,10 @@ function nouveauDossierVierge(phase){
     if(phase === "estimation") D.estim = {rdv:auj(), remise:"", voie:""};
   }
   renderAll(); majMenuDossier(); activerOnglet("general");
+  /* on l'écrit tout de suite : un bien créé puis laissé tel quel doit se
+     retrouver dans les listes, pas seulement dans la mémoire de l'écran */
+  if(phase === "prospection" || phase === "estimation") autosave();
   if(phase === "prospection"){
-    autosave();
     ajouterLigneProspection();
     ouvrirProspection();
   }
