@@ -656,6 +656,8 @@ table.grid-t td .ynb{min-width:48px;padding:3px 9px;font-size:11.5px}
 /* Couleurs des statuts — validées pour rester distinctes, y compris en vision
    des couleurs déficiente et à l'impression : l'ambre et l'orange d'origine
    étaient indiscernables l'un de l'autre. */
+.puce.prospection{background:#7c3aed}
+.puce.estimation{background:#0891b2}
 .puce.vente{background:#0284c7}
 .puce.offre{background:#eda100}
 .puce.compromis{background:#c2410c}
@@ -2318,7 +2320,7 @@ table.tdb .puce.resilie{background:#897466}
 .drow .t b{display:block;color:var(--navy)}
 .drow .t span{color:var(--ink-3);font-size:12.5px}
 .drow.cur{background:var(--accent-soft)}
-/* -------------------------------------------- le tableau « Les ventes »
+/* ---------------------------------------------- le tableau « Dossiers »
    Une hauteur de ligne FIXE : une liste dont les lignes respirent au
    rythme des photos se parcourt deux fois moins vite. */
 /* ---------------------------------------------- la barre de filtres ----
@@ -2648,8 +2650,27 @@ table.tdb .puce.resilie{background:#897466}
 .pjhorscadre b{font-size:14px;word-break:break-word}
 .pjhorscadre p{margin:0;font-size:12.5px;line-height:1.5}
 
+/* les groupes de la page Dossiers : un titre discret, une pastille de
+   couleur, un compte — et la liste dessous, telle qu'elle était */
+.dgroupe{margin-top:14px}
+.dgroupe:first-child{margin-top:2px}
+.dgtitre{display:flex;align-items:center;gap:9px;padding:0 2px 7px;
+  border-bottom:1px solid var(--line-2);margin-bottom:9px}
+.dgtitre b{font-size:12.5px;font-weight:700;letter-spacing:.3px;
+  text-transform:uppercase;color:var(--ink-2)}
+.dgtitre .dgn{background:var(--line-2);color:var(--ink-3);border-radius:999px;
+  font-size:11px;font-weight:700;padding:1px 8px}
+.dgtitre .puce{flex:0 0 auto}
+/* une colonne sans montant : le tiret se lit comme « sans objet », pas
+   comme « zéro » */
+.tdb td.rien{color:var(--ink-3)}
+/* un bien d'avant le mandat n'a ni prix ni numéro : la place sert à dire
+   où il en est, et l'étiquette reste neutre */
+.dprix.avant{font-size:13px;font-weight:500;color:var(--ink-2)}
+.mdt.avant{background:var(--line-2);color:var(--ink-3)}
+
 /* ---------------------------------------- les biens d'avant le mandat ---
-   Deux pages de même facture que Les ventes, en plus sobres : il n'y a ni
+   Deux pages de même facture que Dossiers, en plus sobres : il n'y a ni
    prix ni photo à montrer, seulement où l'on en est. */
 .prelist{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .prerow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
@@ -2775,7 +2796,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 3 novembre 2026, 15 h 40">Dossiers de vente</div>
+  <div class="brand" title="Version du 3 novembre 2026, 17 h 45">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -2812,7 +2833,7 @@ table.tdb .puce.resilie{background:#897466}
   <div class="tab glob" data-p="tdb">Tableau de bord</div>
   <div class="tab glob" data-p="prospection">Prospection</div>
   <div class="tab glob" data-p="estimation">Estimation</div>
-  <div class="tab glob" data-p="dossiers">Les ventes</div>
+  <div class="tab glob" data-p="dossiers">Dossiers</div>
   <div class="tab glob" data-p="prospects">Recherches</div>
   <div class="tab glob" data-p="immeubles">Immeubles</div>
   <div class="tab glob" data-p="repertoire">Répertoire</div>
@@ -3004,7 +3025,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>3 novembre 2026, 15 h 40</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>3 novembre 2026, 17 h 45</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5050,7 +5071,7 @@ let D = null;
 
 /* ----------------------------------------------- un dossier encore vierge
    « Nouveau » puis rien : ce n'est pas un dossier, c'est une intention.
-   Il ne doit ni s'enregistrer, ni paraître dans « Les ventes », ni
+   Il ne doit ni s'enregistrer, ni paraître dans « Dossiers », ni
    compter dans un rapprochement ou une statistique. Dès la première
    frappe — un numéro, une adresse, un prix, un nom —, il devient un
    dossier comme les autres.
@@ -8848,8 +8869,9 @@ function stade(dossier){
   const d = dossier || D;
   /* un bien d'avant le mandat n'est pas « en vente » : il est en
      prospection ou en estimation, et c'est la plus récente de ses dates
-     qui le dit. Ce statut-là tient tous les autres à l'écart — Les ventes,
-     Aujourd'hui, le tableau de bord, les rapprochements. */
+     qui le dit. Ce statut-là le range à part : groupé sous son titre dans
+     la page Dossiers, sur sa propre ligne du tableau d'Aujourd'hui, et hors
+     du tableau de bord comme des rapprochements. */
   if(sansMandat(d)){
     const ph = PHASES.filter(x=> x.k === phaseBien(d))[0] || PHASES[0];
     return {lib:ph.lib, cls:ph.cls,
@@ -13123,10 +13145,17 @@ const IC_POUBELLE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden
    ouverture on revient au portefeuille du jour — les biens EN VENTE —,
    qui est ce qu'on vient voir neuf fois sur dix. Les vendus et les
    résiliés sont toujours là, à un choix de distance. */
-const DOSS_F_VIDE = {type:"", ville:"", stade:"vente", dpe:"",
+/* La page s'ouvre désormais sur TOUT : les biens en prospection, ceux en
+   estimation et les mandats, groupés par statut. « Tout avoir au même
+   endroit » n'a de sens que si l'on n'a rien à décocher pour le voir. */
+const DOSS_F_VIDE = {type:"", ville:"", stade:"", dpe:"",
   prixMin:"", prixMax:"", surfMin:"", surfMax:""};
 let DOSS_F = Object.assign({}, DOSS_F_VIDE);
-const STADES_DOSSIER = [["vente","En vente"], ["offre","Sous offre"],
+/* L'ordre du métier, et non l'ordre alphabétique : on prospecte, on estime,
+   on vend. C'est celui du tableau d'Aujourd'hui, et celui des groupes de la
+   page Dossiers — un même ordre partout, pour qu'on sache où regarder. */
+const STADES_DOSSIER = [["prospection","En prospection"], ["estimation","En estimation"],
+  ["vente","En vente"], ["offre","Sous offre"],
   ["compromis","Sous compromis"], ["vendu","Vendu"], ["resilie","Mandat résilié"]];
 /* Deux bornes, et rien de plus. Il y avait avant un menu « supérieur à /
    inférieur à / entre… et… » : trois clics pour dire ce que deux cases
@@ -13141,7 +13170,7 @@ function dansMinMax(v, a, b){
 }
 function villesDesDossiers(){
   const out = [];
-  dossiersVivants().filter(d=> !sansMandat(d)).forEach(d=>{
+  dossiersVivants().forEach(d=>{
     const v = String((d.bien || {}).ville || "").trim();
     if(v && out.every(x=> fold(x) !== fold(v))) out.push(v);
   });
@@ -13149,7 +13178,6 @@ function villesDesDossiers(){
 }
 function dossiersFiltres(){
   return dossiersVivants().filter(d=>{
-    if(sansMandat(d)) return false;     /* il n'est pas à vendre */
     const b = d.bien || {}, c = critBien(d);
     if(DOSS_F.stade && stade(d).cls !== DOSS_F.stade) return false;
     if(DOSS_F.type && fold(c.type) !== fold(DOSS_F.type)) return false;
@@ -13213,7 +13241,7 @@ function barreFiltres(){
     <div class="dfc fraz dfraz">
       <p class="dfcompte" id="dossCompte"></p>
       <button type="button" class="tbtn light mini" data-dfraz="1" id="dossRaz"
-        data-bulle="Revenir au portefeuille du jour : les biens en vente,&#10;sans aucun autre filtre"
+        data-bulle="Revenir à tous les dossiers,&#10;sans aucun filtre"
         >Tout voir</button></div>
   </div>`;
 }
@@ -13261,9 +13289,14 @@ function renderDossiersListe(){
         ? ` data-pjvig="${esc(ph.id)}"` : ""}>${ph ? "" : "sans photo"}</div>
       <div class="dcol dtyp">
         <b>${esc(c.type || "Bien")}</b>
-        <span class="dprix">${c.fai === null ? "prix à saisir" : esc(eur(c.fai))}</span>
-        <span class="mdt ${m.cls}" data-bulle="${esc(m.lib)}">${
-          numero ? "n° " + esc(numero) : "sans n°"}</span>
+        <span class="dprix${sansMandat(d) ? " avant" : ""}">${sansMandat(d)
+          ? esc((()=>{ const v = dateStatut(d);
+              return v ? (phaseBien(d) === "estimation" ? "estimation du " : "action du ")
+                         + fdate(v) : "rien de daté"; })())
+          : (c.fai === null ? "prix à saisir" : esc(eur(c.fai)))}</span>
+        <span class="mdt ${sansMandat(d) ? "avant" : m.cls}" data-bulle="${
+          esc(sansMandat(d) ? "Pas encore de mandat" : m.lib)}">${
+          numero ? "n° " + esc(numero) : (sansMandat(d) ? "avant mandat" : "sans n°")}</span>
       </div>
       <div class="dcol ddpe">${pastilleDpe(d)}</div>
       <div class="dcol dville"><b>${esc(b.ville || "—")}</b>
@@ -13298,8 +13331,20 @@ function renderDossiersListe(){
   };
   const z = $("#dossListe");
   if(!z) return;                       /* la page n'est pas dessinée : rien à faire */
+  /* Les biens sont GROUPÉS PAR STATUT, dans l'ordre du métier : on
+     prospecte, on estime, on vend. Un bien en prospection et un bien sous
+     compromis n'ont pas à se mêler dans la même suite de lignes — on ne
+     les regarde pas pour la même raison, et le prix, qui ordonne la liste,
+     ne veut rien dire pour le premier. À l'intérieur d'un groupe, l'ordre
+     reste celui du prix. */
+  const groupes = STADES_DOSSIER
+    .map(([cls, lib])=> ({cls, lib, l: items.filter(d=> stade(d).cls === cls)}))
+    .filter(g=> g.l.length);
   z.innerHTML = items.length
-    ? `<div class="dlist">${items.map(ligne).join("")}</div>`
+    ? groupes.map(g=> `<div class="dgroupe">
+        <div class="dgtitre ${esc(g.cls)}"><span class="puce ${esc(g.cls)}"></span>
+          <b>${esc(g.lib)}</b><span class="dgn">${g.l.length}</span></div>
+        <div class="dlist">${g.l.map(ligne).join("")}</div></div>`).join("")
     : `<div class="body muted">${tous.length
         ? "Aucun bien ne répond à ces filtres."
         : "Aucun dossier enregistré."}</div>`;
@@ -13332,9 +13377,10 @@ function renderDossiersListe(){
      · la frise « Mandat → Acte » devient « Prospection · Estimation ·
        Prise de mandat » ;
      · le propriétaire y est un PROSPECT, pas encore un vendeur ;
-     · il ne figure ni dans Les ventes, ni dans Aujourd'hui, ni au
-       tableau de bord, ni dans les rapprochements : il n'y a rien à
-       vendre tant qu'il n'y a pas de mandat.
+     · il figure dans la page Dossiers, groupé avec les siens, et sur sa
+       ligne du tableau d'Aujourd'hui — mais ni au tableau de bord ni dans
+       les rapprochements : il n'y a rien à compter tant qu'il n'y a pas
+       de prix, et rien à proposer tant qu'il n'y a pas de mandat.
 
    SON STATUT SE CALCULE, il ne se choisit pas : c'est la plus récente
    des dates saisies qui le dit. Une estimation du 12 mars après un appel
@@ -13410,7 +13456,7 @@ function frisePreMandat(){
        : "",
      faite: isoValide(e.rdv) || isoValide(e.remise), ici: ph === "estimation"},
     {cle:"mandat", lib:"Prise de mandat", val:"quand c'est signé",
-     sous:"le bien rejoint alors Les ventes", faite:false, ici:false}
+     sous:"il passera alors en vente", faite:false, ici:false}
   ];
   return `<div class="frise">${pas.map(x=> `<button type="button"
     class="etape ${[x.faite ? "faite" : "", x.ici ? "ici" : "",
@@ -13542,7 +13588,7 @@ function ouvrirPriseDeMandat(){
   popup({titre:"Prise de mandat", large:true,
     corps:`<p style="margin:0 0 10px">Le bien <b>${esc(adresseBienCourte()
         || "sans adresse")}</b> passe <b>sous mandat</b>. Il rejoindra
-        <b>Les ventes</b> et quittera ${esc(phaseBien(D) === "estimation"
+        <b>en vente</b> et quittera le menu ${esc(phaseBien(D) === "estimation"
         ? "Estimation" : "Prospection")}.</p>
       <p class="muted" style="margin:0 0 10px">Les pages <b>Le mandat</b>,
         <b>Acquéreurs</b>, <b>Notaires</b> et <b>Imprimés</b> reviennent au menu, et
@@ -13667,6 +13713,9 @@ function natureDe(cls){ const s = TDB_STATUTS.find(x=>x.cls===cls); return s ? s
 /* date de référence : celle du statut le plus avancé, à défaut le mandat */
 function dateStatut(d){
   const s = stade(d);
+  /* un bien d'avant le mandat n'a que ses propres dates : la date d'un
+     mandat qui n'existe pas ne doit pas lui en tenir lieu */
+  if(sansMandat(d)) return s.v || "";
   return s.v || (d.mandat && d.mandat.date) || "";
 }
 function anneesDisponibles(){
@@ -14015,10 +14064,16 @@ function bucketsEvolution(list){
 /* Un bien encore en vente ne rapporte rien tant qu'il n'est pas vendu : ses
    honoraires sont un *potentiel*, pas une recette. Ils s'affichent, en retrait,
    mais n'entrent pas dans les totaux. */
+/* Les cinq statuts du tableau, dans l'ordre du métier : on prospecte, on
+   estime, on vend — puis l'offre et le compromis, qui seuls s'additionnent.
+   Les trois premiers sont du POTENTIEL : rien n'est engagé, et les deux
+   premiers n'ont même pas de prix, puisqu'il se fixe à la prise de mandat. */
 const AUJ_STATUTS = [
-  {cls:"vente",     lib:"En vente", potentiel:true},
-  {cls:"offre",     lib:"Sous offre"},
-  {cls:"compromis", lib:"Sous compromis"}
+  {cls:"prospection", lib:"Prospection", potentiel:true, avantMandat:true},
+  {cls:"estimation",  lib:"Estimation",  potentiel:true, avantMandat:true},
+  {cls:"vente",       lib:"En vente",    potentiel:true},
+  {cls:"offre",       lib:"Sous offre"},
+  {cls:"compromis",   lib:"Sous compromis"}
 ];
 const AUJ_ACQUIS = AUJ_STATUTS.filter(s=> !s.potentiel).map(s=> s.cls);
 /* une fiche ouverte puis laissée vide n'a pas à figurer dans ces listes */
@@ -14187,7 +14242,8 @@ function panneauStatuts(cote){
   const list = dossiersDuCote(cote);
   const qui = perimetre(cote);
   const titreNego = "Hono. " + (qui ? nomCourtNego(qui) : "négociateurs") + " TTC";
-  const par = {vente:[], offre:[], compromis:[]};
+  const par = {};
+  AUJ_STATUTS.forEach(s=> par[s.cls] = []);
   list.forEach(d=> par[stade(d).cls].push(d));
   Object.keys(par).forEach(k=> par[k].sort(parNumeroDecroissant));
 
@@ -14201,7 +14257,11 @@ function panneauStatuts(cote){
      s'additionne est entouré d'un liseré ; le potentiel reste dehors, rappelé
      sous le tableau. */
   const dedans = list.filter(d=> AUJ_ACQUIS.includes(stade(d).cls));
-  const dehors = list.filter(d=> !AUJ_ACQUIS.includes(stade(d).cls));
+  /* le potentiel chiffré, c'est ce qui est en vente : un bien d'avant le
+     mandat n'a pas de prix, et en inventer un fausserait la somme */
+  const dehors = list.filter(d=> !AUJ_ACQUIS.includes(stade(d).cls)
+                                 && !sansMandat(d));
+  const avant = list.filter(d=> sansMandat(d));
   const engage = cumul(dedans), pot = cumul(dehors);
 
   /* chaque dossier occupe une vraie ligne de tableau : ses montants tombent
@@ -14214,14 +14274,19 @@ function panneauStatuts(cote){
           const v = dateStatut(d);
           return `<tr class="adet${d.id===D.id?" cur":""}${enc}" data-adet="${cote}:${s.cls}"${cache}>
             <td class="cdoss"><b>${(d.mandat && d.mandat.num)
-                ? esc(d.mandat.num) : "(sans numéro)"}</b>
+                ? esc(d.mandat.num)
+                : (sansMandat(d) ? "avant mandat" : "(sans numéro)")}</b>
               <b class="ctype">${esc(critBien(d).type || "Bien")}</b>
               <span>${esc(bienDe(d))}${v ? " · " + esc(fdate(v)) : ""}</span></td>
             <td class="nb"></td>
-            <td>${eur0(num(d.prix && d.prix.fai))}</td>
-            <td class="${s.potentiel ? "pot" : ""}">${
-              eur0(num(d.prix && d.prix.honoraires))}</td>
-            <td class="cpart${s.potentiel ? " pot" : ""}">${eur0(partNegoTTC(d, qui))}</td>
+            ${s.avantMandat
+              ? `<td class="rien">—</td><td class="rien pot">—</td>
+                 <td class="cpart rien pot">—</td>`
+              : `<td>${eur0(num(d.prix && d.prix.fai))}</td>
+                 <td class="${s.potentiel ? "pot" : ""}">${
+                   eur0(num(d.prix && d.prix.honoraires))}</td>
+                 <td class="cpart${s.potentiel ? " pot" : ""}">${
+                   eur0(partNegoTTC(d, qui))}</td>`}
             <td class="cact"><button class="xbtn" data-open="${esc(d.id)}">Ouvrir</button></td>
           </tr>`;
         }).join("")
@@ -14240,8 +14305,11 @@ function panneauStatuts(cote){
         <td><span class="puce ${s.cls}"></span>${esc(s.lib)}${
           s.potentiel ? `<em class="tagpot">potentiel</em>` : ""}</td>
         <td class="nb">${l.length}</td>
-        <td>${eur0(c.fai)}</td><td class="${cp}">${eur0(c.ttc)}</td>
-        <td class="cpart${cp}">${eur0(c.nego)}</td>
+        ${s.avantMandat
+          ? `<td class="rien">—</td><td class="rien ${cp}">—</td>
+             <td class="cpart rien${cp}">—</td>`
+          : `<td>${eur0(c.fai)}</td><td class="${cp}">${eur0(c.ttc)}</td>
+             <td class="cpart${cp}">${eur0(c.nego)}</td>`}
         <td class="cact"><button class="xbtn plibtn${plie ? "" : " ouvert"}"
           data-astat="${cote}:${s.cls}"
           aria-expanded="${plie ? "false" : "true"}"><span
@@ -14265,10 +14333,14 @@ function panneauStatuts(cote){
         <td>${eur0(engage.fai)}</td><td>${eur0(engage.ttc)}</td>
         <td class="cpart">${eur0(engage.nego)}</td><td class="cact"></td></tr>
     </table></div>
-    ${dehors.length ? `<p class="muted potnote"><b>Hors total</b> — ${dehors.length} bien${
-      dehors.length > 1 ? "s" : ""} encore en vente : ${esc(eur(pot.fai) || "0 €")} de prix
-      affiché et ${esc(eur(pot.ttc) || "0 €")} d'honoraires TTC, dont ${
-      esc(eur(pot.nego) || "0 €")} pour ${esc(qui ? nomCourtNego(qui) : "les négociateurs")}.
+    ${dehors.length || avant.length ? `<p class="muted potnote"><b>Hors total</b>${
+      dehors.length ? ` — ${dehors.length} bien${dehors.length > 1 ? "s" : ""} encore
+        en vente : ${esc(eur(pot.fai) || "0 €")} de prix affiché et ${
+        esc(eur(pot.ttc) || "0 €")} d'honoraires TTC, dont ${esc(eur(pot.nego) || "0 €")}
+        pour ${esc(qui ? nomCourtNego(qui) : "les négociateurs")}` : ""}${
+      avant.length ? `${dehors.length ? ". " : " — "}${avant.length} bien${
+        avant.length > 1 ? "s" : ""} d'avant le mandat ne compte${avant.length > 1 ? "nt" : ""}
+        aucun montant : le prix et les honoraires se fixent à la prise de mandat` : ""}.
       Rien n'est engagé tant qu'aucune offre n'est signée : le liseré entoure ce qui
       s'additionne.</p>` : ""}
     ${alerteCommission(cote, qui, list)}
@@ -23661,7 +23733,7 @@ document.addEventListener("input", e=>{
      le reste : un champ qui se vide doit perdre sa couleur même si la suite
      du traitement s'arrête en chemin */
   if(t.closest && t.closest("#prospBody")) marquerRempli(t);
-  /* Les filtres de « Les ventes » : la liste se resserre à chaque
+  /* Les filtres de « Dossiers » : la liste se resserre à chaque
      lettre, et le champ où l'on tape n'est PAS redessiné — c'est tout
      l'objet de la séparation barre / liste. Plus de curseur rattrapé de
      force, plus de saut d'une cellule à l'autre. */
@@ -26453,6 +26525,11 @@ function nouveauDossierVierge(phase){
      celle du jour — sans quoi il n'aurait aucun statut à montrer */
   if(phase === "prospection" || phase === "estimation"){
     D.sansMandat = true;
+    /* celui qui prospecte tient le bien : sans cela, le tableau
+       d'Aujourd'hui, qui se lit par négociateur, ne le montrerait à
+       personne */
+    const moi = monNegociateur();
+    if(moi && !(D.nego || {}).vendeur) (D.nego = D.nego || {}).vendeur = moi;
     if(phase === "estimation") D.estim = {rdv:auj(), remise:"", voie:""};
   }
   renderAll(); majMenuDossier(); activerOnglet("general");
@@ -29368,8 +29445,9 @@ const AIDE = [
   "<b>Un mandat ne tombe pas du ciel.</b> On prospecte, on est reçu, on estime, et parfois "+
   "seulement on signe. Tout ce travail-là ne tenait nulle part : on perdait la trace de ce "+
   "qu'on avait déjà tenté, et l'on rappelait deux fois le même propriétaire. "+
-  "Deux menus s'ajoutent donc entre <b>Tableau de bord</b> et <b>Les ventes</b> — qui "+
-  "s'appelait « Mes dossiers » — : <b>Prospection</b> et <b>Estimation</b>. "+
+  "Deux menus s'ajoutent donc entre <b>Tableau de bord</b> et <b>Dossiers</b> — qui "+
+  "s'appelait « Mes dossiers » — : <b>Prospection</b> et <b>Estimation</b>, qui ne "+
+  "montrent chacun que les siens. "+
   "<b>Un bien d'avant le mandat est un dossier comme un autre</b> : la même fiche du bien, "+
   "le même propriétaire, les mêmes pièces jointes, le même historique. Quatre pages "+
   "n'ont simplement pas lieu d'être et quittent le menu — <b>Le mandat</b>, "+
@@ -29381,9 +29459,35 @@ const AIDE = [
   "saisies qui le dit. Une estimation du 25 octobre après un appel du 2 donne un bien "+
   "« en estimation » ; un nouvel appel le 5 novembre le ramène en prospection — et c'est "+
   "la vérité du terrain. "+
-  "<b>Il ne se voit que là.</b> Ni dans Les ventes, ni dans Aujourd'hui, ni au tableau de "+
-  "bord, ni dans les rapprochements : il n'y a rien à vendre tant qu'il n'y a pas de "+
-  "mandat, et rien à compter."],
+  "<b>Où il se voit.</b> Dans son menu, dans le tableau de la page <b>Dossiers</b> — "+
+  "groupé avec les siens — et sur la ligne qui lui revient dans le tableau "+
+  "d'<b>Aujourd'hui</b>. Pas au <b>tableau de bord</b> ni dans les <b>rapprochements</b> : "+
+  "il n'y a rien à compter ni à proposer tant qu'il n'y a pas de mandat."],
+ ["La page Dossiers : tout au même endroit, groupé par statut",
+  "« Les ventes » s'appelle <b>Dossiers</b>, et son tableau les porte <b>tous</b> : les "+
+  "biens en prospection, ceux en estimation, et les mandats. La page s'ouvre désormais "+
+  "<b>sans aucun filtre</b> — elle montrait auparavant les seuls biens en vente. "+
+  "Ils y sont <b>groupés par statut</b>, dans l'ordre du métier : <b>En prospection</b>, "+
+  "<b>En estimation</b>, <b>En vente</b>, <b>Sous offre</b>, <b>Sous compromis</b>, "+
+  "<b>Vendu</b>, <b>Mandat résilié</b>. Chaque groupe porte sa pastille de couleur et son "+
+  "compte ; à l'intérieur, l'ordre reste celui du prix, du moins cher au plus cher. "+
+  "Un bien d'avant le mandat n'a ni prix ni numéro : à leur place, sa ligne dit "+
+  "<b>la date de sa dernière action</b> ou celle de son estimation, et porte l'étiquette "+
+  "« avant mandat ». "+
+  "Le filtre <b>Statut</b> gagne les deux nouvelles entrées, en tête de liste : on isole "+
+  "les biens en prospection d'un seul choix, comme on isolait les biens en vente."],
+ ["Le tableau d'Aujourd'hui : cinq lignes",
+  "Le tableau « Dossiers en cours » portait trois lignes ; il en porte <b>cinq</b>, dans "+
+  "l'ordre du métier : <b>Prospection</b>, <b>Estimation</b>, <b>En vente</b>, "+
+  "<b>Sous offre</b>, <b>Sous compromis</b>. "+
+  "Les trois premières sont du <b>potentiel</b> : rien n'est engagé, et elles restent "+
+  "hors du total — seul ce qui est sous offre ou sous compromis s'additionne, comme "+
+  "auparavant. "+
+  "Les deux premières n'affichent <b>aucun montant</b>, mais un tiret : le prix et les "+
+  "honoraires se fixent à la prise de mandat, et un zéro laisserait croire à une saisie "+
+  "oubliée. Le détail se déplie comme pour les autres, et chaque ligne mène au bien. "+
+  "Un bien que vous créez en prospection est <b>rattaché à vous</b> : il apparaît donc "+
+  "sous votre périmètre, comme n'importe quel mandat que vous suivez."],
  ["Par où commence un bien : les trois départs",
   "Le bouton <b>Nouveau</b> du bandeau mène à <b>Nouveau bien</b> — qui s'appelait "+
   "« Création manuelle » —, et celui-ci demande où l'on en est : "+
@@ -29416,7 +29520,8 @@ const AIDE = [
   "là que la saisie reprend : le numéro, le type, la date, puis le prix et les honoraires. "+
   "<b>Rien n'est perdu.</b> Les lignes de prospection et les dates de l'estimation restent "+
   "dans l'<b>historique du bien</b>, le propriétaire devient <b>vendeur</b>, et le bien "+
-  "quitte Prospection pour <b>Les ventes</b>."],
+  "quitte le menu <b>Prospection</b> — mais il était déjà dans <b>Dossiers</b>, et il y "+
+  "reste, simplement rangé dans un autre groupe."],
  ["La page Publicité a été retirée",
   "Elle composait des annonces et des clips pour les réseaux sociaux. Le résultat ne "+
   "valait pas le temps qu'il demandait : la page entière a été <b>retirée</b>, avec son "+
@@ -29504,7 +29609,7 @@ const AIDE = [
  ["Le mandat identifie le dossier",
   "Numéro, type et date de signature se saisissent dans la barre du haut, une seule fois. Le "+
   "numéro sert de référence partout : titre des documents, nom des fichiers Word, liste "+
-  "<b>Les ventes</b>."],
+  "<b>Dossiers</b>."],
  ["Dupliquer : l'endroit, et rien d'autre",
   "<b>Dupliquer</b> recopiait le dossier entier et ajoutait « bis » au numéro de "+
   "mandat : le prix, les dates, les diagnostics, l'historique, les acquéreurs — tout ce "+
@@ -30377,7 +30482,7 @@ const AIDE = [
   "et ne fait pas basculer le dossier en VENDU avant l'heure."],
  ["Les onglets",
   "La barre du haut ne porte que ce qui concerne <b>tous</b> les dossiers : à gauche "+
-  "« Aujourd'hui », « Tableau de bord », « Les ventes », « Immeubles » et « Répertoire » ; "+
+  "« Aujourd'hui », « Tableau de bord », « Dossiers », « Immeubles » et « Répertoire » ; "+
   "à droite, à l'écart, « Listes » et « Aide », que l'on ouvre rarement."],
  ["La colonne du dossier",
   "Les pages du dossier ouvert — Général, Vendeurs, Acquéreurs, Notaires, Financement, "+
@@ -30386,7 +30491,7 @@ const AIDE = [
   "directement où l'on veut. En tête de colonne, le numéro de mandat et l'adresse rappellent "+
   "de quel dossier il s'agit. Elle <b>ne s'affiche que dans le dossier</b> : dès que vous "+
   "passez sur Aujourd'hui, le tableau de bord ou une autre page générale, elle disparaît et "+
-  "la page prend toute la largeur. On revient au dossier en l'ouvrant — « Les ventes », la "+
+  "la page prend toute la largeur. On revient au dossier en l'ouvrant — « Dossiers », la "+
   "loupe, ou le bouton « Voir » d'une liste. "+
   "Les entrées liées à l'acquéreur n'apparaissent qu'une fois l'offre ou le compromis daté, "+
   "et Avis qu'une fois la vente signée. "+
@@ -30588,7 +30693,7 @@ const AIDE = [
   "d'un bloc dans le champ Nom et <b>ne reçoit pas de « Maître »</b> : on n'écrit pas "+
   "« Maître SCP DUPONT »."],
  ["L'onglet Recherches",
-  "L'onglet <b>Recherches</b>, juste après <b>Les ventes</b>, tient toutes les "+
+  "L'onglet <b>Recherches</b>, juste après <b>Dossiers</b>, tient toutes les "+
   "recherches de biens en cours — <b>tous négociateurs confondus</b>. Une ligne = "+
   "<b>une recherche</b>, et non une personne : quelqu'un qui cherche deux choses a deux "+
   "lignes, chacune avec ses critères, son secteur et son budget. "+
@@ -31716,15 +31821,16 @@ const AIDE = [
   "civilités, énergies, motifs de résiliation… —, la fiche de l'agence (logo, mentions, RIB, "+
   "bandeau des factures), la base partagée et les sauvegardes. Les carnets d'adresses sont "+
   "passés au Répertoire, les immeubles à leur page."],
- ["Les ventes : un seul tableau, filtré",
+ ["Dossiers : un seul tableau, groupé et filtré",
   "Tous les dossiers tiennent dans une seule liste, quel que soit leur statut : plus de "+
   "cartes à déplier une à une pour retrouver un mandat dont on ne sait plus où il en est. "+
-  "<b>Par défaut, seuls les biens EN VENTE sont montrés</b> — le portefeuille du jour, "+
-  "ce qu'on vient voir neuf fois sur dix. Les autres sont à un choix de distance, dans le "+
-  "filtre <b>Statut</b>. "+
-  "<b>Les dossiers sont rangés du moins cher au plus cher</b> : c'est ainsi qu'on compare "+
-  "deux biens, et qu'on répond à « qu'ai-je autour de 200 000 € ? ». Un bien dont le prix "+
-  "n'est pas saisi passe à la fin — il n'est pas gratuit. "+
+  "<b>Tout est montré par défaut</b>, et <b>groupé par statut</b> dans l'ordre du "+
+  "métier : en prospection, en estimation, en vente, sous offre, sous compromis, vendu, "+
+  "mandat résilié. Pour n'en voir qu'un, le filtre <b>Statut</b> est à un choix de "+
+  "distance. "+
+  "<b>Dans chaque groupe, les dossiers sont rangés du moins cher au plus cher</b> : c'est "+
+  "ainsi qu'on compare deux biens, et qu'on répond à « qu'ai-je autour de 200 000 € ? ». "+
+  "Un bien dont le prix n'est pas saisi passe à la fin — il n'est pas gratuit. "+
   "<b>La barre de filtres</b> est <b>en tête de la liste</b>, et chaque filtre est posé "+
   "<b>sur la colonne qu'il filtre</b> : le type au-dessus de la photo, le prix au-dessus "+
   "du prix, la commune au-dessus de la commune, la surface au-dessus de la surface, le "+
@@ -32171,7 +32277,7 @@ const AIDE = [
   "parce qu'un autre appareil a touché autre chose dans le même carnet."],
  ["Un dossier où rien n'a été tapé n'est pas un dossier",
   "« Nouveau », puis rien : la fiche vide ne s'enregistre pas. Elle n'apparaît ni dans "+
-  "<b>Les ventes</b>, ni dans les comptes du tableau de bord, ni dans les "+
+  "<b>Dossiers</b>, ni dans les comptes du tableau de bord, ni dans les "+
   "rapprochements. <b>Dès la première frappe</b> — un numéro de mandat, une adresse, un "+
   "prix, un nom —, elle devient un dossier comme les autres. "+
   "Vous pouvez donc cliquer « Nouveau » pour voir, et changer d'avis sans laisser de "+
