@@ -2816,7 +2816,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 novembre 2026, 11 h 15">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 novembre 2026, 12 h 25">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3040,7 +3040,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 novembre 2026, 11 h 15</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 novembre 2026, 12 h 25</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5640,9 +5640,18 @@ function marquerRempli(x){
    écrit dans sa DEUXIÈME recherche. Un prospect peut en mener plusieurs —
    une maison à Arles pour y vivre, un studio à louer —, et mélanger leurs
    critères ne rapprocherait rien de bon. */
-function cibleBook(path){
+function cibleBook(path, pid){
   const p = String(path || "").split(":");
-  const k = p[0], i = +p[1];
+  const k = p[0];
+  let i = +p[1];
+  /* Le chemin désigne la fiche par son RANG ; le champ, lui, porte son
+     IDENTIFIANT (voir `marquerPid`). Si les deux ne disent pas la même
+     chose, c'est que la liste a bougé depuis le dessin du formulaire :
+     l'identifiant gagne, sinon la saisie irait dans la fiche voisine. */
+  if(pid && k === "personnes"){
+    const j = (L.personnes || []).findIndex(f=> f && f.pid === pid);
+    if(j >= 0) i = j;
+  }
   const fiche = (L[k] || [])[i];
   if(!fiche) return null;
   if(p.length >= 4 && /^r\d+$/.test(p[2])){
@@ -9183,7 +9192,12 @@ function activerOnglet(p){
   if(p==="repertoire"){ renderRepertoire(); autosize(); refreshAllVilles(); }
   if(p==="notaires")  majNotaires();
   if(p==="financement") majPret();
-  if(p==="vendeurs" || p==="acquereurs") refreshAllVilles();
+  if(p==="vendeurs" || p==="acquereurs"){
+    /* On revient d'ailleurs — de la fiche d'une société où l'on vient
+       d'ajouter un gérant, par exemple. Le panneau montrait encore l'état
+       d'avant : il se redessine en arrivant. */
+    renderPeople(p); refreshAllVilles();
+  }
 }
 
 /* report automatique de l'adresse de la résidence choisie */
@@ -9497,6 +9511,8 @@ function blocRepresentants(p, ref){
      modifiable à deux endroits finit toujours par l'être à contretemps. */
   const auRepertoire = String(ref || "").indexOf("r:") === 0;
   if(!auRepertoire) return blocReprLecture(p, l, quoi, mot);
+  /* sur la fiche, la société doit exister au répertoire : c'est le cas par
+     construction, puisque `ref` porte son identifiant */
   const lignes = l.map((x, i)=>{
     const f = ficheDuLien(x);
     const path = ref + "|" + i + "|role";
@@ -9567,9 +9583,9 @@ function blocReprLecture(p, l, quoi, mot){
         cette société. Elle s'ajoute sur <b>sa fiche du répertoire</b>.</p>`}
       <p class="dnote">Ces personnes appartiennent à la <b>société</b>, pas à ce
         dossier : elles la suivent partout où elle intervient. Pour en ajouter une,
-        en changer le rôle ou en retirer une, ouvrez
-        ${p.pid ? `<button type="button" class="lienbtn" data-vpers="${esc(p.pid)}"
-          >sa fiche au répertoire</button>` : "sa fiche au répertoire"}.</p>
+        en changer le rôle ou en retirer une, ouvrez <button type="button"
+          class="lienbtn" data-vsoc="${esc(p.pid || "")}"
+          >sa fiche au répertoire</button>.</p>
     </div>`;
 }
 /* le rôle, et lui seul, se saisit ici */
@@ -9725,11 +9741,24 @@ function creerReprNeuf(ref, nom, role){
   ouvrirFicheDuRepertoire(pid);
 }
 /* on arrive sur la fiche, et « Retour » ramène d'où l'on vient */
-function ouvrirFicheDuRepertoire(pid){
+function ouvrirFicheDuRepertoire(pid, secours){
+  /* Sans fiche derrière l'identifiant, `renderRepertoire` retombe sur la
+     LISTE — et l'on croit que le lien ne marche pas. Plutôt que d'y
+     renvoyer, on crée la fiche manquante à partir de ce que la partie du
+     dossier porte : c'est elle qu'on voulait ouvrir. */
+  if(pid && !fichePersonne(pid) && secours && !personneVide(secours)){
+    const q = inscrireAuRepertoire(secours);
+    if(q){ pid = q; secours.pid = q; saveLists(); autosave(); }
+  }
+  if(!pid || !fichePersonne(pid)){
+    toast("Cette fiche n'est pas encore au répertoire");
+    return false;
+  }
   empilerFenetre();
   PERS.ouvert = pid; PERS.onglet = "ident";
   PERS.fg = ""; PERS.fq = "";
   activerOnglet("repertoire"); renderRepertoire(); window.scrollTo(0, 0);
+  return true;
 }
 function ajouterRepr(ref){ ouvrirAjoutRepr(ref); }
 function retirerRepr(ref, i){
@@ -9997,20 +10026,32 @@ let PART_NEUVE = null;
 function ouvrirNouvellePartie(kind){
   const lib = kind === "vendeurs" ? "vendeur" : "acquéreur";
   PART_NEUVE = {kind:kind, ecartes:[]};
+  const quals = (L.qualite || []);
   popup({titre:"Nouveau " + lib, large:true,
     corps:`<div class="partbox">
       <p style="margin:0 0 10px">Le <b>nom</b> d'abord : s'il est déjà au répertoire —
         une personne ou une <b>société</b> —, mieux vaut reprendre sa fiche que d'en
         créer une seconde. Elle apporte son état civil, ses coordonnées, et tout ce
         qu'elle porte dans vos autres dossiers.</p>
-      <div class="pf wide"><label for="pvNom">NOM, ou dénomination de la société</label>
-        <input type="text" id="pvNom" autocomplete="off"
-          placeholder="DURAND, SCI DES ARÈNES…"></div>
+      <div class="pgrid" style="padding:0">
+        <div class="pf"><label for="pvQual">Qualité</label>
+          <span class="withadd"><select id="pvQual" data-pvqual="pvQual">
+            <option value="">— à préciser —</option>${quals.map(o=>
+            `<option>${esc(o)}</option>`).join("")}</select>
+          <button type="button" class="addinline" data-addlist="list:qualite"
+            data-target="pvQual" data-attr="data-pvqual"
+            title="Ajouter une qualité à cette liste">+</button></span></div>
+        <div class="pf duo"><label for="pvNom">NOM, ou dénomination de la société</label>
+          <input type="text" id="pvNom" autocomplete="off"
+            placeholder="DURAND, SCI DES ARÈNES…"></div>
+      </div>
+      <p class="muted" id="pvNote" style="margin:10px 0 0"></p>
       <div id="pvSug"></div>
     </div>`,
     boutons:[{lib:"Annuler"},
       {lib:"Créer un nouveau contact", primaire:true,
-       action:()=> creerPartieNeuve(kind, ($("#pvNom") || {}).value || "")}]});
+       action:()=> creerPartieNeuve(kind, ($("#pvNom") || {}).value || "",
+                                    ($("#pvQual") || {}).value || "")}]});
   setTimeout(()=>{
     const e = $("#pvNom");
     /* on ne crée pas un contact sans nom : il ne s'afficherait même pas,
@@ -10018,7 +10059,23 @@ function ouvrirNouvellePartie(kind){
     const pieds = $$("#popPieds button");
     const creer = pieds[pieds.length - 1];
     const armer = ()=>{ if(creer) creer.disabled = !String(e.value || "").trim(); };
+    const q = $("#pvQual");
+    const note = ()=>{
+      const z2 = $("#pvNote");
+      if(!z2) return;
+      const v = (q || {}).value || "";
+      const soc = v && CIV_PHYSIQUES.indexOf(v) < 0;
+      z2.innerHTML = soc
+        ? `C'est une <b>société</b> : le nom saisi sera sa <b>dénomination</b>, et
+           l'on arrivera sur <b>sa fiche du répertoire</b> — c'est là que ses
+           <b>représentants</b> s'ajoutent.`
+        : "";
+      if(creer) creer.textContent = soc ? "Créer la société et ouvrir sa fiche"
+                                        : "Créer un nouveau contact";
+    };
     if(e){ e.oninput = ()=>{ armer(); majSuggestionsPartie(); }; e.focus(); }
+    if(q) q.onchange = note;
+    note();
     armer();
     const z = $("#popCorps");
     if(z) z.onclick = ev=>{
@@ -10096,11 +10153,17 @@ function reprendrePartie(kind, pid){
 }
 /* un contact neuf : la fiche est créée au répertoire du même geste, sinon
    elle n'y entrerait qu'à la première frappe suivante */
-function creerPartieNeuve(kind, nom){
+function creerPartieNeuve(kind, nom, qualite){
   const i = placePartie(kind);
   const p = D[kind][i];
   const t = String(nom || "").trim();
-  if(t) p.nom = enMajuscules(t);
+  const q = String(qualite || "").trim();
+  /* UNE SOCIÉTÉ N'A PAS DE NOM DE FAMILLE. Dès la création, le nom saisi
+     va donc dans la DÉNOMINATION : c'est la case qu'une société montre, et
+     la seule qui la rende reconnaissable partout ensuite. */
+  const soc = q && CIV_PHYSIQUES.indexOf(q) < 0;
+  if(q) p.civilite = q;
+  if(t){ if(soc) p.raison = t.toUpperCase(); else p.nom = enMajuscules(t); }
   if(t){
     /* un homonyme n'est pas la même personne : voir `creerFichePersonne` */
     const pid = creerFichePersonne(p);
@@ -10108,6 +10171,13 @@ function creerPartieNeuve(kind, nom){
     saveLists();
   }
   renderPeople(kind); refreshAllVilles(); autosave(); renderPreview();
+  /* une société s'ouvre sur SA FICHE : c'est là que ses représentants
+     s'ajoutent, et il n'y a rien d'autre à saisir dans le dossier */
+  if(soc && p.pid){
+    ouvrirFicheDuRepertoire(p.pid);
+    toast("Fiche de la société créée — ajoutez ses représentants");
+    return;
+  }
   focusPartie(kind, i);
 }
 /* une fiche du répertoire est-elle utilisée quelque part ? Un dossier, une
@@ -11485,13 +11555,25 @@ function vuePersonneFiche(){
     </div>`;
 }
 /* la fiche elle-même : les champs des vendeurs, les plus complets */
+/* pose `data-pid` sur tout ce qui porte un `data-book` dans ce morceau */
+function marquerPid(html, pid){
+  if(!pid) return html;
+  return String(html).replace(/(<(?:input|select|textarea)\b)/g,
+                              `$1 data-pid="${esc(pid)}"`);
+}
 function champsFichePersonne(f, court){
   const i = (L.personnes || []).indexOf(f);
+  /* Les chemins désignent la fiche par son RANG dans la liste. Un rang
+     bouge : une fiche créée ou retirée pendant qu'un formulaire est à
+     l'écran, et la saisie suivante irait dans la fiche d'à côté. Chaque
+     champ porte donc aussi l'identifiant de la sienne, et c'est lui qui
+     fait foi à l'écriture. */
+
   const unChamp = (k, lab, kd, w)=>{
     const h = controlRaw(`personnes:${i}:${k}`, kd, f[k] || "", `fp${i}`, "data-book",
                          f[champLibelle(k)] || "");
     return `<div class="pf${w === "wide" ? " wide" : ""}${kd === "coord" ? " duo" : ""}">` +
-           `<label>${esc(lab)}</label>${h}</div>`;
+           `<label>${esc(lab)}</label>${marquerPid(h, f.pid)}</div>`;
   };
   /* le même schéma que partout ailleurs : c'est tout l'intérêt */
   const champs = PF.map(([k, lab, kd, w, cond])=>{
@@ -11519,10 +11601,11 @@ function champsFichePersonne(f, court){
   const met = carnetsDeLaPersonne(f.pid), inter = interventionsMetier(f.pid);
   return `<div class="pgrid">${champs}
       <div class="pf"><label>Fonction</label>
-        ${controlRaw(`personnes:${i}:fonction`, "list:fonctionPers", f.fonction || "",
-                     `fp${i}`, "data-book")}</div>
+        ${marquerPid(controlRaw(`personnes:${i}:fonction`, "list:fonctionPers",
+                     f.fonction || "", `fp${i}`, "data-book"), f.pid)}</div>
       <div class="pf wide"><label>Observations</label>
-        ${controlRaw(`personnes:${i}:note`, "area", f.note || "", `fp${i}`, "data-book")}
+        ${marquerPid(controlRaw(`personnes:${i}:note`, "area", f.note || "",
+                     `fp${i}`, "data-book"), f.pid)}
       </div></div>` + repr + (court ? "" : blocSoc + `
     ${met.length ? `<div class="mdsect" style="margin-top:16px"><h4>Son métier</h4>
       <div class="seczones">${met.map(x=> `<div class="seczone">
@@ -24081,6 +24164,20 @@ document.addEventListener("input", e=>{
       /* la saisie va aussi au répertoire : la fiche de la personne est la
          vérité, le dossier n'en garde qu'une copie */
       const pers = (D[kind] || [])[+i];
+      /* On vient de choisir une qualité de société sur une partie dont le
+         nom était dans la case NOM. Celle-ci va disparaître — une société
+         n'a pas de nom de famille — et le nom partirait avec elle : il
+         devient la DÉNOMINATION, ici comme sur la fiche. */
+      if(pers && /\.civilite$/.test(t.dataset.b) && normaliserSociete(pers)){
+        const fs = fichePersonne(pers.pid);
+        if(fs){ fs.raison = pers.raison; fs.nom = ""; fs.prenom = ""; fs.prenoms = "";
+                fs.civilite = pers.civilite; fs.maj = Date.now(); }
+        else { const q = inscrireAuRepertoire(pers); if(q) pers.pid = q; }
+        saveLists(); autosave();
+        renderPeople(kind); refreshAllVilles(); renderPreview();
+        toast("Société : le nom est devenu sa dénomination");
+        return;
+      }
       if(pers){
         const pid = inscrireAuRepertoire(pers);
         if(pid && pers.pid !== pid) pers.pid = pid;
@@ -24217,7 +24314,8 @@ document.addEventListener("input", e=>{
     return;
   }
   if(t.dataset.book !== undefined){
-    const cb = cibleBook(t.dataset.book);
+    /* l'identifiant l'emporte sur le rang : voir `marquerPid` */
+    const cb = cibleBook(t.dataset.book, t.dataset.pid);
     if(!cb) return;
     const k = cb.k, i = String(cb.i), f = cb.f;
     noterMajFiche(k, i, cb.obj[f], t.value, libelleChampProspect(f));
@@ -24533,7 +24631,8 @@ document.addEventListener("focusout", e=>{
   }
   /* carnets d'adresses */
   if(t.dataset.book !== undefined){
-    const cb = cibleBook(t.dataset.book);
+    /* l'identifiant l'emporte sur le rang : voir `marquerPid` */
+    const cb = cibleBook(t.dataset.book, t.dataset.pid);
     if(!cb) return;
     const k = cb.k, i = String(cb.i), f = cb.f;
     if(casseLibre(k, f)) return;                 // saisi tel quel
@@ -24813,7 +24912,7 @@ document.addEventListener("change", e=>{
 
 document.addEventListener("click", e=>{
   const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
-    "[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
+    "[data-vsoc],[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
     "[data-refuser],[data-reproposer],[data-proposer],[data-visite],#btnHisto,.tab,#docSeg button,#btnPlierTout,#btnDeplierTout");
@@ -25145,6 +25244,15 @@ document.addEventListener("click", e=>{
     return;
   }
   if(t.dataset.oliste !== undefined){ ouvrirListe(t.dataset.oliste); return; }
+  if(t.dataset.vsoc !== undefined){
+    /* le lien du bloc d'un dossier : on sait de quelle PARTIE il s'agit, on
+       peut donc créer sa fiche si elle manque plutôt que d'échouer */
+    const carte = t.closest(".person");
+    const m = carte ? /^pers_(vendeurs|acquereurs)_(\d+)$/.exec(carte.id || "") : null;
+    const part = m ? (D[m[1]] || [])[+m[2]] : null;
+    ouvrirFicheDuRepertoire(t.dataset.vsoc || (part || {}).pid || "", part);
+    return;
+  }
   if(t.dataset.vpers){
     empilerFenetre();
     PERS.ouvert = t.dataset.vpers; PERS.onglet = "ident";
@@ -30219,6 +30327,25 @@ const AIDE = [
   "ouverture de la fiche, et les documents — fiche notaire, dossier de vente — "+
   "l'écrivent sous la première, à sa place. La case « <b>Même adresse que le "+
   "précédent</b> » la recopie aussi."],
+ ["Créer une société, et lui donner ses représentants",
+  "<b>Le chemin, d'un bout à l'autre.</b> « <b>+ Ajouter un vendeur</b> » demande "+
+  "désormais deux choses : la <b>qualité</b> — M., Mme, ou SCI, SARL, SAS, Société, "+
+  "indivision, succession — et le <b>nom</b>. "+
+  "Dès que la qualité est celle d'une société, la fenêtre l'annonce et le bouton "+
+  "change de promesse : « <b>Créer la société et ouvrir sa fiche</b> ». "+
+  "Le nom saisi devient alors sa <b>dénomination</b> — jamais son nom de famille, "+
+  "qu'une société n'a pas — et l'on <b>arrive sur sa fiche du répertoire</b>. C'est là, "+
+  "et seulement là, que ses personnes s'ajoutent : bouton « <b>+ Ajouter une "+
+  "personne</b> », le rôle d'abord, le nom ensuite. "+
+  "Chaque représentant reçoit <b>sa propre fiche</b> : on y arrive après l'avoir "+
+  "nommé, on y saisit sa civilité, son prénom, ses coordonnées, et l'on revient à la "+
+  "société pour le suivant. "+
+  "Les <b>coordonnées de la société</b> se remplissent alors toutes seules, selon la "+
+  "règle habituelle : celles du premier représentant en Téléphone 1 et Email 1, celles "+
+  "du deuxième en Téléphone 2 et Email 2, le nom de chacun en libellé. "+
+  "<b>De retour au dossier</b>, la société montre ses personnes en liste, avec leurs "+
+  "liens, et le lien du bas ouvre directement <b>sa fiche</b> — pas la liste du "+
+  "répertoire."],
  ["Une société saisie sans qualité",
   "<b>Ce qui n'allait pas.</b> Une société n'était reconnue comme telle que par sa "+
   "<b>qualité</b> — SCI, SARL, Société… Une dénomination saisie <b>sans qualité "+
@@ -35917,10 +36044,15 @@ document.addEventListener("focusout", e=>{
   chargerSeance();
   /* le recensement des personnes : une fois, au démarrage */
   try{ enrolerLesPersonnes(); }catch(e){ if(window.console) console.error(e); }
-  /* les sociétés prennent les coordonnées de leurs représentants : une fois
-     au démarrage, pour celles d'avant cette règle */
-  try{ if(majToutesLesSocietes()) saveLists(); }
-  catch(e){ if(window.console) console.error(e); }
+  /* Deux remises d'aplomb, une fois au démarrage, pour les fiches d'avant
+     ces règles : la dénomination d'une société restée dans la case NOM, et
+     les coordonnées qui doivent descendre des représentants. */
+  try{
+    let bouge = false;
+    (L.personnes || []).forEach(f=>{ if(normaliserSociete(f)) bouge = true; });
+    if(majToutesLesSocietes()) bouge = true;
+    if(bouge) saveLists();
+  }catch(e){ if(window.console) console.error(e); }
   try{ enrolerLesMetiers(); saveLists(); }
   catch(e){ if(window.console) console.error(e); }
   /* avant de charger le dossier courant : un notaire renommé ailleurs ne doit
