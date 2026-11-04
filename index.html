@@ -964,6 +964,11 @@ table.envois tr.repondu td.emode b{color:#166534}
 .rclib{font-style:normal;font-size:10.5px;color:var(--ink-3);
   text-transform:uppercase;letter-spacing:.3px}
 .socsep{margin-top:4px}
+/* le compte, dans le titre du bloc : on voit d'un coup d'œil, sans lire la
+   liste, que la saisie a bien pris */
+.soccompte{margin-left:8px;font-weight:600;color:var(--ink-2);
+  background:#fff;border:1px solid var(--trait);border-radius:999px;
+  padding:1px 8px;font-size:.84em;text-transform:none;letter-spacing:0}
 .socbloc{grid-column:1/-1;border:1px solid var(--line);border-radius:10px;
   background:#faf7f5;padding:12px 14px 10px}
 /* une personne d'une société est une LIGNE, pas une seconde grille de
@@ -2816,7 +2821,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 novembre 2026, 14 h 10">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 novembre 2026, 16 h 05">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3040,7 +3045,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 novembre 2026, 14 h 10</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 novembre 2026, 16 h 05</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -9391,9 +9396,38 @@ function ouvrirSecondeAdresse(ref){
    dossier manquerait dans l'autre, et la fiche de la SCI ne saurait pas qui
    la représente. Ce qu'un dossier portait encore rejoint la fiche à la
    première lecture, et ne s'y met pas deux fois. */
+/* ------------------------------------------- RETROUVER LA FICHE D'UNE SOCIÉTÉ
+   La liste des représentants vit sur la FICHE DU RÉPERTOIRE, et le dossier
+   la rejoignait par le seul identifiant de sa partie. Quand cet identifiant
+   manque — une société tapée directement dans les cases du dossier n'en reçoit
+   un qu'au recensement, c'est-à-dire au prochain démarrage — ou qu'il ne mène
+   à aucune fiche, le dossier lisait la liste VIDE de sa propre copie : les
+   gérants étaient bel et bien au répertoire, et la fiche du bien affichait
+   « Aucune personne enregistrée ». On ne savait plus si la saisie avait pris.
+
+   On rattrape donc par le NOM : une dénomination ne se porte qu'une fois, et
+   si une seule fiche de société la porte, c'est elle. S'il y en a plusieurs,
+   on ne devine pas. L'identifiant retrouvé est posé sur la partie du dossier :
+   le lien devient définitif, et la fois suivante il n'y a plus rien à
+   chercher. */
+function ficheDeLaSociete(p){
+  if(!p) return null;
+  const f = fichePersonne(p.pid);
+  if(f) return f;
+  if(!estMorale(p)) return null;
+  const n = fold(nomPersonne(p));
+  if(!n) return null;
+  const cand = (L.personnes || []).filter(x=>
+    x && x !== p && estMorale(x) && fold(nomPersonne(x)) === n);
+  const trouve = cand.length === 1 ? cand[0]
+    : cand.filter(x=> Array.isArray(x.repr) && x.repr.length).length === 1
+      ? cand.filter(x=> Array.isArray(x.repr) && x.repr.length)[0] : null;
+  if(trouve && trouve.pid) p.pid = trouve.pid;
+  return trouve;
+}
 function reprDe(p){
   if(!p) return [];
-  const f = fichePersonne(p.pid);
+  const f = ficheDeLaSociete(p);
   const cible = (f && f !== p) ? f : p;
   if(!Array.isArray(cible.repr)) cible.repr = [];
   if(cible !== p && Array.isArray(p.repr) && p.repr.length){
@@ -9613,6 +9647,10 @@ function blocRepresentants(p, ref){
    — appeler, écrire, ouvrir la fiche —, et le chemin vers le répertoire
    pour qui veut corriger. */
 function blocReprLecture(p, l, quoi, mot){
+  /* TROIS SITUATIONS, ET IL FAUT LES DISTINGUER. Sans fiche au répertoire, il
+     n'y a nulle part où inscrire un représentant : dire « aucune personne
+     enregistrée » ferait croire à une saisie perdue. */
+  const fiche = ficheDeLaSociete(p);
   const lignes = representants(p).map((r, i)=>{
     const tel = telsDe(r)[0], mail = mailsDe(r)[0];
     return `<div class="socline">
@@ -9629,14 +9667,22 @@ function blocReprLecture(p, l, quoi, mot){
       ${r.pid ? `<button type="button" class="xbtn" data-vpers="${esc(r.pid)}"
         title="Sa fiche au répertoire">Sa fiche</button>` : ""}</div>`;
   }).join("");
-  return `<div class="pfsep socsep">${esc(quoi || "La société")} — ${esc(mot)}</div>
+  const combien = lignes
+    ? `<span class="soccompte">${representants(p).length} enregistrée${
+        representants(p).length > 1 ? "s" : ""}</span>` : "";
+  const rien = !fiche
+    ? `<p class="socvide" style="margin:0">Cette société n'a <b>pas encore de fiche
+        au répertoire</b> : c'est là que ses représentants s'inscrivent. Ouvrez-la
+        par le lien ci-dessous — elle sera créée au nom saisi.</p>`
+    : `<p class="muted" style="margin:0">Aucune personne enregistrée pour cette
+        société. Elle s'ajoute sur <b>sa fiche du répertoire</b>.</p>`;
+  return `<div class="pfsep socsep">${esc(quoi || "La société")} — ${esc(mot)}${combien}</div>
     <div class="socbloc lecture">
-      ${lignes || `<p class="muted" style="margin:0">Aucune personne enregistrée pour
-        cette société. Elle s'ajoute sur <b>sa fiche du répertoire</b>.</p>`}
+      ${lignes || rien}
       <p class="dnote">Ces personnes appartiennent à la <b>société</b>, pas à ce
         dossier : elles la suivent partout où elle intervient. Pour en ajouter une,
         en changer le rôle ou en retirer une, ouvrez <button type="button"
-          class="lienbtn" data-vsoc="${esc(p.pid || "")}"
+          class="lienbtn" data-vsoc="${esc((fiche || p).pid || "")}"
           >sa fiche au répertoire</button>.</p>
     </div>`;
 }
@@ -18278,7 +18324,11 @@ function etatCourant(){
   const p = pageActive();
   if(p === "prospects")  return {page:"prospects",  id:PROSP.ouvert, volet:PROSP.page};
   if(p === "repertoire") return {page:"repertoire", id:PERS.ouvert,  volet:PERS.onglet};
-  if(p === "bien" || p === "mandat")
+  /* TOUTES les pages du dossier se retiennent avec son identifiant, pas
+     seulement « le bien » et « le mandat » : on part de l'onglet VENDEURS
+     pour ouvrir la fiche d'un gérant, et le bouton de retour doit ramener
+     là d'où l'on vient, en le disant. */
+  if(ONGLETS_DOSSIER.includes(p))
     return {page:p, id:(typeof D !== "undefined" && D ? D.id : ""), volet:""};
   return {page:p, id:"", volet:""};
 }
@@ -18299,7 +18349,7 @@ function libEtat(e){
     const f = e.id ? fichePersonne(e.id) : null;
     return f ? (nomUsuel(f) || "sa fiche") : "Le répertoire";
   }
-  if(e.page === "bien" || e.page === "mandat") return "Le dossier";
+  if(ONGLETS_DOSSIER.includes(e.page)) return "Le dossier";
   return "la page précédente";
 }
 function retablirFenetre(e){
@@ -18311,9 +18361,14 @@ function retablirFenetre(e){
     PERS.ouvert = e.id || ""; PERS.onglet = e.volet || "ident";
     PERS.fg = ""; PERS.fq = "";
     activerOnglet("repertoire"); renderRepertoire();
-  } else if((e.page === "bien" || e.page === "mandat") && e.id
+  } else if(ONGLETS_DOSSIER.includes(e.page) && e.id
              && typeof ouvrirDossier === "function"){
-    ouvrirDossier(e.id); activerOnglet(e.page);
+    /* le dossier d'où l'on part n'est pas forcément enregistré — un bien
+       qu'on vient de saisir. S'il ne se retrouve pas, on ne le remplace
+       surtout pas par un dossier vide : on se contente de revenir à sa page,
+       celle qui est encore à l'écran. */
+    if(e.id !== ((typeof D !== "undefined" && D) ? D.id : "")) ouvrirDossier(e.id);
+    activerOnglet(e.page);
   } else activerOnglet(e.page);
   window.scrollTo(0, 0);
 }
@@ -30504,6 +30559,33 @@ const AIDE = [
   "MARTIN, gérant de la SARL MARTIN, existe pour de bon — il a un prénom, un numéro, "+
   "une adresse. Seule disparaît la fiche <b>sans rien du tout</b> qui ne fait que "+
   "répéter la dénomination."],
+ ["Le dossier dit ce que le répertoire sait",
+  "<b>Ce qui n'allait pas.</b> Les représentants vivent sur la <b>fiche du "+
+  "répertoire</b> de la société, et le dossier allait les y chercher par le seul "+
+  "<b>identifiant</b> de sa partie. Quand cet identifiant manquait — une société tapée "+
+  "directement dans les cases du dossier n'en reçoit un qu'au recensement, c'est-à-dire "+
+  "au prochain démarrage — ou qu'il ne menait à aucune fiche, le bien affichait "+
+  "« Aucune personne enregistrée » <b>alors que les gérants étaient bien au "+
+  "répertoire</b>. On ne savait plus si la saisie avait pris. "+
+  "<b>Désormais le nom rattrape le lien.</b> Une dénomination ne se porte qu'une fois : "+
+  "si une seule fiche de société la porte, c'est elle, et ses représentants "+
+  "s'affichent. L'identifiant retrouvé est <b>posé sur la partie du dossier</b> — le "+
+  "lien devient définitif, et la fois suivante il n'y a plus rien à chercher. "+
+  "<b>Le compte est écrit dans le titre du bloc</b> — « SCI — les représentants "+
+  "<i>2 enregistrées</i> » : on voit d'un coup d'œil, sans lire la liste, que la saisie "+
+  "est là. "+
+  "<b>Et le message dit la vérité.</b> Une société qui n'a pas encore de fiche au "+
+  "répertoire l'annonce — il n'y a nulle part où inscrire un représentant tant qu'elle "+
+  "n'en a pas — au lieu de laisser croire à une liste vide. Le lien du bas la crée au "+
+  "nom saisi et l'ouvre."],
+ ["Le bouton de retour nomme le dossier",
+  "Le bouton de retour dit <b>où</b> il ramène. Il ne savait le faire que depuis « le "+
+  "bien » et « le mandat » : parti de l'onglet <b>Vendeurs</b> pour ouvrir la fiche "+
+  "d'un gérant, il annonçait « la page précédente », et l'on n'osait pas le presser. "+
+  "Toutes les pages d'un dossier se retiennent maintenant avec lui : « ‹ Le dossier », "+
+  "et l'on retombe sur l'onglet d'où l'on venait. Un dossier <b>pas encore "+
+  "enregistré</b> n'est jamais remplacé par un dossier vide au retour : c'est celui "+
+  "qui est à l'écran."],
  ["Deux cases pour les prénoms",
   "La fiche porte <b>« Prénom »</b> — le premier, celui dont on se sert — et <b>« Autres "+
   "prénoms »</b>, qui n'existent que pour l'état civil. On n'écrit à personne avec trois "+
