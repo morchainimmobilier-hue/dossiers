@@ -2816,7 +2816,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 novembre 2026, 10 h 40">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 novembre 2026, 11 h 15">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3040,7 +3040,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 novembre 2026, 10 h 40</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 novembre 2026, 11 h 15</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3299,6 +3299,19 @@ const INDICATIFS = {
 };
 
 /* ---------------------------------------------------------------- listes */
+/* ------------------------------------------------- DEUX ACCOLADES
+   Les modèles de courriel marquent leurs trous par deux accolades —
+   {nom}, {ville}, doublées. Pour les MONTRER dans l'aide, il faut les
+   écrire ; et les écrire côte à côte dans ce fichier le rendrait illisible
+   à Jekyll, le moteur que GitHub Pages applique par défaut : il y verrait
+   une expression de son propre langage, échouerait à la lire, et le
+   déploiement entier serait refusé. On les assemble donc à l'exécution.
+
+   La vraie protection reste le fichier `.nojekyll`, déposé à côté de la
+   page : sans lui, Jekyll effacerait AUSSI tous les trous des modèles. Ce
+   détour-ci évite seulement qu'un `.nojekyll` oublié fasse échouer la
+   publication au lieu de l'abîmer en silence. */
+const MOUST = "{" + "{", MFERM = "}" + "}";
 /* Les trois qualités d'une personne PHYSIQUE. Tout le reste — SCI, SARL,
    indivision, succession — désigne une entité juridique.
 
@@ -12738,7 +12751,7 @@ function carteCourriels(){
       </div>
       <details class="crmots"><summary>Les mots remplacés automatiquement</summary>
         <div>${MOTS_COURRIEL.map(([m, quoi])=>
-          `<p><code>{{${esc(m)}}}</code> ${esc(quoi)}</p>`).join("")}</div>
+          `<p><code>${MOUST + esc(m) + MFERM}</code> ${esc(quoi)}</p>`).join("")}</div>
       </details>
     </div></div>`;
 }
@@ -12858,7 +12871,7 @@ function carteWhatsApp(){
       </div>
       <details class="crmots"><summary>Les mots remplacés automatiquement</summary>
         <div>${MOTS_COURRIEL.map(([m, quoi])=>
-          `<p><code>{{${esc(m)}}}</code> ${esc(quoi)}</p>`).join("")}</div>
+          `<p><code>${MOUST + esc(m) + MFERM}</code> ${esc(quoi)}</p>`).join("")}</div>
       </details>
     </div></div>`;
 }
