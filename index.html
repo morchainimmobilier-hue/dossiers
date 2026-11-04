@@ -948,6 +948,10 @@ table.envois tr.repondu td.emode b{color:#166534}
   background:#fbf7f5;color:var(--ink-2);font-size:12.5px}
 .coordpair > .coordlib:focus{color:var(--ink)}
 .coordpair > .addinline{flex:0 0 auto}
+/* une coordonnée héritée des représentants : elle se lit, elle ne se tape pas */
+.coordpair.herite > input{background:#f6f2f0;color:var(--ink-2);cursor:default}
+.coordpair.herite > .coordlib{background:#f6f2f0;color:var(--ink-2);
+  font-style:italic;width:auto;min-width:112px;max-width:190px}
 /* une case qui porte un numéro, son bouton, son libellé et le « + » a
    besoin de deux places : sans quoi le numéro se lit à moitié. Deux
    coordonnées par ligne, donc — c'est la hauteur de l'ancien rang de
@@ -983,6 +987,25 @@ table.envois tr.repondu td.emode b{color:#166534}
 .soclu .socvide{color:var(--ink-3);font-style:italic}
 .socact{display:flex;align-items:center;gap:6px;justify-content:flex-end}
 .socrow .pgrid{padding:0}
+/* la liste en lecture, dans un dossier : une personne par ligne, à plat */
+.socbloc.lecture{padding:10px 14px 8px}
+.socline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:7px 0;border-top:1px solid var(--line-2)}
+.socline:first-child{border-top:0;padding-top:0}
+.socline .grow{flex:1}
+.socline .idx{flex:0 0 auto;width:21px;height:21px;border-radius:50%;
+  background:var(--accent-soft);color:var(--bandeau);font:700 11px/21px inherit;
+  text-align:center}
+.socline > b{font-weight:650;color:var(--bandeau);white-space:nowrap}
+.socline .socrol{font-size:12px;color:var(--ink-3);background:var(--line-2);
+  border-radius:999px;padding:1px 9px;white-space:nowrap}
+.socline .soclien{display:inline-flex;align-items:center;gap:5px;
+  font-size:12.5px;color:var(--ink-2);min-width:0}
+.socline .soclien > .addinline{flex:0 0 auto}
+@media (max-width:760px){
+  .socline{align-items:flex-start}
+  .socline > b{white-space:normal}
+}
 .socbloc .dnote{margin:2px 0 0}
 @media (max-width:1100px){
   .socrow{grid-template-columns:minmax(0,1fr) 200px;row-gap:7px}
@@ -2793,7 +2816,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 3 novembre 2026, 23 h 15">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 novembre 2026, 10 h 05">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3017,7 +3040,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>3 novembre 2026, 23 h 15</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 novembre 2026, 10 h 05</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4892,6 +4915,8 @@ function rafraichirDepuisRepertoire(p){
    ouvert est traité à part — il n'est pas encore écrit. */
 function repandreFichePersonne(f){
   if(!f || !f.pid) return;
+  /* si elle représente des sociétés, leurs coordonnées en découlent */
+  majSocietesDe(f.pid);
   const tous = allDossiers();
   let bouge = false;
   Object.keys(tous).forEach(id=>{
@@ -5783,6 +5808,17 @@ function champLibelle(k){ return (LIB_COORD[k] || [])[0] || ""; }
 /* le chemin d'un champ voisin : « vendeurs.0.tel1 » → « vendeurs.0.telLib1 »,
    « personnes:3:tel1 » → « personnes:3:telLib1 ». Le séparateur diffère
    selon l'endroit ; le dernier morceau, lui, est toujours le nom du champ. */
+/* De QUI ce chemin porte-t-il la coordonnée ? « vendeurs.0.tel1 » désigne
+   une partie du dossier ouvert, « personnes:3:tel1 » une fiche du
+   répertoire. Sert à savoir si l'on a affaire à une société. */
+function porteurDuChemin(path){
+  const t = String(path || "");
+  let m = /^(vendeurs|acquereurs)\.(\d+)\./.exec(t);
+  if(m) return ((typeof D !== "undefined" && D ? D[m[1]] : null) || [])[+m[2]] || null;
+  m = /^personnes:(\d+):/.exec(t);
+  if(m) return (L.personnes || [])[+m[1]] || null;
+  return null;
+}
 function cheminVoisin(path, champ){
   const t = String(path);
   const prop = t.split(/[.:]/).pop();
@@ -5799,23 +5835,31 @@ function controlRaw(path,kind,v,grp,attr,vLib){
     const val = String(vLib == null ? "" : vLib);
     const a = `${attr}="${esc(path)}"`;
     const estMail = /mail/i.test(prop);
+    /* Les coordonnées d'une société VIENNENT de ses représentants : on ne
+       les tape pas ici, on les corrige sur la fiche de la personne. La case
+       le dit plutôt que de laisser écrire ce qui sera réécrit. */
+    const hote = porteurDuChemin(path);
+    const herite = !!(hote && estMorale(hote) && representants(hote).length);
     const bouton = estMail
       ? `<button type="button" class="addinline contact" data-mail
            title="Écrire un courriel">${IC_MAIL}</button>`
       : `<button type="button" class="addinline contact" data-wa
            title="Envoyer un message WhatsApp">${IC_MSG}</button>`;
-    return `<span class="coordpair">
-      <input type="text" ${a} value="${esc(v)}" autocomplete="off">
+    return `<span class="coordpair${herite ? " herite" : ""}">
+      <input type="text" ${a} value="${esc(v)}" autocomplete="off"${herite
+        ? ` readonly title="Celle de ${esc(val || "son représentant")} — elle se corrige`
+          + ` sur sa fiche"` : ""}>
       ${bouton}
-      <select ${attr}="${esc(chemin)}" class="coordlib"
+      <select ${attr}="${esc(chemin)}" class="coordlib"${herite ? " disabled" : ""}
         title="À qui ${estMail ? "cette adresse" : "ce numéro"} appartient"
         ><option value="">—</option>${liste.map(o=>
           `<option${o === val ? " selected" : ""}>${esc(o)}</option>`).join("")}${
         val && liste.indexOf(val) < 0 ? `<option selected>${esc(val)}</option>` : ""
       }</select>
-      <button type="button" class="addinline" data-addlist="list:${def[1]}"
+      ${herite ? "" : `<button type="button" class="addinline"
+        data-addlist="list:${def[1]}"
         data-target="${esc(chemin)}" data-attr="${esc(attr)}"
-        title="Ajouter un libellé à cette liste">+</button></span>`;
+        title="Ajouter un libellé à cette liste">+</button>`}</span>`;
   }
   /* ------------------------------------- LA PREMIÈRE LIGNE D'ADRESSE
      Elle porte le « + » qui ouvre la seconde, quand il en faut une. */
@@ -9271,6 +9315,9 @@ function lienReprVide(){ return {pid:"", role:""}; }
 /* la liste vit sur la fiche : c'est elle qu'on enregistre, et le dossier qui
    l'affiche n'a qu'à se redessiner */
 function enregistrerRepr(h){
+  /* la liste des personnes a bougé : les coordonnées de la société, qui en
+     découlent, se refont — voir `majCoordSociete` */
+  if(h && h.p) majCoordSociete(fichePersonne(h.p.pid) || h.p);
   saveLists();
   if(h && h.dossier){ autosave(); renderPeople(h.kind); refreshAllVilles(); renderPreview(); }
   else renderRepertoire();
@@ -9353,11 +9400,74 @@ function societesRepresentees(pid){
    la porte, et il ne garde en propre que le RÔLE. Pour corriger un numéro,
    on va sur la fiche — il n'y a qu'un endroit où l'on puisse le faire, et
    c'est tout l'intérêt. */
+/* ------------------------------- LES COORDONNÉES D'UNE SOCIÉTÉ
+   Une SCI n'a pas de téléphone : ce sont ceux de ses représentants qu'on
+   compose. Ses deux numéros et ses deux courriels sont donc CEUX DE SES
+   DEUX PREMIÈRES PERSONNES, et le libellé porte leur nom — « 06 11 22 33 44
+   (M. Luc ROUX) ». Tout ce qui lit une personne — les documents, les
+   destinataires d'un courriel, les contacts d'un avis — y gagne sans rien
+   changer : il lit la fiche de la société, et y trouve de quoi joindre
+   quelqu'un.
+
+   Ils sont ÉCRITS sur la fiche, pas calculés à la volée : ainsi la fiche
+   montre ce qu'elle porte, et le Drive comme la base partagée les
+   transportent. La contrepartie est de les tenir à jour — c'est le rôle de
+   cette fonction, appelée à chaque fois qu'un lien bouge ou qu'une fiche de
+   personne change. */
+function majCoordSociete(soc){
+  if(!soc || !estMorale(soc)) return false;
+  const l = representants(soc);
+  if(!l.length) return false;
+  const avant = JSON.stringify([soc.tel1, soc.telLib1, soc.tel2, soc.telLib2,
+                                soc.email1, soc.mailLib1, soc.email2, soc.mailLib2]);
+  [0, 1].forEach(i=>{
+    const r = l[i], n = i + 1;
+    if(!r) return;
+    const nom = nomRepr(r) || "";
+    const t = (telsDe(r)[0] || {}).val || "";
+    const m = (mailsDe(r)[0] || {}).val || "";
+    /* On n'écrase QUE si la personne a de quoi écrire. Une SCI qui portait
+       son propre numéro de standard ne doit pas le perdre parce que son
+       gérant n'a pas renseigné le sien : on ne vide jamais une case pour
+       la remplacer par du vide. */
+    if(t){ soc["tel" + n] = t;   soc["telLib" + n]  = nom; }
+    if(m){ soc["email" + n] = m; soc["mailLib" + n] = nom; }
+  });
+  return JSON.stringify([soc.tel1, soc.telLib1, soc.tel2, soc.telLib2,
+                         soc.email1, soc.mailLib1, soc.email2, soc.mailLib2]) !== avant;
+}
+/* une personne vient de changer : les sociétés qu'elle représente suivent */
+function majSocietesDe(pid){
+  if(!pid) return false;
+  let bouge = false;
+  (L.personnes || []).forEach(f=>{
+    if(!f || !estMorale(f)) return;
+    if(!reprDe(f).some(x=> x && x.pid === pid)) return;
+    if(majCoordSociete(f)) bouge = true;
+  });
+  if(bouge) saveLists();
+  return bouge;
+}
+/* le même passage sur toutes les sociétés, au démarrage */
+function majToutesLesSocietes(){
+  let bouge = false;
+  (L.personnes || []).forEach(f=>{
+    if(f && estMorale(f) && majCoordSociete(f)) bouge = true;
+  });
+  return bouge;
+}
 function blocRepresentants(p, ref){
   if(!p || !estMorale(p)) return "";
   const l = reprDe(p);
   const quoi = String(p.civilite || "").trim();
   const mot = /indivis|success/i.test(quoi) ? "les personnes" : "les représentants";
+  /* DEUX LECTURES DU MÊME LIEN. Sur la fiche du RÉPERTOIRE, la société se
+     modifie : on ajoute une personne, on change son rôle, on la retire. Dans
+     un DOSSIER, on ne fait que s'en servir : la liste s'y lit, avec les liens
+     habituels, et « Au répertoire » mène là où l'on corrige. Une même chose
+     modifiable à deux endroits finit toujours par l'être à contretemps. */
+  const auRepertoire = String(ref || "").indexOf("r:") === 0;
+  if(!auRepertoire) return blocReprLecture(p, l, quoi, mot);
   const lignes = l.map((x, i)=>{
     const f = ficheDuLien(x);
     const path = ref + "|" + i + "|role";
@@ -9400,6 +9510,37 @@ function blocRepresentants(p, ref){
         saisit que le <b>rôle</b>, qui ne regarde que cette société — le gérant d'une
         SCI n'est pas « gérant » dans sa propre vie. Tout le reste se corrige sur
         <b>sa fiche</b>, et se répercute partout.</p>
+    </div>`;
+}
+/* Dans un dossier : la liste, et rien de plus. Les mêmes liens que partout
+   — appeler, écrire, ouvrir la fiche —, et le chemin vers le répertoire
+   pour qui veut corriger. */
+function blocReprLecture(p, l, quoi, mot){
+  const lignes = representants(p).map((r, i)=>{
+    const tel = telsDe(r)[0], mail = mailsDe(r)[0];
+    return `<div class="socline">
+      <span class="idx">${i + 1}</span>
+      <b>${esc(nomRepr(r) || "sans nom")}</b>
+      ${r.role ? `<span class="socrol">${esc(r.role.toLowerCase())}</span>` : ""}
+      ${tel ? `<span class="soclien">${esc(tel.val)}
+        <button type="button" class="addinline contact" data-wa="${esc(tel.val)}"
+          title="Envoyer un message WhatsApp">${IC_MSG}</button></span>` : ""}
+      ${mail ? `<span class="soclien">${esc(mail.val)}
+        <button type="button" class="addinline contact" data-mail="${esc(mail.val)}"
+          title="Écrire un courriel">${IC_MAIL}</button></span>` : ""}
+      <span class="grow"></span>
+      ${r.pid ? `<button type="button" class="xbtn" data-vpers="${esc(r.pid)}"
+        title="Sa fiche au répertoire">Sa fiche</button>` : ""}</div>`;
+  }).join("");
+  return `<div class="pfsep socsep">${esc(quoi || "La société")} — ${esc(mot)}</div>
+    <div class="socbloc lecture">
+      ${lignes || `<p class="muted" style="margin:0">Aucune personne enregistrée pour
+        cette société. Elle s'ajoute sur <b>sa fiche du répertoire</b>.</p>`}
+      <p class="dnote">Ces personnes appartiennent à la <b>société</b>, pas à ce
+        dossier : elles la suivent partout où elle intervient. Pour en ajouter une,
+        en changer le rôle ou en retirer une, ouvrez
+        ${p.pid ? `<button type="button" class="lienbtn" data-vpers="${esc(p.pid)}"
+          >sa fiche au répertoire</button>` : "sa fiche au répertoire"}.</p>
     </div>`;
 }
 /* le rôle, et lui seul, se saisit ici */
@@ -14160,6 +14301,18 @@ function dossierEntame(d){
   }
   return false;
 }
+/* Le NOM seul du propriétaire — pas la civilité, pas le prénom : c'est lui
+   qui tient dans une colonne, et c'est par lui qu'on reconnaît l'affaire.
+   Deux propriétaires donnent « ROUX et VIDAL ». */
+function nomProprietaire(d){
+  const l = ((d || {}).vendeurs || []).filter(x=> x && !personneVide(x))
+    .map(x=> estMorale(x) ? String(x.raison || "").trim()
+                          : enMajuscules(x.nom || ""))
+    .filter(Boolean);
+  if(!l.length) return "";
+  return l.length > 2 ? l[0] + " et " + (l.length - 1) + " autres"
+                      : l.join(" et ");
+}
 function bienDe(d){
   return [d.bien && d.bien.adresse, d.bien && d.bien.ville]
          .filter(Boolean).join(" · ") || "—";
@@ -14366,7 +14519,11 @@ function panneauStatuts(cote){
           return `<tr class="adet${d.id===D.id?" cur":""}${enc}" data-adet="${cote}:${s.cls}"${cache}>
             <td class="cdoss"><b>${(d.mandat && d.mandat.num)
                 ? esc(d.mandat.num)
-                : (sansMandat(d) ? "avant mandat" : "(sans numéro)")}</b>
+                : (sansMandat(d)
+                   /* avant le mandat il n'y a pas de numéro : ce qui nomme
+                      le bien, c'est SON PROPRIÉTAIRE */
+                   ? esc(nomProprietaire(d) || "sans propriétaire")
+                   : "(sans numéro)")}</b>
               <b class="ctype">${esc(critBien(d).type || "Bien")}</b>
               <span>${esc(bienDe(d))}${v ? " · " + esc(fdate(v)) : ""}</span></td>
             <td class="nb"></td>
@@ -29588,6 +29745,9 @@ const AIDE = [
   "Les trois premières sont du <b>potentiel</b> : rien n'est engagé, et elles restent "+
   "hors du total — seul ce qui est sous offre ou sous compromis s'additionne, comme "+
   "auparavant. "+
+  "Dans le détail déplié, un bien d'avant le mandat n'a pas de numéro à montrer : sa "+
+  "ligne porte donc le <b>nom de son propriétaire</b>, qui est ce par quoi on le "+
+  "reconnaît. "+
   "Les deux premières n'affichent <b>aucun montant</b>, mais un tiret : le prix et les "+
   "honoraires se fixent à la prise de mandat, et un zéro laisserait croire à une saisie "+
   "oubliée. Le détail se déplie comme pour les autres, et chaque ligne mène au bien. "+
@@ -30004,6 +30164,23 @@ const AIDE = [
   "ouverture de la fiche, et les documents — fiche notaire, dossier de vente — "+
   "l'écrivent sous la première, à sa place. La case « <b>Même adresse que le "+
   "précédent</b> » la recopie aussi."],
+ ["Une SCI se joint par ses gérants",
+  "Une société n'a pas de téléphone : ce sont ceux de ses représentants qu'on compose. "+
+  "Ses coordonnées <b>viennent donc des siens</b> : "+
+  "<b>Téléphone 1</b> et <b>Email 1</b> sont ceux de la <b>première personne</b> de la "+
+  "liste — le gérant —, <b>Téléphone 2</b> et <b>Email 2</b> ceux de la <b>deuxième</b>. "+
+  "Le libellé, à côté de chacun, porte le <b>nom de la personne</b> : « 06 11 22 33 44 "+
+  "(M. Luc ROUX) ». On sait qui l'on appelle. "+
+  "Ces quatre cases sont <b>grisées</b> sur la fiche d'une société qui a des "+
+  "représentants : elles ne se tapent pas, elles se corrigent sur la fiche de la "+
+  "personne, et la société suit aussitôt. Ajoutez un représentant, changez son numéro, "+
+  "retirez-le : les cases se refont toutes seules. "+
+  "<b>Une société sans représentant</b> garde ses propres cases, librement saisissables. "+
+  "Et une case déjà remplie n'est <b>jamais vidée</b> : un gérant qui n'a pas renseigné "+
+  "son numéro ne fait pas perdre à la SCI le standard qu'elle y portait. "+
+  "Tout ce qui lit une personne en profite sans rien changer : la fiche notaire, le "+
+  "dossier de vente, les destinataires d'un courriel, les contacts d'une demande "+
+  "d'avis."],
  ["Une société, et les personnes qui la représentent",
   "Une SCI vend, une succession vend, une indivision vend. La fiche n'avait qu'une case "+
   "« Représentant légal » : un seul nom, aucun rôle, et rien pour la SCI à deux gérants "+
@@ -30020,16 +30197,20 @@ const AIDE = [
   "<b>répertoire</b>, la même que pour tout le monde, avec l'état civil, les deux "+
   "téléphones, les deux adresses électroniques et l'adresse. « Retour » ramène au "+
   "dossier. On recommence pour la personne suivante. "+
-  "<b>Ici ne se saisit que le rôle</b>, et c'est voulu : le rôle ne regarde que cette "+
+  "<b>Deux endroits, deux usages.</b> Sur la <b>fiche du répertoire</b> de la société, "+
+  "tout se modifie : on ajoute une personne, on change son rôle, on la retire. Dans un "+
+  "<b>dossier</b>, on ne fait que s'en servir : les représentants s'y lisent en "+
+  "<b>liste</b>, avec les liens habituels — le numéro, le courriel, « Sa fiche » —, et "+
+  "un lien mène à la fiche de la société pour qui veut corriger. Une même chose "+
+  "modifiable à deux endroits finit toujours par l'être à contretemps. "+
+  "<b>La liste appartient à la société</b>, pas au dossier : reprenez une SCI déjà "+
+  "enregistrée dans un autre mandat, et <b>tous ses représentants descendent avec "+
+  "elle</b>, sans rien ressaisir. "+
+  "<b>Ici ne se saisit que le rôle</b>, et c'est voulu : il ne regarde que cette "+
   "société — le gérant d'une SCI n'est pas « gérant » dans sa propre vie, et il peut "+
-  "être associé d'une autre. Tout le reste appartient à sa fiche. Le bloc ne fait donc "+
-  "que la <b>lire</b> : son nom, ses numéros, son adresse, tels qu'elle les porte. Pour "+
-  "corriger un numéro, on ouvre <b>Sa fiche</b> — il n'y a qu'un endroit où le faire, "+
-  "et c'est tout l'intérêt : la correction se voit aussitôt dans tous les dossiers, "+
-  "sur tous les documents, et dans la liste des destinataires. "+
-  "<b>La liste appartient à la société</b>, pas au dossier : les gérants ajoutés "+
-  "depuis un mandat sont les mêmes que ceux de la fiche de la SCI au répertoire, et "+
-  "que ceux d'un second mandat portant la même SCI. "+
+  "être associé d'une autre. Tout le reste appartient à la personne, et se corrige sur "+
+  "<b>sa fiche</b> : la correction se voit aussitôt dans tous les dossiers, sur tous "+
+  "les documents, et dans la liste des destinataires. "+
   "Sur la fiche d'une personne, <b>« Ce qu'elle représente »</b> montre le lien par "+
   "l'autre bout : les sociétés où elle intervient, et à quel titre. "+
   "Ce ne sont pas des champs de plus sur la société : ce sont des <b>personnes</b>, et "+
@@ -35663,6 +35844,10 @@ document.addEventListener("focusout", e=>{
   chargerSeance();
   /* le recensement des personnes : une fois, au démarrage */
   try{ enrolerLesPersonnes(); }catch(e){ if(window.console) console.error(e); }
+  /* les sociétés prennent les coordonnées de leurs représentants : une fois
+     au démarrage, pour celles d'avant cette règle */
+  try{ if(majToutesLesSocietes()) saveLists(); }
+  catch(e){ if(window.console) console.error(e); }
   try{ enrolerLesMetiers(); saveLists(); }
   catch(e){ if(window.console) console.error(e); }
   /* avant de charger le dossier courant : un notaire renommé ailleurs ne doit
