@@ -2816,7 +2816,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 novembre 2026, 12 h 25">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 novembre 2026, 14 h 10">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3040,7 +3040,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 novembre 2026, 12 h 25</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 novembre 2026, 14 h 10</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4791,15 +4791,67 @@ function normaliserPersonne(p){
      constante déclarée plus bas : une société se reconnaît ici à sa
      DÉNOMINATION, ce qui suffit et ne dépend de rien. */
   if(String(p.raison || "").trim() && !p.repr.length && (p.nom || p.prenom)){
-    p.repr.push(Object.assign(representantVide(), {
-      civilite: p.civiliteRepr || "", prenom: p.prenom || "",
-      nom: p.nom || "", role: "Représentant légal"}));
-    p.nom = ""; p.prenom = ""; p.prenoms = ""; p.civiliteRepr = "";
+    /* ATTENTION AU SOSIE. Cette reprise vient d'un temps où une société
+       rangeait son unique représentant dans SES cases `nom` / `prenom`.
+       Mais une fiche peut aussi porter son propre nom dans les deux cases
+       à la fois — « FOURMI » en dénomination ET en nom —, et ce n'est pas
+       un représentant : c'est elle-même. En faire une personne décalait
+       les vrais gérants d'un rang et donnait à la société le téléphone
+       d'un fantôme. */
+    const n = fold(String(p.nom || "").trim());
+    const r = fold(String(p.raison || "").trim());
+    const memeNom = !!n && (r === n || r.indexOf(n) >= 0 || n.indexOf(r) >= 0);
+    if(memeNom){
+      p.nom = ""; p.prenom = ""; p.prenoms = ""; p.civiliteRepr = "";
+    } else {
+      p.repr.push(Object.assign(representantVide(), {
+        civilite: p.civiliteRepr || "", prenom: p.prenom || "",
+        nom: p.nom || "", role: "Représentant légal"}));
+      p.nom = ""; p.prenom = ""; p.prenoms = ""; p.civiliteRepr = "";
+    }
   }
   p.repr = p.repr.filter(Boolean).map(x=> Object.assign(representantVide(), x));
   /* une qualité de société avec le nom resté dans la case NOM */
   normaliserSociete(p);
   return p;
+}
+/* ---------------------------------------- LES SOSIES À METTRE DEHORS
+   Avant la correction ci-dessus, une société dont le nom figurait dans ses
+   deux cases s'inscrivait elle-même comme « Représentant légal » n° 1 : une
+   fiche sosie, sans coordonnées, qui décalait les vrais représentants et
+   donnait à la société le téléphone de personne. On les retire, et l'on
+   efface la fiche sosie si elle ne sert nulle part ailleurs.
+
+   Ne sont retirés que les liens dont on est sûr : celui qui pointe la
+   société elle-même, et celui qui mène à une fiche de MÊME NOM qu'elle et
+   VIDE de tout — pas un numéro, pas une adresse, pas un prénom. Une
+   personne qui porterait vraiment le nom de sa société, avec ses
+   coordonnées à elle, n'est pas touchée. */
+function nettoyerReprSosies(){
+  let bouge = false;
+  const aEffacer = [];
+  (L.personnes || []).forEach(f=>{
+    if(!f || !Array.isArray(f.repr) || !f.repr.length) return;
+    const quoi = fold(String(f.raison || "").trim());
+    const garde = [];
+    f.repr.forEach(x=>{
+      if(!x || !x.pid){ bouge = true; return; }
+      if(x.pid === f.pid){ bouge = true; return; }        /* elle-même */
+      const g = fichePersonne(x.pid);
+      const vide = g && !String(g.prenom || "").trim()
+        && !g.tel1 && !g.tel2 && !g.email1 && !g.email2
+        && !String(g.adresse || "").trim() && !g.dateNaissance;
+      if(g && quoi && vide && fold(nomPersonne(g)) === quoi){
+        bouge = true; aEffacer.push(g.pid); return;
+      }
+      garde.push(x);
+    });
+    if(garde.length !== f.repr.length){ f.repr = garde; bouge = true; }
+  });
+  aEffacer.forEach(pid=>{
+    try{ if(!ficheServieAilleurs(pid)) retirerFichePersonne(pid); }catch(e){}
+  });
+  return bouge;
 }
 /* ------------------------------------------------- LE LIEN SE DÉGRAISSE
    Le lien d'une société vers une personne ne garde que deux choses :
@@ -10188,6 +10240,11 @@ function ficheServieAilleurs(pid){
     if((dossiersDeLaPersonne(pid) || []).length) return true;
     if((recherchesDeLaPersonne(pid) || []).length) return true;
   }catch(e){ return true; }        /* dans le doute, on ne supprime rien */
+  /* ATTENTION : au démarrage, AUCUN dossier n'est encore ouvert et `D` vaut
+     null. La réparation des sosies passe par ici à ce moment-là : sans ce
+     garde-fou, la lecture de D[k] levait une erreur, l'appelant la prenait
+     pour « fiche utilisée », et le doublon restait au répertoire. */
+  if(!D) return false;
   return ["vendeurs","acquereurs"].some(k=>
     (D[k] || []).filter(x=> x && x.pid === pid).length > 1);
 }
@@ -30426,6 +30483,27 @@ const AIDE = [
   "Les documents suivent : le dossier de vente écrit « Représentée par M. Luc ROUX, "+
   "représentant légal, Mme Claire VIDAL, gérant majoritaire ». Les courriels aussi : "+
   "l'adresse d'un gérant est un destinataire, et souvent le seul qui réponde."],
+ ["Une société qui se représentait elle-même",
+  "<b>Ce qui n'allait pas.</b> La reprise des anciennes fiches fait du « représentant "+
+  "légal » écrit dans les cases de la société sa première personne. Mais certaines "+
+  "fiches portaient <b>leur propre nom dans les deux cases à la fois</b> — « FOURMI » "+
+  "en dénomination <i>et</i> en nom de famille. La reprise y voyait un représentant, et "+
+  "fabriquait une personne nommée FOURMI, « représentant légal » de la SCI FOURMI. "+
+  "Trois dégâts ensuite : les <b>vrais gérants étaient décalés</b> en 2 et 3 ; le "+
+  "<b>téléphone et le courriel</b> de la société étaient repris sur ce sosie, qui n'en "+
+  "avait aucun, donc restaient vides ; et une <b>fiche de plus</b> traînait au "+
+  "répertoire, du même nom que la société. "+
+  "<b>Désormais</b> la reprise compare les deux cases : un nom qui est celui de la "+
+  "société n'est pas un représentant, c'est elle-même — il est simplement effacé, et "+
+  "la fiche reste courte comme toute fiche de société. "+
+  "<b>Et ce qui était déjà abîmé se répare au démarrage</b> : le sosie est retiré de la "+
+  "liste des représentants, sa fiche vide quitte le répertoire, les gérants reprennent "+
+  "leurs places 1 et 2, et les coordonnées de la société redescendent du premier puis "+
+  "du second. Pour la SCI FOURMI : <b>1. Stevanovitch, 2. Givet</b>, et rien de plus. "+
+  "<b>Un vrai gérant qui porte le nom de sa société n'est pas touché</b> : M. Jean "+
+  "MARTIN, gérant de la SARL MARTIN, existe pour de bon — il a un prénom, un numéro, "+
+  "une adresse. Seule disparaît la fiche <b>sans rien du tout</b> qui ne fait que "+
+  "répéter la dénomination."],
  ["Deux cases pour les prénoms",
   "La fiche porte <b>« Prénom »</b> — le premier, celui dont on se sert — et <b>« Autres "+
   "prénoms »</b>, qui n'existent que pour l'état civil. On n'écrit à personne avec trois "+
@@ -36050,6 +36128,7 @@ document.addEventListener("focusout", e=>{
   try{
     let bouge = false;
     (L.personnes || []).forEach(f=>{ if(normaliserSociete(f)) bouge = true; });
+    if(nettoyerReprSosies()) bouge = true;
     if(majToutesLesSocietes()) bouge = true;
     if(bouge) saveLists();
   }catch(e){ if(window.console) console.error(e); }
