@@ -2816,7 +2816,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 novembre 2026, 10 h 05">Dossiers de vente</div>
+  <div class="brand" title="Version du 4 novembre 2026, 10 h 40">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3040,7 +3040,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 novembre 2026, 10 h 05</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>4 novembre 2026, 10 h 40</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3299,6 +3299,15 @@ const INDICATIFS = {
 };
 
 /* ---------------------------------------------------------------- listes */
+/* Les trois qualités d'une personne PHYSIQUE. Tout le reste — SCI, SARL,
+   indivision, succession — désigne une entité juridique.
+
+   Elle est déclarée ICI, tout en haut, et non près des fonctions qui s'en
+   servent : la reprise des données (`normaliserPersonne`) la lit, et elle
+   court pendant `loadLists()`, c'est-à-dire avant que le reste du fichier
+   soit évalué. Une `const` déclarée plus bas serait, à ce moment-là, dans
+   sa zone morte — « Cannot access CIV_PHYSIQUES before initialization ». */
+const CIV_PHYSIQUES = ["M.","Mme","M. et Mme"];
 const LISTS_DEFAULT = {
   mandat:     ["Simple","Semi-exclusif","Exclusif","Délégation"],
   /* L'ordre compte : c'est celui de la liste déroulante, du plus courant au
@@ -4775,6 +4784,8 @@ function normaliserPersonne(p){
     p.nom = ""; p.prenom = ""; p.prenoms = ""; p.civiliteRepr = "";
   }
   p.repr = p.repr.filter(Boolean).map(x=> Object.assign(representantVide(), x));
+  /* une qualité de société avec le nom resté dans la case NOM */
+  normaliserSociete(p);
   return p;
 }
 /* ------------------------------------------------- LE LIEN SE DÉGRAISSE
@@ -9194,9 +9205,14 @@ function refreshCalcs(){
 /* ------------------------------------------------------------- personnes */
 /* Une qualité autre que M. / Mme / M. et Mme désigne une personne morale ou une
    indivision : on saisit d'abord sa dénomination, puis son représentant. */
-const CIV_PHYSIQUES = ["M.","Mme","M. et Mme"];
 function estMorale(p){
-  return !!(p && p.civilite && !CIV_PHYSIQUES.includes(p.civilite));
+  if(!p) return false;
+  /* UNE DÉNOMINATION FAIT UNE SOCIÉTÉ, même sans qualité choisie. Une SCI
+     saisie sans qualité n'était ni une personne physique — elle n'a ni nom
+     ni prénom — ni une personne morale : elle passait pour une fiche VIDE,
+     et disparaissait du répertoire comme des recherches. */
+  if(String(p.raison || "").trim()) return true;
+  return !!(p.civilite && !CIV_PHYSIQUES.includes(p.civilite));
 }
 /* Le schéma d'une fiche de personne. UN SEUL, pour le dossier comme pour le
    répertoire : c'est lui qui garantit qu'on voit partout la même chose.
@@ -9859,6 +9875,21 @@ function titrePersonne(p){
     return [c, r].filter(Boolean).join(" ");
   }
   return [p.civilite,p.prenom,(p.nom||"").toUpperCase()].filter(Boolean).join(" ");
+}
+/* Une dénomination restée dans la case NOM — c'est ainsi qu'une SCI entre
+   par une recherche, qui ne demande qu'un nom — est remise à sa place. Sans
+   cela la fiche passe pour une personne physique : pas de bloc des
+   représentants, et la qualité choisie ferait disparaître le nom avec la
+   case qui le portait. */
+function normaliserSociete(p){
+  if(!p) return false;
+  const soc = p.civilite && CIV_PHYSIQUES.indexOf(p.civilite) < 0;
+  if(!soc) return false;
+  if(String(p.raison || "").trim()) return false;
+  const n = String(p.nom || "").trim();
+  if(!n) return false;
+  p.raison = n; p.nom = ""; p.prenom = ""; p.prenoms = "";
+  return true;
 }
 /* =====================================================================
    UN VENDEUR SE CRÉE PAR SON NOM
@@ -22328,7 +22359,7 @@ function coordLisible(l){
 /* l'intitulé court d'une personne, pour les en-têtes de fiches */
 /* une fiche est vide si ni dénomination, ni nom, ni prénom */
 function personneVide(p){
-  return !(p.nom || p.prenom || (estMorale(p) && (p.raison||"").trim()));
+  return !(p.nom || p.prenom || String((p || {}).raison || "").trim());
 }
 
 function blocPersonneET(p, i, total, mot, gros, petit){
@@ -24178,7 +24209,18 @@ document.addEventListener("input", e=>{
     const k = cb.k, i = String(cb.i), f = cb.f;
     noterMajFiche(k, i, cb.obj[f], t.value, libelleChampProspect(f));
     cb.obj[f] = t.value;
-    if(k === "personnes"){ cb.obj.maj = Date.now(); repandreFichePersonne(cb.obj); }
+    if(k === "personnes"){
+      cb.obj.maj = Date.now();
+      /* on vient de choisir une qualité de société sur une fiche dont le
+         nom était dans la case NOM : il devient sa dénomination, sans quoi
+         la case disparaîtrait en emportant le nom */
+      if(f === "civilite" && normaliserSociete(cb.obj)){
+        saveLists(); renderRepertoire();
+        toast("Fiche passée en société : le nom est devenu sa dénomination");
+        return;
+      }
+      repandreFichePersonne(cb.obj);
+    }
     else synchroniserCarnet(k, cb.obj);
     saveLists();
     if(t.list && String(t.list.id).startsWith("dl-cps-")) majCpsVu(t);
@@ -30164,6 +30206,24 @@ const AIDE = [
   "ouverture de la fiche, et les documents — fiche notaire, dossier de vente — "+
   "l'écrivent sous la première, à sa place. La case « <b>Même adresse que le "+
   "précédent</b> » la recopie aussi."],
+ ["Une société saisie sans qualité",
+  "<b>Ce qui n'allait pas.</b> Une société n'était reconnue comme telle que par sa "+
+  "<b>qualité</b> — SCI, SARL, Société… Une dénomination saisie <b>sans qualité "+
+  "choisie</b> ne faisait donc ni une personne physique — elle n'a ni nom ni prénom — "+
+  "ni une personne morale : l'application la tenait pour une fiche <b>vide</b>. Elle "+
+  "n'entrait pas au répertoire, ne s'y cherchait pas, et ses représentants étaient "+
+  "donc impossibles à saisir. "+
+  "<b>Désormais, une dénomination suffit</b> : une fiche qui en porte une est une "+
+  "société, qualité ou pas. Vos fiches dans ce cas <b>entrent toutes seules</b> au "+
+  "répertoire à la prochaine ouverture — rien à ressaisir. "+
+  "<b>L'autre cas.</b> Une SCI entrée par une <b>recherche</b> a son nom dans la case "+
+  "<b>NOM</b>, puisqu'une recherche ne demande qu'un nom. L'application ne peut pas "+
+  "deviner qu'il s'agit d'une société : elle reste une personne physique, et n'a donc "+
+  "pas de représentants. "+
+  "Il suffit d'ouvrir sa fiche au répertoire et de choisir sa <b>qualité</b> — SCI, "+
+  "SARL… : le nom devient aussitôt sa <b>dénomination</b>, et le bloc des "+
+  "représentants s'ouvre. Le nom n'est pas perdu en route : c'est le piège qu'on "+
+  "évite, car la case NOM disparaît dès qu'une fiche devient une société."],
  ["Une SCI se joint par ses gérants",
   "Une société n'a pas de téléphone : ce sont ceux de ses représentants qu'on compose. "+
   "Ses coordonnées <b>viennent donc des siens</b> : "+
