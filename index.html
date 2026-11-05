@@ -2821,7 +2821,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 4 novembre 2026, 16 h 05">Dossiers de vente</div>
+  <div class="brand" title="Version du 5 novembre 2026, 11 h 40">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3045,7 +3045,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>4 novembre 2026, 16 h 05</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>5 novembre 2026, 11 h 40</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -4891,6 +4891,101 @@ function reduireLiensRepr(p){
   reprDe(p);
   return JSON.stringify(p.repr) !== avant;
 }
+/* ------------------------------------------- UNE SOCIÉTÉ NE SE DÉDOUBLE PAS
+   LE DÉFAUT. L'identifiant d'une fiche est déduit du nom ; quand il est déjà
+   pris, on en tire un au sort, pour que deux DURAND Jean fassent deux fiches.
+   C'est juste pour les personnes. Pour une SOCIÉTÉ, c'est un piège : la même
+   SCI saisie deux fois — une fois dans un dossier, une fois au répertoire —
+   donnait DEUX fiches de même dénomination. Les gérants s'inscrivaient sur
+   l'une, le dossier regardait l'autre, et l'écran répondait « aucune personne
+   enregistrée » alors que tout était saisi. Au répertoire, la société
+   apparaissait deux fois, et l'on ouvrait l'une ou l'autre au hasard.
+
+   LA RÉPARATION. Au démarrage, les fiches de société qui portent la MÊME
+   dénomination sont fondues en une seule : on garde celle qui a des
+   représentants (à défaut la plus ancienne), on y verse les représentants
+   des autres et les cases qu'elle n'avait pas, puis TOUT ce qui pointait
+   vers les fiches absorbées est redirigé — les parties des dossiers, les
+   liens de représentation, les demandeurs des recherches, les lignes
+   d'historique et les fiches des carnets. Rien n'est perdu : la fusion ne
+   fait qu'additionner.
+
+   Deux sociétés réellement distinctes et de dénomination identique se
+   retrouveraient réunies — c'est très rare, cela se voit tout de suite, et
+   cela se défait à la main ; l'inverse, la saisie qu'on croit perdue, ne se
+   voit pas. */
+function fusionnerSocietesHomonymes(){
+  const par = {};
+  (L.personnes || []).forEach(f=>{
+    if(!f || !estMorale(f)) return;
+    const n = fold(nomPersonne(f));
+    if(!n) return;
+    (par[n] = par[n] || []).push(f);
+  });
+  const remplace = {};               /* pid absorbé → pid conservé */
+  const absorbees = [];
+  Object.keys(par).forEach(n=>{
+    const l = par[n];
+    if(l.length < 2) return;
+    /* celle qui porte des représentants d'abord ; à égalité, la plus ancienne */
+    l.sort((a, b)=> (((b.repr || []).length) - ((a.repr || []).length))
+                 || (((a.cree || 0) - (b.cree || 0))));
+    const garde = l[0];
+    if(!Array.isArray(garde.repr)) garde.repr = [];
+    l.slice(1).forEach(f=>{
+      (f.repr || []).forEach(x=>{
+        if(x && x.pid && x.pid !== garde.pid
+           && !garde.repr.some(y=> y && y.pid === x.pid))
+          garde.repr.push({pid:x.pid, role:String(x.role || "")});
+      });
+      CHAMPS_FICHE.forEach(k=>{
+        const v = String(f[k] === undefined || f[k] === null ? "" : f[k]).trim();
+        if(v && !String(garde[k] || "").trim()) garde[k] = f[k];
+      });
+      if(String(f.note || "").trim() && !String(garde.note || "").trim())
+        garde.note = f.note;
+      if(f.pid) remplace[f.pid] = garde.pid;
+      absorbees.push(f);
+    });
+  });
+  if(!absorbees.length) return false;
+  L.personnes = (L.personnes || []).filter(f=> absorbees.indexOf(f) < 0);
+  const neuf = pid=> (pid && remplace[pid]) ? remplace[pid] : pid;
+  /* tout ce qui désignait une fiche absorbée désigne désormais la survivante */
+  (L.personnes || []).forEach(f=>{
+    if(!Array.isArray(f.repr)) return;
+    const vus = [];
+    f.repr = f.repr.map(x=> x ? {pid:neuf(x.pid), role:x.role || ""} : x)
+      .filter(x=>{
+        if(!x || !x.pid || x.pid === f.pid) return false;
+        if(vus.indexOf(x.pid) >= 0) return false;
+        vus.push(x.pid); return true;
+      });
+  });
+  (L.prospects || []).forEach(r=> (r.personnes || []).forEach(p=>{
+    if(p && p.pid) p.pid = neuf(p.pid); }));
+  (L.actions || []).forEach(a=>{ if(a && a.pid) a.pid = neuf(a.pid); });
+  Object.keys(BOOKS || {}).forEach(k=>
+    (L[k] || []).forEach(r=>{ if(r && r.ppid) r.ppid = neuf(r.ppid); }));
+  try{
+    const tous = allDossiers();
+    let bougeD = false;
+    Object.keys(tous).forEach(id=>{
+      ["vendeurs", "acquereurs"].forEach(c=>{
+        (tous[id][c] || []).forEach(p=>{
+          if(p && p.pid && remplace[p.pid]){ p.pid = remplace[p.pid]; bougeD = true; }
+        });
+      });
+    });
+    if(bougeD) localStorage.setItem(LS_DOSS, JSON.stringify(tous));
+    /* et le dossier ouvert à l'écran, qui n'est pas encore en base */
+    if(typeof D !== "undefined" && D)
+      ["vendeurs", "acquereurs"].forEach(c=>
+        (D[c] || []).forEach(p=>{ if(p && p.pid) p.pid = neuf(p.pid); }));
+  }catch(e){ if(window.console) console.error(e); }
+  return true;
+}
+
 /* =====================================================================
    UNE PERSONNE, UNE FICHE — LE RÉPERTOIRE GÉNÉRAL
    ---------------------------------------------------------------------
@@ -4977,8 +5072,19 @@ function inscrireAuRepertoire(p){
 function creerFichePersonne(p){
   if(!p || personneVide(p)) return "";
   if(!p.pid){
-    const deduit = pidPersonne(p);
-    p.pid = (deduit && !fichePersonne(deduit)) ? deduit : idFichePersonne();
+    /* UNE SOCIÉTÉ NE SE DÉDOUBLE JAMAIS. Deux DURAND Jean, cela existe ; deux
+       SCI de même dénomination, pratiquement jamais — et les séparer coûte
+       cher : les gérants restent sur l'une, le dossier regarde l'autre, et
+       l'on croit la saisie perdue. Une société retrouve donc TOUJOURS sa
+       fiche, par son identifiant déduit ou par sa dénomination. */
+    if(estMorale(p)){
+      const deja = ficheDeLaSociete(p);          /* elle pose p.pid si elle trouve */
+      if(!p.pid) p.pid = pidPersonne(p) || idFichePersonne();
+      if(deja) return inscrireAuRepertoire(p);
+    } else {
+      const deduit = pidPersonne(p);
+      p.pid = (deduit && !fichePersonne(deduit)) ? deduit : idFichePersonne();
+    }
   }
   return inscrireAuRepertoire(p);
 }
@@ -30559,6 +30665,29 @@ const AIDE = [
   "MARTIN, gérant de la SARL MARTIN, existe pour de bon — il a un prénom, un numéro, "+
   "une adresse. Seule disparaît la fiche <b>sans rien du tout</b> qui ne fait que "+
   "répéter la dénomination."],
+ ["Une société en double, et ses gérants invisibles",
+  "<b>Ce qui n'allait pas.</b> L'identifiant d'une fiche est déduit du nom, et quand "+
+  "il est déjà pris, un autre est <b>tiré au sort</b> : c'est ce qui permet à deux "+
+  "DURAND Jean d'avoir chacun sa fiche. Pour une <b>société</b>, c'était un piège. La "+
+  "même SCI saisie deux fois — une fois dans un dossier, une fois au répertoire — "+
+  "donnait <b>deux fiches de même dénomination</b>. Les gérants s'inscrivaient sur "+
+  "l'une, le dossier regardait l'autre : la fiche du bien annonçait « aucune personne "+
+  "enregistrée » alors que tout était saisi, et la fiche du répertoire ouverte au "+
+  "hasard était tantôt la bonne, tantôt la vide. "+
+  "<b>Les doublons se réunissent au démarrage.</b> Les fiches de société qui portent "+
+  "la même dénomination sont fondues en une seule : on garde celle qui a des "+
+  "représentants — à défaut la plus ancienne —, on y verse les représentants des "+
+  "autres et les cases qu'elle n'avait pas, puis <b>tout ce qui pointait vers les "+
+  "fiches absorbées est redirigé</b> : les vendeurs et acquéreurs des dossiers, les "+
+  "liens de représentation, les demandeurs des recherches, l'historique et les "+
+  "carnets. Rien n'est perdu : la fusion ne fait qu'additionner. "+
+  "<b>Et la société ne se dédouble plus.</b> Créer une société qui existe déjà "+
+  "retrouve sa fiche au lieu d'en ouvrir une seconde. Deux <b>personnes</b> du même "+
+  "nom, elles, continuent d'avoir chacune la leur : c'est pour elles que la règle "+
+  "existait. "+
+  "<b>Un cas à connaître :</b> deux sociétés réellement distinctes qui porteraient "+
+  "exactement la même dénomination se retrouveraient réunies. Cela se voit aussitôt "+
+  "— tous les gérants sur la même fiche — et se défait à la main."],
  ["Le dossier dit ce que le répertoire sait",
   "<b>Ce qui n'allait pas.</b> Les représentants vivent sur la <b>fiche du "+
   "répertoire</b> de la société, et le dossier allait les y chercher par le seul "+
@@ -36210,6 +36339,9 @@ document.addEventListener("focusout", e=>{
   try{
     let bouge = false;
     (L.personnes || []).forEach(f=>{ if(normaliserSociete(f)) bouge = true; });
+    /* d'abord réunir les sociétés en double : tout ce qui suit lit les liens,
+       et ils doivent déjà pointer sur la bonne fiche */
+    if(fusionnerSocietesHomonymes()) bouge = true;
     if(nettoyerReprSosies()) bouge = true;
     if(majToutesLesSocietes()) bouge = true;
     if(bouge) saveLists();
