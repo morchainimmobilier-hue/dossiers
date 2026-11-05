@@ -2821,7 +2821,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 5 novembre 2026, 11 h 40">Dossiers de vente</div>
+  <div class="brand" title="Version du 5 novembre 2026, 15 h 20">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3045,7 +3045,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>5 novembre 2026, 11 h 40</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>5 novembre 2026, 15 h 20</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -28932,11 +28932,30 @@ async function idbGet(k){
 }
 
 /* ---------------------------------------------------- fusion des données */
+/* ------------------------------------------------------- CE QUI VOYAGE
+   LA RÈGLE D'AVANT : un dossier sans numéro de mandat n'était qu'un
+   brouillon, il restait sur son poste. Elle datait d'un temps où un dossier
+   ne commençait qu'au mandat.
+
+   DEPUIS LES BIENS D'AVANT LE MANDAT, elle est fausse et coûte cher : un
+   bien en PROSPECTION ou en ESTIMATION n'a pas de numéro et n'en aura pas
+   avant la prise de mandat. C'est pourtant du vrai travail — un rendez-vous,
+   une fourchette de prix, des photos, des lignes d'historique — et il ne
+   quittait jamais le poste où il avait été saisi. Deux postes en avaient
+   chacun une version, et aucune ne rejoignait l'autre.
+
+   Ne reste donc local que ce qui n'est vraiment rien : un dossier ouvert
+   et pas commencé. */
+function dossierPartage(d){
+  if(!d) return false;
+  if(d.mandat && d.mandat.num) return true;
+  if(d.sansMandat) return dossierEntame(d);
+  return false;
+}
 function donneesLocales(){
-  /* un dossier sans numéro de mandat n'est qu'un brouillon : il reste sur ce poste */
   const tous = allDossiers(), doss = {};
   Object.keys(tous).forEach(id=>{
-    if(tous[id].mandat && tous[id].mandat.num) doss[id] = tous[id];
+    if(dossierPartage(tous[id])) doss[id] = tous[id];
   });
   return {appli:"Dossiers de vente", version:3, date:new Date().toISOString(),
           majListes: baseLue() ? majListes() : 0, listes: L, dossiers: doss,
@@ -29099,10 +29118,15 @@ function adopter(m){
        c'est la version la plus récemment enregistrée qui l'emporte. Sans cela,
        une alerte écartée reparaissait dès qu'on en écartait une autre. */
     m = fusionner(donneesLocales(), m);
-    /* on garde les brouillons locaux, absents du fichier partagé */
+    /* On garde les brouillons locaux, absents du fichier partagé — et EUX
+       SEULS. La même règle qu'à l'envoi : ce qui voyage se fusionne par la
+       date, ce qui ne voyage pas est réimposé tel quel. Tant que le bien
+       d'avant le mandat comptait pour un brouillon, cette ligne écrasait à
+       chaque échange la version venue de l'autre poste par la version
+       locale : la plus pauvre gagnait aussi souvent que la plus riche. */
     const local = allDossiers(), fusion = Object.assign({}, m.dossiers || {});
     Object.keys(local).forEach(id=>{
-      if(!(local[id].mandat && local[id].mandat.num) && !(m.supprimes || {})[id])
+      if(!dossierPartage(local[id]) && !(m.supprimes || {})[id])
         fusion[id] = local[id];
     });
     m.dossiers = fusion;
@@ -30688,6 +30712,23 @@ const AIDE = [
   "<b>Un cas à connaître :</b> deux sociétés réellement distinctes qui porteraient "+
   "exactement la même dénomination se retrouveraient réunies. Cela se voit aussitôt "+
   "— tous les gérants sur la même fiche — et se défait à la main."],
+ ["Les biens d'avant le mandat suivent d'un poste à l'autre",
+  "<b>Ce qui n'allait pas.</b> Une vieille règle disait : « un dossier sans numéro de "+
+  "mandat n'est qu'un brouillon, il reste sur ce poste ». Elle datait d'un temps où un "+
+  "dossier ne commençait qu'au mandat. Depuis la prospection et l'estimation, elle "+
+  "était fausse — et coûteuse : un bien <b>en estimation n'a pas de numéro</b> et n'en "+
+  "aura pas avant la prise de mandat. Il ne partait donc <b>jamais</b> dans la base "+
+  "partagée. Chaque poste avait sa version, l'une plus remplie que l'autre, sans "+
+  "pièces, et l'onglet Aujourd'hui ne montrait pas la même chose des deux côtés. "+
+  "<b>Désormais</b>, un bien en <b>prospection</b> ou en <b>estimation</b> voyage comme "+
+  "tous les autres, dès qu'il est commencé — un rendez-vous, une fourchette, une ligne "+
+  "de prospection, un type de bien ou une adresse suffisent. La fusion se fait par la "+
+  "date, comme pour un dossier sous mandat : la version enregistrée en dernier gagne. "+
+  "Ne reste local que ce qui n'est vraiment rien : un dossier ouvert et pas commencé. "+
+  "<b>Un bien saisi deux fois reste deux biens.</b> Tant que les deux postes "+
+  "s'ignoraient, le même bien a pu être créé de chaque côté : ce sont alors deux "+
+  "dossiers différents, et ils apparaîtront tous les deux. Gardez le plus complet, "+
+  "supprimez l'autre — la suppression, elle, se propage."],
  ["Le dossier dit ce que le répertoire sait",
   "<b>Ce qui n'allait pas.</b> Les représentants vivent sur la <b>fiche du "+
   "répertoire</b> de la société, et le dossier allait les y chercher par le seul "+
