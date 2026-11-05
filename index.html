@@ -188,6 +188,27 @@ main{flex:1;min-width:0;max-width:1240px;margin:0 auto;padding:22px 0 80px}
   color:var(--ink-2)}
 .heroid .hsub{color:var(--ink-2);font-size:12.5px;margin-top:4px}
 .herochiffres{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* CE QU'OFFRE LE BIEN, juste sous la ligne des chiffres et sur toute sa
+   largeur. Que du positif : la bande n'existe que s'il y a quelque chose à
+   dire. Un vert sobre — c'est un atout, pas une alerte. */
+.heropast{display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  margin-top:10px;padding-top:10px;border-top:1px solid var(--line-2)}
+.hoff{display:inline-flex;align-items:center;gap:6px;background:#ecfdf5;
+  border:1px solid #a7d7bf;color:#14532d;border-radius:999px;
+  padding:4px 11px;font-size:12px;font-weight:650;line-height:1.25;
+  white-space:nowrap}
+.hoff::before{content:"";width:6px;height:6px;border-radius:50%;background:#16a34a;
+  flex:0 0 auto}
+/* l'immeuble porte les siennes dans un ton plus froid : on voit tout de
+   suite ce qui est au bien et ce qui est à la copropriété */
+.hoff.imm{background:#eef4fb;border-color:#b6ccdf;color:#1b3b5c}
+.hoff.imm::before{background:#3b73a8}
+.hoffsep{font-size:10px;letter-spacing:1.1px;text-transform:uppercase;
+  font-weight:700;color:var(--ink-3);margin:0 2px 0 8px;white-space:nowrap}
+@media (max-width:760px){
+  .heropast{margin-top:8px;padding-top:8px}
+  .hoff{font-size:11.5px;padding:3px 9px}
+}
 /* « Créer une action », à gauche des chiffres : c'est le geste le plus
    fréquent de la page, et il se perdait au milieu des trombones. Un fond
    ambré léger suffit à le faire voir sans crier. */
@@ -1391,6 +1412,14 @@ table.piecest select{min-width:86px}
 table.piecest .withadd{gap:3px}
 table.piecest .addinline[data-search]{display:none}
 table.piecest input[type=checkbox]{margin:0}
+/* les charges et impôts : trois colonnes, deux listes qui s'allongent, et
+   un montant aligné à droite comme tous les montants de l'application */
+table.chgt td,table.chgt th{padding:4px 6px}
+table.chgt select{min-width:120px;width:100%}
+table.chgt .withadd{gap:3px}
+table.chgt .addinline[data-search]{display:none}
+table.chgt td:first-child{width:42%}
+table.chgt input.chgm{text-align:right}
 /* les totaux des pièces, sur la ligne du titre : le total en évidence, la
    répartition par niveau ensuite, et le filet du titre passe après */
 .detailbox .dsec h4.avectot{flex-wrap:wrap;row-gap:6px}
@@ -2821,7 +2850,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 5 novembre 2026, 17 h 45">Dossiers de vente</div>
+  <div class="brand" title="Version du 6 novembre 2026, 10 h 50">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3045,7 +3074,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>5 novembre 2026, 17 h 45</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>6 novembre 2026, 10 h 50</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3514,6 +3543,22 @@ const LISTS_DEFAULT = {
   ecs:        ["Chauffe-eau électrique","Chauffe-eau thermodynamique",
                "Chaudière gaz individuelle","Chaudière mixte (chauffage + eau chaude)",
                "Solaire","Collective","Autre"],
+  /* ------------------------------------------ LES CHARGES ET LES IMPÔTS
+     Deux cases en dur — « charges de copropriété » et « taxe foncière » —
+     ne suffisaient pas : un bien loué a une taxe d'habitation sur sa
+     dépendance, un immeuble a une taxe d'enlèvement des ordures, une
+     maison a un contrat d'entretien. On énumère donc librement, et ces
+     deux listes-là s'allongent comme les autres. */
+  typeCharge: ["Taxe foncière", "Taxe d'habitation", "Charges de copropriété",
+               "Taxe d'enlèvement des ordures ménagères", "Assurance habitation",
+               "Eau", "Électricité", "Gaz", "Chauffage collectif",
+               "Entretien de la chaudière", "Entretien du jardin",
+               "Abonnement internet", "Fonds de travaux (loi ALUR)", "Autre"],
+  /* la période se tape au moins autant qu'elle se choisit : la liste ne fait
+     que proposer les formes les plus courantes */
+  periodeCharge: ["2026", "2025", "2024", "1er semestre", "2d semestre",
+                  "1er trimestre", "2e trimestre", "3e trimestre", "4e trimestre",
+                  "Moyenne sur 3 ans", "Estimation"],
   /* les pays ajoutés à la main, en plus de ceux que `PAYS` propose */
   paysPlus:   [],
   /* le bail d'un bien loué : ce qu'il faut savoir avant de promettre une
@@ -3646,7 +3691,9 @@ const LIST_LABELS = {
   modeEnvoi:"Modes d'envoi d'une offre d'achat",
   libelleTel:"Libellés d'un téléphone (à qui il est)",
   libelleMail:"Libellés d'un email (à qui il est)",
-  roleRepr:"Rôles dans une société ou une indivision"
+  roleRepr:"Rôles dans une société ou une indivision",
+  typeCharge:"Charges et impôts — natures",
+  periodeCharge:"Charges et impôts — périodes"
 };
 
 /* carnets d'adresses : "card" = affichage en fiches, "row" = tableau compact */
@@ -5905,7 +5952,7 @@ function villesDuContexte(path, attr){
 /* Deux listes se lisent dans l'ordre où elles sont écrites, et non par
    ordre alphabétique : le type de bien va du plus courant au plus rare, et
    l'objet d'une recherche suit l'usage. */
-const LISTES_ORDRE = ["typeBien", "nomRecherche"];
+const LISTES_ORDRE = ["typeBien", "nomRecherche", "typeCharge", "periodeCharge"];
 function optionsFor(kind, path){
   if(kind.startsWith("list:")){
     const cle = kind.slice(5), l = (L[cle] || []).slice();
@@ -6863,6 +6910,7 @@ et l'enregistrer en PDF">
                   D.prix.charge ? "charge " + D.prix.charge.toLowerCase() : "")}
         ${chiffre("Net vendeur", net === null ? "—" : eur(net))}`}
       </div>
+      ${bandeAtouts(D)}
       <div class="heroact">${actions}</div>
     </div>
     ${friseDossier()}</div>`;
@@ -7413,12 +7461,104 @@ const DETAIL_G = [
    ],
    f:[["annexes", "Autres annexes", "text", "wide"]]}
 ];
-const DETAIL_D = [
-  {t:"Charges et impôts", f:[
-    ["charges",   "Charges de copropriété (€/an)", "money", "", estCoproBien],
-    ["taxe",      "Taxe foncière (€/an)",          "money"]
-  ]}
-];
+/* =====================================================================
+   LES CHARGES ET LES IMPÔTS — UNE LISTE LIBRE
+   ---------------------------------------------------------------------
+   DEUX CASES EN DUR, c'était tout : « charges de copropriété » et « taxe
+   foncière ». Et la première ne s'affichait qu'en copropriété. Un bien en
+   porte pourtant bien d'autres — taxe d'habitation sur une dépendance,
+   ordures ménagères, assurance, entretien de chaudière, fonds de travaux —
+   et un montant ne veut rien dire sans la PÉRIODE qu'il couvre : 1 240 €
+   de taxe foncière, oui, mais de quelle année ?
+
+   On énumère donc librement, trois colonnes : la NATURE, la PÉRIODE, le
+   MONTANT. Les deux premières sont des listes déroulantes qui s'allongent
+   par le « + », comme partout ailleurs dans l'application. La règle qui
+   réservait les charges de copropriété aux biens en copropriété n'a plus
+   lieu d'être : on écrit ce qu'on a, et rien d'autre.
+
+   CE QUI ÉTAIT DÉJÀ SAISI N'EST PAS PERDU : la taxe foncière et les
+   charges de copropriété des dossiers existants deviennent les deux
+   premières lignes, sous leur nature exacte et sans période — la période
+   se complétera à la main. Et les deux anciens champs continuent d'exister
+   en coulisse, recalculés depuis la liste : les documents, la fiche de
+   présentation et les tuiles qui les lisent n'ont pas à le savoir. */
+const CHG_TAXE = "Taxe foncière", CHG_COPRO = "Charges de copropriété";
+function listeCharges(o){
+  const det = (o || {}).detail || {};
+  if(!Array.isArray(det.chargesListe)) det.chargesListe = [];
+  return det.chargesListe;
+}
+function ligneChargeVide(){ return {type:"", periode:"", montant:""}; }
+/* la reprise : une fois par dossier, et seulement si rien n'a encore été
+   énuméré — on ne recrée pas une ligne que l'on vient d'effacer */
+function migrerCharges(o){
+  const det = (o || {}).detail;
+  if(!det || Array.isArray(det.chargesListe)) return false;
+  const l = [];
+  if(String(det.taxe || "").trim())
+    l.push({type:CHG_TAXE, periode:"", montant:det.taxe});
+  if(String(det.charges || "").trim())
+    l.push({type:CHG_COPRO, periode:"", montant:det.charges});
+  det.chargesListe = l;
+  return !!l.length;
+}
+/* les deux anciens champs, refaits depuis la liste : c'est eux que lisent
+   les documents et la fiche de présentation. On prend la PREMIÈRE ligne de
+   chaque nature — celle que l'on a mise en tête est celle qui compte. */
+function majChargesDeduites(o){
+  const det = (o || {}).detail;
+  if(!det) return false;
+  const l = Array.isArray(det.chargesListe) ? det.chargesListe : [];
+  const prem = t=>{
+    const x = l.filter(c=> c && String(c.type || "").trim() === t)[0];
+    return x ? String(x.montant == null ? "" : x.montant) : "";
+  };
+  const avant = String(det.taxe || "") + "|" + String(det.charges || "");
+  det.taxe = prem(CHG_TAXE);
+  det.charges = prem(CHG_COPRO);
+  return avant !== String(det.taxe || "") + "|" + String(det.charges || "");
+}
+function totalChargesHtml(o){
+  const l = Array.isArray(((o || {}).detail || {}).chargesListe)
+    ? o.detail.chargesListe : [];
+  const t = l.reduce((s, c)=> s + (num(c && c.montant) || 0), 0);
+  return t ? `<span class="pietotal">${esc(eur0(t))}<em>par an</em></span>` : "";
+}
+/* le total vit dans le titre du bloc : on le refait seul, sans redessiner le
+   tableau — le curseur est dans une case */
+function majTotalCharges(){
+  const z = $("#chgTot");
+  if(z) z.innerHTML = totalChargesHtml(D);
+}
+function tableauCharges(o, chemin){
+  migrerCharges(o);
+  majChargesDeduites(o);          /* la liste fait foi, toujours */
+  const l = listeCharges(o);
+  const lignes = l.map((c, i)=>
+    `<tr><td>${controlRaw(`${i}:type`, "list:typeCharge", c.type || "", "",
+        "data-chg")}</td>
+      <td>${controlRaw(`${i}:periode`, "list:periodeCharge", c.periode || "", "",
+        "data-chg")}</td>
+      <td><input type="text" inputmode="decimal" data-chg="${i}:montant"
+        value="${esc(c.montant || "")}" placeholder="0" class="chgm"></td>
+      <td class="cact"><button type="button" class="xbtn mini" data-chgdel="${i}"
+        title="Retirer cette ligne">✕</button></td></tr>`).join("");
+  return `<div class="dsec"><h4 class="avectot">Charges et impôts
+      <span class="pietot" id="chgTot">${totalChargesHtml(o)}</span></h4>
+    <div class="tdbscroll"><table class="grid-t chgt">
+      <tr><th>Nature</th><th>Période</th><th style="width:118px">Montant annuel</th>
+        <th class="cact"></th></tr>
+      ${lignes || `<tr><td colspan="4" class="muted">Aucune charge énumérée.</td></tr>`}
+    </table></div>
+    <div class="dact"><button type="button" class="addbtn"
+      id="chgAjout">+ Ajouter une charge</button></div>
+    <p class="dnote">Choisissez la <b>nature</b> et la <b>période</b> dans les listes —
+      le <b>+</b> en ajoute une qui manquerait, pour tous vos dossiers. Le montant est
+      celui de l'<b>année</b>. La taxe foncière et les charges de copropriété nourrissent
+      les documents comme avant : c'est la première ligne de chaque nature qui est
+      reprise.</p></div>`;
+}
 /* --------------------------------------------- LES TROIS ÉQUIPEMENTS ----
    Chauffage, refroidissement, eau chaude. Ils ne sont plus un bloc de
    trois listes ordinaires, et ce pour deux raisons.
@@ -7944,6 +8084,83 @@ function annexeBien(o, chemin, [k, lab, kSurf, labSurf]){
     ${ynBascule(chemin + "detail." + k, o.detail[k] || "", "yn")}
     ${cote}</div>`;
 }
+/* =====================================================================
+   CE QU'OFFRE LE BIEN, DANS LE BANDEAU
+   ---------------------------------------------------------------------
+   Ce que le bien a — une terrasse, un garage, l'ascenseur — se lisait
+   volet par volet, à l'intérieur de la fiche. Or c'est exactement ce dont
+   on a besoin AU PREMIER COUP D'ŒIL : quand on décroche le téléphone, on
+   n'a pas le temps d'ouvrir « Les caractéristiques ».
+
+   On ne montre QUE LE POSITIF. Une cave à « non » n'est pas une
+   information qu'on annonce : c'est un silence. Une pastille par oui,
+   avec sa mesure quand on l'a — « Terrasse 14 m² », « 2 garages » —, et
+   rien d'autre. Si le bien n'offre rien de renseigné, la bande disparaît
+   plutôt que d'afficher du vide.
+
+   L'IMMEUBLE A SA PROPRE BANDE, à la suite et marquée comme telle : un
+   ascenseur, une piscine collective, un parking commun ne sont pas au
+   bien, ils sont à la copropriété — et l'acquéreur ne fait pas la
+   différence au téléphone. Pour un dossier qui EST un immeuble, c'est ce
+   que ses logements offrent qui s'y lit. */
+function atoutsDuBien(d){
+  const o = d || D, det = o.detail || {};
+  const out = [];
+  const mesure = (k, lab, kv, suff)=>{
+    if(det[k] !== "OUI") return;
+    const v = kv ? num(det[kv]) : null;
+    out.push(v ? lab + " " + v.toLocaleString("fr-FR") + suff : lab);
+  };
+  mesure("terrasse", "Terrasse", "terrasseM2", " m²");
+  mesure("balcon",   "Balcon",   "balconM2",   " m²");
+  mesure("jardin",   "Jardin",   "jardinM2",   " m²");
+  mesure("cave",     "Cave",     "caveM2",     " m²");
+  /* un garage, deux garages : le nombre se met devant, pas derrière */
+  [["garage", "Garage", "garageNb"], ["parking", "Parking", "parkingNb"]]
+    .forEach(([k, lab, kn])=>{
+      if(det[k] !== "OUI") return;
+      const n = num(det[kn]);
+      out.push(n && n > 1 ? n + " " + lab.toLowerCase() + "s" : lab);
+    });
+  if(det.piscine === "OUI") out.push("Piscine");
+  /* ce qui se déduit de l'étage et du niveau des pièces */
+  if(etageRdc(det) === "OUI") out.push("Rez-de-chaussée");
+  if(etageDernier(det) === "OUI") out.push("Dernier étage");
+  if(troisEtats(plainPiedDe(o, PIECE_CH)) === "OUI") out.push("Chambre de plain-pied");
+  if(troisEtats(plainPiedDe(o, PIECE_COMMOD)) === "OUI")
+    out.push("Commodité de plain-pied");
+  String(det.annexes || "").split(/\s*[,;]\s*/).forEach(x=>{
+    if(String(x).trim()) out.push(String(x).trim());
+  });
+  return out;
+}
+/* ce que la copropriété offre — ou, pour un immeuble, ses logements */
+const COPRO_ATOUTS = [["ascenseur", "Ascenseur"], ["piscine", "Piscine collective"],
+  ["parkingColl", "Parking collectif"],
+  ["saisonniere", "Location saisonnière autorisée"],
+  ["clim", "Climatisation autorisée"]];
+function atoutsDeLImmeuble(d){
+  const o = d || D;
+  if(estImmeuble(o)){
+    const out = [];
+    if(pastilleImmeuble(["terrasse", "balcon", "jardin"]) === "OUI")
+      out.push("Extérieur");
+    if(pastilleImmeuble(["garage", "parking"]) === "OUI") out.push("Parking / garage");
+    if(pastilleImmeuble(["cave"]) === "OUI") out.push("Cave");
+    return out;
+  }
+  const r = residenceDuBien(o);
+  if(!r || !r.nom) return [];
+  return COPRO_ATOUTS.filter(([k])=> r[k] === "OUI").map(([, lab])=> lab);
+}
+function bandeAtouts(d){
+  const bien = atoutsDuBien(d), imm = atoutsDeLImmeuble(d);
+  if(!bien.length && !imm.length) return "";
+  const pil = (l, cls)=> l.map(x=>
+    `<span class="hoff${cls}">${esc(x)}</span>`).join("");
+  return `<div class="heropast">${pil(bien, "")}${imm.length
+    ? `<span class="hoffsep">l'immeuble</span>` + pil(imm, " imm") : ""}</div>`;
+}
 function blocDetail(o, chemin, sec){
   const champs = (sec.f || []).map(f=> champBien(o, chemin, f)).join("");
   const comptes = sec.comptes
@@ -8193,11 +8410,9 @@ function pageImmeuble(){
     </div>
     <p class="dnote">Un immeuble dont un seul lot a un garage a bien un garage à
       vendre : la pastille passe au vert dès qu'<b>un</b> logement répond oui.</p></div>
-  ${blocDetail(D, "", {t:"Charges et impôts", f:[
-      ["charges", "Charges de copropriété (€/an)", "money", "", estCoproBien],
-      ["taxe",    "Taxe foncière (€/an)",          "money"]]})}
-  <p class="dnote">Les charges et la taxe foncière sont celles de <b>l'immeuble
-    entier</b> : elles ne se divisent pas par logement, et ne se saisissent donc
+  ${tableauCharges(D, "")}
+  <p class="dnote">Les charges et les impôts énumérés ici sont ceux de <b>l'immeuble
+    entier</b> : ils ne se divisent pas par logement, et ne se saisissent donc
     qu'ici.</p>
   ${bilanEquipImmeuble()}
   <div class="dsec"><h4>Observations</h4>${control("detail.observations","area")}</div>`;
@@ -8314,7 +8529,7 @@ function renderDetail(){
       `<div class="dsec"><h4>Ce qu'il offre</h4>${blocPastilles(o, !estApptOuLocal() && !g)}</div>` +
       blocDetail(o, chemin, surf) +
       blocDetail(o, chemin, DETAIL_G[1]) +
-      (g ? "" : blocDetail(D, "", DETAIL_D[0])) +
+      (g ? "" : tableauCharges(D, "")) +
       blocEquipements(o, chemin,
         g ? "Les équipements de ce logement" : "Les équipements",
         g ? `Chauffage, refroidissement et eau chaude appartiennent au
@@ -8339,6 +8554,13 @@ function renderDetail(){
     autosave(); renderDetail(); majDetail();
     const dernier = $$("#detailCorps [data-piece$=':nom']").pop();
     if(dernier) dernier.focus();
+  };
+  const bc = $("#chgAjout");
+  if(bc) bc.onclick = ()=>{
+    listeCharges(D).push(ligneChargeVide());
+    autosave(); renderDetail(); majDetail();
+    const der = $$("#detailCorps [data-chg$=':type']").pop();
+    if(der) der.focus();
   };
   const bp = $("#parcAjout");
   if(bp) bp.onclick = ()=>{
@@ -24603,6 +24825,19 @@ document.addEventListener("input", e=>{
       autosave(); rafraichirDepuisPieces(); majDetail();
     }
   }
+  /* une ligne de charge : la nature, la période, le montant. On n'en
+     redessine rien — le curseur est dans la case — sauf le total, qui vit
+     dans le titre du bloc. */
+  if(t.dataset.chg !== undefined){
+    const [i, champ] = String(t.dataset.chg).split(":");
+    const c = listeCharges(D)[+i];
+    if(c){
+      c[champ] = t.value;
+      majChargesDeduites(D);
+      autosave(); majTotalCharges(); refreshCalcs(); renderPreview();
+    }
+    return;
+  }
   if(t.dataset.repr !== undefined){
     const b = String(t.dataset.repr).split("|");
     ecrireRepr(b[0], b[1], b[2], t.value, false);
@@ -25132,7 +25367,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-vsoc],[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -25265,6 +25500,11 @@ document.addEventListener("click", e=>{
   if(t.dataset.piecedel !== undefined){
     cibleBien().o.pieces.splice(+t.dataset.piecedel, 1);
     numeroterPieces();            /* la dernière chambre reprend son nom nu */
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.chgdel !== undefined){
+    listeCharges(D).splice(+t.dataset.chgdel, 1);
+    majChargesDeduites(D);
     autosave(); renderDetail(); majDetail(); return;
   }
   /* ------------------------------------------------- la fiche du bien */
@@ -29972,6 +30212,12 @@ function migrate(d){
   out.dates = Object.assign(base.dates, d.dates||{});
   out.prix = Object.assign(base.prix, d.prix||{});
   out.detail = Object.assign(base.detail, d.detail||{});
+  /* les charges et impôts énumérés : la taxe foncière et les charges de
+     copropriété d'un dossier ancien en deviennent les deux premières lignes.
+     Puis les deux anciens champs se refont depuis la liste — c'est ELLE qui
+     fait foi, y compris pour un dossier arrivé de l'autre poste. */
+  migrerCharges(out);
+  majChargesDeduites(out);
   /* l'argumentaire est venu après : un dossier ancien n'en a pas */
   out.argu = Object.assign(base.argu, d.argu||{});
   /* le brouillon de publication voyage avec le dossier ; un dossier ancien
@@ -30774,6 +31020,45 @@ const AIDE = [
   "écriture n'a lieu : on ne la réécrit pas pour rien. "+
   "Le bouton <b>« Enregistrer dans la base »</b>, dans Listes → Base en ligne, force "+
   "l'envoi à tout moment : c'est lui qu'on presse quand on veut en avoir le cœur net."],
+ ["Les charges et les impôts s'énumèrent",
+  "<b>Deux cases en dur, c'était tout :</b> « charges de copropriété » et « taxe "+
+  "foncière ». Et la première ne s'affichait qu'en copropriété. Un bien en porte "+
+  "pourtant bien d'autres — taxe d'habitation sur une dépendance, ordures ménagères, "+
+  "assurance, entretien de chaudière, fonds de travaux. Et un montant ne veut rien dire "+
+  "sans la <b>période</b> qu'il couvre : 1 240 € de taxe foncière, oui, mais de quelle "+
+  "année ? "+
+  "<b>Trois colonnes, autant de lignes qu'il en faut :</b> la <b>nature</b>, la "+
+  "<b>période</b>, le <b>montant annuel</b>. Les deux premières sont des listes "+
+  "déroulantes qui s'allongent par le <b>+</b>, pour tous vos dossiers — « 2026 », "+
+  "« 1er semestre », « Moyenne sur 3 ans » s'y ajoutent comme vous les écrivez. "+
+  "« + Ajouter une charge » en pose une de plus, la <b>croix</b> en retire une, et le "+
+  "<b>total annuel</b> s'affiche dans le titre du bloc. "+
+  "<b>La règle de la copropriété a sauté :</b> les charges de copropriété ne sont plus "+
+  "réservées aux biens en copropriété. On écrit ce qu'on a. "+
+  "<b>Rien de ce qui était saisi n'est perdu :</b> la taxe foncière et les charges de "+
+  "copropriété de vos dossiers deviennent les deux premières lignes, sous leur nature "+
+  "exacte et sans période — la période se complète à la main. Les documents, la fiche "+
+  "de présentation et le pourcentage de remplissage continuent de les lire : c'est la "+
+  "<b>première ligne de chaque nature</b> qui les nourrit. Mettez donc en tête celle "+
+  "qui fait référence."],
+ ["Ce qu'offre le bien, dans le bandeau",
+  "Ce que le bien a — une terrasse, un garage, l'ascenseur — se lisait volet par volet, "+
+  "à l'intérieur de la fiche. Or c'est exactement ce dont on a besoin <b>au premier "+
+  "coup d'œil</b> : quand on décroche le téléphone, on n'a pas le temps d'ouvrir « Les "+
+  "caractéristiques ». "+
+  "Une bande de pastilles court donc <b>sous la ligne des chiffres</b> du bandeau, de "+
+  "« Créer une action » jusqu'au net vendeur — ou jusqu'à la fourchette, pour un bien "+
+  "en estimation. "+
+  "<b>Que du positif.</b> Une cave à « non » n'est pas une information qu'on annonce : "+
+  "c'est un silence. Une pastille par oui, avec sa mesure quand on l'a — « Terrasse "+
+  "14 m² », « 2 garages » —, et rien d'autre. Ce qui se déduit en est aussi : "+
+  "rez-de-chaussée, dernier étage, chambre de plain-pied. Les <b>autres annexes</b> se "+
+  "détachent une à une, séparées par vos virgules. Si le bien n'offre rien de "+
+  "renseigné, la bande disparaît plutôt que d'afficher du vide. "+
+  "<b>L'immeuble a la sienne</b>, à la suite et dans un ton plus froid : un ascenseur, "+
+  "une piscine collective, un parking commun ne sont pas au bien, ils sont à la "+
+  "copropriété — et l'acquéreur ne fait pas la différence au téléphone. Pour un dossier "+
+  "qui <b>est</b> un immeuble, c'est ce que ses logements offrent qui s'y lit."],
  ["Le dossier dit ce que le répertoire sait",
   "<b>Ce qui n'allait pas.</b> Les représentants vivent sur la <b>fiche du "+
   "répertoire</b> de la société, et le dossier allait les y chercher par le seul "+
