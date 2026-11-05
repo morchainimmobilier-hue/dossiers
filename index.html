@@ -2821,7 +2821,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 5 novembre 2026, 15 h 20">Dossiers de vente</div>
+  <div class="brand" title="Version du 5 novembre 2026, 17 h 45">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3045,7 +3045,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>5 novembre 2026, 15 h 20</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>5 novembre 2026, 17 h 45</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -14623,7 +14623,10 @@ const AUJ_ACQUIS = AUJ_STATUTS.filter(s=> !s.potentiel).map(s=> s.cls);
 function dossierEntame(d){
   if(OBLIGATOIRES.some(([p])=> get(d, p))) return true;
   if(d.bien && (d.bien.adresse || d.bien.ville)) return true;
-  if((d.vendeurs || []).some(v=> v && (v.nom || v.prenom))) return true;
+  /* une société n'a ni nom ni prénom : elle a une dénomination, et elle
+     entame le dossier tout autant */
+  if((d.vendeurs || []).some(v=> v && (v.nom || v.prenom
+     || String(v.raison || "").trim()))) return true;
   /* Un bien d'avant le mandat n'a ni numéro ni prix : ce qui l'entame, ce
      sont SES propres traces — un rendez-vous d'estimation, une fourchette,
      une ligne de prospection. Sans cela il n'existait nulle part tant qu'on
@@ -29196,6 +29199,7 @@ async function chargerFichier(silencieux){
       FICHIER_ETAT = "droit"; renderFichier(); return false;
     }
     const distant = await lireFichier();
+    const rendre = aRendreALaBase(distant);   /* voir `webCharger` */
     const m = fusionner(donneesLocales(), distant);
     adopter(m);
     FICHIER_ETAT = "ok"; FICHIER_MAJ = Date.now();
@@ -29204,6 +29208,7 @@ async function chargerFichier(silencieux){
     if(all[D.id]) D = migrate(all[D.id]);
     renderAll(); renderFichier();
     if(!silencieux) toast("Dossiers repris du fichier partagé");
+    if(rendre) setTimeout(()=> syncEnregistrer(true), 1200);
     return true;
   }catch(e){
     FICHIER_ETAT = "erreur"; renderFichier();
@@ -29510,11 +29515,34 @@ async function webAppelUneFois(charge, action){
   if(d.erreur)              throw new Error(d.erreur);
   return d;
 }
+/* ------------------------------------------------- RENDRE CE QU'ON DÉTIENT
+   Au démarrage, l'application ne faisait que LIRE la base partagée. Elle n'y
+   écrivait qu'à la frappe suivante — quinze secondes après une retouche — ou
+   quand on pressait « Enregistrer ». Tant que les deux postes se
+   ressemblaient, cela ne se voyait pas.
+
+   Cela s'est vu le jour où les biens d'avant le mandat ont eu le droit de
+   voyager : chaque poste en détenait qui n'étaient jamais montés, et aucun ne
+   les rendait tant qu'on ne les rouvrait pas pour y taper quelque chose. On
+   ouvrait les deux postes, on attendait, et rien ne bougeait.
+
+   Après chaque lecture, on compare donc ce qu'on détient à ce que la base
+   contient : si un dossier lui manque, ou si le nôtre est plus récent, on le
+   lui rend aussitôt. L'écriture repasse par une lecture et une fusion : rien
+   n'est écrasé. */
+function aRendreALaBase(distant){
+  const mien = (donneesLocales() || {}).dossiers || {};
+  const la = (distant || {}).dossiers || {};
+  return Object.keys(mien).some(id=>
+    !la[id] || (mien[id].maj || 0) > (la[id].maj || 0));
+}
 async function webCharger(silencieux){
   if(!WEB) return false;
   try{
     const d = await webAppel({action:"lire"});
-    const m = fusionner(donneesLocales(), d.data || {});
+    const distant = d.data || {};
+    const rendre = aRendreALaBase(distant);
+    const m = fusionner(donneesLocales(), distant);
     adopter(m);
     const all = allDossiers();
     if(all[D.id]) D = migrate(all[D.id]);
@@ -29522,6 +29550,7 @@ async function webCharger(silencieux){
     calmerReprise();
     renderAll(); renderFichier();
     if(!silencieux) toast("Dossiers repris de la base en ligne");
+    if(rendre) setTimeout(()=> syncEnregistrer(true), 1200);
     return true;
   }catch(e){
     WEB_ETAT = "erreur"; WEB_MSG = e.message; renderFichier();
@@ -30729,6 +30758,22 @@ const AIDE = [
   "s'ignoraient, le même bien a pu être créé de chaque côté : ce sont alors deux "+
   "dossiers différents, et ils apparaîtront tous les deux. Gardez le plus complet, "+
   "supprimez l'autre — la suppression, elle, se propage."],
+ ["À l'ouverture, le poste rend ce qu'il détient",
+  "<b>Ce qui n'allait pas.</b> À l'ouverture, l'application ne faisait que <b>lire</b> "+
+  "la base partagée. Elle n'y <b>écrivait</b> qu'à la frappe suivante — quinze secondes "+
+  "après une retouche — ou quand on pressait « Enregistrer ». Tant que les deux postes "+
+  "se ressemblaient, cela ne se voyait pas. "+
+  "Cela s'est vu le jour où les biens d'avant le mandat ont eu le droit de voyager : "+
+  "chaque poste en détenait qui n'étaient jamais montés, et aucun ne les rendait tant "+
+  "qu'on ne les rouvrait pas pour y taper quelque chose. On ouvrait les deux postes, on "+
+  "attendait, et <b>rien ne bougeait</b>. "+
+  "<b>Désormais</b>, après chaque lecture, l'application compare ce qu'elle détient à "+
+  "ce que la base contient : s'il lui manque un dossier, ou si le nôtre est plus "+
+  "récent, elle le lui <b>rend aussitôt</b>. Et comme l'écriture repasse toujours par "+
+  "une lecture et une fusion, rien n'est écrasé. Quand la base est déjà à jour, aucune "+
+  "écriture n'a lieu : on ne la réécrit pas pour rien. "+
+  "Le bouton <b>« Enregistrer dans la base »</b>, dans Listes → Base en ligne, force "+
+  "l'envoi à tout moment : c'est lui qu'on presse quand on veut en avoir le cœur net."],
  ["Le dossier dit ce que le répertoire sait",
   "<b>Ce qui n'allait pas.</b> Les représentants vivent sur la <b>fiche du "+
   "répertoire</b> de la société, et le dossier allait les y chercher par le seul "+

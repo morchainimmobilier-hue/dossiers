@@ -17,7 +17,7 @@
    donc déposer les deux suffit à faire apparaître le bandeau.
    ===================================================================== */
 
-const CACHE = "dossiers-20261105-1520";
+const CACHE = "dossiers-20261105-1745";
 
 /* On ne pré-charge que le strict nécessaire : la page et son adresse de
    base. Les icônes et la carte d'identité se mettront en cache d'elles
