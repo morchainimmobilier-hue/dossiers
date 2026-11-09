@@ -691,6 +691,9 @@ table.grid-t td .ynb{min-width:48px;padding:3px 9px;font-size:11.5px}
    étaient indiscernables l'un de l'autre. */
 .puce.prospection{background:#7c3aed}
 .puce.estimation{background:#0891b2}
+/* à compléter : l'ambre de l'attention, distinct du jaune « sous offre »
+   par sa saturation — c'est un rappel, pas une alerte */
+.puce.acompleter{background:#b45309}
 .puce.vente{background:#0284c7}
 .puce.offre{background:#eda100}
 .puce.compromis{background:#c2410c}
@@ -1441,6 +1444,11 @@ table.chgt input.chgm{text-align:right}
   margin-bottom:2px}
 .annx .as input{width:100%;padding:5px 8px;font-size:12.5px;text-align:right}
 .annx .as.off{opacity:.42}
+/* le garage et le parking portent DEUX mesures : le nombre et la surface,
+   côte à côte plutôt que l'une sous l'autre — la colonne resterait trop haute */
+.annx.duo{gap:4px}
+.annx.duo .as{display:inline-block;width:calc(50% - 3px);vertical-align:top}
+.annx.duo .as + .as{margin-left:4px}
 .detailbox .dgrid .pf{display:grid;grid-template-columns:1fr;gap:3px;padding:0}
 .detailbox .dgrid .pf > label{font-size:11.5px;font-weight:600;color:var(--ink-2);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2469,6 +2477,7 @@ table.tdb .puce.resilie{background:#897466}
 .dstat{align-self:center;flex:0 0 auto;font-size:11px;font-weight:600;
   letter-spacing:.3px;text-transform:uppercase;border-radius:20px;padding:3px 11px;
   border:1px solid;white-space:nowrap}
+.dstat.acompleter{background:#fffbeb;border-color:#fcd34d;color:#92400e}
 .dstat.vente{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
 .dstat.offre{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
 .dstat.compromis{background:#f5f3ff;border-color:#ddd6fe;color:#6d28d9}
@@ -2723,6 +2732,13 @@ table.tdb .puce.resilie{background:#897466}
    couleur, un compte — et la liste dessous, telle qu'elle était */
 .dgroupe{margin-top:14px}
 .dgroupe:first-child{margin-top:2px}
+/* le rappel des dossiers à compléter, en tête de la page Dossiers */
+.dacompl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;
+  padding:9px 13px;margin:0 0 12px}
+.dacompl b{font-size:12.5px;color:#92400e;white-space:nowrap}
+.dacompl > span:not(.puce){font-size:12px;color:var(--ink-2);flex:1;min-width:200px}
+.dacompl .tbtn{flex:0 0 auto}
 .dgtitre{display:flex;align-items:center;gap:9px;padding:0 2px 7px;
   border-bottom:1px solid var(--line-2);margin-bottom:9px}
 .dgtitre b{font-size:12.5px;font-weight:700;letter-spacing:.3px;
@@ -2737,6 +2753,8 @@ table.tdb .puce.resilie{background:#897466}
    où il en est, et l'étiquette reste neutre */
 .dprix.avant{font-size:13px;font-weight:500;color:var(--ink-2)}
 .mdt.avant{background:var(--line-2);color:var(--ink-3)}
+/* le mandat pris dont le numéro manque : on le voit sans le confondre */
+.mdt.acompl{background:#fffbeb;border-color:#fcd34d;color:#92400e}
 
 /* ---------------------------------------- les biens d'avant le mandat ---
    Ils n'ont plus de page à eux : ils sont dans le tableau des Dossiers,
@@ -2850,7 +2868,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 6 novembre 2026, 10 h 50">Dossiers de vente</div>
+  <div class="brand" title="Version du 9 novembre 2026, 17 h 30">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3074,7 +3092,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>6 novembre 2026, 10 h 50</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>9 novembre 2026, 17 h 30</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -7312,12 +7330,31 @@ function majSectionOuverte(){
   const d = (actif && actif.dataset) || {};
   const attr = d.b ? "data-b" : d.chk ? "data-chk" : d.yn ? "data-yn" : "";
   const chemin = d.b || d.chk || d.yn || "";
+  /* ON RETIENT AUSSI OÙ ÉTAIT LE CURSEUR. Rendre le focus sans la position,
+     c'est renvoyer au DÉBUT de la case : en tapant 249000 dans le prix, on
+     obtenait 000942 — chaque chiffre se posait devant le précédent. La
+     fenêtre se redessine, le champ est neuf, et un champ neuf qu'on focalise
+     place son curseur en tête. */
+  let deb = null, fin = null;
+  try{ deb = actif.selectionStart; fin = actif.selectionEnd; }catch(e){}
   $("#secCorps").innerHTML = carteSection(sec);
   majEcheances(); majDetail(); refreshAllVilles();
   if(chemin){
     const el = $(`#secCorps [${attr}="${chemin}"]`);
-    if(el) el.focus();
+    if(el){
+      el.focus();
+      /* une case de date ou de nombre refuse la sélection : on n'insiste pas */
+      try{ if(deb !== null) el.setSelectionRange(deb, fin); }catch(e){}
+    }
   }
+}
+/* Le curseur est-il DANS une case ? Tant qu'il y est, la saisie n'est pas
+   finie, et rien ne doit redessiner le morceau de page qui la porte. */
+function saisieEnCours(){
+  const a = document.activeElement;
+  if(!a || !a.tagName) return false;
+  if(!/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;
+  return !a.disabled && !a.readOnly;
 }
 /* =====================================================================
    LES DOSSIERS D'UN IMMEUBLE
@@ -7792,7 +7829,8 @@ function majDepuisPieces(o){
 
 /* les champs de surface d'une annexe ne se remplissent que si elle existe */
 const DETAIL_DEP = {terrasseM2:"terrasse", balconM2:"balcon", jardinM2:"jardin",
-                    caveM2:"cave", garageNb:"garage", parkingNb:"parking"};
+                    caveM2:"cave", garageNb:"garage", garageM2:"garage",
+                    parkingNb:"parking", parkingM2:"parking"};
 function detailActif(champ, o){
   const dep = DETAIL_DEP[champ];
   return !dep || (o || D).detail[dep] === "OUI";
@@ -7984,8 +8022,12 @@ function annexesDuBien(piscine){
     ["balcon",   "Balcon",   "balconM2",   "m²"],
     ["jardin",   "Jardin",   "jardinM2",   "m²"],
     ["cave",     "Cave",     "caveM2",     "m²"],
-    ["garage",   "Garage",   "garageNb",   "combien"],
-    ["parking",  "Parking",  "parkingNb",  "combien"]
+    /* un garage et un parking se comptent ET se mesurent : « 2 garages »
+       dit le nombre, « Garage 15 m² » dit ce qu'on y range. On avait le
+       premier, pas le second — et la surface se tapait dans la case du
+       nombre, faute de mieux. */
+    ["garage",   "Garage",   "garageNb",   "combien", "garageM2",  "m²"],
+    ["parking",  "Parking",  "parkingNb",  "combien", "parkingM2", "m²"]
   ];
   /* la piscine n'a ni surface ni nombre : une réponse, et c'est tout */
   if(piscine) l.push(["piscine", "Piscine", "", ""]);
@@ -8070,16 +8112,41 @@ function champBien(o, chemin, def){
   const mod = w === "wide" ? " wide" : w === "br" ? " br" : "";
   return `<div class="pf${mod}${off ? " off" : ""}"><label>${esc(lab)}</label>${h}</div>`;
 }
-function annexeBien(o, chemin, [k, lab, kSurf, labSurf]){
+/* ------------------------------------- LE 15 QUI N'ÉTAIT PAS UN NOMBRE
+   Faute d'une case pour la surface, celle du garage se tapait dans la case
+   « combien » : 15 voulait dire 15 m², pas quinze garages. Maintenant que
+   la surface a la sienne, on remet chaque chiffre à sa place — mais
+   seulement quand il ne peut pas être un nombre de garages. Au-dessus de
+   CINQ, c'est une surface : personne ne vend six boxes avec sa maison.
+   Jusqu'à cinq, on ne touche à rien ; mieux vaut un doute qu'une donnée
+   déplacée à tort. */
+function migrerGarages(d){
+  const det = (d || {}).detail;
+  if(!det) return false;
+  let bouge = false;
+  [["garageNb", "garageM2"], ["parkingNb", "parkingM2"]].forEach(([kn, km])=>{
+    if(String(det[km] || "").trim()) return;      /* la surface est déjà là */
+    const n = num(det[kn]);
+    if(n === null || n <= 5) return;
+    det[km] = det[kn]; det[kn] = "";
+    bouge = true;
+  });
+  return bouge;
+}
+function annexeBien(o, chemin, [k, lab, kSurf, labSurf, kDeux, labDeux]){
   const ouvert = o.detail[k] === "OUI";
-  /* la piscine n'a ni surface ni nombre : la pastille seule */
-  let cote = "";
-  if(kSurf){
-    let su = control(chemin + "detail." + kSurf, kSurf.endsWith("Nb") ? "nb" : "money");
+  /* la piscine n'a ni surface ni nombre : la pastille seule. Le garage et
+     le parking en ont DEUX — le nombre et la surface — et se rangent donc
+     l'un sous l'autre. */
+  const mesure = (cle, titre)=>{
+    if(!cle) return "";
+    let su = control(chemin + "detail." + cle, cle.endsWith("Nb") ? "nb" : "money");
     if(!ouvert) su = su.replace(/<input\b/g, "$& disabled");
-    cote = `<span class="as${ouvert ? "" : " off"}"><i>${esc(labSurf)}</i>${su}</span>`;
-  }
-  return `<div class="annx${ouvert ? " on" : ""}${kSurf ? "" : " seule"}">
+    return `<span class="as${ouvert ? "" : " off"}"><i>${esc(titre)}</i>${su}</span>`;
+  };
+  const cote = mesure(kSurf, labSurf) + mesure(kDeux, labDeux);
+  return `<div class="annx${ouvert ? " on" : ""}${kSurf ? "" : " seule"}${
+      kDeux ? " duo" : ""}">
     <span class="al">${esc(lab)}</span>
     ${ynBascule(chemin + "detail." + k, o.detail[k] || "", "yn")}
     ${cote}</div>`;
@@ -8115,12 +8182,16 @@ function atoutsDuBien(d){
   mesure("balcon",   "Balcon",   "balconM2",   " m²");
   mesure("jardin",   "Jardin",   "jardinM2",   " m²");
   mesure("cave",     "Cave",     "caveM2",     " m²");
-  /* un garage, deux garages : le nombre se met devant, pas derrière */
-  [["garage", "Garage", "garageNb"], ["parking", "Parking", "parkingNb"]]
-    .forEach(([k, lab, kn])=>{
+  /* LE LIBELLÉ D'ABORD, LA MESURE ENSUITE : « Garage 15 m² », jamais
+     « 15 Garage ». Le garage et le parking ont les deux — un nombre et une
+     surface — et disent ce qu'ils ont. */
+  [["garage", "Garage", "garageNb", "garageM2"],
+   ["parking", "Parking", "parkingNb", "parkingM2"]]
+    .forEach(([k, lab, kn, km])=>{
       if(det[k] !== "OUI") return;
-      const n = num(det[kn]);
-      out.push(n && n > 1 ? n + " " + lab.toLowerCase() + "s" : lab);
+      const n = num(det[kn]), m = num(det[km]);
+      const tete = n && n > 1 ? n + " " + lab.toLowerCase() + "s" : lab;
+      out.push(m ? tete + " " + m.toLocaleString("fr-FR") + " m²" : tete);
     });
   if(det.piscine === "OUI") out.push("Piscine");
   /* ce qui se déduit de l'étage et du niveau des pièces */
@@ -9374,7 +9445,18 @@ function stade(dossier){
     if(!v || v > t) continue;
     if(!best || v > best.v || (v === best.v && st.rang > best.rang)) best = {...st, v};
   }
-  return best || {lib:"EN VENTE", cls:"vente"};
+  /* ------------------------------------------- UN DOSSIER SANS NUMÉRO
+     « En vente » suppose un mandat, et un mandat suppose un numéro. Une
+     prise de mandat interrompue — le prix saisi, le numéro pas encore —
+     laissait le dossier classé EN VENTE au milieu des vrais mandats, sans
+     numéro pour le nommer et introuvable à la recherche, qui écartait les
+     dossiers sans numéro. On l'avait perdu.
+     Il a maintenant son statut à lui : À COMPLÉTER. Il se range dans son
+     groupe, il a sa ligne au tableau d'Aujourd'hui, la recherche le
+     trouve, et la page Dossiers le signale tant qu'il en reste un. */
+  return best || (String((d.mandat || {}).num || "").trim()
+    ? {lib:"EN VENTE", cls:"vente"}
+    : {lib:"À COMPLÉTER", cls:"acompleter"});
 }
 /* ------------------------------------------------ informations indispensables */
 const OBLIGATOIRES = [
@@ -13658,13 +13740,23 @@ function chercherFiches(q){
 /* tous les mots saisis doivent se retrouver, où qu'ils soient */
 function chercherDossiers(q){
   const mots = fold(q).split(/\s+/).filter(Boolean);
-  const all = dossiersVivants().filter(d=> d.mandat && d.mandat.num);
+  /* LA RECHERCHE NE SAUTE PLUS CE QUI N'A PAS DE NUMÉRO. Elle écartait les
+     dossiers sans numéro de mandat : un bien en prospection, une estimation,
+     et surtout un mandat pris dont le numéro n'est pas encore saisi — celui
+     qu'on cherche le plus, justement, parce qu'on ne sait plus où il est. */
+  const all = dossiersVivants().filter(d=> dossierEntame(d));
   const res = !mots.length ? all
     : all.filter(d=>{ const t = texteDossier(d); return mots.every(m=> t.includes(m)); });
+  /* les numérotés d'abord, du plus récent au plus ancien ; ceux qui n'ont
+     pas de numéro à la suite, rangés par le nom de leur propriétaire */
   return res.sort((a,b)=>{
-    const na = parseFloat((a.mandat.num||"")), nb = parseFloat((b.mandat.num||""));
+    const sa = String((a.mandat || {}).num || "").trim();
+    const sb = String((b.mandat || {}).num || "").trim();
+    if(!sa !== !sb) return sa ? -1 : 1;
+    if(!sa) return nomProprietaire(a).localeCompare(nomProprietaire(b), "fr");
+    const na = parseFloat(sa), nb = parseFloat(sb);
     if(isFinite(na) && isFinite(nb) && na !== nb) return nb - na;
-    return (b.mandat.num||"").localeCompare(a.mandat.num||"", "fr", {numeric:true});
+    return sb.localeCompare(sa, "fr", {numeric:true});
   });
 }
 function ouvrirRecherche(){
@@ -13713,8 +13805,10 @@ function majRechDossiers(q){
         const prix = num((d.prix||{}).fai);
         const det = [gens, (b.type || ""), prix !== null ? eur(prix) : ""]
                     .filter(Boolean).join("  ·  ");
+        const nmd = String((d.mandat || {}).num || "").trim();
         return `<button type="button" class="rdoss" data-ouvrir="${esc(d.id)}">
-          <span class="rnum">n° ${surl((d.mandat && d.mandat.num) || "—")}</span>
+          <span class="rnum">${nmd ? "n° " + surl(nmd)
+            : surl(nomProprietaire(d) || "sans n°")}</span>
           <span class="rdet">${surl(adr)}<em>${surl(det || "—")}</em></span>
           <span class="nat"><span class="nature ${natureDe(s.cls)}">${esc(s.lib)}</span></span>
         </button>`;
@@ -13918,6 +14012,7 @@ let DOSS_F = Object.assign({}, DOSS_F_VIDE);
    on vend. C'est celui du tableau d'Aujourd'hui, et celui des groupes de la
    page Dossiers — un même ordre partout, pour qu'on sache où regarder. */
 const STADES_DOSSIER = [["prospection","En prospection"], ["estimation","En estimation"],
+  ["acompleter","À compléter"],
   ["vente","En vente"], ["offre","Sous offre"],
   ["compromis","Sous compromis"], ["vendu","Vendu"], ["resilie","Mandat résilié"]];
 /* Deux bornes, et rien de plus. Il y avait avant un menu « supérieur à /
@@ -14062,9 +14157,15 @@ function renderDossiersListe(){
               return v ? (phaseBien(d) === "estimation" ? "estimation du " : "action du ")
                          + fdate(v) : "rien de daté"; })())
           : (c.fai === null ? "prix à saisir" : esc(eur(c.fai)))}</span>
-        <span class="mdt ${sansMandat(d) ? "avant" : m.cls}" data-bulle="${
-          esc(sansMandat(d) ? "Pas encore de mandat" : m.lib)}">${
-          numero ? "n° " + esc(numero) : (sansMandat(d) ? "avant mandat" : "sans n°")}</span>
+        <span class="mdt ${sansMandat(d) ? "avant"
+            : (numero ? m.cls : "acompl")}" data-bulle="${
+          esc(sansMandat(d) ? "Pas encore de mandat"
+              : numero ? m.lib : "Mandat pris, numéro pas encore saisi")}">${
+          /* SANS NUMÉRO, C'EST LE PROPRIÉTAIRE QUI NOMME LE DOSSIER. « sans
+             n° » ne distinguait pas deux dossiers interrompus l'un de
+             l'autre : on ne savait pas lequel ouvrir. */
+          numero ? "n° " + esc(numero)
+            : esc(nomProprietaire(d) || (sansMandat(d) ? "avant mandat" : "sans n°"))}</span>
       </div>
       <div class="dcol ddpe">${pastilleDpe(d)}</div>
       <div class="dcol dville"><b>${esc(b.ville || "—")}</b>
@@ -14108,14 +14209,33 @@ function renderDossiersListe(){
   const groupes = STADES_DOSSIER
     .map(([cls, lib])=> ({cls, lib, l: items.filter(d=> stade(d).cls === cls)}))
     .filter(g=> g.l.length);
-  z.innerHTML = items.length
+  /* ------------------------------------------- CE QUI N'A PAS DE STATUT
+     Un dossier à compléter n'est nulle part : ni en estimation, ni en
+     vente. Avec le filtre du jour — les biens en vente —, il ne s'affiche
+     même pas. On le SIGNALE donc en tête de la page, quel que soit le
+     filtre, et un bouton y mène d'un clic. Il disparaît dès qu'il n'en
+     reste aucun : ce n'est pas un bandeau de plus, c'est un rappel. */
+  const aFaire = tous.filter(d=> stade(d).cls === "acompleter");
+  const alerte = (aFaire.length && DOSS_F.stade !== "acompleter")
+    ? `<div class="dacompl"><span class="puce acompleter"></span>
+        <b>${aFaire.length} dossier${aFaire.length > 1 ? "s" : ""} à compléter</b>
+        <span>${aFaire.length > 1 ? "Leur mandat a été pris, leur numéro n'est pas"
+          : "Son mandat a été pris, son numéro n'est pas"} encore saisi : ${
+          aFaire.length > 1 ? "ils ne sont" : "il n'est"} ni en estimation ni en
+          vente. ${esc(aFaire.slice(0, 4).map(d=> nomProprietaire(d)
+            || bienDe(d) || "sans nom").join(", "))}${
+          aFaire.length > 4 ? "…" : ""}</span>
+        <button type="button" class="tbtn light mini" data-dvoir="acompleter"
+          >Les voir</button></div>`
+    : "";
+  z.innerHTML = alerte + (items.length
     ? groupes.map(g=> `<div class="dgroupe">
         <div class="dgtitre ${esc(g.cls)}"><span class="puce ${esc(g.cls)}"></span>
           <b>${esc(g.lib)}</b><span class="dgn">${g.l.length}</span></div>
         <div class="dlist">${g.l.map(ligne).join("")}</div></div>`).join("")
     : `<div class="body muted">${tous.length
         ? "Aucun bien ne répond à ces filtres."
-        : "Aucun dossier enregistré."}</div>`;
+        : "Aucun dossier enregistré."}</div>`);
   /* le compte et le bouton de remise à zéro vivent DANS la barre, qu'on ne
      redessine pas : on ne touche donc qu'à leur contenu */
   const cpt = $("#dossCompte");
@@ -14836,6 +14956,9 @@ function bucketsEvolution(list){
 const AUJ_STATUTS = [
   {cls:"prospection", lib:"Prospection", potentiel:true, avantMandat:true},
   {cls:"estimation",  lib:"Estimation",  potentiel:true, avantMandat:true},
+  /* un mandat sans numéro n'est pas une vente : il ne compte rien, et c'est
+     son propriétaire qui le nomme, comme avant le mandat */
+  {cls:"acompleter",  lib:"À compléter", potentiel:true, avantMandat:true},
   {cls:"vente",       lib:"En vente",    potentiel:true},
   {cls:"offre",       lib:"Sous offre"},
   {cls:"compromis",   lib:"Sous compromis"}
@@ -15080,11 +15203,9 @@ function panneauStatuts(cote){
           return `<tr class="adet${d.id===D.id?" cur":""}${enc}" data-adet="${cote}:${s.cls}"${cache}>
             <td class="cdoss"><b>${(d.mandat && d.mandat.num)
                 ? esc(d.mandat.num)
-                : (sansMandat(d)
-                   /* avant le mandat il n'y a pas de numéro : ce qui nomme
-                      le bien, c'est SON PROPRIÉTAIRE */
-                   ? esc(nomProprietaire(d) || "sans propriétaire")
-                   : "(sans numéro)")}</b>
+                /* sans numéro — avant le mandat, ou le numéro pas encore
+                   saisi — ce qui nomme le bien, c'est SON PROPRIÉTAIRE */
+                : esc(nomProprietaire(d) || "sans propriétaire")}</b>
               <b class="ctype">${esc(critBien(d).type || "Bien")}</b>
               <span>${esc(bienDe(d))}${v ? " · " + esc(fdate(v)) : ""}</span></td>
             <td class="nb"></td>
@@ -18192,9 +18313,19 @@ function majRapproFiche(k, i){
 
    On ne redessine QUE ces zones-là, et après une accalmie : la page où l'on
    tape n'est pas touchée, et le curseur ne bouge pas. */
+/* ON NE REDESSINE PAS SOUS LES DOIGTS.
+   Ce rafraîchissement redessine les pages « Le bien » et « Le mandat »
+   entières — c'est ce qu'il faut pour que les rapprochements suivent le
+   prix et les caractéristiques. Mais il partait TROIS DIXIÈMES DE SECONDE
+   après la frappe, c'est-à-dire en plein milieu d'une saisie : la case du
+   prix était refaite à neuf entre deux chiffres, et le curseur repartait
+   au début. On tapait 249000, on lisait 000942.
+   Tant que le curseur est dans une case, on repousse. Dès qu'il en sort,
+   le rafraîchissement a lieu — il n'a rien perdu à attendre. */
 function majRapprochements(){
   clearTimeout(majRapprochements.t);
-  majRapprochements.t = setTimeout(()=>{
+  const corps = ()=>{
+    if(saisieEnCours()){ majRapprochements.t = setTimeout(corps, 700); return; }
     try{
       const auj = document.getElementById("carteRappro");
       if(auj && pageActive() === "aujourdhui") renderAujourdhui();
@@ -18209,7 +18340,8 @@ function majRapprochements(){
         if(c) dessinerSecteur(window.leaflet, SECT.carte, c);
       }
     }catch(e){ if(window.console) console.error(e); }
-  }, 300);
+  };
+  majRapprochements.t = setTimeout(corps, 300);
 }
 /* ------------------------------------------------------- le sens inverse -
    La même mécanique, lue par l'autre bout : non plus « quels biens pour cet
@@ -25367,7 +25499,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-vsoc],[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -25748,6 +25880,13 @@ document.addEventListener("click", e=>{
     /* un clic, pas une frappe : la barre peut se redessiner, et elle le
        doit — ce sont ses propres champs qu'on vient de vider */
     renderDossiers(); return;
+  }
+  /* « Les voir » du rappel des dossiers à compléter : un filtre, et rien
+     d'autre — on remet les autres à zéro pour que rien ne les cache */
+  if(t.dataset.dvoir){
+    DOSS_F = Object.assign({}, DOSS_F_VIDE, {stade:t.dataset.dvoir});
+    activerOnglet("dossiers"); renderDossiers();
+    return;
   }
   if(t.dataset.oproprio !== undefined){
     const d = dossiersVivants().filter(x=> x.id === t.dataset.oproprio)[0];
@@ -30218,6 +30357,7 @@ function migrate(d){
      fait foi, y compris pour un dossier arrivé de l'autre poste. */
   migrerCharges(out);
   majChargesDeduites(out);
+  migrerGarages(out);
   /* l'argumentaire est venu après : un dossier ancien n'en a pas */
   out.argu = Object.assign(base.argu, d.argu||{});
   /* le brouillon de publication voyage avec le dossier ; un dossier ancien
@@ -31059,6 +31199,49 @@ const AIDE = [
   "une piscine collective, un parking commun ne sont pas au bien, ils sont à la "+
   "copropriété — et l'acquéreur ne fait pas la différence au téléphone. Pour un dossier "+
   "qui <b>est</b> un immeuble, c'est ce que ses logements offrent qui s'y lit."],
+ ["Le curseur ne repart plus au début de la case",
+  "<b>Ce qui n'allait pas.</b> En tapant le prix après une prise de mandat, chaque "+
+  "chiffre se posait <b>devant</b> le précédent : on tapait 249 000, on lisait 000 942. "+
+  "Le rafraîchissement des <b>rapprochements</b> — ce qui met à jour les demandeurs "+
+  "intéressés quand le prix ou les caractéristiques changent — redessinait les pages "+
+  "« Le bien » et « Le mandat » entières, trois dixièmes de seconde après la frappe. "+
+  "C'est-à-dire <b>en plein milieu d'une saisie</b> : la case était refaite à neuf "+
+  "entre deux chiffres, et un champ neuf qu'on focalise place son curseur en tête. "+
+  "<b>Désormais</b>, tant que le curseur est dans une case, rien ne redessine le "+
+  "morceau de page qui la porte : on repousse. Dès qu'on en sort, le rafraîchissement a "+
+  "lieu — il n'a rien perdu à attendre. Et lorsqu'une fenêtre doit malgré tout se "+
+  "refaire, elle <b>retient la position du curseur</b> et la rend avec le focus. Cela "+
+  "vaut pour toutes les cases, pas seulement le prix."],
+ ["Les dossiers à compléter ne se perdent plus",
+  "<b>Ce qui n'allait pas.</b> Une prise de mandat interrompue — le prix saisi, le "+
+  "numéro de mandat pas encore — laissait le dossier classé « EN VENTE » au milieu des "+
+  "vrais mandats, <b>sans numéro pour le nommer</b> ; et la recherche, qui écartait les "+
+  "dossiers sans numéro, ne le retrouvait pas. Il n'était plus ni en estimation ni en "+
+  "vente : on l'avait perdu. "+
+  "<b>Il a maintenant son statut à lui : « À COMPLÉTER ».</b> Il se range dans son "+
+  "propre groupe de la page <b>Dossiers</b>, entre l'estimation et la vente ; il a sa "+
+  "ligne au tableau d'<b>Aujourd'hui</b> — sans montant, comme les biens d'avant le "+
+  "mandat ; et il s'ouvre, se modifie et se supprime comme n'importe quel dossier. "+
+  "<b>On ne peut plus le manquer.</b> Tant qu'il en reste un, la page Dossiers "+
+  "l'annonce en tête, <b>quel que soit le filtre</b>, avec le nom des propriétaires "+
+  "concernés et un bouton <b>« Les voir »</b> qui n'affiche plus qu'eux. "+
+  "<b>Et la recherche ne saute plus rien :</b> elle cherchait uniquement parmi les "+
+  "dossiers numérotés. Elle trouve désormais aussi les biens en prospection, les "+
+  "estimations et les mandats sans numéro — et là où le numéro manque, c'est le "+
+  "<b>nom du propriétaire</b> qui nomme la ligne, à l'écran comme dans les listes. "+
+  "Dès que le numéro est saisi, le dossier rejoint les ventes de lui-même."],
+ ["Le garage et le parking ont une surface",
+  "La case du garage demandait « combien » — un nombre de garages — et n'offrait pas de "+
+  "<b>surface</b>. Faute de mieux, la surface s'y tapait : un 15 qui voulait dire "+
+  "15 m², et la pastille lisait « 15 garages ». "+
+  "<b>Les deux cases existent maintenant</b>, côte à côte : le <b>nombre</b> et la "+
+  "<b>surface</b>. La pastille écrit « <b>Garage 15 m²</b> » — le libellé d'abord, la "+
+  "mesure ensuite, comme pour la terrasse et la cave —, « 2 parkings » quand il n'y a "+
+  "qu'un nombre, et « 2 garages 30 m² » quand il y a les deux. "+
+  "<b>Vos saisies sont reprises :</b> un chiffre supérieur à <b>cinq</b> dans la case "+
+  "du nombre passe en surface — personne ne vend six boxes avec sa maison. Jusqu'à "+
+  "cinq, rien n'est touché : mieux vaut un doute qu'une donnée déplacée à tort. "+
+  "Vérifiez-les d'un coup d'œil, la pastille les dit toutes."],
  ["Le dossier dit ce que le répertoire sait",
   "<b>Ce qui n'allait pas.</b> Les représentants vivent sur la <b>fiche du "+
   "répertoire</b> de la société, et le dossier allait les y chercher par le seul "+
@@ -35610,14 +35793,19 @@ function donneesPubli(dossier){
     caractRes: String(r.caractere || "").trim()
   };
   [["terrasse","terrasseM2","terrasse"],["balcon","balconM2","balcon"],
-   ["jardin","jardinM2","jardin"],["cave","caveM2","cave"],
-   ["garage","garageNb","garage"],["parking","parkingNb","parking"]]
+   ["jardin","jardinM2","jardin"],["cave","caveM2","cave"]]
     .forEach(([k, ks, lib])=>{
       if(det[k] !== "OUI") return;
       const v = num(det[ks]);
-      o.annexes.push(/garage|parking/.test(k)
-        ? (v && v > 1 ? v + " " + lib + "s" : lib)
-        : (v ? lib + " de " + v.toLocaleString("fr-FR") + " m²" : lib));
+      o.annexes.push(v ? lib + " de " + v.toLocaleString("fr-FR") + " m²" : lib);
+    });
+  /* le garage et le parking ont un nombre ET une surface */
+  [["garage","garageNb","garageM2","garage"],
+   ["parking","parkingNb","parkingM2","parking"]].forEach(([k, kn, ks, lib])=>{
+      if(det[k] !== "OUI") return;
+      const n = num(det[kn]), m = num(det[ks]);
+      const tete = n && n > 1 ? n + " " + lib + "s" : lib;
+      o.annexes.push(m ? tete + " de " + m.toLocaleString("fr-FR") + " m²" : tete);
     });
   return o;
 }
