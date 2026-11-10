@@ -1423,6 +1423,28 @@ table.chgt .withadd{gap:3px}
 table.chgt .addinline[data-search]{display:none}
 table.chgt td:first-child{width:42%}
 table.chgt input.chgm{text-align:right}
+/* ----------------------------------------- la calculatrice de surface */
+.calcgrid{display:flex;flex-direction:column;gap:6px}
+.cline{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cline input{padding:6px 9px;font-size:13px;width:84px;text-align:right}
+.cline input.cres{width:96px;font-weight:600}
+.cline input.cres.auto{background:#f6f2f0;color:var(--ink-2)}
+.cline .csym{color:var(--ink-3);font-size:13px}
+.cop{width:30px;height:30px;flex:0 0 auto;border-radius:8px;border:1px solid #a7d7bf;
+  background:#ecfdf5;color:#14532d;font-size:16px;font-weight:700;cursor:pointer;
+  line-height:1}
+.cop.moins{border-color:#e9b9b9;background:#fdf1f1;color:#9b2c2c}
+.ccase{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-2);
+  white-space:nowrap;cursor:pointer}
+.ccase input{width:auto;margin:0}
+.ctot{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.ct{flex:1;min-width:150px;display:flex;align-items:baseline;justify-content:space-between;
+  gap:10px;border:1px solid var(--filet);border-radius:9px;padding:8px 12px}
+.ct span{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-3)}
+.ct b{font-size:17px;color:var(--navy)}
+.ct.hab{background:#ecfdf5;border-color:#a7d7bf}
+.ct.hab b{color:#14532d}
+.xbtn.mini.on{background:var(--accent-soft);border-color:#e3c6ba;color:var(--bandeau)}
 /* les totaux des pièces, sur la ligne du titre : le total en évidence, la
    répartition par niveau ensuite, et le filet du titre passe après */
 .detailbox .dsec h4.avectot{flex-wrap:wrap;row-gap:6px}
@@ -1457,6 +1479,16 @@ table.chgt input.chgm{text-align:right}
 .detailbox .dcalc{padding:7px 10px;font-weight:600;text-align:left}
 .detailbox .dact{margin-top:10px}
 .dnote{margin:9px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.45}
+/* Le propriétaire sur la fiche de visite : relu, jamais ressaisi. */
+.vperss{display:grid;gap:8px}
+.vpers{border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+  background:#faf7f5}
+.vpnom{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.vpco{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:3px;
+  font-size:11.5px;color:var(--ink-2)}
+.vprepr{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:5px;
+  padding-top:5px;border-top:1px dashed var(--line);
+  font-size:11.5px;color:var(--ink-3)}
 .detailbox .darg{margin:0}
 .arggs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px}
 .argg h5{margin:0 0 7px;font-size:11px;font-weight:700;letter-spacing:.4px;
@@ -2868,7 +2900,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 9 novembre 2026, 17 h 30">Dossiers de vente</div>
+  <div class="brand" title="Version du 10 novembre 2026, 18 h 10">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3092,7 +3124,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>9 novembre 2026, 17 h 30</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>10 novembre 2026, 18 h 10</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3577,6 +3609,63 @@ const LISTS_DEFAULT = {
   periodeCharge: ["2026", "2025", "2024", "1er semestre", "2d semestre",
                   "1er trimestre", "2e trimestre", "3e trimestre", "4e trimestre",
                   "Moyenne sur 3 ans", "Estimation"],
+  /* ------------------------------------------------ LA FICHE DE VISITE
+     Ce qu'on relève chez le propriétaire, le carnet à la main : le
+     bâtiment, la technique, le terrain. Toutes ces listes s'allongent par
+     le « + », comme les autres — aucune n'est figée. */
+  motifVente: ["Mutation professionnelle", "Achat plus grand", "Achat plus petit",
+               "Séparation", "Succession", "Retraite", "Investissement",
+               "Départ en maison de retraite", "Autre"],
+  elevation:  ["Plain-pied", "Rez-de-chaussée + combles", "R+1", "R+1 + combles",
+               "R+2", "R+3", "Sur sous-sol", "½ niveau"],
+  mitoyennete:["Aucune", "1 côté", "2 côtés", "3 côtés",
+               "Mitoyen d'une habitation", "Mitoyen d'une annexe"],
+  videSanit:  ["Non", "Oui, non accessible", "Oui et accessible"],
+  combles:    ["Pas de comble", "Comble non accessible", "Comble aménagé",
+               "Comble aménageable", "Plancher non porteur", "Plancher porteur"],
+  modeConstr: ["Parpaings", "Briques", "Monomur", "Béton banché", "Préfabriqué",
+               "Pierre", "Ossature bois", "Pisé", "Autre"],
+  isolation:  ["Non", "Intérieure", "Extérieure", "Répartie", "Inconnue"],
+  prodElec:   ["Aucune", "Photovoltaïque avec vente", "Photovoltaïque en autoconsommation",
+               "Micro-éolienne", "Autre"],
+  ventilation:["Aucune", "Grilles", "VMC simple flux", "VMC hygroréglable",
+               "VMC double flux", "Puits provençal"],
+  eauxUsees:  ["Tout-à-l'égout", "Fosse septique", "Micro-station", "Puits perdu",
+               "Assainissement non conforme"],
+  arrosage:   ["Eau de ville", "Forage", "Puits", "Canal / arrosant", "Aucun"],
+  sysArrosage:["Manuel", "Automatique", "Goutte-à-goutte"],
+  materiauOuv:["Bois", "Métal", "PVC", "Aluminium", "Motorisé", "Aucun"],
+  cloture:    ["Non clôturé", "Grillage", "Mur", "Claustras", "Haies",
+               "Mur bahut + grille", "Mixte"],
+  terrasseRev:["Carrelage", "Bois", "Composite", "Béton", "Dalles sur plots",
+               "Gravier"],
+  terrasseCouv:["Non couverte", "Couverte", "Pergola", "Treille", "Store"],
+  piscineType:["Traditionnelle maçonnée", "Coque", "Hors sol", "Couloir de nage",
+               "Bassin naturel"],
+  piscineRev: ["Liner", "PVC armé", "Carrelage", "Peinture", "Enduit"],
+  piscineTrait:["Chlore", "Sel", "Brome", "Oxygène actif", "Automatisé"],
+  periodeTrav:["Moins de 2 ans", "Moins de 5 ans", "Moins de 10 ans",
+               "Plus de 10 ans", "En cours", "À prévoir"],
+  natureTrav: ["Toiture", "Façade", "Isolation", "Menuiseries", "Électricité",
+               "Plomberie", "Chauffage", "Cuisine", "Salle de bains", "Sols",
+               "Peintures", "Assainissement", "Piscine", "Extérieurs"],
+  /* le détail d'une pièce, relevé pendant la visite */
+  solPiece:   ["Carrelage", "Parquet massif", "Parquet flottant", "Moquette",
+               "Dalles PVC", "Lino", "Béton ciré", "Tomettes", "Brut"],
+  fenetrePiece:["Bois simple vitrage", "Bois double vitrage", "PVC double vitrage",
+                "Aluminium double vitrage", "Métal simple vitrage", "Triple vitrage",
+                "Pavés de verre", "Aucune"],
+  voletsPiece:["Aucun", "Battants bois", "Battants PVC", "Battants métal",
+               "Roulants manuels", "Roulants électriques", "Persiennes"],
+  diversPiece:["Placard", "Dressing", "Climatisation", "Cheminée", "Poêle",
+               "Moustiquaire", "Poutres apparentes", "Mezzanine", "Baie vitrée"],
+  travauxPiece:["Aucun", "À rafraîchir", "À moderniser", "À rénover",
+                "Travaux à prévoir", "Non fonctionnel", "Rénovée récemment"],
+  typeDep:    ["Garage", "Carport", "Cave", "Cellier", "Buanderie", "Atelier",
+               "Abri de jardin", "Cuisine d'été", "Pool house", "Remise", "Grange",
+               "Préau", "Local technique"],
+  reseauDep:  ["Aucun", "Électricité", "Eau", "Électricité et eau",
+               "Électricité, eau et évacuation"],
   /* les pays ajoutés à la main, en plus de ceux que `PAYS` propose */
   paysPlus:   [],
   /* le bail d'un bien loué : ce qu'il faut savoir avant de promettre une
@@ -3711,7 +3800,21 @@ const LIST_LABELS = {
   libelleMail:"Libellés d'un email (à qui il est)",
   roleRepr:"Rôles dans une société ou une indivision",
   typeCharge:"Charges et impôts — natures",
-  periodeCharge:"Charges et impôts — périodes"
+  periodeCharge:"Charges et impôts — périodes",
+  motifVente:"Motifs de la vente", elevation:"Élévations",
+  mitoyennete:"Mitoyennetés", videSanit:"Vide sanitaire", combles:"Combles",
+  modeConstr:"Modes constructifs", isolation:"Isolations",
+  prodElec:"Production d'électricité", ventilation:"Ventilations",
+  eauxUsees:"Eaux usées", arrosage:"Arrosage — ressource",
+  sysArrosage:"Arrosage — système", materiauOuv:"Ouvrants — matériaux",
+  cloture:"Clôtures", terrasseRev:"Terrasse — revêtements",
+  terrasseCouv:"Terrasse — couverture", piscineType:"Piscine — types",
+  piscineRev:"Piscine — revêtements", piscineTrait:"Piscine — traitements",
+  periodeTrav:"Travaux — périodes", natureTrav:"Travaux — natures",
+  solPiece:"Pièces — sols", fenetrePiece:"Pièces — fenêtres",
+  voletsPiece:"Pièces — volets", diversPiece:"Pièces — divers",
+  travauxPiece:"Pièces — travaux", typeDep:"Dépendances — natures",
+  reseauDep:"Dépendances — réseaux"
 };
 
 /* carnets d'adresses : "card" = affichage en fiches, "row" = tableau compact */
@@ -6172,6 +6275,23 @@ const IC_HISTO = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="t
   `<path d="M8 5.4v3.2l2.2 1.3" fill="none" stroke="currentColor" stroke-width="1.5"` +
   ` stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
+/* la calculatrice de surface, et la loupe du détail d'une pièce */
+const IC_CALC = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">` +
+  `<rect x="3" y="1.8" width="10" height="12.4" rx="1.6" fill="none"` +
+  ` stroke="currentColor" stroke-width="1.4"/>` +
+  `<rect x="5" y="3.8" width="6" height="2.2" rx=".6" fill="none"` +
+  ` stroke="currentColor" stroke-width="1.1"/>` +
+  `<circle cx="5.7" cy="8.6" r=".85" fill="currentColor"/>` +
+  `<circle cx="8" cy="8.6" r=".85" fill="currentColor"/>` +
+  `<circle cx="10.3" cy="8.6" r=".85" fill="currentColor"/>` +
+  `<circle cx="5.7" cy="11.4" r=".85" fill="currentColor"/>` +
+  `<circle cx="8" cy="11.4" r=".85" fill="currentColor"/>` +
+  `<circle cx="10.3" cy="11.4" r=".85" fill="currentColor"/></svg>`;
+const IC_LOUPE = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">` +
+  `<circle cx="7" cy="7" r="4.3" fill="none" stroke="currentColor" stroke-width="1.5"/>` +
+  `<path d="M10.2 10.2 13.6 13.6" fill="none" stroke="currentColor" stroke-width="1.6"` +
+  ` stroke-linecap="round"/></svg>`;
+
 /* bulle de message et enveloppe, dessinées à la main pour rester autonomes */
 const IC_MSG = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">` +
   `<path d="M8 2.2c-3.2 0-5.8 2.1-5.8 4.7 0 1.4.8 2.7 2 3.6l-.5 2.3 2.5-1.3c.6.2 1.2.3` +
@@ -8082,8 +8202,11 @@ function pagesBien(){
   } else {
     l.push({cle:"pieces",  lib:"Les pièces"},
            {cle:"carac",   lib:"Les caractéristiques"},
+           {cle:"batiment",lib:"Le bâtiment"},
+           {cle:"deps",    lib:"Les dépendances"},
            {cle:"terrain", lib:"Le terrain"},
-           {cle:"occup",   lib:"L'occupation"});
+           {cle:"occup",   lib:"L'occupation"},
+           {cle:"visite",  lib:"La fiche de visite"});
   }
   return l;
 }
@@ -8245,7 +8368,301 @@ function blocDetail(o, chemin, sec){
     (champs.trim() ? `<div class="dgrid">${champs}</div>` : "") + `</div>`;
 }
 
+/* =====================================================================
+   LA FICHE DE VISITE — CE QU'ON RELÈVE CHEZ LE PROPRIÉTAIRE
+   ---------------------------------------------------------------------
+   Une visite d'estimation se prépare et se tient avec un carnet : on fait
+   le tour du bâtiment, on regarde les combles, on ouvre le tableau
+   électrique, on marche le terrain. Ce relevé-là n'existait nulle part
+   dans l'application, qui savait décrire un bien à vendre mais pas la
+   visite qui le précède.
+
+   TROIS BLOCS NOUVEAUX, et rien en double : ils s'écrivent dans
+   `detail.*`, à côté de la surface et de l'exposition, et se lisent donc
+   partout où le bien se lit — la fiche, les documents, la présentation.
+   Un relevé fait en estimation sert encore deux ans plus tard, au
+   compromis.
+   ===================================================================== */
+const VISITE_BATIMENT = {t:"Le bâtiment", f:[
+  ["elevation",    "Élévation",            "list:elevation"],
+  ["mitoyennete",  "Mitoyenneté",          "list:mitoyennete"],
+  ["modeConstr",   "Mode constructif",     "list:modeConstr"],
+  ["renovation",   "Rénové en",            "text"],
+  ["videSanit",    "Vide sanitaire",       "list:videSanit", "br"],
+  ["combles",      "Combles",              "list:combles"],
+  ["isoMurs",      "Isolation des murs",   "list:isolation", "br"],
+  ["isoPlancher",  "Isolation du plancher","list:isolation"],
+  ["isoPlafond",   "Isolation du plafond", "list:isolation"],
+  ["obsBatiment",  "Observations",         "area", "wide"]
+]};
+const VISITE_TECHNIQUE = {t:"Le descriptif technique", f:[
+  ["prodElec",     "Production d'électricité", "list:prodElec"],
+  ["ventilation",  "Ventilation",              "list:ventilation"],
+  ["obsTechnique", "Observations",             "area", "wide"]
+]};
+const VISITE_EXTERIEUR = {t:"Le terrain et les extérieurs", f:[
+  ["eauxUsees",    "Eaux usées",            "list:eauxUsees"],
+  ["arrosage",     "Arrosage — ressource",  "list:arrosage"],
+  ["sysArrosage",  "Arrosage — système",    "list:sysArrosage"],
+  ["forage",       "Forage",                "yn", "br"],
+  ["pompe",        "Pompe",                 "yn"],
+  ["programmateur","Programmateur",         "yn"],
+  ["portail",      "Portail",               "list:materiauOuv", "br"],
+  ["portillon",    "Portillon",             "list:materiauOuv"],
+  ["porteGarage",  "Porte de garage",       "list:materiauOuv"],
+  ["cloture",      "Clôture",               "list:cloture", "br"],
+  ["clotureDet",   "Précisions sur la clôture", "text", "wide"],
+  ["jardinEtat",   "Jardin",                "text", "wide"],
+  ["terrasseRev",  "Terrasse — revêtement", "list:terrasseRev", "br"],
+  ["terrasseCouv", "Terrasse — couverture", "list:terrasseCouv"],
+  ["piscineType",  "Piscine — type",        "list:piscineType", "br"],
+  ["piscineDim",   "Piscine — dimensions",  "text"],
+  ["piscineRev",   "Piscine — revêtement",  "list:piscineRev"],
+  ["piscineAnnee", "Piscine — année",       "annee"],
+  ["piscineTrait", "Piscine — traitement",  "list:piscineTrait"],
+  ["obsExterieur", "Observations",          "area", "wide"]
+]};
+const VISITE_VENTE = {t:"Ce qui amène à vendre", f:[
+  ["motifVente",   "Motif de la vente",  "list:motifVente"],
+  ["dateAchat",    "Date d'achat",       "date"],
+  ["prixAchat",    "Prix d'achat (€)",   "money"]
+]};
+
+/* ----------------------------------------------- LES TRAVAUX RÉCENTS
+   Une liste, parce qu'il y en a rarement un seul et qu'ils ne se
+   racontent pas dans une case unique : la nature, la période, et ce qu'on
+   en sait. */
+function listeTravaux(o){
+  if(!Array.isArray(o.travaux)) o.travaux = [];
+  return o.travaux;
+}
+function tableauTravaux(o){
+  const l = listeTravaux(o);
+  const lignes = l.map((t, i)=>
+    `<tr><td>${controlRaw(`${i}:nature`, "list:natureTrav", t.nature || "", "",
+        "data-trav")}</td>
+      <td>${controlRaw(`${i}:periode`, "list:periodeTrav", t.periode || "", "",
+        "data-trav")}</td>
+      <td><input type="text" data-trav="${i}:note" value="${esc(t.note || "")}"
+        placeholder="par qui, quoi exactement, facture…"></td>
+      <td class="cact"><button type="button" class="xbtn mini sup" data-travdel="${i}"
+        title="Retirer cette ligne">✕</button></td></tr>`).join("");
+  return `<div class="dsec"><h4>Les travaux</h4>
+    <div class="tdbscroll"><table class="grid-t chgt">
+      <tr><th style="width:34%">Nature</th><th style="width:150px">Période</th>
+        <th>Précisions</th><th class="cact"></th></tr>
+      ${lignes || `<tr><td colspan="4" class="muted">Aucun travaux noté.</td></tr>`}
+    </table></div>
+    <div class="dact"><button type="button" class="addbtn" data-travadd="1"
+      >+ Ajouter des travaux</button></div>
+    <p class="dnote">Ce qui a été fait, et quand. C'est la question que pose tout
+      acquéreur, et la réponse se perd si elle n'est pas écrite le jour de la
+      visite.</p></div>`;
+}
+
+/* -------------------------------------------------- LES DÉPENDANCES
+   Garage, cave, atelier, pool house : ce qui n'est pas une pièce
+   d'habitation mais qui se vend avec. Chacune a sa surface — calculée de
+   la même façon que les pièces — et ses réseaux. */
+function listeDeps(o){
+  if(!Array.isArray(o.deps)) o.deps = [];
+  return o.deps;
+}
+const depsTotal = o=> listeDeps(o).reduce((s, d)=> s + (num(d.surface) || 0), 0);
+/* le total seul, sans redessiner le tableau pendant la frappe */
+function majTotalDeps(){
+  const z = document.querySelector("#detailCorps .depstot");
+  if(!z) return;
+  const t = depsTotal(cibleBien().o);
+  z.innerHTML = t ? `<span class="pietotal">${
+    esc(m2txt(Math.round(t * 100) / 100))}<em>en tout</em></span>` : "";
+}
+function tableauDeps(o){
+  const l = listeDeps(o);
+  const lignes = l.map((d, i)=>
+    `<tr><td>${controlRaw(`${i}:nom`, "list:typeDep", d.nom || "", "", "data-dep")}</td>
+      <td><input type="text" inputmode="decimal" data-dep="${i}:surface"
+        value="${esc(d.surface || "")}" placeholder="0" class="chgm"></td>
+      <td>${controlRaw(`${i}:reseaux`, "list:reseauDep", d.reseaux || "", "",
+        "data-dep")}</td>
+      <td><input type="text" data-dep="${i}:note" value="${esc(d.note || "")}"
+        placeholder="état, revêtement, remarque"></td>
+      <td class="cact"><button type="button" class="xbtn mini${
+          (d.calc || []).length ? " on" : ""}" data-depcalc="${i}"
+          title="Calculer la surface">${IC_CALC}</button>
+        <button type="button" class="xbtn mini sup" data-depdel="${i}"
+          title="Retirer cette dépendance">✕</button></td></tr>`).join("");
+  const t = depsTotal(o);
+  return `<div class="dsec"><h4 class="avectot">Les dépendances
+      <span class="pietot depstot">${t ? `<span class="pietotal">${
+        esc(m2txt(Math.round(t * 100) / 100))}<em>en tout</em></span>` : ""}</span></h4>
+    <div class="tdbscroll"><table class="grid-t chgt">
+      <tr><th style="width:26%">Nature</th><th style="width:96px">Surface (m²)</th>
+        <th style="width:22%">Réseaux</th><th>Précisions</th><th class="cact"></th></tr>
+      ${lignes || `<tr><td colspan="5" class="muted">Aucune dépendance.</td></tr>`}
+    </table></div>
+    <div class="dact"><button type="button" class="addbtn" data-depadd="1"
+      >+ Ajouter une dépendance</button></div>
+    <p class="dnote">Une dépendance n'est pas une pièce d'habitation : sa surface ne
+      compte ni dans l'habitable ni au sol du logement, elle se dit à part. La
+      <b>calculatrice</b> y mesure comme ailleurs.</p></div>`;
+}
+
+/* =====================================================================
+   LA CALCULATRICE DE SURFACE
+   ---------------------------------------------------------------------
+   Une pièce ne se mesure presque jamais d'un seul coup : elle fait trois
+   mètres sur quatre, MOINS le placard, PLUS l'alcôve, et le dessous de
+   rampant ne compte pas en habitable. On la saisissait pourtant comme un
+   seul nombre, calculé au dos d'une enveloppe et jamais revérifiable.
+
+   On pose donc le CALCUL, ligne à ligne, et il reste dans le dossier :
+     · chaque ligne s'ajoute (+) ou se retire (−) ;
+     · on écrit DEUX CÔTES, qui se multiplient — ou directement une
+       surface, quand on l'a déjà ;
+     · une ligne cochée « moins de 1,80 m » ou « surélevée » compte AU SOL
+       mais pas en HABITABLE.
+
+   D'où les deux totaux, et la règle exacte :
+     surface au sol   = Σ des « + »            − Σ des « − » non cochées
+     surface habitable = Σ des « + » non cochées − Σ des « − »
+
+   Lire la seconde formule : une ligne « + » cochée n'entre pas dans
+   l'habitable, et une ligne « − » cochée en SORT quand même — c'est ainsi
+   qu'on retire une trémie ou un placard sous rampant d'une surface
+   habitable qui, elle, reste mesurée au sol. C'est la méthode de la fiche
+   de visite papier, reprise telle quelle ; son mérite est de se relire :
+   six mois plus tard, on sait d'où vient le chiffre.                    */
+function surfaceLigne(l){
+  const a = num(l.a), b = num(l.b);
+  if(a !== null && b !== null) return a * b;
+  const s = num(l.s);
+  return s === null ? 0 : s;
+}
+function calculSurfaces(lignes){
+  let plus = 0, plusNu = 0, moins = 0, moinsNu = 0;
+  (lignes || []).forEach(l=>{
+    if(!l) return;
+    const v = surfaceLigne(l), coche = !!(l.bas || l.sur);
+    if(l.op === "-"){ moins += v; if(!coche) moinsNu += v; }
+    else { plus += v; if(!coche) plusNu += v; }
+  });
+  return {sol: plus - moinsNu, hab: plusNu - moins};
+}
+function ligneCalculVide(){ return {op:"+", a:"", b:"", s:"", bas:false, sur:false}; }
+/* l'arrondi de l'application : deux décimales, virgule française */
+function m2Saisi(v){
+  if(!v) return "";
+  return String(Math.round(v * 100) / 100).replace(".", ",");
+}
+/* `hab` dit si la pièce distingue le sol de l'habitable — une dépendance
+   ne connaît que sa surface, et les deux cases à cocher n'y servent pas */
+let CALC = null;
+function ouvrirCalcul(titre, lignes, hab, poser){
+  CALC = {lignes: (lignes && lignes.length ? JSON.parse(JSON.stringify(lignes))
+                                           : [ligneCalculVide()]),
+          hab:!!hab, poser:poser, titre:titre};
+  popup({titre:"Calcul de surface", large:true,
+    corps:`<div id="calcBox">${corpsCalcul()}</div>`,
+    boutons:[{lib:"Annuler"},
+             {lib:"Reporter dans la fiche", primaire:true, action:()=>{
+               const t = calculSurfaces(CALC.lignes);
+               const nettes = CALC.lignes.filter(l=> l && (l.a || l.b || l.s));
+               CALC.poser(t, nettes);
+               CALC = null;
+             }}]});
+  setTimeout(()=>{ const e = $("#calcBox input"); if(e) e.focus(); }, 60);
+}
+function corpsCalcul(){
+  const t = calculSurfaces(CALC.lignes);
+  const lignes = CALC.lignes.map((l, i)=>{
+    const auto = num(l.a) !== null && num(l.b) !== null;
+    return `<div class="cline">
+      <button type="button" class="cop${l.op === "-" ? " moins" : ""}"
+        data-calcop="${i}" title="${l.op === "-" ? "Se retire du total — appuyez pour l'ajouter"
+          : "S'ajoute au total — appuyez pour le retirer"}">${l.op === "-" ? "−" : "+"}</button>
+      <input type="text" inputmode="decimal" data-calc="${i}:a" value="${esc(l.a || "")}"
+        placeholder="côte 1" aria-label="Première côte, ligne ${i + 1}">
+      <span class="csym">×</span>
+      <input type="text" inputmode="decimal" data-calc="${i}:b" value="${esc(l.b || "")}"
+        placeholder="côte 2" aria-label="Seconde côte, ligne ${i + 1}">
+      <span class="csym">=</span>
+      <input type="text" inputmode="decimal" data-calc="${i}:s" value="${esc(l.s || "")}"
+        placeholder="m²" class="cres${auto ? " auto" : ""}"
+        aria-label="Surface, ligne ${i + 1}">
+      ${CALC.hab ? `<label class="ccase" title="Hauteur sous plafond inférieure à 1,80 m :
+compte au sol, pas en habitable"><input type="checkbox" data-calcc="${i}:bas"${
+        l.bas ? " checked" : ""}><span>&lt; 1,80 m</span></label>
+      <label class="ccase" title="Partie surélevée : compte au sol, pas en habitable"
+        ><input type="checkbox" data-calcc="${i}:sur"${l.sur ? " checked" : ""}
+        ><span>surélevée</span></label>` : ""}
+      <button type="button" class="xbtn mini" data-calcdel="${i}"
+        title="Retirer cette ligne">✕</button></div>`;
+  }).join("");
+  return `<div class="calcgrid">${lignes}</div>
+    <div class="dact"><button type="button" class="addbtn" data-calcadd="1"
+      >+ Ajouter une ligne</button></div>
+    <div class="ctot">
+      ${CALC.hab ? `<div class="ct hab"><span>Surface habitable</span>
+        <b>${esc(m2txt(Math.round(t.hab * 100) / 100))}</b></div>` : ""}
+      <div class="ct sol"><span>${CALC.hab ? "Surface au sol" : "Total"}</span>
+        <b>${esc(m2txt(Math.round(t.sol * 100) / 100))}</b></div>
+    </div>
+    <p class="dnote">Écrivez <b>deux côtes</b> en mètres, elles se multiplient — ou
+      directement une <b>surface</b> si vous l'avez. Le bouton <b>+ / −</b> dit si la
+      ligne s'ajoute ou se retire.${CALC.hab ? ` Cochez <b>&lt;&nbsp;1,80&nbsp;m</b> ou
+      <b>surélevée</b> sur une ligne qui compte <b>au sol</b> mais pas en
+      <b>habitable</b>.` : ""} Le calcul reste dans le dossier : on peut le relire.</p>`;
+}
+function majCalcul(){
+  const z = $("#calcBox");
+  if(z) z.innerHTML = corpsCalcul();
+}
+/* le total seul : on ne redessine pas les cases pendant qu'on y tape */
+function majTotalCalcul(){
+  const z = $("#calcBox .ctot");
+  if(!z || !CALC) return;
+  const t = calculSurfaces(CALC.lignes);
+  const b = z.querySelectorAll("b");
+  if(CALC.hab && b.length === 2){
+    b[0].textContent = m2txt(Math.round(t.hab * 100) / 100);
+    b[1].textContent = m2txt(Math.round(t.sol * 100) / 100);
+  } else if(b.length === 1){
+    b[0].textContent = m2txt(Math.round(t.sol * 100) / 100);
+  }
+}
+
 /* le tableau des pièces, pour le bien ou pour un logement */
+/* ------------------------------------------- LE DÉTAIL D'UNE PIÈCE
+   Le sol, les fenêtres, les volets, l'état : c'est ce qu'on relève pendant
+   la visite, et cela ne tient pas dans le tableau — qui porte déjà sept
+   colonnes. Une fenêtre par pièce, ouverte depuis sa ligne. */
+const PIECE_DETAIL = [
+  ["sol",     "Sol",      "list:solPiece"],
+  ["fenetre", "Fenêtres", "list:fenetrePiece"],
+  ["volets",  "Volets",   "list:voletsPiece"],
+  ["divers",  "Divers",   "list:diversPiece"],
+  ["etat",    "État",     "list:etatBien"],
+  ["travaux", "Travaux",  "list:travauxPiece"]
+];
+function piecePleine(p){
+  return PIECE_DETAIL.some(([k])=> String((p || {})[k] || "").trim());
+}
+function ouvrirDetailPiece(i){
+  const p = (cibleBien().o.pieces || [])[+i];
+  if(!p) return;
+  const champs = PIECE_DETAIL.map(([k, lab, kind])=>
+    `<div class="pf"><label>${esc(lab)}</label>${
+      controlRaw(`${i}:${k}`, kind, p[k] || "", "", "data-piece")}</div>`).join("");
+  /* le nom de la pièce EST le titre : à la huitième ouverture de suite, on
+     ne lit plus un sous-titre pour savoir où l'on est. */
+  popup({titre:(p.nom || "Pièce sans nom") + (p.niveau ? " — " + p.niveau : ""),
+    large:true,
+    corps:`<p class="muted" style="margin:0 0 12px">Ce qui se relève pendant la visite
+        et qui ne tient pas dans le tableau. Chaque liste s'allonge par son <b>+</b>.</p>
+      <div class="pgrid" style="padding:0">${champs}</div>`,
+    boutons:[{lib:"Fermer", primaire:true, action:()=>{ renderDetail(); majDetail(); }}]});
+}
 function tableauPieces(o){
   const lignes = (o.pieces || []).map((p,i)=>
     `<tr><td>${controlBase(`${i}:niveau`, "list:niveauPiece", p.niveau || "", "",
@@ -8262,7 +8679,15 @@ function tableauPieces(o){
         p.horsHab ? " disabled" : ""}></td>
       <td><input type="text" data-piece="${i}:note" value="${esc(p.note||"")}"
         placeholder="remarque"></td>
-      <td class="cact"><button type="button" class="xbtn mini" data-piecedel="${i}"
+      <td class="cact"><button type="button" class="xbtn mini${
+          (p.calc || []).length ? " on" : ""}" data-pcalc="${i}"
+        title="${(p.calc || []).length ? "Le calcul de cette surface, ligne à ligne"
+          : "Calculer la surface : des côtes qui se multiplient, ce qu'on ajoute et ce qu'on retire"
+        }">${IC_CALC}</button>
+        <button type="button" class="xbtn mini${piecePleine(p) ? " on" : ""}"
+          data-pdet="${i}" title="Le détail de visite : sol, fenêtres, volets, état"
+          >${IC_LOUPE}</button>
+        <button type="button" class="xbtn mini sup" data-piecedel="${i}"
         title="Retirer cette pièce">✕</button></td></tr>`).join("");
   return `<div class="dsec"><h4 class="avectot">Les pièces
       <span id="piecesTot">${blocTotauxPieces(o)}</span></h4>
@@ -8402,6 +8827,86 @@ function blocOccupation(o, chemin){
         lui, et non la fin du bail, qui dit à quelle date l'acquéreur entrera dans les
         lieux. Le loyer charges comprises s'additionne tout seul.</p>` : ""}
   </div>`;
+}
+
+/* =====================================================================
+   LA PAGE « FICHE DE VISITE »
+   ---------------------------------------------------------------------
+   Les mêmes blocs que les volets, mais déroulés D'UNE SEULE TRAITE et
+   dans l'ordre d'une visite : à qui l'on parle, pourquoi il vend, le
+   bâtiment, les pièces, les dépendances, le terrain, la technique. Sur
+   place, on n'a pas le temps de chercher un volet.
+
+   Rien n'y est saisi deux fois : c'est le MÊME modèle que la fiche du
+   bien, rendu autrement. Ce qu'on écrit ici se retrouve partout, et
+   inversement.
+
+   Le propriétaire n'y est pas ressaisi non plus : il vient des VENDEURS
+   du dossier, c'est-à-dire des fiches du répertoire, avec leurs
+   coordonnées. On ne fait que les relire, et un bouton mène à la page
+   qui les tient.                                                        */
+function proprioVisite(){
+  const l = (D.vendeurs || []).filter(x=> x && !personneVide(x));
+  if(!l.length) return `<p class="muted" style="margin:0">Aucun propriétaire saisi.
+    Le bouton ci-dessous ouvre la page où il se crée — sa fiche du répertoire, la
+    même que partout.</p>
+    <div class="dact"><button type="button" class="addbtn" data-mgo="vendeurs"
+      >Saisir le propriétaire</button></div>`;
+  const ligne = p=>{
+    const tel = (telsDe(p)[0] || {}).val || "", mail = (mailsDe(p)[0] || {}).val || "";
+    const adr = adrPers(p);
+    const repr = estMorale(p) ? representants(p) : [];
+    return `<div class="vpers">
+      <div class="vpnom"><b>${esc(titrePersonne(p) || nomUsuel(p) || "sans nom")}</b>
+        ${p.pid ? `<button type="button" class="xbtn" data-vpers="${esc(p.pid)}"
+          >Sa fiche</button>` : ""}</div>
+      <div class="vpco">${[tel, mail, adr].filter(Boolean)
+        .map(x=> `<span>${esc(x)}</span>`).join("")}</div>
+      ${repr.length ? `<div class="vprepr">${repr.map(r=>
+        `<span>${esc(nomRepr(r))}${r.role ? " — " + esc(r.role.toLowerCase()) : ""}</span>`)
+        .join("")}</div>` : ""}</div>`;
+  };
+  return `<div class="vperss">${l.map(ligne).join("")}</div>
+    <p class="dnote">Repris des <b>vendeurs</b> du dossier, c'est-à-dire de leur fiche
+      du <b>répertoire</b> : même état civil, mêmes coordonnées, même adresse. Pour
+      corriger, ouvrez la fiche — la correction se voit partout.</p>`;
+}
+function pageVisite(){
+  const o = D, chemin = "";
+  const t = depouillePieces(o);
+  return `<div class="dsec"><h4 class="avectot">La fiche de visite
+      <span class="pietot"><button type="button" class="tbtn light mini"
+        data-fvpdf="1">Exporter en PDF</button></span></h4>
+    <p class="dnote" style="margin-top:0">Tout ce qui se relève sur place, dans
+      l'ordre où on le relève. Ce n'est pas une seconde saisie : c'est la
+      <b>fiche du bien</b>, déroulée d'une traite. Ce que vous écrivez ici se
+      retrouve dans ses volets, dans les documents et dans la présentation.</p></div>
+  <div class="dsec"><h4>Le propriétaire</h4>${proprioVisite()}</div>
+  ${blocDetail(o, chemin, VISITE_VENTE)}
+  ${blocDetail(o, chemin, {t:"Le bien en bref", f:[
+      ["surface",   "Surface habitable (m²)", "money"],
+      ["exposition","Exposition",             "list:exposition"],
+      ["etat",      "État général",           "list:etatBien"],
+      ["etage",     "Étage",                  "text", "", ()=> estApptOuLocal()],
+      ["terrain",   "Terrain (m²)",           "money"]]})}
+  ${blocDetail(o, chemin, VISITE_BATIMENT)}
+  ${tableauPieces(o)}
+  ${tableauDeps(o)}
+  ${blocEquipements(o, chemin, "Les équipements",
+      `Le <b>+</b> ajoute un second mode : un insert en plus du chauffage central,
+       un chauffe-eau solaire en plus du ballon.`)}
+  ${blocDetail(o, chemin, VISITE_TECHNIQUE)}
+  ${tableauTravaux(o)}
+  <div class="dsec"><h4>Ce qu'il offre</h4>${blocPastilles(o, !estApptOuLocal())}</div>
+  ${blocDetail(o, chemin, VISITE_EXTERIEUR)}
+  ${tableauCharges(D, "")}
+  <div class="dsec"><h4>Observations générales</h4>${
+    control("detail.observations", "area")}
+    <p class="dnote">Ce qui ne rentre dans aucune case : l'impression d'ensemble,
+      ce que le propriétaire a dit, ce qu'il faudra vérifier.</p></div>
+  ${t && t.surface ? `<p class="dnote"><b>${esc(m2txt(t.surface))}</b> relevés dans les
+    pièces${depsTotal(o) ? `, et <b>${esc(m2txt(Math.round(depsTotal(o) * 100) / 100))}</b>
+    de dépendances` : ""}.</p>` : ""}`;
 }
 
 /* ----------------------------------------------- le résumé d'un immeuble */
@@ -8570,8 +9075,13 @@ function renderDetail(){
           ses lots.` : ""}</p></div>`;
   }
   else if(page === "pieces")  corps = tableauPieces(o);
+  else if(page === "batiment") corps = blocDetail(o, chemin, VISITE_BATIMENT) +
+    blocDetail(o, chemin, VISITE_TECHNIQUE) + tableauTravaux(o);
+  else if(page === "deps")    corps = tableauDeps(o);
+  else if(page === "visite")  corps = pageVisite();
   else if(page === "terrain") corps = tableauParcelles() +
-    blocDetail(D, "", {t:"La surface du terrain", f:[["terrain","Terrain (m²)","money"]]});
+    blocDetail(D, "", {t:"La surface du terrain", f:[["terrain","Terrain (m²)","money"]]}) +
+    blocDetail(o, chemin, VISITE_EXTERIEUR);
   else if(page === "occup")   corps = blocOccupation(o, chemin);
   else if(page === "immeuble")corps = pageImmeuble();
   else if(page === "carac" || c.lg){
@@ -24960,6 +25470,48 @@ document.addEventListener("input", e=>{
   /* une ligne de charge : la nature, la période, le montant. On n'en
      redessine rien — le curseur est dans la case — sauf le total, qui vit
      dans le titre du bloc. */
+  /* la calculatrice de surface : on ne redessine que le total, le curseur
+     est dans une case */
+  if(t.dataset.calc !== undefined && CALC){
+    const [i, champ] = String(t.dataset.calc).split(":");
+    const l = CALC.lignes[+i];
+    if(l){
+      l[champ] = t.value;
+      /* deux côtes données : la surface se calcule et s'affiche en clair.
+         Une surface écrite à la main efface les côtes — on ne garde pas
+         deux vérités pour la même ligne. */
+      if(champ === "a" || champ === "b"){
+        const a = num(l.a), b = num(l.b);
+        if(a !== null && b !== null){
+          l.s = m2Saisi(a * b);
+          const e = document.querySelector(`[data-calc="${i}:s"]`);
+          if(e){ e.value = l.s; e.classList.add("auto"); }
+        }
+      } else if(l.a || l.b){
+        l.a = ""; l.b = "";
+        ["a", "b"].forEach(k=>{
+          const e = document.querySelector(`[data-calc="${i}:${k}"]`);
+          if(e) e.value = "";
+        });
+        t.classList.remove("auto");
+      }
+      majTotalCalcul();
+    }
+    return;
+  }
+  /* une ligne de travaux, une dépendance : on n'en redessine rien */
+  if(t.dataset.trav !== undefined){
+    const [i, champ] = String(t.dataset.trav).split(":");
+    const x = listeTravaux(cibleBien().o)[+i];
+    if(x){ x[champ] = t.value; autosave(); }
+    return;
+  }
+  if(t.dataset.dep !== undefined){
+    const [i, champ] = String(t.dataset.dep).split(":");
+    const x = listeDeps(cibleBien().o)[+i];
+    if(x){ x[champ] = t.value; autosave(); majTotalDeps(); }
+    return;
+  }
   if(t.dataset.chg !== undefined){
     const [i, champ] = String(t.dataset.chg).split(":");
     const c = listeCharges(D)[+i];
@@ -25342,6 +25894,13 @@ document.addEventListener("change", e=>{
   const t = e.target;
   if(t.closest && t.closest("#prospBody")) marquerRempli(t);
   /* un groupe de cases écrit une seule valeur : on relit tout le groupe */
+  /* une case de la calculatrice : « moins de 1,80 m », « surélevée » */
+  if(t.dataset && t.dataset.calcc !== undefined && CALC){
+    const [i, champ] = String(t.dataset.calcc).split(":");
+    const l = CALC.lignes[+i];
+    if(l){ l[champ] = t.checked; majTotalCalcul(); }
+    return;
+  }
   if(t.dataset && t.dataset.piecechk !== undefined){
     const [i,champ] = t.dataset.piecechk.split(":");
     const p = (cibleBien().o.pieces || [])[+i];
@@ -25499,7 +26058,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-calcop],[data-calcdel],[data-calcadd],[data-pcalc],[data-depcalc],[data-depdel],[data-depadd],[data-pdet],[data-travadd],[data-travdel],[data-fvpdf],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-vsoc],[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -25633,6 +26192,85 @@ document.addEventListener("click", e=>{
     cibleBien().o.pieces.splice(+t.dataset.piecedel, 1);
     numeroterPieces();            /* la dernière chambre reprend son nom nu */
     autosave(); renderDetail(); majDetail(); return;
+  }
+  /* --------------------------------------- la calculatrice de surface */
+  if(t.dataset.calcop !== undefined && CALC){
+    const l = CALC.lignes[+t.dataset.calcop];
+    if(l){ l.op = l.op === "-" ? "+" : "-"; majCalcul(); }
+    return;
+  }
+  if(t.dataset.calcdel !== undefined && CALC){
+    CALC.lignes.splice(+t.dataset.calcdel, 1);
+    if(!CALC.lignes.length) CALC.lignes.push(ligneCalculVide());
+    majCalcul(); return;
+  }
+  if(t.dataset.pcalc !== undefined){
+    const i = +t.dataset.pcalc;
+    const p = (cibleBien().o.pieces || [])[i];
+    if(!p) return;
+    ouvrirCalcul(p.nom || "Pièce sans nom", p.calc, true, (tot, lignes)=>{
+      p.calc = lignes;
+      p.surface = m2Saisi(tot.sol);
+      /* la pièce entière sous 1,80 m : la case « hors » le dit déjà, et
+         l'habitable reste vide. Sinon on pose les deux chiffres. */
+      if(!p.horsHab) p.hab = tot.hab === tot.sol ? "" : m2Saisi(tot.hab);
+      autosave(); renderDetail(); majDetail(); rafraichirDepuisPieces();
+      toast("Surface reportée : " + m2txt(Math.round(tot.sol * 100) / 100));
+    });
+    return;
+  }
+  if(t.dataset.pdet !== undefined){ ouvrirDetailPiece(t.dataset.pdet); return; }
+  if(t.dataset.fvpdf !== undefined){
+    /* La fiche de visite part telle quelle : un document de travail, qu'on
+       ne prévisualise pas — on l'imprime et on l'emporte. */
+    (async ()=>{
+      toast("Composition de la fiche de visite…");
+      try{ download(await visitePdf(D), nomFichierVisite(D)); }
+      catch(e){ toast("La fiche n'a pas pu être composée : " + e.message); }
+    })();
+    return;
+  }
+  if(t.dataset.travadd !== undefined){
+    listeTravaux(cibleBien().o).push({nature:"", periode:"", note:""});
+    autosave(); renderDetail(); majDetail();
+    const e = $$("#detailCorps [data-trav$=':nature']").pop();
+    if(e) e.focus();
+    return;
+  }
+  if(t.dataset.travdel !== undefined){
+    listeTravaux(cibleBien().o).splice(+t.dataset.travdel, 1);
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.depadd !== undefined){
+    listeDeps(cibleBien().o).push({nom:"", surface:"", reseaux:"", note:"", calc:[]});
+    autosave(); renderDetail(); majDetail();
+    const e = $$("#detailCorps [data-dep$=':nom']").pop();
+    if(e) e.focus();
+    return;
+  }
+  if(t.dataset.depdel !== undefined){
+    listeDeps(cibleBien().o).splice(+t.dataset.depdel, 1);
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.depcalc !== undefined){
+    const i = +t.dataset.depcalc;
+    const d = listeDeps(cibleBien().o)[i];
+    if(!d) return;
+    /* une dépendance ne distingue pas le sol de l'habitable : une seule
+       surface, et les deux cases à cocher n'y servent à rien */
+    ouvrirCalcul(d.nom || "Dépendance", d.calc, false, (tot, lignes)=>{
+      d.calc = lignes; d.surface = m2Saisi(tot.sol);
+      autosave(); renderDetail(); majDetail();
+      toast("Surface reportée : " + m2txt(Math.round(tot.sol * 100) / 100));
+    });
+    return;
+  }
+  if(t.dataset.calcadd !== undefined && CALC){
+    CALC.lignes.push(ligneCalculVide());
+    majCalcul();
+    const e = $$("#calcBox [data-calc$=':a']").pop();
+    if(e) e.focus();
+    return;
   }
   if(t.dataset.chgdel !== undefined){
     listeCharges(D).splice(+t.dataset.chgdel, 1);
@@ -31590,7 +32228,7 @@ const AIDE = [
   "une salle d'eau ou une salle de bain, une seule suffit. Tant que les niveaux ne sont pas "+
   "saisis, l'application ne tranche pas : elle le dit, et le volet « Biens à rapprocher » "+
   "du demandeur vous indique quoi vérifier à la visite."],
- ["La fiche du bien : six volets, un sujet par volet",
+ ["La fiche du bien : neuf volets, un sujet par volet",
   "Le bouton <b>Le bien</b>, dans l'en-tête du dossier, ouvre la fiche. Elle tenait "+
   "autrefois sur deux colonnes où tout se voyait d'un coup — et où l'on ne trouvait "+
   "rien ; elle se lit maintenant <b>sujet par sujet</b>, dans l'ordre où l'on décrit un "+
@@ -31607,10 +32245,51 @@ const AIDE = [
   "<b>Les caractéristiques</b> — surfaces et situation, distribution et annexes, charges "+
   "et impôts, équipements : les quatre blocs d'autrefois, réunis. Le <b>nombre de "+
   "pièces</b> y a retrouvé sa case, et se compte seul dès que les pièces sont détaillées. "+
-  "<b>Le terrain</b> — les références cadastrales et la surface. "+
+  "<b>Le bâtiment</b> — l'élévation, la mitoyenneté, le mode constructif, les combles, "+
+  "les trois isolations, et ce qui a été refait. "+
+  "<b>Les dépendances</b> — garage, abri, cave : une liste libre, chacune avec sa "+
+  "surface. "+
+  "<b>Le terrain</b> — les références cadastrales, la surface, et tout l'extérieur : "+
+  "eaux usées, arrosage, portail, clôture, terrasse, piscine. "+
   "<b>L'occupation</b> — libre, occupé, loué. "+
+  "<b>La fiche de visite</b> — les mêmes blocs, déroulés d'une seule traite dans "+
+  "l'ordre d'une visite, avec son export en PDF. "+
   "Et <b>Argumentaire</b>, inchangé. "+
   "Tout ce qui s'y trouvait continue d'y être : rien n'a été retiré, seulement rangé."],
+ ["La fiche de visite, et le calcul des surfaces",
+  "<b>Ce qui manquait.</b> Sur place, on relevait tout sur une feuille — le relevé de "+
+  "visite — qu'il fallait ensuite retaper. Deux saisies, deux occasions de se tromper, "+
+  "et une feuille qui se perd. "+
+  "<b>Le dernier volet de la fiche du bien est maintenant cette feuille.</b> On "+
+  "l'ouvre par <b>La fiche de visite</b>, et tout y est déroulé d'une seule traite, "+
+  "dans l'ordre où l'on visite : à qui l'on parle, pourquoi il vend, le bâtiment, les "+
+  "pièces, les dépendances, le terrain, la technique, les observations. "+
+  "<b>Ce n'est pas une seconde saisie.</b> C'est la <b>même fiche du bien</b>, rendue "+
+  "autrement : ce que vous écrivez ici se retrouve dans ses volets, dans les documents "+
+  "et dans la présentation — et l'inverse. "+
+  "<b>Le propriétaire ne s'y ressaisit pas.</b> Il est relu des <b>vendeurs</b> du "+
+  "dossier, c'est-à-dire de leur <b>fiche du répertoire</b> : même état civil, mêmes "+
+  "coordonnées, même adresse, et les représentants quand c'est une société. Un bouton "+
+  "<b>« Sa fiche »</b> ouvre le répertoire — la correction faite là se voit partout. "+
+  "<b>Le calcul de surface de la feuille papier est repris tel quel.</b> Le bouton de "+
+  "calcul, au bout de chaque ligne de pièce, ouvre une calculatrice : autant de lignes "+
+  "qu'il faut, <b>longueur × largeur</b> ou une surface seule, un <b>+</b> pour ce qui "+
+  "s'ajoute et un <b>−</b> pour ce qui se retire — un pilier, une trémie. Deux cases "+
+  "changent le compte : <b>sous 1,80 m</b> et <b>surélevé</b>. Ce qui est coché compte "+
+  "<b>au sol</b> mais pas en <b>habitable</b> : la calculatrice affiche les deux "+
+  "totaux, et <b>Reporter</b> les pose tous les deux dans la pièce. "+
+  "<b>Le calcul reste attaché à la pièce</b> : rouvrez-le six mois plus tard, le détail "+
+  "des lignes est là, cases cochées comprises. C'est lui qui justifie la surface si "+
+  "elle est discutée. "+
+  "<b>La loupe, à côté, ouvre le détail de la pièce</b> — sol, fenêtres, volets, "+
+  "divers, état, travaux. Chaque liste s'allonge par son <b>+</b>. La loupe s'allume "+
+  "quand la pièce est renseignée : d'un coup d'œil sur le tableau, on voit ce qui "+
+  "reste à relever. "+
+  "<b>Et la fiche s'exporte en PDF</b>, par le bouton en haut du volet. Elle porte le "+
+  "propriétaire et ses coordonnées, le motif de la vente, le prix d'achat, les pièces "+
+  "avec leur détail, les dépendances, les travaux et les observations. C'est un "+
+  "<b>document de travail interne</b> — son pied de page le dit : elle ne se donne "+
+  "pas au client, à qui va la <b>fiche de présentation</b>."],
  ["Les pastilles qui se lisent au lieu de se cocher",
   "En tête des <b>caractéristiques</b>, une rangée de pastilles OUI/NON : <b>Extérieur</b>, "+
   "<b>Pkg / Garage</b>, puis <b>Rez-de-chaussée</b>, <b>Dernier étage</b>, <b>Terrasse / "+
@@ -36362,6 +37041,220 @@ async function ficheBienPdf(d){
   doc.pages.forEach((pgx, i)=> piedDePage(doc.surPage(i), i + 1, total));
   return new Blob([pdfOctets(doc, "Fiche " + (o.type || "bien"))],
                   {type:"application/pdf"});
+}
+
+/* =====================================================================
+   LE PDF DE LA FICHE DE VISITE
+   ---------------------------------------------------------------------
+   Ce n'est PAS la fiche de présentation : celle-là va au client et tait
+   ce qui doit l'être. Celle-ci est le relevé de visite, document de
+   travail — elle porte le propriétaire, ses coordonnées, le motif de la
+   vente, le prix d'achat, les travaux et les observations. On l'imprime
+   pour la signer sur place, ou on la garde au dossier.
+
+   Elle est composée par le moteur PDF de l'application, comme les autres
+   documents : pas de bibliothèque de plus à embarquer.
+   ===================================================================== */
+function blocsDeLaVisite(d){
+  const o = d || D, det = o.detail || {}, out = [];
+  const bloc = (titre, paires)=>{
+    const l = paires.filter(([, v])=> String(v == null ? "" : v).trim() !== "");
+    if(l.length) out.push({titre, lignes:l.map(([a, b])=> [a, String(b)])});
+  };
+  const lu = (f)=> f.map(([k, lab])=> [lab, det[k] || ""]);
+  bloc("Le bien", [
+    ["Type de bien", typeBienLisible(o)],
+    ["Adresse", [((o.bien || {}).adresse || ""),
+      [(o.bien || {}).cp, (o.bien || {}).ville].filter(Boolean).join(" ")]
+      .filter(Boolean).join(", ")],
+    ["Surface habitable", det.surface ? m2txt(num(det.surface)) : ""],
+    ["Terrain", det.terrain ? m2txt(num(det.terrain)) : ""],
+    ["Exposition", det.exposition], ["État général", det.etat],
+    ["Étage", det.etage], ["Année de construction", (o.bien || {}).annee]
+  ]);
+  bloc("Ce qui amène à vendre", [
+    ["Motif de la vente", det.motifVente],
+    ["Date d'achat", det.dateAchat ? fdate(det.dateAchat) : ""],
+    ["Prix d'achat", det.prixAchat ? eur(num(det.prixAchat)) : ""]
+  ]);
+  bloc("Le bâtiment", lu(VISITE_BATIMENT.f.filter(f=> f[2] !== "area")));
+  bloc("Le descriptif technique", [
+    ["Chauffage", equipementLisible(o, "chauffage")],
+    ["Refroidissement", equipementLisible(o, "froid")],
+    ["Eau chaude", equipementLisible(o, "ecs")],
+    ["Production d'électricité", det.prodElec],
+    ["Ventilation", det.ventilation]
+  ]);
+  bloc("Le terrain et les extérieurs",
+       lu(VISITE_EXTERIEUR.f.filter(f=> f[2] !== "area")));
+  const ch = Array.isArray(det.chargesListe) ? det.chargesListe : [];
+  bloc("Charges et impôts", ch.filter(c=> c && (c.type || c.montant))
+    .map(c=> [[c.type, c.periode].filter(Boolean).join(" — "),
+              c.montant ? eur(num(c.montant)) + " / an" : ""]));
+  return out;
+}
+async function visitePdf(d){
+  const o = d || D;
+  const ag = L.agence || {};
+  const nego = book("negociateurs", (o.nego || {}).vendeur);
+  const logo = ag.logo ? pdfImageDepuis(await imageDepuis(ag.logo), 500) : null;
+  const doc = pdfDoc();
+  const M = 38, LARG = doc.L - 2 * M, BAS = doc.H - 54;
+  let p = doc.page(), y = M;
+
+  if(logo){
+    const h = Math.min(40, 150 * logo.h / logo.l);
+    p.image(logo, M, y, h * logo.l / logo.h, h);
+  } else p.texte(M, y + 18, ag.nom || "", 12, true, PDF_NAVY);
+  p.droite(doc.L - M, y + 10, "FICHE DE VISITE", 13, true, PDF_NAVY);
+  p.droite(doc.L - M, y + 24, "Établie le " + fdate(auj()), 8.5, false, PDF_GRIS);
+  y += 48;
+  p.trait(M, y, doc.L - M, y, 1.6, PDF_NAVY); y += 22;
+
+  const titre = [typeBienLisible(o) || "Bien", adresseBienCourte()]
+    .filter(Boolean).join(" — ");
+  pdfCouper(titre, LARG, 16, true).slice(0, 2).forEach(l=>{
+    p.texte(M, y, l, 16, true, PDF_NAVY); y += 19;
+  });
+  y += 6;
+
+  /* le propriétaire : relu des vendeurs, donc du répertoire */
+  const prop = (o.vendeurs || []).filter(x=> x && !personneVide(x));
+  if(prop.length){
+    p.texte(M, y + 10, "LE PROPRIÉTAIRE", 8.5, true, PDF_NAVY); y += 16;
+    prop.forEach(x=>{
+      const tel = (telsDe(x)[0] || {}).val || "", mail = (mailsDe(x)[0] || {}).val || "";
+      p.texte(M, y + 10, titrePersonne(x) || nomUsuel(x) || "sans nom", 10, true,
+              PDF_ENCRE);
+      y += 13;
+      const co = [tel, mail, adrPers(x)].filter(Boolean).join("   ·   ");
+      if(co){ p.texte(M, y + 9, co, 8.5, false, PDF_GRIS); y += 12; }
+      if(estMorale(x)) representants(x).forEach(r=>{
+        p.texte(M + 10, y + 9, nomRepr(r) + (r.role ? " — " + r.role.toLowerCase() : ""),
+                8.5, false, PDF_GRIS);
+        y += 11;
+      });
+      y += 4;
+    });
+    y += 6;
+  }
+
+  /* les blocs, sur deux colonnes qui se remplissent d'elles-mêmes */
+  const colL = (LARG - 18) / 2;
+  let yG = y, yD = y;
+  const enTete = ()=>{
+    p = doc.page();
+    p.texte(M, M + 9, titre, 9, true, PDF_NAVY);
+    p.trait(M, M + 15, doc.L - M, M + 15, 0.8, PDF_FILET);
+    return M + 28;
+  };
+  blocsDeLaVisite(o).forEach(t=>{
+    const h = hauteurTableau(colL, t.lignes);
+    if(Math.min(yG, yD) + h > BAS){ const y0 = enTete(); yG = yD = y0; }
+    const g = yG <= yD, x = M + (g ? 0 : colL + 18), yy = g ? yG : yD;
+    tableauPdf(p, x, yy, colL, t.titre, t.lignes);
+    if(g) yG = yy + h + 15; else yD = yy + h + 15;
+  });
+  y = Math.max(yG, yD);
+
+  /* les pièces, la calculatrice relue : c'est ce qui justifie la surface */
+  const pieces = (o.pieces || []).filter(x=> String(x.nom || "").trim());
+  if(pieces.length){
+    if(y + 60 > BAS) y = enTete();
+    p.texte(M, y + 10, "LES PIÈCES", 8.5, true, PDF_NAVY); y += 18;
+    const cols = [0.17, 0.27, 0.12, 0.12, 0.32];
+    const x0 = k=> M + cols.slice(0, k).reduce((s, c)=> s + c * LARG, 0);
+    /* LE DÉTAIL NE SE COUPE PAS AU MILIEU D'UN MOT
+       Un séjour porte volontiers « Carrelage, double vitrage PVC, volets
+       roulants électriques » : sur une seule ligne, la moitié disparaît
+       sans prévenir. La ligne s'allonge donc jusqu'à trois lignes de
+       détail — au-delà, c'est une observation, pas un détail. */
+    const tete = ()=>{
+      p.pave(M, y, LARG, 16, PDF_NAVY);
+      ["Niveau", "Pièce", "Au sol", "Habitable", "Détail"].forEach((h2, k)=>
+        p.texte(x0(k) + 6, y + 11, h2.toUpperCase(), 7.5, true, PDF_BLANC));
+      y += 16;
+    };
+    tete();
+    pieces.forEach((x, i)=>{
+      const det = PIECE_DETAIL.map(([k])=> x[k]).filter(Boolean).join(", ");
+      const dl = (det ? pdfCouper(det, cols[4] * LARG - 12, 8, false) : [])
+        .slice(0, 3);
+      const h = Math.max(16, dl.length * 11 + 5);
+      if(y + h > BAS){ y = enTete(); tete(); }
+      if(i % 2) p.pave(M, y, LARG, h, PDF_BANDE);
+      [x.niveau || "", x.nom || "", m2Saisi(num(x.surface) || 0),
+       x.horsHab ? "—" : m2Saisi(habPiece(x))].forEach((v, k)=> p.texte(
+        x0(k) + 6, y + 11, pdfCouper(String(v), cols[k] * LARG - 12, 8, false)[0]
+        || "", 8, false, k === 1 ? PDF_ENCRE : PDF_GRIS));
+      dl.forEach((l, k)=> p.texte(x0(4) + 6, y + 11 + k * 11, l, 8, false, PDF_GRIS));
+      y += h;
+      p.trait(M, y, doc.L - M, y, 0.4, PDF_FILET);
+    });
+    const dep = depouillePieces(o);
+    if(dep){
+      p.texte(M, y + 12, "Total relevé : " + m2txt(dep.surface) + " habitables.",
+              8.5, true, PDF_ENCRE);
+      y += 18;
+    }
+    y += 8;
+  }
+
+  /* les dépendances */
+  const deps = listeDeps(o).filter(x=> x && (x.nom || x.surface));
+  if(deps.length){
+    if(y + 50 > BAS) y = enTete();
+    const t = {titre:"Les dépendances", lignes: deps.map(x=>
+      [x.nom || "Dépendance", [x.surface ? m2txt(num(x.surface)) : "",
+        x.reseaux, x.note].filter(Boolean).join("  ·  ")])};
+    tableauPdf(p, M, y, LARG, t.titre, t.lignes);
+    y += hauteurTableau(LARG, t.lignes) + 14;
+  }
+
+  /* les travaux */
+  const trav = listeTravaux(o).filter(x=> x && (x.nature || x.periode || x.note));
+  if(trav.length){
+    if(y + 50 > BAS) y = enTete();
+    const t = {titre:"Les travaux", lignes: trav.map(x=>
+      [x.nature || "Travaux", [x.periode, x.note].filter(Boolean).join("  ·  ")])};
+    tableauPdf(p, M, y, LARG, t.titre, t.lignes);
+    y += hauteurTableau(LARG, t.lignes) + 14;
+  }
+
+  /* les observations, une par bloc, dans l'ordre de la visite */
+  [["obsBatiment", "Observations sur le bâtiment"],
+   ["obsTechnique", "Observations techniques"],
+   ["obsExterieur", "Observations sur les extérieurs"],
+   ["observations", "Observations générales"]].forEach(([k, lab])=>{
+    const txt = String((o.detail || {})[k] || "").trim();
+    if(!txt) return;
+    const lignes = pdfCouper(txt, LARG - 16, 9, false);
+    if(y + 28 + lignes.length * 12 > BAS) y = enTete();
+    p.texte(M, y + 10, lab.toUpperCase(), 8.5, true, PDF_NAVY); y += 16;
+    const h = lignes.length * 12 + 12;
+    p.pave(M, y, LARG, h, PDF_FOND);
+    let yy = y + 6;
+    lignes.forEach(l=>{ p.texte(M + 10, yy + 9, l, 9, false, PDF_ENCRE); yy += 12; });
+    y += h + 14;
+  });
+
+  const total = doc.pages.length;
+  doc.pages.forEach((x, i)=>{
+    const q = doc.surPage(i);
+    q.trait(M, doc.H - 42, doc.L - M, doc.H - 42, 0.6, PDF_FILET);
+    q.texte(M, doc.H - 30, [nego.nom || "", nego.tel || "", nego.email || ""]
+      .filter(Boolean).join("  ·  "), 7.5, false, PDF_GRIS);
+    q.texte(M, doc.H - 20, [ag.nom || "", ag.adresse || ""].filter(Boolean)
+      .join("  ·  "), 7.5, false, PDF_GRIS);
+    q.droite(doc.L - M, doc.H - 20, "Document de travail interne  ·  page "
+      + (i + 1) + " / " + total, 7.5, false, PDF_GRIS);
+  });
+  return new Blob([pdfOctets(doc, "Fiche de visite")], {type:"application/pdf"});
+}
+function nomFichierVisite(d){
+  const c = critBien(d || D);
+  return ("Fiche de visite - " + [c.type || "bien", c.ville || ""]
+    .filter(Boolean).join(" - ") + ".pdf").replace(/[\\/:*?"<>|]/g, "-");
 }
 
 /* =====================================================================
