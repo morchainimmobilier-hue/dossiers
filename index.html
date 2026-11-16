@@ -1526,6 +1526,8 @@ table.avt .avm2{font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .avanntete .grow{flex:1}
 .avanntete input.avprix{width:120px;font-weight:700}
 .avanng{padding:8px 0 0!important}
+.dnote.avmanque{color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;
+  border-radius:9px;padding:8px 11px;margin:10px 0 0}
 .avpts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
   margin-top:14px}
 .avpt{border:1px solid var(--line);border-radius:10px;background:#faf7f5;
@@ -2977,7 +2979,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 17 novembre 2026, 19 h 30">Dossiers de vente</div>
+  <div class="brand" title="Version du 18 novembre 2026, 11 h 20">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3054,11 +3056,13 @@ table.tdb .puce.resilie{background:#897466}
   <div class="panel" id="p-plan"><div id="planBody"></div></div>
 
   <div class="panel" id="p-vendeurs">
+    <div id="suiviV"></div>
     <div id="listV"></div>
     <button class="addbtn" data-add="vendeurs">+ Ajouter un vendeur</button>
   </div>
 
   <div class="panel" id="p-acquereurs">
+    <div id="suiviA"></div>
     <div id="listA"></div>
     <button class="addbtn" data-add="acquereurs">+ Ajouter un acquéreur</button>
   </div>
@@ -3205,7 +3209,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>17 novembre 2026, 19 h 30</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>18 novembre 2026, 11 h 20</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5483,8 +5487,14 @@ function blankDossier(){
     nego:{vendeur:"",acquereur:""},
     /* alertes d'échéance écartées à la main, par « champ|date » */
     alertesOff:{},
-    /* intermédiaire extérieur rémunéré sur les honoraires de l'agence */
+    /* intermédiaires extérieurs rémunérés sur les honoraires de l'agence :
+       un du côté vendeur — l'apporteur qui a amené le mandat —, un du côté
+       acquéreur — le confrère qui a amené l'acheteur. Ce sont deux
+       personnes différentes, et elles peuvent exister en même temps.
+       `inter` garde son champ `cote` : les dossiers déjà saisis s'en
+       servent, et un apporteur peut être payé des deux moitiés. */
     inter:{nom:"",montant:"",base:"HT",cote:"Les deux"},
+    interAcq:{nom:"",montant:"",base:"HT"},
     bien:{residence:"",adresse:"",adresse2:"",pays:"France",cp:"",ville:"",quartier:"",
           type:"",typeAutre:"",
           sitJur:"",sitJurAutre:"",annee:"",dateConstruction:""},
@@ -6716,16 +6726,17 @@ const SCHEMA_GENERAL = [
     la résiliation, où mène l'étape correspondante de la frise. */
  /* La résiliation a quitté cette liste : elle se saisit à même la page
     « Le mandat », sous les trois champs qu'elle éteint. */
- {col:0,t:"Suivi du dossier",n:"2",cle:"suivi",f:[
-   ["nego.vendeur","Vendeur suivi par","book:negociateurs"],
-   /* tant qu'il n'y a ni offre ni compromis, il n'y a pas d'acquéreur à suivre */
-   ["nego.acquereur","Acquéreur suivi par","book:negociateurs","",null,phaseAcquereur],
-   ["@sepInter","",'sep'],
-   ["inter.nom","Autre intermédiaire","text"],
-   ["inter.montant","Sa commission (€)","money","sub",null,()=> !!D.inter.nom],
-   ["inter.base","Imputée sur les honoraires","list:baseHono","sub",null,()=> !!D.inter.nom],
-   ["inter.cote","Prise sur la part","list:coteHono","sub",null,()=> !!D.inter.nom]
- ]},
+ /* LE SUIVI A QUITTÉ CETTE PAGE
+    « Vendeur suivi par » se saisissait ici, c'est-à-dire sur la page du
+    MANDAT — donc jamais avant qu'il y en ait un. Un bien en prospection ou
+    en estimation n'avait pas de négociateur, et les documents de ce
+    moment-là sortaient sans coordonnées.
+    Il se saisit maintenant là où se trouve la personne suivie : le
+    négociateur du vendeur sur la page VENDEURS, celui de l'acquéreur sur
+    la page ACQUÉREURS, chacun avec l'intermédiaire de son côté. C'est
+    renseigné dès la première visite, et cela reste attaché au DOSSIER :
+    la même personne peut être suivie par quelqu'un d'autre sur une autre
+    affaire, et sa fiche du répertoire n'en sait rien. */
  {col:0,t:"Ventes annulées",n:"",id:"cardAnnul",cle:"annulees",f:[
    ["@annuls","","annuls"]
  ]},
@@ -7148,13 +7159,6 @@ function vide(t){ return !String(t || "").trim(); }
 function lignesTuile(cle){
   const b = D.bien || {}, L4 = [];
   const l = (dt, dd, faible, brut)=> L4.push([dt, dd, faible, brut]);
-  if(cle === "suivi"){
-    l("Vendeur suivi par", D.nego.vendeur || "personne", vide(D.nego.vendeur));
-    if(phaseAcquereur())
-      l("Acquéreur suivi par", D.nego.acquereur || "personne", vide(D.nego.acquereur));
-    l("Autre intermédiaire", D.inter.nom || "aucun", vide(D.inter.nom));
-    if(D.inter.nom) l("Sa commission", eur0(num(D.inter.montant)), num(D.inter.montant) === null);
-  }
   if(cle === "copro"){
     const r = residenceDuBien();
     const sy = book("syndics", r.syndic).nom || r.syndic || "";
@@ -7219,12 +7223,6 @@ function piedTuile(cle){
     const rest = String(residenceDuBien().restrictions || "").trim();
     return rest ? esc(rest.length > 72 ? rest.slice(0, 71) + "…" : rest)
                 : "Aucune restriction signalée.";
-  }
-  if(cle === "suivi"){
-    const n = [D.nego.vendeur, phaseAcquereur() ? D.nego.acquereur : ""]
-      .filter(Boolean).filter((x,i,t)=> t.indexOf(x) === i).length;
-    return n ? `<b>${n}</b> négociateur${n > 1 ? "s" : ""} sur ce dossier`
-             : "Aucun négociateur désigné.";
   }
   if(cle === "acqs"){
     const list = acquereursPourBien();
@@ -7459,7 +7457,8 @@ function carteDuMandat(){
   </div></div>`;
 }
 const TUILES_MANDAT = [
-  {cle:"suivi",    titre:"Suivi du dossier"},
+  /* « Suivi du dossier » est parti avec ses champs, sur les pages
+     Vendeurs et Acquéreurs — là où se trouvent les personnes suivies */
   {cle:"prix",     titre:"Prix et honoraires"},
   {cle:"dates",    titre:"Dates clés"},
   {cle:"mobilier", titre:"Mobilier"},
@@ -9092,7 +9091,15 @@ function pageAvisValeur(){
   const pg = a.pages;
   const casePage = (k, lib)=> `<label class="avpage"><input type="checkbox"
     data-avpage="${k}"${pg[k] ? " checked" : ""}><span>${esc(lib)}</span></label>`;
+  const sig = avisSignataire(d);
+  const sansCoord = !sig.nom || (!sig.tel && !sig.email);
   return `<div class="dsec"><h4>L'avis de valeur</h4>
+    ${sansCoord ? `<p class="dnote avmanque">${sig.nom
+      ? "<b>" + esc(sig.nom) + "</b> n'a ni téléphone ni courriel sur sa fiche"
+      : "Aucun négociateur ne suit ce vendeur"} : le document sortira sans "
+      + "coordonnées. ${sig.nom
+        ? "Cela se saisit une fois dans <b>Listes → Négociateurs</b>, avec le portrait."
+        : "Il se désigne sur la page <b>Vendeurs</b>, en tête."}</p>` : ""}
     <p class="dnote" style="margin-top:0">Le document remis au propriétaire après
       l'estimation. Tout ce que le dossier sait déjà y entre seul — le bien, les pièces, les
       surfaces, les équipements, le propriétaire, la fourchette. Ne se saisit ici que ce qui
@@ -12118,6 +12125,53 @@ function partiesVisibles(kind){
   const arr = D[kind] || [];
   return arr.filter(p=> p && !personneVide(p)).length ? arr : [];
 }
+/* ------------------------------------------- QUI SUIT, ET QUI A APPORTÉ
+   Le négociateur se saisit là où se trouve la personne qu'il suit : le
+   sien sur la page Vendeurs, celui de l'acquéreur sur la page Acquéreurs.
+   C'est renseigné dès la prospection, et les documents de ce moment-là
+   — fiche de visite, avis de valeur — y trouvent enfin des coordonnées.
+
+   ATTENTION, C'EST UNE DONNÉE DU DOSSIER, PAS DE LA PERSONNE. Le même
+   vendeur peut être suivi par quelqu'un d'autre sur une autre affaire ; sa
+   fiche du répertoire n'en sait rien et ne doit rien en savoir. */
+function carteSuivi(cote){
+  const vend = cote === "vendeurs";
+  const kNego = vend ? "nego.vendeur" : "nego.acquereur";
+  const kInt  = vend ? "inter" : "interAcq";
+  const it = (D[kInt] || {});
+  const nom = book("negociateurs", (D.nego || {})[vend ? "vendeur" : "acquereur"]);
+  const manque = nom.nom && !nom.tel && !nom.email;
+  const champs = [
+    `<div class="pf"><label>${vend ? "Vendeur" : "Acquéreur"} suivi par</label>${
+      control(kNego, "book:negociateurs")}</div>`,
+    `<div class="pf"><label>Autre intermédiaire</label>${
+      control(kInt + ".nom", "text")}</div>`
+  ];
+  if(it.nom){
+    champs.push(`<div class="pf"><label>Sa commission (€)</label>${
+      control(kInt + ".montant", "money")}</div>`);
+    champs.push(`<div class="pf"><label>Imputée sur les honoraires</label>${
+      control(kInt + ".base", "list:baseHono")}</div>`);
+    if(vend) champs.push(`<div class="pf"><label>Prise sur la part</label>${
+      control(kInt + ".cote", "list:coteHono")}</div>`);
+  }
+  return `<div class="card suivicard"><h2>Le suivi du dossier</h2>
+    <div class="pgrid">${champs.join("")}</div>
+    ${manque ? `<p class="dnote"><b>${esc(nom.nom)}</b> n'a ni téléphone ni courriel
+      sur sa fiche : les documents sortiront sans ses coordonnées. Cela se saisit
+      une fois dans <b>Listes → Négociateurs</b>, avec son portrait.</p>` : ""}
+    <p class="dnote">Le négociateur est attaché à <b>ce dossier</b>, et non à la
+      personne : le même ${vend ? "vendeur" : "acquéreur"} peut être suivi par
+      quelqu'un d'autre sur une autre affaire.${vend ? " Renseigné dès la "
+      + "prospection, il signe la fiche de visite et l'avis de valeur." : ""}</p>
+  </div>`;
+}
+function renderSuivi(){
+  const v = $("#suiviV");
+  if(v) v.innerHTML = carteSuivi("vendeurs");
+  const a = $("#suiviA");
+  if(a) a.innerHTML = carteSuivi("acquereurs");
+}
 function renderPeople(kind){
   const arr = partiesVisibles(kind);
   const target = kind==="vendeurs" ? "#listV" : "#listA";
@@ -12154,6 +12208,8 @@ function renderPeople(kind){
     <b>nom</b> : s'il est déjà au répertoire, vous reprendrez sa fiche plutôt
     que d'en créer une seconde.</p>`;
 
+  const z = $(kind === "vendeurs" ? "#suiviV" : "#suiviA");
+  if(z) z.innerHTML = carteSuivi(kind);
   const compte = k=> (D[k] || []).filter(p=> p && !personneVide(p)).length;
   $("#cntV").textContent = compte("vendeurs") > 1 ? "("+compte("vendeurs")+")" : "";
   $("#cntA").textContent = compte("acquereurs") > 1 ? "("+compte("acquereurs")+")" : "";
@@ -14924,7 +14980,7 @@ function texteDossier(d){
   ["vendeur","acquereur","vendeurContact","acquereurContact",
    "vendeurContactEmail","acquereurContactEmail"].forEach(k=> add(nt[k]));
   const ng = d.nego || {}; add(ng.vendeur); add(ng.acquereur);
-  const it = d.inter || {}; add(it.nom);
+  add((d.inter || {}).nom); add((d.interAcq || {}).nom);
   add((d.pret || {}).banque); add((d.pret || {}).courtier);
   add(d.diagPar); add(d.divers);
   /* une vente annulée reste cherchable : c'est souvent par ce nom qu'on revient */
@@ -15958,20 +16014,32 @@ function commissions(d){
                inter:0, interNom:""};
   const moities = {vendeur: total/2, acquereur: total/2};
 
+  const prendre = (cote, v)=>{
+    const pris = Math.max(0, Math.min(moities[cote], v));
+    moities[cote] -= pris; out.inter += pris;
+  };
+  const noms = [];
+  /* celui du côté vendeur garde son champ `cote` : il peut être payé de
+     l'une ou l'autre moitié, ou des deux — c'est ainsi qu'il était saisi */
   const it = d.inter || {};
   const mt = num(it.montant);
   if(it.nom && mt){
     /* le montant saisi peut être exprimé TTC : on le ramène au hors taxe */
     const voulu = it.base === "TTC" ? mt / (1 + TVA_TAUX) : mt;
-    const prendre = (cote, v)=>{
-      const pris = Math.max(0, Math.min(moities[cote], v));
-      moities[cote] -= pris; out.inter += pris;
-    };
     if(it.cote === "Vendeur")        prendre("vendeur", voulu);
     else if(it.cote === "Acquéreur") prendre("acquereur", voulu);
     else { prendre("vendeur", voulu/2); prendre("acquereur", voulu/2); }
-    out.interNom = it.nom;
+    noms.push(it.nom);
   }
+  /* celui du côté acquéreur se prend sur la moitié acquéreur, sans
+     question : c'est ce que veut dire « du côté acquéreur » */
+  const ia = d.interAcq || {};
+  const ma = num(ia.montant);
+  if(ia.nom && ma){
+    prendre("acquereur", ia.base === "TTC" ? ma / (1 + TVA_TAUX) : ma);
+    noms.push(ia.nom);
+  }
+  out.interNom = noms.join(" et ");
 
   [["vendeur",(d.nego||{}).vendeur], ["acquereur",(d.nego||{}).acquereur]].forEach(x=>{
     const cote = x[0], nom = x[1], demi = moities[cote];
@@ -26708,17 +26776,16 @@ document.addEventListener("focusout", e=>{
 document.addEventListener("focusout", e=>{
   const b = e.target.dataset ? e.target.dataset.b : null;
   if(b === "dates.offre" || b === "dates.compromis"){
-    const present = !!document.querySelector('[data-b="nego.acquereur"]');
-    /* les échéances du compromis apparaissent en même temps que ces lignes */
+    /* « Acquéreur suivi par » a quitté cette page : il ne reste à guetter
+       que les échéances du compromis, qui apparaissent avec ces dates */
     const ech = !!document.querySelector('[data-b="dates.acte"]');
-    if(phaseAcquereur() !== present || phaseDates() !== ech){
-      renderGeneral(); refreshAllVilles();
-    }
+    if(phaseDates() !== ech){ renderGeneral(); refreshAllVilles(); }
   }
   /* le nom d'un intermédiaire fait apparaître sa commission et son imputation */
-  if(b === "inter.nom"){
-    const present = !!document.querySelector('[data-b="inter.montant"]');
-    if(!!D.inter.nom !== present){ renderGeneral(); refreshAllVilles(); }
+  if(b === "inter.nom" || b === "interAcq.nom"){
+    const k = b.split(".")[0];
+    const present = !!document.querySelector(`[data-b="${k}.montant"]`);
+    if(!!(D[k] || {}).nom !== present){ renderSuivi(); refreshAllVilles(); }
   }
 });
 
@@ -32019,6 +32086,7 @@ function migrate(d){
   /* le mandat dont celui-ci prend la suite : son numéro, et rien de plus */
   if(out.mandat.suiteDe === undefined) out.mandat.suiteDe = "";
   out.inter = Object.assign(base.inter, d.inter||{});
+  out.interAcq = Object.assign(base.interAcq, d.interAcq||{});
   out.nego  = Object.assign(base.nego, d.nego||{});
   out.notaire = Object.assign(base.notaire, d.notaire||{});
   out.notaire.meme = !!out.notaire.meme;
@@ -33338,6 +33406,30 @@ const AIDE = [
   "avec leur détail, les dépendances, les travaux et les observations. C'est un "+
   "<b>document de travail interne</b> — son pied de page le dit : elle ne se donne "+
   "pas au client, à qui va la <b>fiche de présentation</b>."],
+ ["Qui suit le dossier, et depuis la prospection",
+  "<b>Ce qui n'allait pas.</b> « Vendeur suivi par » se saisissait sur la page du "+
+  "<b>mandat</b> — donc jamais avant qu'il y en ait un. Un bien en prospection ou en "+
+  "estimation n'avait pas de négociateur, et les documents de ce moment-là — la "+
+  "fiche de visite, l'avis de valeur — sortaient sans coordonnées ni signature. "+
+  "<b>Le négociateur se saisit maintenant là où se trouve la personne suivie.</b> "+
+  "En tête de la page <b>Vendeurs</b>, une carte « Le suivi du dossier » : qui suit "+
+  "le vendeur, et l'éventuel <b>intermédiaire</b> de ce côté — l'apporteur qui a "+
+  "amené le mandat — avec sa commission et son imputation. En tête de la page "+
+  "<b>Acquéreurs</b>, la même chose pour l'acquéreur : qui le suit, et le confrère "+
+  "qui l'a amené. Les deux intermédiaires peuvent exister en même temps : ce sont "+
+  "deux personnes différentes, et le tableau de bord prend la commission de chacun "+
+  "sur la moitié d'honoraires qui lui revient. "+
+  "<b>C'est renseigné dès la première visite</b>, et la page <b>Le mandat</b> ne le "+
+  "demande plus : la carte « Suivi du dossier » en a disparu, avec ses champs. "+
+  "<b>Attention, c'est une donnée du DOSSIER, pas de la personne.</b> Le même "+
+  "vendeur peut être suivi par quelqu'un d'autre sur une autre affaire ; sa fiche du "+
+  "répertoire n'en sait rien et ne doit rien en savoir. Changer de négociateur sur "+
+  "un dossier ne touche à aucun autre. "+
+  "<b>L'application vous prévient</b> quand le négociateur désigné n'a ni téléphone "+
+  "ni courriel sur sa fiche : le bandeau le dit sur la carte du suivi et en tête de "+
+  "l'avis de valeur, puisque c'est là que cela se verra. Ses coordonnées, sa "+
+  "<b>qualité annoncée</b> et son <b>portrait</b> se saisissent une fois dans "+
+  "<b>Listes → Négociateurs</b> et servent ensuite partout."],
  ["L'avis de valeur",
   "<b>Ce qui manquait.</b> Après l'estimation, il faut remettre un document au "+
   "propriétaire. Il se composait hors de l'application, dans un traitement de texte, "+
