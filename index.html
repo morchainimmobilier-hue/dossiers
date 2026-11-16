@@ -1489,6 +1489,67 @@ table.chgt input.chgm{text-align:right}
 .vprepr{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:5px;
   padding-top:5px;border-top:1px dashed var(--line);
   font-size:11.5px;color:var(--ink-3)}
+/* ---------------------------------------------------- l'avis de valeur */
+.avpages{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:10px}
+.avpage{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;
+  border:1px solid var(--line);border-radius:999px;background:#faf7f5;
+  font-size:12px;cursor:pointer}
+.avpage input{margin:0}
+.avpage:has(input:checked){background:var(--accent-soft);border-color:#e3c6ba;
+  color:var(--bandeau);font-weight:600}
+.avbarre{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:8px 0}
+.avbarre label{font-size:11.5px;color:var(--ink-2)}
+.avbarre select{width:auto;min-width:92px}
+.avsort{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.avbarre .grow{flex:1}
+/* le tableau des ventes a neuf colonnes : sans largeurs imposées, le
+   navigateur les répartit au jugé et la case à cocher se retrouve à
+   quatre cents pixels de la première date. */
+table.avt{table-layout:fixed;width:100%;min-width:860px}
+table.avt input[type=text]{width:100%;min-width:0}
+table.avt tr.hors td{opacity:.42}
+table.avt .avm2{font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.avphots{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.avphot{position:relative;width:104px;height:78px;padding:0;overflow:hidden;
+  border:2px solid var(--line);border-radius:8px;background:#f1ece9;cursor:pointer}
+.avphot.on{border-color:var(--marque);box-shadow:0 0 0 2px var(--accent-soft)}
+.avphot .pjimg{display:block;width:100%;height:100%}
+.avphot .pjimg img{width:100%;height:100%;object-fit:cover;display:block}
+.avrang{position:absolute;right:4px;bottom:4px;min-width:19px;height:19px;
+  padding:0 4px;border-radius:10px;background:rgba(0,0,0,.6);color:#fff;
+  font-size:11.5px;font-weight:700;line-height:19px;text-align:center}
+.avphot.on .avrang{background:var(--marque)}
+.avann{border:1px solid var(--line);border-radius:10px;background:#faf7f5;
+  padding:9px 11px;margin-top:8px}
+.avann.hors{opacity:.5}
+.avanntete{display:flex;align-items:center;gap:9px}
+.avanntete .grow{flex:1}
+.avanntete input.avprix{width:120px;font-weight:700}
+.avanng{padding:8px 0 0!important}
+.rendcalc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
+  margin-top:12px}
+.rendcalc>div{border:1px solid var(--line);border-radius:9px;padding:7px 10px;
+  background:#faf7f5}
+.rendcalc span{display:block;font-size:10.5px;letter-spacing:.2px;
+  text-transform:uppercase;color:var(--ink-2)}
+.rendcalc b{font-size:13.5px;color:var(--ink)}
+.rendprix{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:10px}
+.rendprix>div{border:1px solid #e3c6ba;border-radius:10px;padding:9px 12px;
+  background:var(--accent-soft)}
+.rendprix span{display:block;font-size:11px;letter-spacing:.3px;
+  text-transform:uppercase;color:var(--bandeau)}
+.rendprix b{font-size:18px;color:var(--marque)}
+table.rendt{max-width:520px}
+@media (max-width:760px){.rendcalc{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rendprix{grid-template-columns:1fr}}
+.avsynth{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+  margin-top:12px}
+.avsynth>div{border:1px solid var(--line);border-radius:10px;padding:9px 12px;
+  background:#faf7f5}
+.avsynth span{display:block;font-size:11px;letter-spacing:.3px;
+  text-transform:uppercase;color:var(--ink-2)}
+.avsynth b{font-size:16px;color:var(--marque)}
+@media (max-width:760px){.avsynth{grid-template-columns:1fr}}
 .detailbox .darg{margin:0}
 .arggs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px}
 .argg h5{margin:0 0 7px;font-size:11px;font-weight:700;letter-spacing:.4px;
@@ -2900,7 +2961,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 10 novembre 2026, 18 h 10">Dossiers de vente</div>
+  <div class="brand" title="Version du 17 novembre 2026, 15 h 45">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3124,7 +3185,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>10 novembre 2026, 18 h 10</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>17 novembre 2026, 15 h 45</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -5417,6 +5478,8 @@ function blankDossier(){
        LE MANDAT ». */
     sansMandat:false, mandatPrisLe:"",
     estim:{rdv:"", remise:"", voie:"", mini:"", maxi:""},
+    /* l'avis de valeur remis au propriétaire : voir « L'AVIS DE VALEUR » */
+    av:avisVide(),
     fin:{condSusp:"",condSuspAutre:"",depot:"",depot5:false,depotMontant:""},
     pret:{montant:"",taux:"",duree:"",banque:"",courtier:"",courtierTel:"",courtierEmail:""},
     mobilier:{liste:"",annexe:""},
@@ -8206,7 +8269,8 @@ function pagesBien(){
            {cle:"deps",    lib:"Les dépendances"},
            {cle:"terrain", lib:"Le terrain"},
            {cle:"occup",   lib:"L'occupation"},
-           {cle:"visite",  lib:"La fiche de visite"});
+           {cle:"visite",  lib:"La fiche de visite"},
+           {cle:"avis",    lib:"L'avis de valeur"});
   }
   return l;
 }
@@ -8506,6 +8570,684 @@ function tableauDeps(o){
     <p class="dnote">Une dépendance n'est pas une pièce d'habitation : sa surface ne
       compte ni dans l'habitable ni au sol du logement, elle se dit à part. La
       <b>calculatrice</b> y mesure comme ailleurs.</p></div>`;
+}
+
+/* =====================================================================
+   L'AVIS DE VALEUR
+   ---------------------------------------------------------------------
+   Après l'estimation, il faut remettre un document au propriétaire. Il se
+   composait jusqu'ici hors de l'application, dans un traitement de texte,
+   à partir de chiffres recopiés — donc retapés, donc faux un jour sur
+   trois, et jamais retrouvables l'année suivante.
+
+   Il se compose désormais ICI, et il n'y a rien à recopier : le bien, les
+   pièces, les surfaces, les équipements, le propriétaire et la fourchette
+   sont déjà dans le dossier. Ne reste que ce qui s'écrit vraiment — le
+   mot d'introduction, la description, les points forts, les points à
+   défendre — et ce qui se choisit : les photos, les ventes passées, les
+   annonces concurrentes.
+
+   Tout cela VIT DANS LE DOSSIER (`D.av`) : on rouvre, on corrige, on
+   réédite. Un second avis l'année suivante repart du premier.
+
+   Deux sorties : le PDF, composé par le moteur de l'application et rangé
+   tout seul dans « Mandat & Admin » ; et un fichier Word, pour les
+   retouches que l'écran ne permet pas.
+   ===================================================================== */
+function avisVide(){
+  return {date:"", demande:"", intro:"", texte:"", forts:"", faibles:"",
+          photos:[], ventes:[], annonces:[], rayon:"800",
+          mini:"", maxi:"", hono:"", honoCharge:"Vendeur",
+          rend:{loyer:"", vacance:"", charges:[], taux:""},
+          pages:{appel:true, situation:true, cartes:true, carac:true,
+                 immeuble:true, texte:true, tableaux:true, facteurs:true,
+                 photos:true, ventes:true, annonces:true, rend:false,
+                 synth:true, reserves:true}};
+}
+function avisDe(d){
+  const o = d || D;
+  if(!o.av || typeof o.av !== "object") o.av = avisVide();
+  const v = avisVide();
+  Object.keys(v).forEach(k=>{ if(o.av[k] === undefined) o.av[k] = v[k]; });
+  ["photos","ventes","annonces"].forEach(k=>{
+    if(!Array.isArray(o.av[k])) o.av[k] = []; });
+  if(!o.av.rend || typeof o.av.rend !== "object") o.av.rend = rendVide();
+  if(!Array.isArray(o.av.rend.charges)) o.av.rend.charges = [];
+  o.av.pages = Object.assign({}, v.pages, avisPagesReprises(o.av.pages));
+  return o.av;
+}
+/* la fourchette affichée : celle de l'avis si elle a été retouchée, celle
+   de l'estimation sinon. On ne recopie pas l'une dans l'autre — le
+   cartouche du bandeau reste la source, et l'avis ne s'en écarte que si
+   on le lui demande expressément. */
+function avisFourchette(d){
+  const a = avisDe(d), e = estimDe(d || D);
+  const mn = num(a.mini) !== null ? num(a.mini) : num(e.mini);
+  const mx = num(a.maxi) !== null ? num(a.maxi) : num(e.maxi);
+  return {mn, mx};
+}
+/* « à la demande de » : les vendeurs du dossier, sauf mention contraire */
+function avisDemandeur(d){
+  const a = avisDe(d);
+  if(String(a.demande || "").trim()) return a.demande.trim();
+  const l = ((d || D).vendeurs || []).filter(x=> x && !personneVide(x));
+  return l.map(x=> titrePersonne(x) || nomUsuel(x) || "").filter(Boolean)
+          .join(" et ");
+}
+function avisDateDoc(d){
+  const a = avisDe(d);
+  return isoValide(a.date) ? a.date : auj();
+}
+/* les honoraires annoncés : ceux de l'avis, ceux du dossier à défaut.
+   Un pourcentage ou une somme — on accepte les deux, et on le dit. */
+function avisHonoraires(d){
+  const a = avisDe(d), p = (d || D).prix || {};
+  const brut = String(a.hono || "").trim() || String(p.honoraires || "").trim();
+  if(!brut) return null;
+  const pct = /%/.test(brut);
+  const n = num(brut.replace("%", ""));
+  if(n === null) return null;
+  return {pct, n, charge: a.honoCharge || p.charge || "Vendeur"};
+}
+/* le net vendeur aux deux bouts de la fourchette */
+function avisNetVendeur(d){
+  const {mn, mx} = avisFourchette(d), h = avisHonoraires(d);
+  const net = v=>{
+    if(v === null) return null;
+    if(!h) return v;
+    return h.charge === "Vendeur" ? v - (h.pct ? v * h.n / 100 : h.n) : v;
+  };
+  return {mn: net(mn), mx: net(mx), h};
+}
+
+/* ------------------------------------------------- LES VENTES PASSÉES
+   Les ventes réelles sont publiques : l'État publie, sous le nom de DVF
+   (demandes de valeurs foncières), le prix et la surface de chaque
+   mutation. On les demande AUTOUR DU BIEN — un rayon, pas une commune :
+   à Arles, la commune fait cinq cents kilomètres carrés et ne veut rien
+   dire.
+
+   Le service est public et gratuit, mais ce n'est pas le nôtre : il peut
+   ne pas répondre, ou refuser l'appel depuis une page. Dans ce cas on le
+   DIT, et la saisie à la main prend le relais — une page d'avis de valeur
+   ne doit jamais dépendre d'un serveur tiers.                           */
+const DVF_URL = "https://api.cquest.org/dvf";
+const DVF_ANS = 3;                 /* au-delà, une vente ne compare plus */
+function venteVide(){
+  return {d:"", type:"", surf:"", terr:"", prix:"", adr:"", lat:"", lon:"",
+          dist:"", pris:true, main:true};
+}
+/* ce que le service renvoie, ramené à nos mots */
+function venteDepuisDVF(x, c){
+  const lat = num(x.lat), lon = num(x.lon);
+  return {
+    d: String(x.date_mutation || "").slice(0, 10),
+    type: String(x.type_local || "").trim(),
+    surf: x.surface_relle_bati || x.surface_reelle_bati || "",
+    terr: x.surface_terrain || "",
+    prix: x.valeur_fonciere || "",
+    adr: [x.numero_voie, x.type_voie, x.voie].filter(Boolean).join(" ").trim()
+         || String(x.commune || "").trim(),
+    lat: lat === null ? "" : String(lat), lon: lon === null ? "" : String(lon),
+    dist: (c && lat !== null && lon !== null)
+      ? String(Math.round(distanceM(c.lat, c.lon, lat, lon))) : "",
+    pris: false, main: false
+  };
+}
+async function chargerVentesDVF(c, rayon){
+  const u = DVF_URL + "?lat=" + encodeURIComponent(c.lat)
+    + "&lon=" + encodeURIComponent(c.lon)
+    + "&dist=" + encodeURIComponent(Math.max(100, Math.min(5000, +rayon || 800)))
+    + "&nature_mutation=Vente";
+  const r = await fetch(u);
+  if(!r.ok) throw new Error("réponse " + r.status);
+  const j = await r.json();
+  const brut = Array.isArray(j) ? j : (j.resultats || j.features || []);
+  const seuil = String(new Date(Date.now() - DVF_ANS * 365.25 * 864e5)
+    .toISOString().slice(0, 10));
+  const out = [];
+  brut.forEach(x=>{
+    const e = x && x.properties ? x.properties : x;
+    if(!e) return;
+    const v = venteDepuisDVF(e, c);
+    if(!num(v.prix) || !v.d || v.d < seuil) return;
+    if(v.type && !/Maison|Appartement/i.test(v.type)) return;
+    out.push(v);
+  });
+  /* une même mutation revient autant de fois qu'elle a de lots : on ne
+     garde qu'une ligne par date, prix et adresse */
+  const vus = {};
+  return out.filter(v=>{
+    const k = v.d + "|" + v.prix + "|" + v.adr;
+    if(vus[k]) return false;
+    vus[k] = 1; return true;
+  }).sort((a, b)=> (b.d || "").localeCompare(a.d || ""));
+}
+function prixM2(v){
+  const p = num(v.prix), s = num(v.surf);
+  return (p && s) ? Math.round(p / s) : null;
+}
+/* la moyenne des seules lignes retenues — c'est elle qui sera imprimée */
+function moyenneRetenue(liste){
+  const l = (liste || []).filter(x=> x && x.pris && num(x.prix));
+  if(!l.length) return null;
+  const prix = l.reduce((s, x)=> s + num(x.prix), 0) / l.length;
+  const m2 = l.filter(x=> prixM2(x));
+  return {n: l.length, prix: Math.round(prix),
+    m2: m2.length ? Math.round(m2.reduce((s, x)=> s + prixM2(x), 0) / m2.length) : null};
+}
+
+/* ------------------------------------------- LES ANNONCES CONCURRENTES
+   Une page d'annonce ne se lit pas depuis le navigateur : les sites
+   l'interdisent par leurs en-têtes, et leurs conditions d'usage aussi. On
+   ne fait donc pas semblant. Ce qu'on peut faire, et qui suffit : vous
+   COLLEZ le texte de l'annonce, et l'application en tire le prix, la
+   surface, le nombre de pièces, le terrain et l'étiquette énergie. Vous
+   corrigez ce qu'elle a mal lu — ce qui arrive —, vous déposez une photo
+   et vous gardez le lien.                                               */
+function annonceVide(){
+  return {prix:"", surf:"", pieces:"", terr:"", ville:"", dpe:"", jours:"",
+          date:"", lien:"", note:"", photo:"", pris:true};
+}
+function lireAnnonceCollee(txt){
+  const t = String(txt || "").replace(/ | /g, " ");
+  const a = annonceVide();
+  const nb = s=> s ? s.replace(/[ .]/g, "").replace(",", ".") : "";
+  /* le prix : le plus gros nombre suivi d'un € ou précédé de « prix » */
+  const prix = [...t.matchAll(/(\d[\d .]{3,})\s*(?:€|EUR\b)/gi)]
+    .map(m=> +nb(m[1])).filter(x=> x > 10000 && x < 20000000);
+  if(prix.length) a.prix = String(Math.max.apply(null, prix));
+  const surf = /(\d{1,4}(?:[.,]\d{1,2})?)\s*(?:m²|m2|m²)\s*(?:habitables?)?/i.exec(t);
+  if(surf) a.surf = nb(surf[1]);
+  const terr = /terrain[^0-9]{0,20}(\d{1,6}(?:[.,]\d{1,2})?)\s*(?:m²|m2|ha\b)/i.exec(t);
+  if(terr) a.terr = nb(terr[1]);
+  const pi = /(\d{1,2})\s*pi[èe]ces?/i.exec(t) || /\b[TF](\d)\b/.exec(t);
+  if(pi) a.pieces = pi[1];
+  const dpe = /(?:DPE|classe\s+(?:énerg(?:ie|étique)))\s*:?\s*([A-G])\b/i.exec(t);
+  if(dpe) a.dpe = dpe[1].toUpperCase();
+  const lien = /(https?:\/\/\S+)/i.exec(t);
+  if(lien) a.lien = lien[1].replace(/[),.]+$/, "");
+  /* LA VILLE, ET LE PIÈGE DE L'ADRESSE WEB
+     Une annonce porte « Arles (13200) » ou « 13200 Arles ». Mais son lien
+     porte aussi des chiffres — /annonce/12345 —, et cinq chiffres suivis
+     d'un mot, dans une URL, ressemblent à s'y méprendre à un code postal
+     suivi d'une commune. On retire donc les liens AVANT de chercher. */
+  const sansLien = t.replace(/https?:\/\/\S+/gi, " ");
+  const nom = "([A-ZÀ-Ÿ][\\wÀ-ÿ'’\\-]+(?:[ \\-][A-ZÀ-Ÿa-zà-ÿ'’\\-]+){0,3})";
+  const cp = new RegExp(nom + "\\s*[(\\[]?\\b(\\d{5})\\b").exec(sansLien)
+    || new RegExp("\\b(\\d{5})\\b[ \\t]+" + nom).exec(sansLien);
+  if(cp) a.ville = (/^\d/.test(cp[1]) ? cp[2] : cp[1]).trim();
+  a.date = auj();
+  return a;
+}
+
+/* ------------------------------------------- L'ESTIMATION PAR LE RENDEMENT
+   Un bien loué ne se vend pas au mètre carré : il se vend au rendement.
+   L'acquéreur n'achète pas des murs, il achète un revenu, et il paiera ce
+   qu'il faut pour que ce revenu lui rapporte le taux qu'il s'est fixé.
+
+   Le calcul est celui que fait tout investisseur, et il tient en trois
+   lignes :
+     · le loyer annuel, hors charges récupérables ;
+     · moins la vacance qu'on anticipe, et moins les charges qui restent
+       au propriétaire — taxe foncière, charges de copropriété non
+       récupérables, assurance, gestion ;
+     · divisé par le rendement NET attendu : c'est le prix.
+
+   On affiche aussi le rendement BRUT que ce prix donne, parce que c'est
+   celui qu'annoncent les annonces, et que l'écart entre les deux est
+   précisément ce qu'on explique au vendeur.                             */
+function rendVide(){
+  return {loyer:"", vacance:"", charges:[], taux:""};
+}
+function rendDe(d){
+  const a = avisDe(d);
+  if(!a.rend || typeof a.rend !== "object") a.rend = rendVide();
+  if(!Array.isArray(a.rend.charges)) a.rend.charges = [];
+  return a.rend;
+}
+function ligneRendVide(){ return {nature:"", montant:""}; }
+/* tout le calcul, d'un bloc : chaque étape est lisible et vérifiable */
+function calculRendement(d){
+  const r = rendDe(d);
+  const loyer = num(r.loyer);
+  const brut = loyer === null ? null : loyer * 12;
+  const vac = num(r.vacance);
+  const encaisse = brut === null ? null
+    : (vac === null ? brut : brut * (1 - Math.max(0, Math.min(100, vac)) / 100));
+  const charges = r.charges.reduce((s, x)=> s + (num((x || {}).montant) || 0), 0);
+  const net = encaisse === null ? null : encaisse - charges;
+  const taux = num(r.taux);
+  const prix = (net === null || !taux || taux <= 0) ? null
+    : Math.round(net / (taux / 100));
+  return {loyer, brut, vacance:vac, encaisse, charges, net, taux, prix,
+    /* le rendement brut que ce prix donne : loyer annuel sur prix */
+    tauxBrut: (prix && brut) ? Math.round(brut / prix * 1000) / 10 : null};
+}
+/* les charges déjà saisies au dossier n'ont pas à être retapées */
+function rendDepuisCharges(d){
+  const l = listeCharges(d || D) || [];
+  return l.filter(c=> c && (c.type || c.montant) && num(c.montant))
+          .map(c=> ({nature: c.type || "Charge", montant: String(num(c.montant))}));
+}
+
+/* ------------------------------------------------------------ L'ÉCRAN
+   Un volet de la fiche du bien, comme les autres. Il ne redemande rien de
+   ce que le dossier sait déjà : il montre ce qui sera imprimé, et n'offre
+   à saisir que ce qui s'écrit.                                          */
+function avisLigneVente(v, i){
+  const m2 = prixM2(v);
+  return `<tr${v.pris ? "" : ' class="hors"'}>
+    <td class="cact"><input type="checkbox" data-avvp="${i}"${v.pris ? " checked" : ""}
+      title="Faire figurer cette vente"></td>
+    <td><input type="text" data-avv="${i}:d" value="${esc(v.d || "")}"
+      placeholder="2025-06" style="width:92px"></td>
+    <td><input type="text" data-avv="${i}:type" value="${esc(v.type || "")}"
+      placeholder="Maison"></td>
+    <td><input type="text" inputmode="decimal" data-avv="${i}:surf"
+      value="${esc(v.surf || "")}" placeholder="0" class="chgm"></td>
+    <td><input type="text" inputmode="decimal" data-avv="${i}:terr"
+      value="${esc(v.terr || "")}" placeholder="—" class="chgm"></td>
+    <td><input type="text" inputmode="decimal" data-avv="${i}:prix"
+      value="${esc(v.prix || "")}" placeholder="0" class="chgm"></td>
+    <td class="avm2">${m2 ? esc(eur(m2)) + "/m²" : "—"}</td>
+    <td class="muted">${v.dist ? esc(v.dist) + " m" : ""}</td>
+    <td class="cact"><button type="button" class="xbtn mini sup" data-avvdel="${i}"
+      title="Retirer cette ligne">✕</button></td></tr>`;
+}
+function avisBlocVentes(d){
+  const a = avisDe(d), l = a.ventes, moy = moyenneRetenue(l);
+  const repere = bienRepere(d);
+  return `<div class="dsec"><h4 class="avectot">Les ventes passées autour du bien
+      <span class="pietot">${moy ? `<span class="pietotal">${esc(eur(moy.prix))}<em>${
+        moy.n} vente${moy.n > 1 ? "s" : ""} retenue${moy.n > 1 ? "s" : ""}${
+        moy.m2 ? " · " + eur(moy.m2) + "/m²" : ""}</em></span>` : ""}</span></h4>
+    <div class="avbarre">
+      <label>Rayon</label>
+      <select data-avrayon>${[300, 500, 800, 1200, 2000, 3000].map(r=>
+        `<option value="${r}"${String(a.rayon) === String(r) ? " selected" : ""}
+          >${r} m</option>`).join("")}</select>
+      <button type="button" class="tbtn light mini" data-avdvf="1"${
+        repere ? "" : " disabled"}>Chercher les ventes</button>
+      <button type="button" class="addbtn mini" data-avvadd="1">+ Une vente à la main</button>
+      <span class="grow"></span>
+      <span class="muted" id="avdvfmot">${repere ? ""
+        : "Le bien n'a pas encore de point sur la carte : repérez-le depuis la page Secteurs."}</span>
+    </div>
+    <div class="tdbscroll"><table class="grid-t chgt avt">
+      <tr><th class="cact" style="width:34px"></th><th style="width:118px">Date</th>
+        <th style="width:120px">Type</th>
+        <th style="width:84px">Surface</th><th style="width:84px">Terrain</th>
+        <th style="width:104px">Prix</th><th style="width:92px">Prix / m²</th>
+        <th style="width:74px">Distance</th><th class="cact" style="width:34px"></th></tr>
+      ${l.map(avisLigneVente).join("") ||
+        `<tr><td colspan="9" class="muted">Aucune vente. Cherchez-les, ou saisissez-les.</td></tr>`}
+    </table></div>
+    <p class="dnote">Les ventes viennent des <b>demandes de valeurs foncières</b>, la base
+      publique de l'État : ce sont des prix d'actes, pas des prix affichés. Décochez ce qui
+      ne compare pas — une grange, une vente entre héritiers — : <b>seules les lignes cochées
+      sont imprimées</b>, et la moyenne ne compte qu'elles.</p></div>`;
+}
+function avisLigneAnnonce(x, i){
+  const p = num(x.prix), s = num(x.surf);
+  return `<div class="avann${x.pris ? "" : " hors"}">
+    <div class="avanntete">
+      <input type="checkbox" data-avap="${i}"${x.pris ? " checked" : ""}
+        title="Faire figurer cette annonce">
+      <input type="text" inputmode="decimal" data-ava="${i}:prix"
+        value="${esc(x.prix || "")}" placeholder="Prix" class="avprix">
+      <span class="avm2">${(p && s) ? esc(eur(Math.round(p / s))) + "/m²" : ""}</span>
+      <span class="grow"></span>
+      <button type="button" class="xbtn mini sup" data-avadel="${i}"
+        title="Retirer cette annonce">✕</button>
+    </div>
+    <div class="pgrid avanng">
+      <div class="pf"><label>Surface (m²)</label><input type="text" inputmode="decimal"
+        data-ava="${i}:surf" value="${esc(x.surf || "")}"></div>
+      <div class="pf"><label>Pièces</label><input type="text" inputmode="numeric"
+        data-ava="${i}:pieces" value="${esc(x.pieces || "")}"></div>
+      <div class="pf"><label>Terrain (m²)</label><input type="text" inputmode="decimal"
+        data-ava="${i}:terr" value="${esc(x.terr || "")}"></div>
+      <div class="pf"><label>Ville</label><input type="text"
+        data-ava="${i}:ville" value="${esc(x.ville || "")}"></div>
+      <div class="pf"><label>DPE</label><input type="text" maxlength="1"
+        data-ava="${i}:dpe" value="${esc(x.dpe || "")}"></div>
+      <div class="pf"><label>En ligne depuis</label><input type="text"
+        data-ava="${i}:jours" value="${esc(x.jours || "")}" placeholder="49 j"></div>
+      <div class="pf wide"><label>Lien de l'annonce</label><input type="text"
+        data-ava="${i}:lien" value="${esc(x.lien || "")}" placeholder="https://…"></div>
+      <div class="pf wide"><label>Remarque</label><input type="text"
+        data-ava="${i}:note" value="${esc(x.note || "")}"
+        placeholder="ce qui la distingue du bien estimé"></div>
+    </div></div>`;
+}
+function avisBlocAnnonces(d){
+  const a = avisDe(d), moy = moyenneRetenue(a.annonces);
+  return `<div class="dsec"><h4 class="avectot">Les biens actuellement en vente
+      <span class="pietot">${moy ? `<span class="pietotal">${esc(eur(moy.prix))}<em>${
+        moy.n} annonce${moy.n > 1 ? "s" : ""}${
+        moy.m2 ? " · " + eur(moy.m2) + "/m²" : ""}</em></span>` : ""}</span></h4>
+    <div class="avbarre">
+      <button type="button" class="tbtn light mini" data-avcoller="1"
+        >Coller le texte d'une annonce</button>
+      <button type="button" class="addbtn mini" data-avaadd="1">+ Une annonce vide</button>
+      <span class="grow"></span>
+      <span class="muted">${esc(String(a.annonces.length))} annonce${
+        a.annonces.length > 1 ? "s" : ""}</span>
+    </div>
+    ${a.annonces.map(avisLigneAnnonce).join("") ||
+      `<p class="muted" style="margin:6px 0 0">Aucune annonce. Copiez le texte d'une annonce
+        sur le site où vous l'avez trouvée, puis collez-le ici : le prix, la surface, les
+        pièces et le terrain se remplissent seuls.</p>`}
+    <p class="dnote">L'application ne va pas lire les sites d'annonces : ils l'interdisent.
+      Elle lit le <b>texte que vous collez</b>, et se trompe parfois — relisez les chiffres.
+      Le <b>lien</b> est conservé pour vous, il ne s'imprime pas.</p></div>`;
+}
+function avisBlocPhotos(d){
+  const a = avisDe(d);
+  const ph = photosDe(sujetBien(d));
+  if(!ph.length) return `<div class="dsec"><h4>Les photos</h4>
+    <p class="muted" style="margin:0">Aucune photo dans le dossier. La page de présentation
+      portera alors une <b>vue aérienne</b> du bien, composée par l'application.</p>
+    <div class="dact">${trombone(sujetBien(d), "Déposer des photos", "Photos")}</div></div>`;
+  return `<div class="dsec"><h4 class="avectot">Les photos
+      <span class="pietot"><span class="pietotal">${a.photos.length}<em>retenue${
+        a.photos.length > 1 ? "s" : ""} sur ${ph.length}</em></span></span></h4>
+    <div class="avphots">${ph.map(p=>
+      `<button type="button" class="avphot${a.photos.indexOf(p.id) >= 0 ? " on" : ""}"
+        data-avphot="${esc(p.id)}" title="${esc(p.nom || "")}">
+        <span class="pjimg" data-pjvig="${esc(p.id)}"></span>
+        <span class="avrang">${a.photos.indexOf(p.id) >= 0
+          ? (a.photos.indexOf(p.id) + 1) : (p.principale ? "★" : "")}</span>
+      </button>`).join("")}</div>
+    <p class="dnote">Cliquez pour retenir une photo ; le <b>numéro</b> dit où elle ira. La
+      première est la grande photo de couverture, les suivantes forment la planche. Sans
+      aucune sélection, l'application prend la photo <b>principale</b> et les suivantes.</p>
+    </div>`;
+}
+function avisBlocRendement(d){
+  const r = rendDe(d), c = calculRendement(d);
+  const e = v=> v === null ? "—" : eur(Math.round(v));
+  const lignes = r.charges.map((x, i)=>
+    `<tr><td>${controlRaw(`${i}:nature`, "list:typeCharge", x.nature || "", "",
+        "data-rend")}</td>
+      <td><input type="text" inputmode="decimal" data-rend="${i}:montant"
+        value="${esc(x.montant || "")}" placeholder="0" class="chgm"></td>
+      <td class="cact"><button type="button" class="xbtn mini sup"
+        data-renddel="${i}" title="Retirer cette charge">✕</button></td></tr>`).join("");
+  return `<div class="dsec"><h4 class="avectot">L'estimation par le rendement locatif
+      <span class="pietot">${c.prix ? `<span class="pietotal">${esc(eur(c.prix))}<em>${
+        esc(m2Pourcent(c.taux))} net${c.tauxBrut
+          ? " · " + esc(m2Pourcent(c.tauxBrut)) + " brut" : ""}</em></span>` : ""}</span></h4>
+    <p class="dnote" style="margin-top:0">Un bien loué ne se vend pas au mètre carré : il
+      se vend au <b>rendement</b>. L'acquéreur achète un revenu, et il paiera ce qu'il faut
+      pour que ce revenu lui rapporte le taux qu'il s'est fixé.</p>
+    <div style="height:10px"></div>
+    <div class="pgrid" style="padding:0">
+      <div class="pf"><label>Loyer mensuel hors charges (€)</label>
+        <input type="text" inputmode="decimal" data-rendc="loyer"
+          value="${esc(r.loyer || "")}" placeholder="0"></div>
+      <div class="pf"><label>Vacance locative (%)</label>
+        <input type="text" inputmode="decimal" data-rendc="vacance"
+          value="${esc(r.vacance || "")}" placeholder="0"></div>
+      <div class="pf"><label>Rendement net attendu (%)</label>
+        <input type="text" inputmode="decimal" data-rendc="taux"
+          value="${esc(r.taux || "")}" placeholder="5"></div>
+    </div>
+    <div class="avbarre" style="margin-top:12px">
+      <label>Charges annuelles à la charge du propriétaire</label>
+      <span class="grow"></span>
+      <button type="button" class="tbtn light mini" data-rendrep="1"
+        >Reprendre celles du dossier</button>
+      <button type="button" class="addbtn mini" data-rendadd="1">+ Une charge</button>
+    </div>
+    <div class="tdbscroll"><table class="grid-t chgt rendt">
+      <tr><th>Nature</th><th style="width:120px">Montant annuel (€)</th>
+        <th class="cact" style="width:34px"></th></tr>
+      ${lignes || `<tr><td colspan="3" class="muted">Aucune charge saisie.</td></tr>`}
+    </table></div>
+    <div class="rendcalc">
+      <div><span>Loyer annuel</span><b>${esc(e(c.brut))}</b></div>
+      <div><span>Encaissé après vacance</span><b>${esc(e(c.encaisse))}</b></div>
+      <div><span>Charges</span><b>${c.charges ? "− " + esc(eur(c.charges)) : "—"}</b></div>
+      <div><span>Revenu net annuel</span><b>${esc(e(c.net))}</b></div>
+    </div>
+    <div class="rendprix">
+      <div><span>Prix au rendement attendu</span><b>${esc(c.prix ? eur(c.prix) : "—")}</b></div>
+      <div><span>Rendement brut correspondant</span><b>${
+        esc(c.tauxBrut ? m2Pourcent(c.tauxBrut) : "—")}</b></div>
+    </div>
+    ${c.prix ? `<div class="dact"><button type="button" class="addbtn"
+      data-rendport="1">Reporter ce prix dans la fourchette</button></div>` : ""}
+    <p class="dnote">Le <b>rendement net</b> se calcule après la vacance et les charges ;
+      le <b>brut</b>, que les annonces affichent, part du loyer seul. L'écart entre les deux
+      est précisément ce qu'on explique au vendeur. Cochez <b>Rendement locatif</b> en tête
+      de l'avis pour que ce calcul figure dans le document.</p></div>`;
+}
+
+function pageAvisValeur(){
+  const d = D, a = avisDe(d);
+  const {mn, mx} = avisFourchette(d);
+  const net = avisNetVendeur(d);
+  const pg = a.pages;
+  const casePage = (k, lib)=> `<label class="avpage"><input type="checkbox"
+    data-avpage="${k}"${pg[k] ? " checked" : ""}><span>${esc(lib)}</span></label>`;
+  return `<div class="dsec"><h4>L'avis de valeur</h4>
+    <p class="dnote" style="margin-top:0">Le document remis au propriétaire après
+      l'estimation. Tout ce que le dossier sait déjà y entre seul — le bien, les pièces, les
+      surfaces, les équipements, le propriétaire, la fourchette. Ne se saisit ici que ce qui
+      s'<b>écrit</b> et ce qui se <b>choisit</b>. Le PDF se range tout seul dans les pièces
+      du dossier, rubrique <b>Mandat &amp; Admin</b>.</p>
+    <p class="dnote" style="margin:12px 0 4px"><b>Chaque paragraphe se met ou non</b> :
+      décochez-le et il ne se compose pas, ni dans le PDF ni dans le Word.</p>
+    <div class="avpages">${[["appel","Formule d'appel et introduction"],
+      ["situation","Situation du bien"], ["cartes","Cartes de situation"],
+      ["immeuble","Aparté sur l'immeuble"], ["carac","Caractéristiques en bandeau"],
+      ["texte","Description rédigée"], ["tableaux","Tableaux détaillés"],
+      ["facteurs","Points forts et à défendre"], ["photos","Planche de photos"],
+      ["ventes","Ventes passées"], ["annonces","Biens en vente"],
+      ["rend","Rendement locatif"], ["synth","Synthèse du prix"],
+      ["reserves","Réserves et signature"]].map(x=> casePage(x[0], x[1])).join("")}</div>
+    <div class="dact avsort">
+      <button type="button" class="addbtn" data-avpdf="1"
+        >Composer le PDF et le classer</button>
+      <button type="button" class="tbtn light" data-avdoc="1"
+        >Exporter en Word</button>
+    </div>
+  </div>
+
+  <div class="dsec"><h4>L'en-tête du document</h4>
+    <div class="pgrid" style="padding:0">
+      <div class="pf"><label>Établi le</label>${
+        controlRaw("avdate", "date", a.date || auj(), "", "data-avc")}</div>
+      <div class="pf wide"><label>À la demande de</label>
+        <input type="text" data-avc="avdemande" value="${esc(a.demande || "")}"
+          placeholder="${esc(avisDemandeur(d) || "le propriétaire")}"></div>
+      <div class="pf wide"><label>Mot d'introduction</label>
+        <textarea data-avc="avintro" rows="3"
+          placeholder="Laissé vide, la formule d'usage est employée.">${esc(a.intro || "")}</textarea></div>
+    </div>
+    <p class="dnote">« À la demande de » reprend les <b>vendeurs</b> du dossier quand la
+      case est vide — ici, ${esc(avisDemandeur(d) || "personne n'est encore saisi")}.</p></div>
+
+  ${avisBlocPhotos(d)}
+
+  <div class="dsec"><h4>Ce que vous écrivez</h4>
+    <div class="pgrid" style="padding:0">
+      <div class="pf wide"><label>Description du bien</label>
+        <textarea data-avc="avtexte" rows="5"
+          placeholder="Ce que l'on ne lit pas dans un tableau : l'impression d'ensemble, la distribution, l'état, l'environnement immédiat.">${esc(a.texte || "")}</textarea></div>
+      <div class="pf"><label>Points forts — un par ligne</label>
+        <textarea data-avc="avforts" rows="5"
+          placeholder="Logement en rez-de-chaussée&#10;Garage individuel&#10;Place de stationnement privative">${esc(a.forts || "")}</textarea></div>
+      <div class="pf"><label>Points à défendre — un par ligne</label>
+        <textarea data-avc="avfaibles" rows="5"
+          placeholder="Travaux de rénovation à prévoir&#10;Présence d'humidité">${esc(a.faibles || "")}</textarea></div>
+    </div></div>
+
+  ${avisBlocVentes(d)}
+  ${avisBlocAnnonces(d)}
+  ${avisBlocRendement(d)}
+
+  <div class="dsec"><h4>La synthèse du prix</h4>
+    <div class="pgrid" style="padding:0">
+      <div class="pf"><label>Prix mini</label>
+        <input type="text" inputmode="decimal" data-avc="avmini"
+          value="${esc(a.mini || "")}" placeholder="${esc(mn === null ? "—" : String(mn))}"></div>
+      <div class="pf"><label>Prix maxi</label>
+        <input type="text" inputmode="decimal" data-avc="avmaxi"
+          value="${esc(a.maxi || "")}" placeholder="${esc(mx === null ? "—" : String(mx))}"></div>
+      <div class="pf"><label>Honoraires</label>
+        <input type="text" data-avc="avhono" value="${esc(a.hono || "")}"
+          placeholder="5 % ou 12 000"></div>
+      <div class="pf"><label>À la charge de</label>
+        <select data-avc="avcharge">${["Vendeur", "Acquéreur"].map(x=>
+          `<option${(a.honoCharge || "Vendeur") === x ? " selected" : ""}>${x}</option>`)
+          .join("")}</select></div>
+    </div>
+    <div class="avsynth">
+      <div><span>Prix de vente</span><b>${mn === null && mx === null ? "—"
+        : esc((mn === null ? "" : eur(mn)) + (mn !== null && mx !== null ? "  à  " : "")
+              + (mx === null ? "" : eur(mx)))}</b></div>
+      <div><span>Net vendeur</span><b>${net.mn === null && net.mx === null ? "—"
+        : esc((net.mn === null ? "" : eur(Math.round(net.mn)))
+              + (net.mn !== null && net.mx !== null ? "  à  " : "")
+              + (net.mx === null ? "" : eur(Math.round(net.mx))))}</b></div>
+    </div>
+    <p class="dnote">Laissées vides, les deux cases reprennent la <b>fourchette
+      d'estimation</b> du bandeau — ${mn === null && mx === null
+        ? "qui n'est pas encore saisie" : "soit " + esc((mn === null ? "?" : eur(mn))
+          + " à " + (mx === null ? "?" : eur(mx)))}. Les honoraires s'écrivent en
+      <b>pourcentage</b> (« 5 % ») ou en <b>euros</b> ; le net vendeur suit.</p></div>`;
+}
+
+/* les deux totaux se recalculent sous les doigts, sans redessiner la page :
+   la règle de la maison — ce qui porte la saisie et ce qui porte le
+   résultat sont deux rendus distincts. */
+function majAvisTotaux(){
+  const z = document.querySelectorAll("#detailCorps .avectot .pietot");
+  if(!z.length) return;
+  renderAvisTotal(z[1], moyenneRetenue(avisDe(D).ventes), "vente");
+  renderAvisTotal(z[2], moyenneRetenue(avisDe(D).annonces), "annonce");
+  document.querySelectorAll("#detailCorps [data-avv]").forEach(e=>{
+    const [i] = String(e.dataset.avv).split(":");
+    const tr = e.closest("tr"), c = tr ? tr.querySelector(".avm2") : null;
+    if(!c) return;
+    const m = prixM2(avisDe(D).ventes[+i] || {});
+    c.textContent = m ? eur(m) + "/m²" : "—";
+  });
+  document.querySelectorAll("#detailCorps .avann").forEach((z2, i)=>{
+    const x = avisDe(D).annonces[i] || {}, p = num(x.prix), s = num(x.surf);
+    const c = z2.querySelector(".avm2");
+    if(c) c.textContent = (p && s) ? eur(Math.round(p / s)) + "/m²" : "";
+  });
+  majAvisSynthese();
+}
+/* le calcul du rendement se refait sous les doigts, sans redessiner :
+   on tape un loyer, les six chiffres suivent. */
+function majRendement(){
+  const z = document.querySelector("#detailCorps .rendcalc");
+  if(!z) return;
+  const c = calculRendement(D);
+  const e = v=> v === null ? "—" : eur(Math.round(v));
+  const b = z.querySelectorAll("b");
+  if(b[0]) b[0].textContent = e(c.brut);
+  if(b[1]) b[1].textContent = e(c.encaisse);
+  if(b[2]) b[2].textContent = c.charges ? "− " + eur(c.charges) : "—";
+  if(b[3]) b[3].textContent = e(c.net);
+  const zp = document.querySelector("#detailCorps .rendprix");
+  if(zp){
+    const q = zp.querySelectorAll("b");
+    if(q[0]) q[0].textContent = c.prix ? eur(c.prix) : "—";
+    if(q[1]) q[1].textContent = c.tauxBrut ? m2Pourcent(c.tauxBrut) : "—";
+  }
+  const t = document.querySelectorAll("#detailCorps .avectot .pietot");
+  if(t.length >= 4) t[3].innerHTML = c.prix
+    ? `<span class="pietotal">${esc(eur(c.prix))}<em>${esc(m2Pourcent(c.taux))} net${
+        c.tauxBrut ? " · " + esc(m2Pourcent(c.tauxBrut)) + " brut" : ""}</em></span>`
+    : "";
+}
+function renderAvisTotal(z, moy, mot){
+  if(!z) return;
+  z.innerHTML = moy ? `<span class="pietotal">${esc(eur(moy.prix))}<em>${moy.n} ${
+    esc(mot)}${moy.n > 1 ? "s" : ""} retenue${moy.n > 1 ? "s" : ""}${
+    moy.m2 ? " · " + esc(eur(moy.m2)) + "/m²" : ""}</em></span>` : "";
+}
+function majAvisSynthese(){
+  const z = document.querySelector("#detailCorps .avsynth");
+  if(!z) return;
+  const {mn, mx} = avisFourchette(D), net = avisNetVendeur(D);
+  const duo = (a, b)=> (a === null && b === null) ? "—"
+    : (a === null ? "" : eur(Math.round(a))) + (a !== null && b !== null ? "  à  " : "")
+      + (b === null ? "" : eur(Math.round(b)));
+  const b = z.querySelectorAll("b");
+  if(b[0]) b[0].textContent = duo(mn, mx);
+  if(b[1]) b[1].textContent = duo(net.mn, net.mx);
+}
+
+/* ------------------------------------------- aller chercher les ventes
+   On demande, on attend, et on DIT ce qui se passe. Un service public
+   gratuit a le droit de ne pas répondre : ce qu'il ne faut pas, c'est
+   laisser l'écran muet. */
+async function chercherLesVentes(){
+  const b = D.bien || {};
+  if(!bienRepere(D)){ toast("Le bien n'a pas de point sur la carte"); return; }
+  const c = {lat:+b.lat, lon:+b.lon}, r = avisDe(D).rayon || "800";
+  const mot = document.querySelector("#avdvfmot");
+  if(mot) mot.textContent = "Recherche en cours…";
+  let liste = null, err = "";
+  try{ liste = await chargerVentesDVF(c, r); }
+  catch(e){ err = e.message || String(e); }
+  if(!liste){
+    if(mot) mot.textContent = "";
+    popup({titre:"Les ventes n'ont pas pu être chargées", genre:"erreur",
+      corps:`<p style="margin-top:0">Le service public des <b>demandes de valeurs
+          foncières</b> n'a pas répondu${err ? " (" + esc(err) + ")" : ""}.</p>
+        <p class="muted">Cela n'a rien de grave et ne vient pas de vos données : ce
+          service n'est pas le nôtre, il peut être arrêté, saturé, ou refuser l'appel
+          depuis une page web. Le reste de l'avis de valeur fonctionne normalement.</p>
+        <p class="muted" style="margin-bottom:0"><b>Vous pouvez saisir les ventes à la
+          main</b> — le bouton « Une vente à la main » ajoute une ligne vide, et la
+          moyenne se calcule pareil.</p>`,
+      boutons:[{lib:"Fermer", primaire:true}]});
+    return;
+  }
+  const a = avisDe(D);
+  /* ce qui a été saisi à la main n'est jamais balayé par une recherche */
+  const main = a.ventes.filter(v=> v && v.main);
+  const vus = {};
+  main.forEach(v=> vus[v.d + "|" + v.prix] = 1);
+  a.ventes = main.concat(liste.filter(v=> !vus[v.d + "|" + v.prix]));
+  autosave(); renderDetail(); majDetail();
+  const n = liste.length;
+  toast(n ? n + " vente" + (n > 1 ? "s" : "") + " trouvée" + (n > 1 ? "s" : "")
+            + " — cochez celles qui comparent"
+          : "Aucune vente dans ce rayon sur les trois dernières années");
+}
+
+/* -------------------------------------------- coller le texte d'une annonce */
+function ouvrirCollageAnnonce(){
+  popup({titre:"Coller le texte d'une annonce", large:true,
+    corps:`<p class="muted" style="margin:0 0 10px">Sur le site où vous avez trouvé
+        l'annonce, sélectionnez le texte — le prix, la surface, le descriptif — et
+        copiez-le (<kbd>Ctrl</kbd> + <kbd>C</kbd>). Collez-le ci-dessous : le prix, la
+        surface, les pièces, le terrain et l'étiquette énergie se rempliront seuls, et
+        vous corrigerez ce qui aura été mal lu.</p>
+      <textarea id="avColle" rows="9" style="width:100%"
+        placeholder="Collez ici le texte de l'annonce…"></textarea>`,
+    boutons:[{lib:"Annuler"}, {lib:"Lire et ajouter", primaire:true, action:()=>{
+      const z = document.querySelector("#avColle");
+      const txt = z ? z.value : "";
+      if(!String(txt).trim()){ toast("Rien n'a été collé"); return; }
+      const x = lireAnnonceCollee(txt);
+      avisDe(D).annonces.push(x);
+      autosave(); renderDetail(); majDetail();
+      const lus = ["prix", "surf", "pieces", "terr", "dpe"].filter(k=> x[k]).length;
+      toast(lus ? lus + " information" + (lus > 1 ? "s" : "") + " lue"
+                  + (lus > 1 ? "s" : "") + " — vérifiez-les"
+                : "Rien n'a pu être lu : la ligne est à remplir à la main");
+    }}]});
+  setTimeout(()=>{ const z = document.querySelector("#avColle"); if(z) z.focus(); }, 120);
 }
 
 /* =====================================================================
@@ -9079,6 +9821,7 @@ function renderDetail(){
     blocDetail(o, chemin, VISITE_TECHNIQUE) + tableauTravaux(o);
   else if(page === "deps")    corps = tableauDeps(o);
   else if(page === "visite")  corps = pageVisite();
+  else if(page === "avis")    corps = pageAvisValeur();
   else if(page === "terrain") corps = tableauParcelles() +
     blocDetail(D, "", {t:"La surface du terrain", f:[["terrain","Terrain (m²)","money"]]}) +
     blocDetail(o, chemin, VISITE_EXTERIEUR);
@@ -9125,6 +9868,10 @@ function renderDetail(){
   }
 
   box.innerHTML = rail + `<div class="biencorps" id="bienCorps">${corps}</div>`;
+  /* les vignettes du choix de photos se peignent après coup : lire un
+     fichier prend un instant, et le volet ne doit pas attendre */
+  if(page === "avis") setTimeout(()=>
+    photosDe(sujetBien(D)).forEach(x=> peindreVignette(x)), 30);
 
   const b = $("#pieceAjout");
   if(b) b.onclick = ()=>{
@@ -25512,6 +26259,41 @@ document.addEventListener("input", e=>{
     if(x){ x[champ] = t.value; autosave(); majTotalDeps(); }
     return;
   }
+  if(t.dataset.avc !== undefined){
+    const a = avisDe(D);
+    const k = {avdate:"date", avdemande:"demande", avintro:"intro", avtexte:"texte",
+      avforts:"forts", avfaibles:"faibles", avmini:"mini", avmaxi:"maxi",
+      avhono:"hono", avcharge:"honoCharge"}[t.dataset.avc];
+    if(k){ a[k] = t.value; autosave(); majAvisSynthese(); }
+    return;
+  }
+  if(t.dataset.avrayon !== undefined){
+    avisDe(D).rayon = t.value; autosave(); return;
+  }
+  if(t.dataset.rendc !== undefined){
+    const r = rendDe(D);
+    r[t.dataset.rendc] = t.value;
+    autosave(); majRendement();
+    return;
+  }
+  if(t.dataset.rend !== undefined){
+    const [i, champ] = String(t.dataset.rend).split(":");
+    const x = rendDe(D).charges[+i];
+    if(x){ x[champ] = t.value; autosave(); majRendement(); }
+    return;
+  }
+  if(t.dataset.avv !== undefined){
+    const [i, champ] = String(t.dataset.avv).split(":");
+    const v = avisDe(D).ventes[+i];
+    if(v){ v[champ] = t.value; autosave(); majAvisTotaux(); }
+    return;
+  }
+  if(t.dataset.ava !== undefined){
+    const [i, champ] = String(t.dataset.ava).split(":");
+    const x = avisDe(D).annonces[+i];
+    if(x){ x[champ] = t.value; autosave(); majAvisTotaux(); }
+    return;
+  }
   if(t.dataset.chg !== undefined){
     const [i, champ] = String(t.dataset.chg).split(":");
     const c = listeCharges(D)[+i];
@@ -25901,6 +26683,20 @@ document.addEventListener("change", e=>{
     if(l){ l[champ] = t.checked; majTotalCalcul(); }
     return;
   }
+  if(t.dataset && t.dataset.avvp !== undefined){
+    const v = avisDe(D).ventes[+t.dataset.avvp];
+    if(v){ v.pris = t.checked; autosave(); renderDetail(); majDetail(); }
+    return;
+  }
+  if(t.dataset && t.dataset.avap !== undefined){
+    const x = avisDe(D).annonces[+t.dataset.avap];
+    if(x){ x.pris = t.checked; autosave(); renderDetail(); majDetail(); }
+    return;
+  }
+  if(t.dataset && t.dataset.avpage !== undefined){
+    avisDe(D).pages[t.dataset.avpage] = t.checked;
+    autosave(); return;
+  }
   if(t.dataset && t.dataset.piecechk !== undefined){
     const [i,champ] = t.dataset.piecechk.split(":");
     const p = (cibleBien().o.pieces || [])[+i];
@@ -26058,7 +26854,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-calcop],[data-calcdel],[data-calcadd],[data-pcalc],[data-depcalc],[data-depdel],[data-depadd],[data-pdet],[data-travadd],[data-travdel],[data-fvpdf],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-calcop],[data-calcdel],[data-calcadd],[data-pcalc],[data-depcalc],[data-depdel],[data-depadd],[data-pdet],[data-travadd],[data-travdel],[data-fvpdf],[data-avdvf],[data-avvadd],[data-avvdel],[data-avaadd],[data-avadel],[data-avcoller],[data-avphot],[data-avdoc],[data-avpdf],[data-rendadd],[data-renddel],[data-rendrep],[data-rendport],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-vsoc],[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -26220,6 +27016,76 @@ document.addEventListener("click", e=>{
     return;
   }
   if(t.dataset.pdet !== undefined){ ouvrirDetailPiece(t.dataset.pdet); return; }
+  /* ------------------------------------------------- l'avis de valeur */
+  if(t.dataset.avphot !== undefined){
+    const a = avisDe(D), id = t.dataset.avphot, k = a.photos.indexOf(id);
+    if(k >= 0) a.photos.splice(k, 1); else a.photos.push(id);
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.avvadd !== undefined){
+    avisDe(D).ventes.unshift(venteVide());
+    autosave(); renderDetail(); majDetail();
+    const e = document.querySelector('#detailCorps [data-avv="0:d"]');
+    if(e) e.focus();
+    return;
+  }
+  if(t.dataset.avvdel !== undefined){
+    avisDe(D).ventes.splice(+t.dataset.avvdel, 1);
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.avaadd !== undefined){
+    avisDe(D).annonces.push(annonceVide());
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.avadel !== undefined){
+    avisDe(D).annonces.splice(+t.dataset.avadel, 1);
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.avcoller !== undefined){ ouvrirCollageAnnonce(); return; }
+  if(t.dataset.avdvf !== undefined){ chercherLesVentes(); return; }
+  if(t.dataset.avdoc !== undefined){
+    (async ()=>{
+      toast("Composition du document Word…");
+      try{ download(await avisValeurDocx(D), nomFichierAvisValeur(D, "docx")); }
+      catch(e){ toast("Le document n'a pas pu être composé : " + e.message); }
+    })();
+    return;
+  }
+  if(t.dataset.avpdf !== undefined){ sortirAvisValeur(); return; }
+  if(t.dataset.rendadd !== undefined){
+    rendDe(D).charges.push(ligneRendVide());
+    autosave(); renderDetail(); majDetail();
+    const e = $$("#detailCorps [data-rend$=':nature']").pop();
+    if(e) e.focus();
+    return;
+  }
+  if(t.dataset.renddel !== undefined){
+    rendDe(D).charges.splice(+t.dataset.renddel, 1);
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.rendrep !== undefined){
+    const l = rendDepuisCharges(D);
+    if(!l.length){ toast("Aucune charge chiffrée dans le dossier"); return; }
+    const r = rendDe(D);
+    /* on n'ajoute que ce qui manque : reprendre deux fois ne double pas */
+    const vus = {};
+    r.charges.forEach(x=> vus[fold((x || {}).nature || "")] = 1);
+    let n = 0;
+    l.forEach(x=>{ if(!vus[fold(x.nature)]){ r.charges.push(x); n++; } });
+    autosave(); renderDetail(); majDetail();
+    toast(n ? n + " charge" + (n > 1 ? "s" : "") + " reprise" + (n > 1 ? "s" : "")
+            : "Elles y sont déjà");
+    return;
+  }
+  if(t.dataset.rendport !== undefined){
+    const c = calculRendement(D);
+    if(!c.prix){ toast("Le calcul n'aboutit pas encore"); return; }
+    const a = avisDe(D);
+    a.mini = String(c.prix); a.maxi = String(c.prix);
+    autosave(); renderDetail(); majDetail();
+    toast("Prix reporté : " + eur(c.prix) + " — ajustez la fourchette si besoin");
+    return;
+  }
   if(t.dataset.fvpdf !== undefined){
     /* La fiche de visite part telle quelle : un document de travail, qu'on
        ne prévisualise pas — on l'imprime et on l'emporte. */
@@ -31056,6 +31922,16 @@ function migrate(d){
       transition:"fondu", duree:30, appel:null,
       texte:"", photos:[], puces:[], legendes:{}, clip:""}, x));
   out.sansMandat = !!d.sansMandat;
+  /* l'avis de valeur : on reprend ce qui est là, on complète le reste */
+  out.av = Object.assign(avisVide(),
+    (d.av && typeof d.av === "object") ? d.av : {});
+  out.av.pages = Object.assign(avisVide().pages, avisPagesReprises(out.av.pages));
+  ["photos", "ventes", "annonces"].forEach(k=>{
+    out.av[k] = (Array.isArray(out.av[k]) ? out.av[k] : []).filter(Boolean); });
+  out.av.rend = Object.assign(rendVide(),
+    (out.av.rend && typeof out.av.rend === "object") ? out.av.rend : {});
+  out.av.rend.charges = (Array.isArray(out.av.rend.charges)
+    ? out.av.rend.charges : []).filter(Boolean);
   out.mandatPrisLe = String(d.mandatPrisLe || "");
   out.estim = Object.assign({rdv:"", remise:"", voie:"", mini:"", maxi:""},
                             (d.estim && typeof d.estim === "object") ? d.estim : {});
@@ -32228,7 +33104,7 @@ const AIDE = [
   "une salle d'eau ou une salle de bain, une seule suffit. Tant que les niveaux ne sont pas "+
   "saisis, l'application ne tranche pas : elle le dit, et le volet « Biens à rapprocher » "+
   "du demandeur vous indique quoi vérifier à la visite."],
- ["La fiche du bien : neuf volets, un sujet par volet",
+ ["La fiche du bien : dix volets, un sujet par volet",
   "Le bouton <b>Le bien</b>, dans l'en-tête du dossier, ouvre la fiche. Elle tenait "+
   "autrefois sur deux colonnes où tout se voyait d'un coup — et où l'on ne trouvait "+
   "rien ; elle se lit maintenant <b>sujet par sujet</b>, dans l'ordre où l'on décrit un "+
@@ -32254,6 +33130,7 @@ const AIDE = [
   "<b>L'occupation</b> — libre, occupé, loué. "+
   "<b>La fiche de visite</b> — les mêmes blocs, déroulés d'une seule traite dans "+
   "l'ordre d'une visite, avec son export en PDF. "+
+  "<b>L'avis de valeur</b> — le document remis au propriétaire après l'estimation. "+
   "Et <b>Argumentaire</b>, inchangé. "+
   "Tout ce qui s'y trouvait continue d'y être : rien n'a été retiré, seulement rangé."],
  ["La fiche de visite, et le calcul des surfaces",
@@ -32290,6 +33167,127 @@ const AIDE = [
   "avec leur détail, les dépendances, les travaux et les observations. C'est un "+
   "<b>document de travail interne</b> — son pied de page le dit : elle ne se donne "+
   "pas au client, à qui va la <b>fiche de présentation</b>."],
+ ["L'avis de valeur",
+  "<b>Ce qui manquait.</b> Après l'estimation, il faut remettre un document au "+
+  "propriétaire. Il se composait hors de l'application, dans un traitement de texte, "+
+  "à partir de chiffres recopiés — donc retapés, donc faux un jour sur trois, et "+
+  "introuvables l'année suivante. "+
+  "<b>Il se compose maintenant dans la fiche du bien</b>, au volet <b>L'avis de "+
+  "valeur</b>, en prospection comme en estimation. Et il n'y a presque rien à y "+
+  "taper : le bien, les pièces, les surfaces, les équipements, les charges, le "+
+  "cadastre, le propriétaire et la <b>fourchette d'estimation</b> du bandeau y "+
+  "entrent seuls. "+
+  "<b>Ne se saisit que ce qui s'écrit</b> — le mot d'introduction, la description, "+
+  "les <b>points forts</b> et les <b>points à défendre</b>, un par ligne — <b>et ce "+
+  "qui se choisit</b> : les photos, les ventes passées, les annonces. Tout cela "+
+  "<b>reste dans le dossier</b> : vous rouvrez, vous corrigez, vous rééditez, et un "+
+  "second avis l'année suivante repart du premier. "+
+  "<b>Chaque paragraphe se met ou non</b>, par sa case en tête : formule d'appel, "+
+  "situation du bien, cartes, aparté sur l'immeuble, caractéristiques en bandeau, "+
+  "description rédigée, tableaux détaillés, points forts et à défendre, planche de "+
+  "photos, ventes passées, biens en vente, rendement locatif, synthèse du prix, "+
+  "réserves et signature. Décochez-en un : il ne se compose pas, ni dans le PDF ni "+
+  "dans le Word. "+
+  "<b>Le titre est centré</b> et porte la <b>surface habitable</b> après le type — "+
+  "« Maison 118 m² » —, l'adresse en dessous. "+
+  "<b>La lettre s'ouvre comme une lettre</b> : « Chère Madame, », « Cher Monsieur, », "+
+  "« Chère Madame, Cher Monsieur, » selon les vendeurs du dossier, et « Madame, "+
+  "Monsieur, » pour une société. "+
+  "<b>La situation du bien</b> porte l'adresse, la résidence, la <b>situation "+
+  "juridique</b>, l'année et le cadastre, puis <b>deux cartes</b> : l'une à <b>3 km "+
+  "à la ronde</b> pour situer le bien dans la commune, l'autre à <b>500 mètres</b> "+
+  "pour montrer sa rue, le même repère cerclé sur les deux. Si le bien est en "+
+  "<b>copropriété</b>, le tableau de l'<b>immeuble</b> se place <b>en vis-à-vis</b> "+
+  "de celui de la situation, et les deux occupent ensemble la largeur de la page : "+
+  "année, lots, syndic, équipements communs — rien que ce qui est renseigné, et "+
+  "rien que le positif. Sans immeuble, la situation prend toute la largeur. "+
+  "<b>La description s'ouvre sur quatre chiffres en bandeau</b> — Surface, Nb de "+
+  "Pièces, Nb. de chambres, Surf. terrain —, l'intitulé au-dessus du chiffre et "+
+  "tous deux de la même encre, puis votre texte, puis les tableaux détaillés "+
+  "<b>deux par ligne</b>. Le détail pièce par pièce n'y figure plus : il alourdissait "+
+  "sans rien apprendre à un propriétaire qui connaît sa maison. "+
+  "<b>Les photos se choisissent d'un clic</b>, et le numéro dit où chacune ira : la "+
+  "première fait la couverture, les suivantes la planche. Sans aucune sélection, "+
+  "l'application prend la photo principale et les suivantes. <b>Sans aucune photo au "+
+  "dossier</b>, la couverture porte une <b>vue du quartier</b> composée par "+
+  "l'application — jamais un cadre vide. "+
+  "<b>Les ventes passées viennent de l'État.</b> Les prix réellement signés sont "+
+  "publics : l'administration fiscale les publie sous le nom de <b>demandes de "+
+  "valeurs foncières</b>. Le bouton <b>Chercher les ventes</b> les demande "+
+  "<b>autour du bien</b> — un rayon réglable de 300 m à 3 km, pas une commune : à "+
+  "Arles, la commune fait cinq cents kilomètres carrés et ne veut rien dire. Les "+
+  "ventes de plus de trois ans, les dépendances et les doublons sont écartés "+
+  "d'office. "+
+  "<b>Rien ne s'imprime sans votre décision :</b> les lignes arrivent "+
+  "<b>décochées</b>. Vous cochez ce qui compare, vous écartez la grange et la vente "+
+  "entre héritiers, et <b>la moyenne ne compte que les lignes cochées</b>. Le bouton "+
+  "<b>Une vente à la main</b> en ajoute une que l'application ne connaît pas — et "+
+  "celle-là n'est jamais balayée par une nouvelle recherche. "+
+  "<b>Si le service ne répond pas</b>, une fenêtre le dit clairement : ce service "+
+  "n'est pas le nôtre, il peut être arrêté ou saturé, cela ne vient pas de vos "+
+  "données, et le reste de l'avis fonctionne. Vous saisissez alors les ventes à la "+
+  "main, et la moyenne se calcule pareil. "+
+  "<b>Les annonces concurrentes se collent.</b> L'application ne va pas lire "+
+  "SeLoger ou Leboncoin : ces sites l'interdisent, par leurs réglages comme par "+
+  "leurs conditions. Ce qu'elle sait faire : vous copiez le <b>texte</b> de "+
+  "l'annonce sur le site, vous le collez, et elle en tire le <b>prix</b>, la "+
+  "<b>surface</b>, les <b>pièces</b>, le <b>terrain</b> et l'<b>étiquette "+
+  "énergie</b>. Elle se trompe parfois — relisez les chiffres, ils se corrigent sur "+
+  "place. Le lien est conservé pour vous ; il ne s'imprime pas. "+
+  "<b>L'estimation par le rendement locatif</b> est une page à part, à cocher quand "+
+  "elle a lieu d'être. Un bien loué ne se vend pas au mètre carré : il se vend au "+
+  "<b>rendement</b>. L'acquéreur n'achète pas des murs, il achète un revenu, et il "+
+  "paiera ce qu'il faut pour que ce revenu lui rapporte le taux qu'il s'est fixé. "+
+  "Vous saisissez le <b>loyer mensuel hors charges</b>, la <b>vacance</b> que vous "+
+  "anticipez, les <b>charges annuelles</b> qui restent au propriétaire — un bouton "+
+  "<b>reprend celles déjà saisies au dossier</b>, et le reprendre deux fois ne les "+
+  "double pas — et le <b>rendement net attendu</b>. "+
+  "<b>Le prix s'en déduit</b> : loyer annuel, moins la vacance, moins les charges, "+
+  "divisé par le taux. L'application affiche aussi le <b>rendement brut</b> que ce "+
+  "prix donne — celui qu'affichent les annonces : l'écart entre les deux est "+
+  "précisément ce qu'on explique au vendeur. Un bouton <b>reporte ce prix dans la "+
+  "fourchette</b>, que vous ajustez ensuite si vous le voulez. "+
+  "<b>La synthèse</b> reprend la fourchette du bandeau, et vous écrivez les "+
+  "honoraires en <b>pourcentage</b> (« 5 % ») ou en <b>euros</b> : le <b>net "+
+  "vendeur</b> suit tout seul, aux deux bouts de la fourchette. À la charge de "+
+  "l'acquéreur, le net vendeur est le prix — l'application le sait. "+
+  "<b>Deux sorties.</b> <b>Composer le PDF et le classer</b> fait le document ET le "+
+  "range dans les pièces du dossier, rubrique <b>Mandat &amp; Admin</b> — d'où il "+
+  "part au Drive tout seul, comme le mandat. C'est là qu'on ira le rechercher dans "+
+  "six mois, pas dans un dossier « Téléchargements ». <b>Exporter en Word</b> donne "+
+  "un vrai <b>.docx</b>, modifiable en tout point, pour la retouche que l'écran ne "+
+  "permet pas — une phrase à ajouter, un paragraphe à déplacer. Ce document-là, "+
+  "c'est Word qui en fera le PDF, et c'est vous qui le classerez. "+
+  "<b>Le pied de page</b> porte le <b>logo</b> à gauche, les <b>mentions légales</b> "+
+  "de l'agence au centre — forme, immatriculation, adresse, carte professionnelle, "+
+  "garantie financière — et la <b>pagination</b> à droite, « 3 / 12 ». Ces mentions "+
+  "sont celles que la loi impose à un professionnel de l'immobilier : leur place est "+
+  "au pied de <b>chaque</b> page, et non en appendice d'une signature, où elles "+
+  "n'engageraient que la dernière feuille. Elles ont donc disparu de sous la "+
+  "signature, où elles figuraient. "+
+  "<b>La signature ne porte plus la date</b> : elle est en tête du document, une "+
+  "fois. Deux dates sur une même page invitent à les comparer. "+
+  "<b>L'en-tête porte deux identités en vis-à-vis</b>, taillées pareil : à gauche "+
+  "le <b>logo</b> et la maison — nom, adresse, site —, à droite votre <b>portrait "+
+  "rond</b> et vous — nom, qualité, téléphone, courriel. Même hauteur, même corps, "+
+  "mêmes couleurs : « Thierry MORCHAIN » se lit exactement comme « MANARANCHE "+
+  "IMMOBILIER », parce que ce sont deux identités de même rang sur ce document. "+
+  "Le portrait est celui de votre <b>fiche de négociateur</b> (Listes → "+
+  "Négociateurs), découpé en rond. "+
+  "Le nom porté est l'<b>enseigne</b> seule : la raison sociale complète a sa place "+
+  "sur une facture, où elle est une mention légale, pas en tête d'un avis remis à "+
+  "un propriétaire. La fiche de l'agence, elle, n'est pas touchée. "+
+  "<b>Les pages suivantes portent un en-tête léger</b> — « Avis de valeur » à "+
+  "gauche, le type de bien et son adresse à droite, sous un filet de la couleur du "+
+  "logo —, de quoi savoir, une feuille à la main, quel document et quel bien on "+
+  "tient. "+
+  "<b>C'est vous qui signez</b>, c'est-à-dire la personne <b>connectée</b> — pas le "+
+  "négociateur attaché au dossier, qui peut être un collègue : on ne signe pas de "+
+  "la main d'un autre. Votre <b>qualité annoncée</b>, saisie sur votre fiche de "+
+  "négociateur, se place sous votre nom. Sans compte identifié, le négociateur du "+
+  "dossier prend le relais. "+
+  "<b>Les réserves sont celles de l'agence</b>, reprises mot pour mot de votre avis "+
+  "de valeur habituel, suivies de la mention d'ensemble et de la signature."],
  ["Les pastilles qui se lisent au lieu de se cocher",
   "En tête des <b>caractéristiques</b>, une rangée de pastilles OUI/NON : <b>Extérieur</b>, "+
   "<b>Pkg / Garage</b>, puis <b>Rez-de-chaussée</b>, <b>Dernier étage</b>, <b>Terrasse / "+
@@ -35656,7 +36654,12 @@ const PDF_NU = {"à":"a","â":"a","ä":"a","á":"a","ã":"a","å":"a","é":"e","
   "õ":"o","ù":"u","û":"u","ü":"u","ú":"u","ç":"c","ñ":"n","ÿ":"y","ý":"y",
   "À":"A","Â":"A","Ä":"A","Á":"A","Ã":"A","Å":"A","É":"E","È":"E","Ê":"E","Ë":"E",
   "Î":"I","Ï":"I","Í":"I","Ì":"I","Ô":"O","Ö":"O","Ò":"O","Ó":"O","Õ":"O",
-  "Ù":"U","Û":"U","Ü":"U","Ú":"U","Ç":"C","Ñ":"N","Ÿ":"Y"};
+  "Ù":"U","Û":"U","Ü":"U","Ú":"U","Ç":"C","Ñ":"N","Ÿ":"Y",
+  /* LE MOINS MATHÉMATIQUE (U+2212) N'EST PAS DANS LE LATIN-1.
+     On l'écrit naturellement devant un montant retranché — « − 1 340 € » —
+     et il sortait en « ? ». Il devient le trait d'union, qui lui est dans
+     la police et qui dit la même chose. */
+  "−":"-", "‒":"-", "﹘":"-"};
 /* les quelques signes hors ASCII dont la largeur ne se déduit pas */
 const PDF_W_AUTRE = {"€":556, "’":191, "‘":191, "“":333, "”":333, "–":556, "—":1000,
   "…":1000, "«":556, "»":556, "°":400, "·":278, "²":365, "œ":944, "Œ":1000,
@@ -36247,6 +37250,8 @@ const PDF_GRIS  = [0.576, 0.525, 0.502];
 const PDF_FILET = [0.902, 0.851, 0.824];
 const PDF_FOND  = [0.969, 0.925, 0.902];
 const PDF_BLANC = [1, 1, 1];
+/* le terracotta du logo, atténué : pour les filets qui relient sans tirer l'œil */
+const PDF_NAVY_CLAIR = [0.835, 0.729, 0.682];
 const PDF_BANDE = [0.980, 0.953, 0.937];
 const PDF_OR    = [0.722, 0.459, 0.090];
 const DPE_TEINTE = {A:[0.192,0.596,0.204], B:[0.200,0.800,0.192],
@@ -37041,6 +38046,1626 @@ async function ficheBienPdf(d){
   doc.pages.forEach((pgx, i)=> piedDePage(doc.surPage(i), i + 1, total));
   return new Blob([pdfOctets(doc, "Fiche " + (o.type || "bien"))],
                   {type:"application/pdf"});
+}
+
+/* =====================================================================
+   LE PDF DE L'AVIS DE VALEUR
+   ---------------------------------------------------------------------
+   Sept pages au plus, et seulement celles qui ont quelque chose à dire :
+   une page vide ne se compose pas, elle se saute. L'ordre est celui d'une
+   remise : qui, quoi, où, combien ça vaut, et sous quelles réserves.
+
+   Les couleurs sont celles de l'application — le terracotta du logo —, et
+   le moteur est le sien : rien de plus à embarquer.
+   ===================================================================== */
+const AV_RESERVES = [
+  "Le présent avis est établi à la suite de notre visite et de nos recherches. Il "
+  + "indique les prix en fonction des éléments connus à la date de sa conclusion.",
+  "Il est remis sous les réserves de principe et d'usage, notamment en ce qui concerne "
+  + "les défauts et vices cachés du bâtiment au moment de notre visite, et en l'absence "
+  + "de production des diagnostics se rapportant aux risques naturels et technologiques, "
+  + "amiante, plomb, état parasitaire et diagnostic énergétique, autres états et "
+  + "diagnostics imposés par le législateur. Les conséquences en résultant sont "
+  + "considérées comme des vices cachés.",
+  "Il est précisé qu'il ne nous a pas été fourni de fiche hypothécaire ni de fiche "
+  + "d'immeuble, ni de certificat d'urbanisme. L'analyse de ces documents permettrait "
+  + "éventuellement aux études notariales chargées de dresser l'acte d'amender nos "
+  + "appréciations, notamment au regard des servitudes de droit public et privé qui "
+  + "pourraient grever le bien et dont nous n'aurions pas les possibilités d'en "
+  + "connaître l'existence. Le requérant nous a dispensé de ces formalités en raison "
+  + "des délais nécessaires requis et des limites financières de la mission qu'il a "
+  + "fixées.",
+  "Notre mission n'a de surcroît pas comporté la certification de la situation "
+  + "juridique des biens, ni le contrôle de leur qualification au regard des règles "
+  + "territoriales ou vis-à-vis des tiers ; la certification des dispositions "
+  + "d'urbanisme applicables à la propriété et des conformités des bâtiments et de "
+  + "leurs équipements avec les lois et réglementations en vigueur ; la vérification "
+  + "de fonctionnement des équipements et services généraux de l'immeuble "
+  + "(fondations, planchers, couvertures, murs, canalisations), qui ne peuvent être "
+  + "réalisés qu'avec des sondages destructifs non programmés dans notre mission.",
+  "En outre, il n'est pas entré dans notre compétence d'apprécier la pollution des "
+  + "sols ou les possibles contaminations des bâtiments. Le coût des équipements, "
+  + "généralement considérés comme immeubles par destination, est inclus dans les "
+  + "valeurs que nous affectons aux constructions."
+];
+function avisLignesLibres(txt){
+  return String(txt || "").split(/\r?\n/).map(x=> x.trim()).filter(Boolean);
+}
+/* les blocs chiffrés de la page « description » : les mêmes clefs que la
+   fiche du bien, puisque c'est le même bien */
+function avisBlocsChiffres(d){
+  const o = d || D, det = o.detail || {}, out = [];
+  const bloc = (titre, paires)=>{
+    const l = paires.filter(([, v])=> String(v == null ? "" : v).trim() !== "");
+    if(l.length) out.push({titre, lignes:l.map(([a, b])=> [a, String(b)])});
+  };
+  const dep = depouillePieces(o);
+  bloc("Le bien", [
+    ["Type de bien", typeBienLisible(o)],
+    ["Surface habitable", det.surface ? m2txt(num(det.surface)) : ""],
+    ["Surface Carrez", det.carrez ? m2txt(num(det.carrez)) : ""],
+    ["Terrain", det.terrain ? m2txt(num(det.terrain)) : ""],
+    ["Nombre de pièces", dep ? dep.pieces : det.pieces],
+    ["Chambres", dep ? dep.chambres : det.chambres],
+    ["Étage", det.etage],
+    ["Année de construction", (o.bien || {}).annee],
+    ["Exposition", det.exposition],
+    ["État général", det.etat]
+  ]);
+  bloc("Le bâtiment", [
+    ["Élévation", det.elevation], ["Mitoyenneté", det.mitoyennete],
+    ["Mode constructif", det.modeConstr], ["Combles", det.combles],
+    ["Chauffage", equipementLisible(o, "chauffage")],
+    ["Eau chaude", equipementLisible(o, "ecs")],
+    ["Ventilation", det.ventilation], ["Eaux usées", det.eauxUsees],
+    ["Classe énergie", det.dpeLettre || ""], ["Classe climat", det.gesLettre || ""]
+  ]);
+  const an = [];
+  (typeof ANNEXES_BIEN !== "undefined" ? ANNEXES_BIEN : []).forEach(()=>{});
+  ["garage", "parking", "cave", "terrasse", "balcon", "jardin", "piscine"]
+    .forEach(k=>{
+      const v = det[k];
+      if(!v || /^non$/i.test(String(v))) return;
+      const m2v = num(det[k + "M2"]), nb = num(det[k + "Nb"]);
+      const lab = k.charAt(0).toUpperCase() + k.slice(1);
+      an.push([lab, [nb ? nb + (nb > 1 ? " unités" : " unité") : "",
+        m2v ? m2txt(m2v) : "", (!nb && !m2v) ? "oui" : ""]
+        .filter(Boolean).join("  ·  ")]);
+    });
+  if(an.length) out.push({titre:"Ce que le bien offre", lignes:an});
+  const ch = Array.isArray(det.chargesListe) ? det.chargesListe : [];
+  bloc("Charges et impôts", ch.filter(c=> c && (c.type || c.montant))
+    .map(c=> [[c.type, c.periode].filter(Boolean).join(" — "),
+              c.montant ? eur(num(c.montant)) + " / an" : ""]));
+  return out;
+}
+/* les photos retenues, dans l'ordre choisi ; à défaut celles de la fiche */
+function avisPhotosRetenues(d){
+  const a = avisDe(d), toutes = photosDe(sujetBien(d));
+  if(!a.photos.length){
+    const l = toutes.slice();
+    l.sort((x, y)=> (y.principale ? 1 : 0) - (x.principale ? 1 : 0));
+    return l.slice(0, 7);
+  }
+  return a.photos.map(id=> toutes.filter(p=> p.id === id)[0]).filter(Boolean);
+}
+async function avisImages(d){
+  const out = [];
+  for(const p of avisPhotosRetenues(d)){
+    let u = null;
+    try{
+      const b = (await blobDeLaPiece(p, false)) || (await blobDeLaPiece(p, true));
+      if(!b) continue;
+      u = URL.createObjectURL(b);
+      const im = await imageDepuis(u);
+      if(im){ const x = pdfImageDepuis(im, 1400); if(x) out.push(x); }
+    }catch(e){ /* une photo illisible n'emporte pas le document */ }
+    finally{ if(u) URL.revokeObjectURL(u); }
+  }
+  return out;
+}
+/* les deux cartes de l'avis : la situation dans la commune, et le quartier.
+   Rend null si le réseau ne répond pas — la page saute, et c'est tout. */
+async function avisCartes(d){
+  const b = d.bien || {};
+  let c = null;
+  if(num(b.lat) !== null && num(b.lon) !== null) c = {lat:+b.lat, lon:+b.lon};
+  if(!c && adresseGeo(b)){
+    try{ const g = await geocoder(adresseGeo(b), b.cp); if(g) c = {lat:g.lat, lon:g.lon}; }
+    catch(e){ c = null; }
+  }
+  if(!c) return null;
+  const out = {centre:c, large:null, pres:null};
+  /* MÊME FORMAT POUR LES DEUX : posées côte à côte à la même largeur, deux
+     rapports différents donnaient deux hauteurs différentes, et la paire
+     paraissait bancale.
+
+     DEUX DISTANCES, ET LE MÊME REPÈRE SUR LES DEUX. Trois kilomètres
+     situent le bien dans la commune ; cinq cents mètres montrent sa rue.
+     Le halo accompagne la goutte sur les deux : à trois kilomètres, une
+     goutte de onze pixels se perd, et c'est le cercle qui dit « c'est
+     par là » avant qu'on l'ait trouvée. */
+  const CL = 820, CH = 620;
+  const vue = async (rayon, zMax)=>{
+    const k = await carteCanvas(c, zoomPour(bboxAutour(c, rayon), CL, CH, zMax),
+                                CL, CH);
+    if(!k) return null;
+    haloSurCarte(k, c.lat, c.lon);
+    marqueurBien(k, c.lat, c.lon);
+    echelleSurCarte(k, c); attributionSurCarte(k); cadreCarte(k);
+    return pdfImageDepuis(k.c, 1400);
+  };
+  out.large = await vue(3000, 15);
+  out.pres  = await vue(500, 18);
+  return (out.large || out.pres) ? out : null;
+}
+/* « nomFichierAvis » existe déjà, pour la demande d'avis client : celui-ci
+   nomme l'avis de VALEUR, qui n'a rien à voir. */
+/* QUI SIGNE L'AVIS
+   Celui qui le compose, c'est-à-dire la personne CONNECTÉE — pas le
+   négociateur attaché au dossier, qui peut être un collègue : on ne signe
+   pas de la main d'un autre. À défaut de compte identifié, le négociateur
+   du dossier prend le relais. */
+function avisSignataire(d){
+  const mien = (typeof monNegociateur === "function" ? monNegociateur() : "") || "";
+  const n = book("negociateurs", mien);
+  if(n && n.nom) return n;
+  return book("negociateurs", ((d || D).nego || {}).vendeur) || {};
+}
+/* LES ANCIENNES CASES, ET LES NOUVELLES
+   Le document se commandait par sept cases ; il s'en commande maintenant
+   quatorze — un paragraphe, une case. Un avis déjà composé porte les
+   anciennes clefs : `loc` valait pour la situation ET les cartes, `desc`
+   pour tout le corps descriptif. On les déplie plutôt que de les perdre. */
+function avisPagesReprises(p){
+  const o = Object.assign({}, p || {});
+  if(o.loc !== undefined){
+    if(o.situation === undefined) o.situation = o.loc;
+    if(o.cartes === undefined) o.cartes = o.loc;
+    delete o.loc;
+  }
+  if(o.desc !== undefined){
+    ["carac", "immeuble", "texte", "tableaux", "facteurs", "photos"]
+      .forEach(k=>{ if(o[k] === undefined) o[k] = o.desc; });
+    delete o.desc;
+  }
+  return o;
+}
+/* UN PORTRAIT ROND, POUR LE PDF
+   Le moteur PDF ne découpe pas : on découpe donc AVANT, sur une toile, et
+   l'image qui en sort est déjà ronde sur fond blanc. Sur une page blanche,
+   elle se lit comme un rond — ce qui est tout ce qu'on demande. */
+async function toilePortraitRond(src, px){
+  if(!src) return null;
+  const im = await imageDepuis(src);
+  if(!im) return null;
+  const n = px || 320;
+  const c = document.createElement("canvas");
+  c.width = n; c.height = n;
+  const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, n, n);
+  g.save();
+  g.beginPath(); g.arc(n / 2, n / 2, n / 2, 0, 7); g.closePath(); g.clip();
+  /* on recadre au carré par le centre, sans déformer */
+  const l = im.naturalWidth || im.width, h = im.naturalHeight || im.height;
+  const k = Math.max(n / l, n / h);
+  g.drawImage(im, (n - l * k) / 2, (n - h * k) / 2, l * k, h * k);
+  g.restore();
+  return c;
+}
+async function pdfPortraitRond(src, px){
+  const c = await toilePortraitRond(src, px);
+  return c ? pdfImageDepuis(c, px || 320) : null;
+}
+/* le même rond, en adresse « data: », pour l'archive Word */
+async function portraitRondUri(src, px){
+  const c = await toilePortraitRond(src, px);
+  return c ? c.toDataURL("image/jpeg", 0.86) : "";
+}
+/* LES QUATRE CHIFFRES QU'ON CHERCHE EN PREMIER
+   Avant tout tableau, la réponse à la première question : combien de
+   mètres, combien de pièces, combien de chambres, combien de terrain. Le
+   détail suit pour qui le veut ; ces quatre-là se lisent d'un coup d'œil.
+   La surface est l'HABITABLE seule — ni le sol, ni le Carrez, ni les
+   annexes : c'est celle dont on parle quand on dit « une 118 m² ». */
+function avisCaracPrincipales(d){
+  const o = d || D, det = o.detail || {}, dep = depouillePieces(o);
+  const pieces = dep ? dep.pieces : num(det.pieces);
+  const ch = dep ? dep.chambres : num(det.chambres);
+  const out = [];
+  if(num(det.surface)) out.push(["Surface", m2txt(num(det.surface))]);
+  if(pieces) out.push(["Nb de Pièces", String(pieces)]);
+  if(ch) out.push(["Nb. de chambres", String(ch)]);
+  if(num(det.terrain)) out.push(["Surf. terrain", m2txt(num(det.terrain))]);
+  return out;
+}
+/* LE TITRE DU DOCUMENT
+   « Maison » ne dit rien ; « Maison 118 m² » dit la moitié de ce qu'un
+   lecteur cherche. La surface habitable suit donc le type, et l'adresse
+   vient après. */
+function avisTitreBien(d){
+  const o = d || D;
+  const su = num((o.detail || {}).surface);
+  return [typeBienLisible(o) || "Bien", su ? m2txt(su) : ""]
+    .filter(Boolean).join(" ");
+}
+function avisTitre(d){
+  return [avisTitreBien(d), adresseBienCourteDe(d)].filter(Boolean).join(" — ");
+}
+/* LA FORMULE D'APPEL
+   « L'objet de cet avis » était un intitulé de dossier, pas une lettre. On
+   s'adresse au propriétaire comme on le ferait de vive voix, et la civilité
+   vient de sa fiche du répertoire. Deux vendeurs, deux civilités : la
+   formule les reprend toutes les deux. */
+function avisFormuleAppel(d){
+  const l = ((d || D).vendeurs || []).filter(x=> x && !personneVide(x));
+  const civ = {m:false, f:false, moral:false};
+  l.forEach(x=>{
+    if(estMorale(x)){ civ.moral = true; return; }
+    const c = fold(String(x.civilite || "").replace(/\./g, ""));
+    if(/^mme|^mlle|^madame|^mademoiselle/.test(c)) civ.f = true;
+    else if(/^m$|^mr|^monsieur/.test(c)) civ.m = true;
+    else civ.moral = true;             /* civilité non dite : on reste neutre */
+  });
+  const nF = l.filter(x=> !estMorale(x)
+    && /^mme|^mlle/.test(fold(String(x.civilite || "").replace(/\./g, "")))).length;
+  const nM = l.filter(x=> !estMorale(x)
+    && /^m$|^mr/.test(fold(String(x.civilite || "").replace(/\./g, "")))).length;
+  if(civ.moral || (!civ.m && !civ.f)) return "Madame, Monsieur,";
+  if(civ.f && civ.m) return "Chère Madame, Cher Monsieur,";
+  if(civ.f) return nF > 1 ? "Chères Mesdames," : "Chère Madame,";
+  return nM > 1 ? "Chers Messieurs," : "Cher Monsieur,";
+}
+/* CE QUE L'IMMEUBLE DIT DE LUI-MÊME
+   Un lot de copropriété ne se décrit pas sans son immeuble. On ne reprend
+   que ce qui est renseigné — une fiche vide ne produit pas d'aparté. */
+function avisImmeuble(d){
+  const o = d || D;
+  const r = residenceDuBien(o);
+  if(!r || !r.nom) return null;
+  const l = [];
+  const met = (lab, v)=>{ if(String(v == null ? "" : v).trim() !== "")
+    l.push([lab, String(v)]); };
+  met("Année de construction", r.annee);
+  met("Nombre de lots", r.nbLots);
+  met("dont lots d'habitation", r.nbLotsPrinc);
+  met("Syndic", r.syndic);
+  met("Chauffage", [r.chauffMode, r.chauffEnergie].filter(Boolean).join(" — "));
+  met("Eau chaude", [r.ecsMode, r.ecsEnergie].filter(Boolean).join(" — "));
+  const oui = COPRO_POINTS.filter(([k])=> /^oui$/i.test(String(r[k] || "")))
+    .map(([, lab])=> lab);
+  if(oui.length) l.push(["L'immeuble offre", oui.join(", ")]);
+  return l.length ? {nom:r.nom, lignes:l} : null;
+}
+/* LE NOM DE LA MAISON, TEL QU'ON LE DIT
+   La raison sociale complète — « MANARANCHE IMMOBILIER — ARLÉSIENNE DE
+   GESTION » — a sa place sur une facture, où elle est une mention légale.
+   Sur un avis de valeur remis à un propriétaire, elle alourdit l'en-tête
+   sans rien lui apporter : on garde l'enseigne. La fiche de l'agence
+   n'est pas modifiée pour autant — les documents qui ont besoin de la
+   raison sociale continuent de la lire entière. */
+function avisNomAgence(){
+  const n = String((L.agence || {}).nom || "").trim();
+  return n.split(/\s*[—–-]\s*|\s*\/\s*/)[0].trim() || n;
+}
+/* les coordonnées de l'agence, telles qu'elles se lisent sur un en-tête */
+function avisCoordonnees(){
+  const ag = L.agence || {};
+  return [ag.adresse || "", ag.site || ""].filter(Boolean);
+}
+function nomFichierAvisValeur(d, ext){
+  const c = critBien(d || D);
+  return ("Avis de valeur - " + [c.type || "bien",
+    adresseBienCourteDe(d || D) || c.ville || ""].filter(Boolean).join(" - ")
+    + "." + (ext || "pdf")).replace(/[\\/:*?"<>|]/g, "-");
+}
+/* l'adresse courte d'un dossier donné — `adresseBienCourte()` ne sait lire
+   que le dossier ouvert, et l'avis peut se composer pour un autre */
+function adresseBienCourteDe(d){
+  const b = (d || D).bien || {};
+  return [String(b.adresse || "").trim(),
+          [String(b.cp || "").trim(), String(b.ville || "").trim()]
+            .filter(Boolean).join(" ")].filter(Boolean).join(" ");
+}
+
+async function avisValeurPdf(d){
+  const o = d || D, a = avisDe(o), pg = a.pages;
+  const ag = L.agence || {};
+  const nego = avisSignataire(o);
+  const logo = ag.logo ? pdfImageDepuis(await imageDepuis(ag.logo), 500) : null;
+  const portrait = await pdfPortraitRond(nego.portrait, 360);
+  const doc = pdfDoc();
+  const M = 42, LARG = doc.L - 2 * M;
+  const titre = avisTitre(o);
+  let p = doc.page(), y = M;
+
+  /* LE PIED DE PAGE
+     Le logo à gauche, les mentions légales de la maison au centre, la
+     pagination à droite. Ce sont ces mentions-là que la loi impose sur
+     tout document d'un professionnel de l'immobilier — carte
+     professionnelle, garantie financière, forme et immatriculation : leur
+     place est au pied de CHAQUE page, pas en appendice d'une signature,
+     où elles n'engagent que la dernière feuille. */
+  const legales = [
+    [avisNomAgence(), ag.forme || "", ag.rcs || ""].filter(Boolean).join("  ·  "),
+    [ag.adresse || "", ag.site || ""].filter(Boolean).join("  ·  "),
+    [ag.carte || "", ag.garantie || ""].filter(Boolean).join("  ·  ")
+  ].filter(x=> x.trim());
+  const hPied = Math.max(30, legales.length * 9 + 10);
+  const BAS = doc.H - hPied - 22;
+  const pied = (pgx, n, total)=>{
+    const yP = doc.H - hPied - 12;
+    pgx.trait(M, yP, doc.L - M, yP, 0.6, PDF_FILET);
+    if(logo){
+      const hl = Math.min(hPied - 4, 46 * logo.h / logo.l);
+      pgx.image(logo, M, yP + 7 + (hPied - 8 - hl) / 2, hl * logo.l / logo.h, hl);
+    }
+    let yL = yP + 13;
+    legales.forEach(l=>{
+      pdfCouper(l, LARG - 150, 6.5, false).slice(0, 1).forEach(x=>
+        pgx.centre(M, LARG, yL, x, 6.5, false, PDF_GRIS));
+      yL += 9;
+    });
+    pgx.droite(doc.L - M, yP + 16, n + " / " + total, 9, true, PDF_GRIS);
+  };
+  /* ouvrir une page de suite : le filet, le bien, et on repart sous lui */
+  /* L'EN-TÊTE DES PAGES SUIVANTES
+     Léger : de quoi savoir, une feuille à la main, quel document et quel
+     bien on tient. Rien d'autre — le logo et les mentions sont au pied. Le
+     filet est de la couleur du logo, atténué : il relie la page à
+     l'ensemble sans tirer l'œil. */
+  const suite = ()=>{
+    p = doc.page();
+    p.texte(M, M + 9, "Avis de valeur", 8.5, true, PDF_NAVY);
+    p.droite(doc.L - M, M + 9,
+      [avisTitreBien(o), adresseBienCourteDe(o)].filter(Boolean).join("  —  "),
+      8.5, false, PDF_GRIS);
+    p.trait(M, M + 15, doc.L - M, M + 15, 0.7, PDF_NAVY_CLAIR);
+    return M + 30;
+  };
+  const place = h=>{ if(y + h > BAS) y = suite(); };
+  const titreSection = (t)=>{
+    /* un titre qui touche le paragraphe du dessus se lit comme sa suite :
+       on respire avant, sauf en tête de page où il n'y a rien à séparer */
+    if(y > M + 40) y += 10;
+    place(34);
+    p.texte(M, y + 10, String(t).toUpperCase(), 9, true, PDF_NAVY); y += 18; };
+  const para = (txt, corps)=>{
+    const c = corps || 9.5;
+    pdfCouper(String(txt), LARG, c, false).forEach(l=>{
+      place(14); p.texte(M, y + 10, l, c, false, PDF_ENCRE); y += c + 3.5;
+    });
+  };
+
+  /* ---------------------------------------------- 1 · LA COUVERTURE
+     L'EN-TÊTE EST CELUI D'UN PAPIER À LETTRES : le logo, le nom de la
+     maison et ses coordonnées à gauche — un document qui sort de l'agence
+     doit le dire en toutes lettres, pas seulement par une image —, et
+     l'objet du document à droite. */
+  /* DEUX BLOCS EN VIS-À-VIS, TAILLÉS PAREIL
+     À gauche la maison : son logo, son nom, ses coordonnées. À droite
+     celui qui signe : son portrait, son nom, les siennes. Même hauteur,
+     même corps, mêmes couleurs — « Thierry MORCHAIN » se lit exactement
+     comme « MANARANCHE IMMOBILIER », parce que ce sont deux identités de
+     même rang sur ce document, et non une enseigne et sa mention. */
+  const nomAg = avisNomAgence();
+  const gauche = {img: logo, nom: nomAg, lignes: avisCoordonnees()};
+  const droite = {img: portrait, nom: nego.nom || "",
+    lignes: [nego.qualite || "", nego.tel || "", nego.email || ""].filter(Boolean)};
+  const hBloc = (b)=> b.nom ? 15 + b.lignes.length * 11 : 0;
+  const hVign = 46;
+  const hTete = Math.max(hBloc(gauche), hBloc(droite),
+    (gauche.img || droite.img) ? hVign : 0);
+  const poser = (b, x, larg)=>{
+    if(!b.nom && !b.img) return;
+    let xT = x;
+    if(b.img){
+      const h = Math.min(hVign, hTete);
+      const l = h * b.img.l / b.img.h;
+      p.image(b.img, x, y + (hTete - h) / 2, l, h);
+      xT = x + l + 12;
+    }
+    let yT = y + (hTete - hBloc(b)) / 2;
+    if(b.nom){ p.texte(xT, yT + 11, b.nom, 12, true, PDF_NAVY); yT += 15; }
+    b.lignes.forEach(l=>{
+      pdfCouper(l, x + larg - xT, 8.5, false).slice(0, 1).forEach(t2=>
+        p.texte(xT, yT + 9, t2, 8.5, false, PDF_GRIS));
+      yT += 11;
+    });
+  };
+  const demi = (LARG - 20) / 2;
+  poser(gauche, M, demi);
+  poser(droite, M + demi + 20, demi);
+  y += hTete + 12;
+  p.trait(M, y, doc.L - M, y, 1.8, PDF_NAVY); y += 22;
+
+  p.centre(M, LARG, y + 14, "AVIS DE VALEUR", 17, true, PDF_NAVY); y += 24;
+  const dem = avisDemandeur(o);
+  p.centre(M, LARG, y + 10, "Établi le " + fdate(avisDateDoc(o))
+    + (dem ? "  —  à la demande de " + dem : ""), 9, false, PDF_GRIS);
+  y += 36;
+
+  pdfCouper(avisTitreBien(o), LARG, 19, true).slice(0, 2).forEach(l=>{
+    p.centre(M, LARG, y, l, 19, true, PDF_NAVY); y += 23; });
+  pdfCouper(adresseBienCourteDe(o), LARG, 12, false).slice(0, 2).forEach(l=>{
+    p.centre(M, LARG, y + 2, l, 12, false, PDF_ENCRE); y += 16; });
+  y += 10;
+
+  /* les trois chiffres qui se lisent de loin */
+  const dep = depouillePieces(o), det = o.detail || {};
+  const chiffres = [
+    [det.surface ? m2txt(num(det.surface)) : "", "habitables"],
+    [(dep ? dep.pieces : num(det.pieces)) ? String(dep ? dep.pieces : num(det.pieces))
+      + " pièces" : "", "au total"],
+    [det.terrain ? m2txt(num(det.terrain)) : "", "de terrain"]
+  ].filter(x=> x[0]);
+  if(chiffres.length){
+    const lc = (LARG - 12 * (chiffres.length - 1)) / chiffres.length;
+    chiffres.forEach((c, i)=>{
+      const x = M + i * (lc + 12);
+      p.pave(x, y, lc, 46, PDF_FOND);
+      p.centre(x, lc, y + 22, c[0], 14, true, PDF_NAVY);
+      p.centre(x, lc, y + 36, c[1], 8, false, PDF_GRIS);
+    });
+    y += 60;
+  }
+
+  /* la grande photo — ou, faute de photo, la vue du quartier */
+  const images = await avisImages(o);
+  const cartes = await avisCartes(o);
+  const couv = images[0] || (cartes && cartes.pres) || null;
+  if(couv){
+    const h = Math.min(BAS - y - 20, LARG * couv.h / couv.l);
+    const l = h * couv.l / couv.h;
+    p.image(couv, M + (LARG - l) / 2, y, l, h);
+    y += h + 8;
+    if(!images.length) p.texte(M, y + 8,
+      "Vue du quartier — aucune photo du bien n'a encore été déposée au dossier.",
+      8, false, PDF_GRIS);
+  }
+
+  /* ---------------------------------- 2 · LA LETTRE, ET LA LOCALISATION */
+  y = suite();
+  if(pg.appel){
+    p.texte(M, y + 11, avisFormuleAppel(o), 11, true, PDF_ENCRE);
+    y += 22;
+    para(String(a.intro || "").trim() || ("Pour faire suite à votre demande, et "
+      + "consécutivement à ma visite sur site, vous trouverez ci-après l'avis de "
+      + "valeur vénale du bien immobilier désigné ci-dessous."));
+    y += 10;
+  }
+
+  if(pg.situation){
+    const lignesSit = [["Adresse", adresseBienCourteDe(o)]];
+    if((o.bien || {}).residence) lignesSit.push(["Résidence", o.bien.residence]);
+    if((o.bien || {}).sitJur) lignesSit.push(["Situation juridique", o.bien.sitJur]);
+    if((o.bien || {}).annee) lignesSit.push(["Année de construction", o.bien.annee]);
+    avisParcelles(o).filter(x=> x && (x.section || x.numero)).forEach(x=>
+      lignesSit.push(["Cadastre",
+        ["section " + (x.prefixe ? x.prefixe + " " : "") + (x.section || ""),
+         x.numero ? "parcelle n° " + x.numero : "",
+         x.surface ? m2txt(num(x.surface)) : ""].filter(Boolean).join("  ·  ")]));
+    /* L'IMMEUBLE EN VIS-À-VIS DE LA SITUATION
+       Deux tableaux étroits côte à côte valent mieux que deux tableaux
+       larges l'un sous l'autre : on les compare du regard, et la page
+       respire. Sans immeuble, la situation prend toute la largeur —
+       un demi-tableau seul au bord gauche ferait un trou. */
+    const imm = pg.immeuble ? avisImmeuble(o) : null;
+    if(imm){
+      const colS = (LARG - 18) / 2;
+      const hS = Math.max(hauteurTableau(colS, lignesSit),
+                          hauteurTableau(colS, imm.lignes));
+      place(hS + 10);
+      tableauPdf(p, M, y, colS, "La situation du bien", lignesSit);
+      tableauPdf(p, M + colS + 18, y, colS, "L'immeuble — " + imm.nom, imm.lignes);
+      y += hS + 16;
+    } else {
+      place(hauteurTableau(LARG, lignesSit) + 10);
+      tableauPdf(p, M, y, LARG, "La situation du bien", lignesSit);
+      y += hauteurTableau(LARG, lignesSit) + 16;
+    }
+
+    /* LES DEUX CARTES, DANS LA SITUATION DU BIEN
+       Elles ne sont pas un ornement : elles disent où est le bien, de loin
+       puis de près. Trois kilomètres pour le situer dans la commune, cinq
+       cents mètres pour montrer sa rue — et le même repère sur les deux. */
+    if(pg.cartes && cartes){
+      const ims = [cartes.large, cartes.pres].filter(Boolean);
+      if(ims.length){
+        const lc = (LARG - 14 * (ims.length - 1)) / ims.length;
+        const h = Math.max.apply(null, ims.map(x=> lc * x.h / x.l));
+        place(h + 32);
+        const lib = ["À 3 km à la ronde", "À 500 mètres"];
+        ims.forEach((im, i)=>{
+          const x = M + i * (lc + 14);
+          p.texte(x, y + 9, lib[i].toUpperCase(), 7.5, true, PDF_NAVY);
+          p.image(im, x, y + 14, lc, lc * im.h / im.l);
+        });
+        y += h + 22;
+        p.texte(M, y + 8, "Fonds de carte © les contributeurs OpenStreetMap.",
+                7.5, false, PDF_GRIS);
+        y += 20;
+      }
+    }
+  }
+
+  /* ----------------------------------------- 3 · CE QUE LE BIEN EST */
+  const forts = avisLignesLibres(a.forts), faibles = avisLignesLibres(a.faibles);
+  if(pg.carac || pg.texte || pg.tableaux || pg.facteurs || pg.photos){
+    /* ON NE TOURNE PAS LA PAGE PAR PRINCIPE
+       Chaque section ouvrait sa page : un avis de six pages en faisait dix,
+       aux trois quarts blanches. Une section commence là où la précédente
+       s'arrête, et ne saute que si elle n'a plus la place de commencer. */
+    place(120);
+    titreSection("La description du bien");
+
+    /* LA SYNTHÈSE, AVANT TOUT LE RESTE
+       Quatre chiffres répondent à la première question qu'on se pose
+       devant un bien. Ils se lisent d'un coup d'œil, en bandeau, et le
+       détail vient après pour qui le veut. */
+    if(pg.carac){
+      const syn = avisCaracPrincipales(o);
+      if(syn.length){
+        const lc = (LARG - 10 * (syn.length - 1)) / syn.length;
+        place(50);
+        /* L'INTITULÉ EN HAUT, ET TOUT DANS LA MÊME ENCRE
+           Un libellé gris sous un chiffre terracotta faisait deux niveaux
+           de lecture pour une seule information. On lit « Surface », puis
+           « 100 m² » : dans cet ordre, et de la même couleur. */
+        syn.forEach((x, i)=>{
+          const xx = M + i * (lc + 10);
+          p.pave(xx, y, lc, 46, PDF_FOND);
+          p.centre(xx, lc, y + 17, x[0], 9, true, PDF_NAVY);
+          p.centre(xx, lc, y + 36, x[1], 14, true, PDF_NAVY);
+        });
+        y += 58;
+      }
+    }
+
+    if(pg.texte){
+      const t = String(a.texte || "").trim();
+      if(t){ para(t); y += 8; }
+    }
+
+    if(pg.tableaux){
+      const colL = (LARG - 18) / 2;
+      let yG = y, yD = y;
+      avisBlocsChiffres(o).forEach(bl=>{
+        const h = hauteurTableau(colL, bl.lignes);
+        if(Math.min(yG, yD) + h > BAS){ const y0 = suite(); yG = yD = y0; }
+        const g = yG <= yD, x = M + (g ? 0 : colL + 18), yy = g ? yG : yD;
+        tableauPdf(p, x, yy, colL, bl.titre, bl.lignes);
+        if(g) yG = yy + h + 15; else yD = yy + h + 15;
+      });
+      y = Math.max(yG, yD) + 6;
+    }
+
+    /* les deux encadrés : ce qui porte, ce qui pèse */
+    if(pg.facteurs && (forts.length || faibles.length)){
+      const colL2 = (LARG - 16) / 2;
+      const hb = l=> 24 + l.reduce((s, x)=>
+        s + pdfCouper("•  " + x, colL2 - 20, 9, false).length * 12, 0) + 8;
+      const h = Math.max(forts.length ? hb(forts) : 0, faibles.length ? hb(faibles) : 0);
+      place(h + 10);
+      const encadre = (x, lib, liste, coul)=>{
+        if(!liste.length) return;
+        p.pave(x, y, colL2, 20, coul);
+        p.texte(x + 10, y + 14, lib.toUpperCase(), 8.5, true, PDF_BLANC);
+        p.pave(x, y + 20, colL2, h - 20, PDF_BANDE);
+        let yy = y + 20 + 10;
+        liste.forEach(t2=> pdfCouper("•  " + t2, colL2 - 20, 9, false).forEach(l=>{
+          p.texte(x + 10, yy, l, 9, false, PDF_ENCRE); yy += 12; }));
+      };
+      encadre(M, "Influence positive", forts, PDF_NAVY);
+      encadre(M + colL2 + 16, "Influence négative", faibles, [0.42, 0.38, 0.36]);
+      y += h + 18;
+    }
+
+    /* la planche des autres photos */
+    const reste = pg.photos ? images.slice(1) : [];
+    if(reste.length){
+      place(70);
+      p.texte(M, y + 9, "LE BIEN EN IMAGES", 9, true, PDF_NAVY); y += 16;
+      plancheLignes(reste, LARG, 8, 150, 180).forEach(ln=>{
+        if(y + ln.h > BAS) y = suite();
+        let x = M;
+        ln.ims.forEach(im=>{ const l = ln.h * im.l / im.h;
+          p.image(im, x, y, l, ln.h); x += l + 8; });
+        y += ln.h + 8;
+      });
+      y += 8;
+    }
+  }
+
+  /* ------------------------------------------- 4 · LES COMPARABLES */
+  const ventes = a.ventes.filter(v=> v && v.pris && num(v.prix));
+  if(pg.ventes && ventes.length){
+    place(150);
+    titreSection("Les ventes passées dans le secteur");
+    para("Les prix ci-dessous sont ceux d'actes réellement signés, publiés par "
+      + "l'administration fiscale au titre des demandes de valeurs foncières. Ils ne "
+      + "sont pas des prix affichés.");
+    y += 10;
+    const cols = [0.16, 0.20, 0.13, 0.13, 0.20, 0.18];
+    const x0 = k=> M + cols.slice(0, k).reduce((s, c)=> s + c * LARG, 0);
+    const tete = ()=>{
+      p.pave(M, y, LARG, 17, PDF_NAVY);
+      ["Date", "Type", "Surface", "Terrain", "Prix de vente", "Prix / m²"]
+        .forEach((h2, k)=> p.texte(x0(k) + 7, y + 12, h2.toUpperCase(), 7.5, true,
+                                   PDF_BLANC));
+      y += 17;
+    };
+    place(17 + 18 * Math.min(4, ventes.length)); tete();
+    ventes.forEach((v, i)=>{
+      if(y + 17 > BAS){ y = suite(); tete(); }
+      if(i % 2) p.pave(M, y, LARG, 17, PDF_BANDE);
+      const m2 = prixM2(v);
+      [v.d ? fdate(v.d) : "", v.type || "", v.surf ? m2txt(num(v.surf)) : "",
+       v.terr ? m2txt(num(v.terr)) : "—", num(v.prix) ? eur(num(v.prix)) : "",
+       m2 ? eur(m2) + "/m²" : ""].forEach((t2, k)=> p.texte(x0(k) + 7, y + 12,
+        pdfCouper(String(t2), cols[k] * LARG - 14, 8.5, k >= 4)[0] || "", 8.5,
+        k >= 4, k >= 4 ? PDF_ENCRE : PDF_GRIS));
+      y += 17;
+      p.trait(M, y, doc.L - M, y, 0.4, PDF_FILET);
+    });
+    const moy = moyenneRetenue(a.ventes);
+    if(moy){
+      place(30);
+      p.pave(M, y + 4, LARG, 26, PDF_FOND);
+      p.texte(M + 10, y + 21, "Moyenne des " + moy.n + " vente"
+        + (moy.n > 1 ? "s" : "") + " retenue" + (moy.n > 1 ? "s" : ""), 9, true,
+        PDF_NAVY);
+      p.droite(doc.L - M - 10, y + 21, eur(moy.prix)
+        + (moy.m2 ? "   ·   " + eur(moy.m2) + "/m²" : ""), 11, true, PDF_NAVY);
+      y += 40;
+    }
+  }
+
+  const anns = a.annonces.filter(x=> x && x.pris && num(x.prix));
+  if(pg.annonces && anns.length){
+    place(60);
+    titreSection("Les biens actuellement en vente");
+    para("Ce sont des prix demandés, non des prix obtenus : ils disent la concurrence "
+      + "que votre bien rencontrera, pas ce qu'il vaut.");
+    y += 10;
+    const lignes = anns.map(x=>{
+      const pr = num(x.prix), su = num(x.surf);
+      return [[x.ville || "Bien comparable",
+               [su ? m2txt(su) : "", x.pieces ? x.pieces + " pièces" : "",
+                x.terr ? "terrain " + m2txt(num(x.terr)) : "",
+                x.dpe ? "DPE " + x.dpe : "", x.jours ? "en ligne " + x.jours : "",
+                x.note || ""].filter(Boolean).join("  ·  ")].filter(Boolean).join(" — "),
+        eur(pr) + (pr && su ? "   (" + eur(Math.round(pr / su)) + "/m²)" : "")];
+    });
+    place(hauteurTableau(LARG, lignes) + 10);
+    tableauPdf(p, M, y, LARG, "Annonces comparables relevées", lignes);
+    y += hauteurTableau(LARG, lignes) + 14;
+    const moyA = moyenneRetenue(a.annonces);
+    if(moyA){
+      place(30);
+      p.pave(M, y, LARG, 26, PDF_FOND);
+      p.texte(M + 10, y + 17, "Moyenne des prix demandés", 9, true, PDF_NAVY);
+      p.droite(doc.L - M - 10, y + 17, eur(moyA.prix)
+        + (moyA.m2 ? "   ·   " + eur(moyA.m2) + "/m²" : ""), 11, true, PDF_NAVY);
+      y += 40;
+    }
+  }
+
+  /* ------------------------------------------- 4 bis · LE RENDEMENT */
+  const rc = calculRendement(o);
+  if(pg.rend && rc.prix){
+    place(190);
+    titreSection("L'estimation par le rendement locatif");
+    para("Un bien loué ne se vend pas au mètre carré : il se vend au rendement. "
+      + "L'acquéreur n'achète pas des murs, il achète un revenu, et il paiera ce "
+      + "qu'il faut pour que ce revenu lui rapporte le taux qu'il s'est fixé.");
+    y += 8;
+    const lr = [["Loyer mensuel hors charges", eur(rc.loyer)],
+                ["Loyer annuel", eur(Math.round(rc.brut))]];
+    if(rc.vacance) lr.push(["Vacance locative retenue", m2Pourcent(rc.vacance)],
+      ["Encaissé après vacance", eur(Math.round(rc.encaisse))]);
+    rendDe(o).charges.filter(x=> x && num(x.montant)).forEach(x=>
+      lr.push([x.nature || "Charge", "− " + eur(num(x.montant))]));
+    if(rc.charges) lr.push(["Total des charges", "− " + eur(rc.charges)]);
+    lr.push(["Revenu net annuel", eur(Math.round(rc.net))]);
+    lr.push(["Rendement net attendu", m2Pourcent(rc.taux)]);
+    place(hauteurTableau(LARG, lr) + 10);
+    tableauPdf(p, M, y, LARG, "Le calcul", lr);
+    y += hauteurTableau(LARG, lr) + 16;
+    const ph = "Pour un rendement net de " + m2Pourcent(rc.taux)
+      + ", le prix ressort à " + eur(rc.prix) + "."
+      + (rc.tauxBrut ? " Ce prix correspond à un rendement brut de "
+          + m2Pourcent(rc.tauxBrut) + "." : "");
+    const lsr = pdfCouper(ph, LARG - 24, 11, true);
+    place(lsr.length * 15 + 22);
+    p.pave(M, y, LARG, lsr.length * 15 + 18, PDF_FOND);
+    let yyr = y + 16;
+    lsr.forEach(l=>{ p.texte(M + 12, yyr, l, 11, true, PDF_NAVY); yyr += 15; });
+    y += lsr.length * 15 + 28;
+    para("Le rendement net se calcule après la vacance et les charges qui restent "
+      + "au propriétaire ; le rendement brut, celui qu'affichent les annonces, part "
+      + "du loyer seul. L'écart entre les deux explique à lui seul la différence "
+      + "entre un prix affiché et un prix obtenu.", 8.5);
+  }
+
+  /* ----------------------------------------------- 5 · LA SYNTHÈSE */
+  if(pg.synth){
+    const {mn, mx} = avisFourchette(o), net = avisNetVendeur(o), h = net.h;
+    place(190);
+    titreSection("La valorisation pour la vente");
+    para("Notre avis de valeur est fondé sur une étude croisée du marché, en nous "
+      + "appuyant notamment sur les biens similaires — caractéristiques proches et "
+      + "environnement comparable — qui sont en vente ou ont été vendus, ainsi que "
+      + "sur les tendances du marché immobilier actuel pour le secteur concerné.");
+    y += 14;
+    if(mn !== null || mx !== null){
+      const phrase = "Dans le contexte actuel du marché immobilier et dans l'état "
+        + "actuel du bien, le prix de ce bien LIBRE DE TOUTE OCCUPATION peut être "
+        + "estimé " + (mn !== null && mx !== null
+          ? "entre " + eur(mn) + " et " + eur(mx)
+          : "à " + eur(mn === null ? mx : mn)) + ".";
+      const ls = pdfCouper(phrase, LARG - 24, 11, true);
+      place(ls.length * 15 + 22);
+      p.pave(M, y, LARG, ls.length * 15 + 18, PDF_FOND);
+      let yy = y + 16;
+      ls.forEach(l=>{ p.texte(M + 12, yy, l, 11, true, PDF_NAVY); yy += 15; });
+      y += ls.length * 15 + 30;
+    }
+    const lignesS = [];
+    if(mn !== null || mx !== null) lignesS.push(["Prix de vente conseillé",
+      mn !== null && mx !== null ? eur(mn) + "  à  " + eur(mx)
+        : eur(mn === null ? mx : mn)]);
+    if(h) lignesS.push(["Honoraires à la charge de l'" + String(h.charge).toLowerCase(),
+      h.pct ? m2Pourcent(h.n) : eur(h.n)]);
+    if(h && h.pct && (mn !== null || mx !== null)){
+      const f = v=> v === null ? null : Math.round(v * h.n / 100);
+      lignesS.push(["Soit, en euros", [f(mn), f(mx)].filter(x=> x !== null)
+        .map(eur).join("  à  ")]);
+    }
+    if(net.mn !== null || net.mx !== null) lignesS.push(["Net vendeur",
+      [net.mn, net.mx].filter(x=> x !== null).map(x=> eur(Math.round(x)))
+        .join("  à  ")]);
+    if(lignesS.length){
+      place(hauteurTableau(LARG, lignesS) + 10);
+      tableauPdf(p, M, y, LARG, "La synthèse", lignesS);
+      y += hauteurTableau(LARG, lignesS) + 16;
+    }
+    para("Les honoraires indiqués sont ceux appliqués en cas de mandat exclusif. Pour "
+      + "une autre formule de mandat, nous questionner.", 8.5);
+  }
+
+  /* -------------------------------------- 6 · LES RÉSERVES, ET LA SIGNATURE */
+  if(pg.reserves){
+    place(210);
+    titreSection("Les réserves");
+    AV_RESERVES.forEach(t2=>{ para(t2, 8.5); y += 6; });
+    y += 12;
+    place(120);
+    p.texte(M, y + 10, "Le présent avis de valeur forme un ensemble dont les pages ne "
+      + "peuvent être séparées.", 9, true, PDF_ENCRE); y += 16;
+    para("Toute duplication ou reproduction tronquée, amputée ou modifiée, même "
+      + "partiellement, livrée à un tiers, le rend caduque et non opposable. Les "
+      + "valeurs déterminées ci-dessus sont des valeurs actuelles, tirées de l'étude "
+      + "du marché immobilier local : elles peuvent varier sensiblement en fonction de "
+      + "la conjoncture économique et monétaire. Le présent document ne constitue pas "
+      + "une expertise immobilière.", 8.5);
+    y += 22;
+    place(96);
+    pdfCouper("C'EST SOUS CES RÉSERVES QUE NOUS AVONS ÉTABLI, en notre cabinet, "
+      + "LE PRÉSENT AVIS DE VALEUR, sincèrement et de bonne foi.", LARG, 9, true)
+      .forEach(l=>{ p.texte(M, y + 12, l, 9, true, PDF_ENCRE); y += 13; });
+    /* LA DATE N'EST PAS DANS LA SIGNATURE : elle est en tête du document,
+       une fois. Deux dates sur une même page invitent à les comparer.
+       LES MENTIONS LÉGALES NON PLUS : elles sont au pied de CHAQUE page,
+       où la loi les veut, et non en appendice de la dernière. */
+    y += 28;
+    p.droite(doc.L - M, y + 10, nego.nom || nomAg, 10, true, PDF_ENCRE);
+    y += 14;
+    if(nego.qualite){ p.droite(doc.L - M, y + 10, nego.qualite, 8.5, false, PDF_GRIS);
+      y += 12; }
+  }
+
+  const total = doc.pages.length;
+  doc.pages.forEach((pgx, i)=> pied(doc.surPage(i), i + 1, total));
+  return new Blob([pdfOctets(doc, "Avis de valeur")], {type:"application/pdf"});
+}
+/* les parcelles du bien, sans passer par le dossier ouvert : celles de sa
+   résidence quand il en a une — elles sont partagées par tous ses lots —,
+   les siennes sinon. */
+function avisParcelles(d){
+  const o = d || D;
+  const nom = String((o.bien || {}).residence || "").trim();
+  if(nom){
+    const r = (L.residences || []).filter(x=> x && x.nom === nom)[0];
+    if(r && Array.isArray(r.parcelles)) return r.parcelles;
+  }
+  return Array.isArray(o.parcelles) ? o.parcelles : [];
+}
+/* un pourcentage à la française : « 5 % », et « 4,5 % » quand il le faut */
+function m2Pourcent(n){
+  return String(Math.round(n * 100) / 100).replace(".", ",") + " %";
+}
+
+/* =====================================================================
+   UNE ARCHIVE ZIP, ÉCRITE À LA MAIN
+   ---------------------------------------------------------------------
+   Un fichier .docx est une archive ZIP contenant quelques fichiers XML.
+   Pour en écrire un, il faut donc savoir écrire un ZIP — et il n'y a pas
+   de compresseur dans un navigateur.
+
+   On n'en a pas besoin : le format ZIP autorise le mode « STORED », où
+   les octets sont rangés tels quels. L'archive est plus grosse qu'elle
+   ne pourrait l'être — quelques dizaines de kilo-octets pour un avis de
+   valeur, ce qui ne se remarque pas —, et Word, LibreOffice, Pages et
+   Google Docs l'ouvrent exactement comme les autres.
+
+   Reste le CRC-32, que le format exige pour chaque fichier. C'est le
+   seul calcul de tout ceci.
+   ===================================================================== */
+let CRC_TABLE = null;
+function crc32(octets){
+  if(!CRC_TABLE){
+    CRC_TABLE = new Uint32Array(256);
+    for(let n = 0; n < 256; n++){
+      let c = n;
+      for(let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      CRC_TABLE[n] = c >>> 0;
+    }
+  }
+  let c = 0xFFFFFFFF;
+  for(let i = 0; i < octets.length; i++)
+    c = CRC_TABLE[(c ^ octets[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+/* fichiers : [{nom, octets}] — rend un Blob */
+function zipRange(fichiers, type){
+  const enc = new TextEncoder();
+  const u16 = v=> [v & 0xFF, (v >>> 8) & 0xFF];
+  const u32 = v=> [v & 0xFF, (v >>> 8) & 0xFF, (v >>> 16) & 0xFF, (v >>> 24) & 0xFF];
+  /* l'heure MS-DOS : le format n'en veut pas d'autre. On pose la date du
+     jour — une archive sans date trouble certains outils. */
+  const d = new Date();
+  const heure = ((d.getHours() << 11) | (d.getMinutes() << 5)
+                 | (Math.floor(d.getSeconds() / 2))) & 0xFFFF;
+  const jour = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5)
+                | d.getDate()) & 0xFFFF;
+  const morceaux = [], central = [];
+  let pos = 0;
+  fichiers.forEach(f=>{
+    const nom = enc.encode(f.nom), oct = f.octets;
+    const c = crc32(oct);
+    const tete = [].concat([0x50, 0x4B, 0x03, 0x04], u16(20), u16(0x0800), u16(0),
+      u16(heure), u16(jour), u32(c), u32(oct.length), u32(oct.length),
+      u16(nom.length), u16(0));
+    morceaux.push(new Uint8Array(tete), nom, oct);
+    central.push(new Uint8Array([].concat([0x50, 0x4B, 0x01, 0x02], u16(20), u16(20),
+      u16(0x0800), u16(0), u16(heure), u16(jour), u32(c), u32(oct.length),
+      u32(oct.length), u16(nom.length), u16(0), u16(0), u16(0), u16(0), u32(0),
+      u32(pos))), nom);
+    pos += tete.length + nom.length + oct.length;
+  });
+  const tailleC = central.reduce((s, x)=> s + x.length, 0);
+  const fin = new Uint8Array([].concat([0x50, 0x4B, 0x05, 0x06], u16(0), u16(0),
+    u16(fichiers.length), u16(fichiers.length), u32(tailleC), u32(pos), u16(0)));
+  return new Blob(morceaux.concat(central, [fin]), {type: type || "application/zip"});
+}
+
+/* =====================================================================
+   LE MÊME DOCUMENT, EN WORD
+   ---------------------------------------------------------------------
+   Pourquoi pas un vrai .docx ? Parce qu'un .docx est une archive ZIP de
+   douze fichiers XML, et qu'il faudrait embarquer un compresseur dans une
+   page qui tient en un seul fichier. Or Word ouvre et enregistre depuis
+   toujours un HTML balisé pour lui : c'est un document Word à part
+   entière, modifiable en tout point, qui se réenregistre en .docx d'un
+   « Enregistrer sous ».
+
+   Ce n'est pas le chemin principal : tout se saisit dans l'application, et
+   le PDF en sort d'un bouton. Celui-ci est là pour la retouche que l'écran
+   ne permet pas — une phrase à ajouter, un paragraphe à déplacer.
+   ===================================================================== */
+function docEsc(t){
+  return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+function docPara(t, cls){
+  return avisLignesLibres(t).map(l=>
+    `<p class="${cls || "txt"}">${docEsc(l)}</p>`).join("");
+}
+function docTable(titre, lignes){
+  if(!lignes.length) return "";
+  return `<p class="h3">${docEsc(titre)}</p>
+  <table class="t"><tr><th>Élément</th><th>Valeur</th></tr>${lignes.map(([a, b])=>
+    `<tr><td>${docEsc(a)}</td><td class="v">${docEsc(b)}</td></tr>`).join("")}</table>`;
+}
+function avisValeurDoc(d){
+  const o = d || D, a = avisDe(o), pg = a.pages;
+  const ag = L.agence || {};
+  const nego = book("negociateurs", (o.nego || {}).vendeur) || {};
+  const {mn, mx} = avisFourchette(o), net = avisNetVendeur(o), h = net.h;
+  const titre = [typeBienLisible(o) || "Bien", adresseBienCourteDe(o)]
+    .filter(Boolean).join(" — ");
+  const ventes = a.ventes.filter(v=> v && v.pris && num(v.prix));
+  const anns = a.annonces.filter(x=> x && x.pris && num(x.prix));
+  const forts = avisLignesLibres(a.forts), faibles = avisLignesLibres(a.faibles);
+  const parc = avisParcelles(o).filter(x=> x && (x.section || x.numero));
+  const corps = [];
+
+  corps.push(`<p class="tt">AVIS DE VALEUR</p>
+    <p class="st">${docEsc(titre)}</p>
+    <p class="st2">Établi le ${docEsc(fdate(avisDateDoc(o)))}${
+      avisDemandeur(o) ? " — à la demande de " + docEsc(avisDemandeur(o)) : ""}</p>`);
+  corps.push(`<p class="h2">L'objet de cet avis</p>`);
+  corps.push(docPara(String(a.intro || "").trim() || ("Pour faire suite à votre "
+    + "demande, et consécutivement à ma visite sur site, vous trouverez ci-après "
+    + "l'avis de valeur vénale du bien immobilier désigné ci-dessous.")));
+
+  const sit = [["Adresse", adresseBienCourteDe(o)]];
+  if((o.bien || {}).residence) sit.push(["Résidence", o.bien.residence]);
+  if((o.bien || {}).sitJur) sit.push(["Situation juridique", o.bien.sitJur]);
+  parc.forEach(x=> sit.push(["Cadastre",
+    ["section " + (x.prefixe ? x.prefixe + " " : "") + (x.section || ""),
+     x.numero ? "parcelle n° " + x.numero : "",
+     x.surface ? m2txt(num(x.surface)) : ""].filter(Boolean).join(" · ")]));
+  corps.push(`<p class="h2">La situation du bien</p>` + docTable("", sit)
+    .replace('<p class="h3"></p>', ""));
+
+  if(pg.desc){
+    corps.push(`<p class="h2">La description du bien</p>`);
+    if(String(a.texte || "").trim()) corps.push(docPara(a.texte));
+    avisBlocsChiffres(o).forEach(b=> corps.push(docTable(b.titre, b.lignes)));
+    const pieces = (o.pieces || []).filter(x=> String(x.nom || "").trim());
+    if(pieces.length) corps.push(docTable("Les pièces relevées", pieces.map(x=> [
+      [x.niveau, x.nom].filter(Boolean).join(" — "),
+      [x.surface ? m2txt(num(x.surface)) + " au sol" : "",
+       x.horsHab ? "hors habitable" : (num(habPiece(x))
+         ? m2txt(num(habPiece(x))) + " habitables" : "")].filter(Boolean).join(" · ")])));
+    if(forts.length || faibles.length){
+      corps.push(`<p class="h3">Les facteurs influents</p>
+        <table class="t"><tr><th>Influence positive</th><th>Influence négative</th></tr>
+        <tr><td>${forts.map(x=> "• " + docEsc(x)).join("<br/>") || "—"}</td>
+        <td>${faibles.map(x=> "• " + docEsc(x)).join("<br/>") || "—"}</td></tr></table>`);
+    }
+  }
+  if(pg.ventes && ventes.length){
+    corps.push(`<p class="h2">Les ventes passées dans le secteur</p>`);
+    corps.push(docPara("Les prix ci-dessous sont ceux d'actes réellement signés, "
+      + "publiés par l'administration fiscale au titre des demandes de valeurs "
+      + "foncières. Ils ne sont pas des prix affichés."));
+    corps.push(`<table class="t"><tr><th>Date</th><th>Type</th><th>Surface</th>
+      <th>Terrain</th><th>Prix</th><th>Prix / m²</th></tr>${ventes.map(v=>{
+        const m2 = prixM2(v);
+        return `<tr><td>${docEsc(v.d ? fdate(v.d) : "")}</td>
+          <td>${docEsc(v.type || "")}</td>
+          <td>${docEsc(v.surf ? m2txt(num(v.surf)) : "")}</td>
+          <td>${docEsc(v.terr ? m2txt(num(v.terr)) : "—")}</td>
+          <td class="v">${docEsc(eur(num(v.prix)))}</td>
+          <td class="v">${docEsc(m2 ? eur(m2) + "/m²" : "")}</td></tr>`;
+      }).join("")}</table>`);
+    const moy = moyenneRetenue(a.ventes);
+    if(moy) corps.push(`<p class="tot">Moyenne des ${moy.n} vente${
+      moy.n > 1 ? "s" : ""} retenue${moy.n > 1 ? "s" : ""} : ${docEsc(eur(moy.prix))}${
+      moy.m2 ? " — " + docEsc(eur(moy.m2)) + "/m²" : ""}</p>`);
+  }
+  if(pg.annonces && anns.length){
+    corps.push(`<p class="h2">Les biens actuellement en vente</p>`);
+    corps.push(docPara("Ce sont des prix demandés, non des prix obtenus : ils disent "
+      + "la concurrence que votre bien rencontrera, pas ce qu'il vaut."));
+    corps.push(`<table class="t"><tr><th>Bien</th><th>Prix</th></tr>${anns.map(x=>{
+      const pr = num(x.prix), su = num(x.surf);
+      return `<tr><td>${docEsc([x.ville || "Bien comparable",
+        [su ? m2txt(su) : "", x.pieces ? x.pieces + " pièces" : "",
+         x.terr ? "terrain " + m2txt(num(x.terr)) : "", x.dpe ? "DPE " + x.dpe : "",
+         x.jours ? "en ligne " + x.jours : "", x.note || ""]
+         .filter(Boolean).join(" · ")].filter(Boolean).join(" — "))}</td>
+        <td class="v">${docEsc(eur(pr) + (pr && su
+          ? "  (" + eur(Math.round(pr / su)) + "/m²)" : ""))}</td></tr>`;
+    }).join("")}</table>`);
+  }
+  if(pg.synth){
+    corps.push(`<p class="h2">La valorisation pour la vente</p>`);
+    corps.push(docPara("Notre avis de valeur est fondé sur une étude croisée du "
+      + "marché, en nous appuyant notamment sur les biens similaires — "
+      + "caractéristiques proches et environnement comparable — qui sont en vente ou "
+      + "ont été vendus, ainsi que sur les tendances du marché immobilier actuel "
+      + "pour le secteur concerné."));
+    if(mn !== null || mx !== null) corps.push(`<p class="enc">Dans le contexte actuel
+      du marché immobilier et dans l'état actuel du bien, le prix de ce bien LIBRE DE
+      TOUTE OCCUPATION peut être estimé ${docEsc(mn !== null && mx !== null
+        ? "entre " + eur(mn) + " et " + eur(mx)
+        : "à " + eur(mn === null ? mx : mn))}.</p>`);
+    const ls = [];
+    if(mn !== null || mx !== null) ls.push(["Prix de vente conseillé",
+      mn !== null && mx !== null ? eur(mn) + " à " + eur(mx)
+        : eur(mn === null ? mx : mn)]);
+    if(h) ls.push(["Honoraires à la charge de l'" + String(h.charge).toLowerCase(),
+      h.pct ? m2Pourcent(h.n) : eur(h.n)]);
+    if(net.mn !== null || net.mx !== null) ls.push(["Net vendeur",
+      [net.mn, net.mx].filter(x=> x !== null).map(x=> eur(Math.round(x))).join(" à ")]);
+    corps.push(docTable("", ls).replace('<p class="h3"></p>', ""));
+    corps.push(`<p class="pt">Les honoraires indiqués sont ceux appliqués en cas de
+      mandat exclusif. Pour une autre formule de mandat, nous questionner.</p>`);
+  }
+  if(pg.reserves){
+    corps.push(`<p class="h2">Les réserves</p>`);
+    AV_RESERVES.forEach(t=> corps.push(`<p class="pt">${docEsc(t)}</p>`));
+    corps.push(`<p class="txt"><b>Le présent avis de valeur forme un ensemble dont les
+      pages ne peuvent être séparées.</b></p>`);
+    corps.push(`<p class="pt">Toute duplication ou reproduction tronquée, amputée ou
+      modifiée, même partiellement, livrée à un tiers, le rend caduque et non
+      opposable. Les valeurs déterminées ci-dessus sont des valeurs actuelles, tirées
+      de l'étude du marché immobilier local : elles peuvent varier sensiblement en
+      fonction de la conjoncture économique et monétaire. Le présent document ne
+      constitue pas une expertise immobilière.</p>`);
+    corps.push(`<p class="txt"><b>C'EST SOUS CES RÉSERVES QUE NOUS AVONS ÉTABLI, en
+      notre cabinet, LE PRÉSENT AVIS DE VALEUR, sincèrement et de bonne foi.</b></p>`);
+    corps.push(`<p class="sig">${docEsc([ag.ville || "Arles",
+      fdate(avisDateDoc(o))].filter(Boolean).join(", le "))}<br/><br/>
+      <b>${docEsc(nego.nom || "")}</b>${nego.titre
+        ? "<br/>" + docEsc(nego.titre) : ""}</p>`);
+    if(ag.carte) corps.push(`<p class="pt">${docEsc(ag.carte)}</p>`);
+  }
+
+  /* l'en-tête Word : la mise en page, les marges, et la police. Tout est
+     dans la feuille de style — Word la respecte, et elle se retouche. */
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<title>${docEsc("Avis de valeur — " + titre)}</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>
+<w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+@page{size:21cm 29.7cm;margin:2cm 2cm 2cm 2cm;mso-header-margin:1cm;
+  mso-footer-margin:1cm}
+body{font-family:Calibri,Arial,sans-serif;font-size:10.5pt;color:#241a15}
+p{margin:0 0 7pt}
+.tt{font-size:24pt;font-weight:bold;color:#973f24;margin-bottom:2pt}
+.st{font-size:14pt;font-weight:bold;color:#241a15;margin-bottom:1pt}
+.st2{font-size:9.5pt;color:#938680;margin-bottom:16pt}
+.h2{font-size:13pt;font-weight:bold;color:#973f24;margin:16pt 0 6pt;
+  border-bottom:1pt solid #e6d9d3;padding-bottom:2pt}
+.h3{font-size:11pt;font-weight:bold;color:#973f24;margin:12pt 0 4pt}
+.txt{text-align:justify}
+.pt{font-size:9pt;color:#5f524c;text-align:justify;margin-bottom:5pt}
+.enc{background:#f7ece6;border-left:3pt solid #973f24;padding:8pt 10pt;
+  font-size:12pt;font-weight:bold;color:#973f24;margin:10pt 0 12pt}
+.tot{font-weight:bold;color:#973f24;margin:4pt 0 12pt}
+.sig{text-align:right;margin-top:20pt}
+table.t{border-collapse:collapse;width:100%;margin:0 0 10pt;font-size:10pt}
+table.t th{background:#973f24;color:#fff;font-size:8.5pt;text-align:left;
+  padding:4pt 7pt;font-weight:bold}
+table.t td{border-bottom:0.5pt solid #e6d9d3;padding:4pt 7pt;vertical-align:top}
+table.t td.v{text-align:right;font-weight:bold}
+</style></head><body>${corps.join("\n")}</body></html>`;
+  return new Blob(["﻿" + html], {type:"application/msword;charset=utf-8"});
+}
+
+/* ---------------------------------------- le document Word proprement dit
+   WordprocessingML, en mise en forme DIRECTE : pas de feuille de styles à
+   respecter, donc rien qui se casse quand il retouche. Chaque paragraphe
+   porte sa taille, sa couleur et sa graisse, et se modifie comme
+   n'importe quel paragraphe tapé à la main.                              */
+const DX_MARQUE = "973F24";
+const DX_ENCRE  = "241A15";
+const DX_GRIS   = "5F524C";
+const DX_FILET  = "E6D9D3";
+const DX_FOND   = "F7ECE6";
+function dxEsc(t){
+  return String(t == null ? "" : t)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    /* Word refuse les caractères de contrôle : ils feraient un fichier
+       illisible sans rien dire de l'endroit où il pèche */
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+}
+/* un paragraphe : taille en demi-points, c'est l'unité de Word */
+function dxP(txt, o){
+  const x = o || {};
+  const rpr = "<w:rPr>" + (x.gras ? "<w:b/>" : "")
+    + `<w:color w:val="${x.coul || DX_ENCRE}"/>`
+    + `<w:sz w:val="${x.taille || 21}"/><w:szCs w:val="${x.taille || 21}"/>`
+    + (x.caps ? "<w:caps/>" : "") + "</w:rPr>";
+  const ppr = "<w:pPr>"
+    + `<w:spacing w:before="${x.avant || 0}" w:after="${x.apres === undefined
+        ? 120 : x.apres}"/>`
+    + (x.just ? '<w:jc w:val="both"/>' : x.droite ? '<w:jc w:val="right"/>'
+        : x.centre ? '<w:jc w:val="center"/>' : "")
+    + (x.fond ? `<w:shd w:val="clear" w:fill="${x.fond}"/>` : "")
+    + (x.filet ? `<w:pBdr><w:bottom w:val="single" w:sz="6" w:color="${DX_FILET}"/>`
+        + "</w:pBdr>" : "")
+    + (x.cadre ? `<w:ind w:left="170" w:right="170"/>` : "")
+    + rpr.replace("<w:rPr>", "<w:rPr>").replace("</w:rPr>", "</w:rPr>")
+    + "</w:pPr>";
+  const corps = String(txt == null ? "" : txt).split("\n").map((l, i)=>
+    (i ? "<w:br/>" : "") + `<w:t xml:space="preserve">${dxEsc(l)}</w:t>`).join("");
+  return `<w:p>${ppr}<w:r>${rpr}${corps}</w:r></w:p>`;
+}
+function dxCellule(txt, o){
+  const x = o || {};
+  return `<w:tc><w:tcPr><w:tcW w:w="${x.l || 0}" w:type="dxa"/>`
+    + (x.fond ? `<w:shd w:val="clear" w:fill="${x.fond}"/>` : "")
+    + "<w:tcMar><w:top w:w=\"60\" w:type=\"dxa\"/><w:bottom w:w=\"60\" w:type=\"dxa\"/>"
+    + "<w:left w:w=\"110\" w:type=\"dxa\"/><w:right w:w=\"110\" w:type=\"dxa\"/></w:tcMar>"
+    + `</w:tcPr>${dxP(txt, Object.assign({apres:0}, x))}</w:tc>`;
+}
+/* un tableau : une ligne de titre en terracotta, puis les lignes.
+   `droites` dit QUELLES COLONNES se lisent à droite — les montants et les
+   mesures. Une colonne de puces alignée à droite, elle, ne se lit pas ;
+   c'est ce que donnait la règle automatique d'avant. */
+function dxTable(titre, lignes, largeurs, entetes, droites, sansGras){
+  if(!lignes.length) return "";
+  const dr = Array.isArray(droites) ? droites
+    : (largeurs.length === 2 ? [false, true] : []);
+  const aD = i=> dr.indexOf(i) >= 0 || dr[i] === true;
+  const tot = largeurs.reduce((s, x)=> s + x, 0);
+  const bord = `<w:tblBorders><w:insideH w:val="single" w:sz="4" w:color="${DX_FILET}"/>`
+    + `<w:bottom w:val="single" w:sz="4" w:color="${DX_FILET}"/></w:tblBorders>`;
+  const tete = entetes
+    ? `<w:tr><w:trPr><w:tblHeader/></w:trPr>${entetes.map((h, i)=>
+        dxCellule(h, {l:largeurs[i], fond:DX_MARQUE, coul:"FFFFFF", gras:true,
+          taille:16, caps:true, droite: aD(i)})).join("")}</w:tr>`
+    : "";
+  const corps = lignes.map((ln, k)=> `<w:tr>${ln.map((c, i)=>
+    dxCellule(c, {l:largeurs[i], fond: k % 2 ? "FBF7F5" : null,
+      coul: i ? DX_ENCRE : DX_GRIS, gras: !sansGras && i > 0, taille:19,
+      droite: aD(i)}))
+    .join("")}</w:tr>`).join("");
+  return (titre ? dxP(titre, {gras:true, coul:DX_MARQUE, taille:22, avant:200,
+                              apres:80}) : "")
+    + `<w:tbl><w:tblPr><w:tblW w:w="${tot}" w:type="dxa"/>${bord}`
+    + "<w:tblLayout w:type=\"fixed\"/></w:tblPr><w:tblGrid>"
+    + largeurs.map(l=> `<w:gridCol w:w="${l}"/>`).join("") + "</w:tblGrid>"
+    + tete + corps + "</w:tbl>" + dxP("", {apres:0, taille:10});
+}
+/* l'image d'une adresse « data: » ramenée à ses octets, pour l'archive */
+function octetsDataUri(uri){
+  const m = /^data:([^;,]+);base64,(.*)$/.exec(String(uri || ""));
+  if(!m) return null;
+  let bin;
+  try{ bin = atob(m[2]); }catch(e){ return null; }
+  const o = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+  return {o, type:m[1], ext: /png/i.test(m[1]) ? "png"
+    : /gif/i.test(m[1]) ? "gif" : "jpeg"};
+}
+/* une image dans un document Word se mesure en EMU — 914 400 par pouce,
+   360 000 par centimètre. Le logo fait 4,2 cm de large, comme sur le
+   papier à en-tête, et sa hauteur suit son rapport. */
+const EMU_CM = 360000;
+function dxImage(rid, cmLarge, ratio){
+  const cx = Math.round(cmLarge * EMU_CM);
+  const cy = Math.round(cmLarge * (ratio || 0.3) * EMU_CM);
+  return `<w:p><w:pPr><w:spacing w:after="60"/></w:pPr><w:r><w:drawing>`
+    + `<wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"`
+    + ` distT="0" distB="0" distL="0" distR="0">`
+    + `<wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="1" name="Logo"/>`
+    + `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">`
+    + `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">`
+    + `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">`
+    + `<pic:nvPicPr><pic:cNvPr id="1" name="Logo"/><pic:cNvPicPr/></pic:nvPicPr>`
+    + `<pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`
+    + ` r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>`
+    + `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>`
+    + `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>`
+    + `</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+}
+async function avisValeurDocx(d){
+  const o = d || D, a = avisDe(o), pg = a.pages;
+  const ag = L.agence || {};
+  const nego = avisSignataire(o);
+  /* les mêmes cartes que le PDF : elles font partie de la situation du
+     bien, pas de l'habillage. Si le réseau ne répond pas, elles manquent
+     des deux côtés — et le document reste complet. */
+  const cartes = pg.situation && pg.cartes ? await avisCartes(o) : null;
+  const {mn, mx} = avisFourchette(o), net = avisNetVendeur(o), h = net.h;
+  const titre = [typeBienLisible(o) || "Bien", adresseBienCourteDe(o)]
+    .filter(Boolean).join(" — ");
+  const ventes = a.ventes.filter(v=> v && v.pris && num(v.prix));
+  const anns = a.annonces.filter(x=> x && x.pris && num(x.prix));
+  const forts = avisLignesLibres(a.forts), faibles = avisLignesLibres(a.faibles);
+  const LP = 9360;                   /* la largeur utile, en vingtièmes de point */
+  const c = [];
+  const h1 = t=> c.push(dxP(t, {gras:true, coul:DX_MARQUE, taille:26, avant:320,
+                                apres:120, filet:true}));
+  const txt = t=> avisLignesLibres(t).forEach(l=>
+    c.push(dxP(l, {taille:21, just:true, apres:140})));
+  const petit = t=> c.push(dxP(t, {taille:17, coul:DX_GRIS, just:true, apres:110}));
+
+  /* l'en-tête : le logo et la raison CÔTE À CÔTE. Word n'a pas de boîtes
+     flottantes commodes ; deux cellules sans bordure, centrées
+     verticalement, font exactement ce qu'il faut et se retouchent
+     comme un tableau ordinaire. */
+  const img = octetsDataUri(ag.logo);
+  const port = octetsDataUri(await portraitRondUri(nego.portrait, 360));
+  const nomAg = avisNomAgence();
+  const cellMilieu = (larg, dedans)=>
+    `<w:tc><w:tcPr><w:tcW w:w="${larg}" w:type="dxa"/>`
+    + `<w:vAlign w:val="center"/></w:tcPr>${dedans || dxP("", {apres:0})}</w:tc>`;
+  /* les deux identités de même rang, taillées pareil */
+  const blocTete = (nom, lignes)=>
+    (nom ? dxP(nom, {gras:true, coul:DX_MARQUE, taille:21, apres:40}) : "")
+    + lignes.filter(Boolean).map(l=>
+        dxP(l, {taille:15, coul:DX_GRIS, apres:20})).join("");
+  /* les deux vignettes sont serrées au plus juste : la place gagnée va au
+     texte, faute de quoi un courriel de trente caractères passe à la ligne */
+  const LG = 1560, LQ = 1300, LT = Math.floor((LP - LG - LQ) / 2);
+  c.push(`<w:tbl><w:tblPr><w:tblW w:w="${LP}" w:type="dxa"/>`
+    + `<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>`
+    + `<w:gridCol w:w="${LG}"/><w:gridCol w:w="${LT}"/>`
+    + `<w:gridCol w:w="${LQ}"/><w:gridCol w:w="${LT}"/></w:tblGrid><w:tr>`
+    + cellMilieu(LG, img ? dxImage("rId2", 2.5, num(ag.logoRatio) || 0.3) : "")
+    + cellMilieu(LT, blocTete(nomAg, avisCoordonnees()))
+    + cellMilieu(LQ, port ? dxImage("rIdQ", 2.1, 1) : "")
+    + cellMilieu(LT, blocTete(nego.nom || "",
+        [nego.qualite || "", nego.tel || "", nego.email || ""]))
+    + `</w:tr></w:tbl>`);
+  c.push(dxP("", {apres:200, taille:10}));
+  c.push(dxP("AVIS DE VALEUR", {gras:true, coul:DX_MARQUE, taille:48, apres:60,
+    centre:true}));
+  c.push(dxP(avisTitreBien(o), {gras:true, taille:30, apres:40, centre:true}));
+  c.push(dxP(adresseBienCourteDe(o), {taille:22, apres:60, centre:true}));
+  c.push(dxP("Établi le " + fdate(avisDateDoc(o))
+    + (avisDemandeur(o) ? " — à la demande de " + avisDemandeur(o) : ""),
+    {taille:19, coul:DX_GRIS, apres:320, centre:true}));
+
+  if(pg.appel){
+    c.push(dxP(avisFormuleAppel(o), {gras:true, taille:22, apres:160}));
+    txt(String(a.intro || "").trim() || ("Pour faire suite à votre demande, et "
+      + "consécutivement à ma visite sur site, vous trouverez ci-après l'avis de "
+      + "valeur vénale du bien immobilier désigné ci-dessous."));
+  }
+
+  if(pg.situation){
+    const sit = [["Adresse", adresseBienCourteDe(o)]];
+    if((o.bien || {}).residence) sit.push(["Résidence", o.bien.residence]);
+    if((o.bien || {}).sitJur) sit.push(["Situation juridique", o.bien.sitJur]);
+    if((o.bien || {}).annee) sit.push(["Année de construction", o.bien.annee]);
+    avisParcelles(o).filter(x=> x && (x.section || x.numero)).forEach(x=>
+      sit.push(["Cadastre",
+        ["section " + (x.prefixe ? x.prefixe + " " : "") + (x.section || ""),
+         x.numero ? "parcelle n° " + x.numero : "",
+         x.surface ? m2txt(num(x.surface)) : ""].filter(Boolean).join(" · ")]));
+    const imm = pg.immeuble ? avisImmeuble(o) : null;
+    if(imm){
+      const demiS = Math.floor((LP - 240) / 2);
+      const moitie = (t)=> dxTable(t.titre, t.lignes,
+        [Math.floor(demiS * 0.52), demiS - Math.floor(demiS * 0.52)], null);
+      c.push(`<w:tbl><w:tblPr><w:tblW w:w="${LP}" w:type="dxa"/>`
+        + `<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>`
+        + `<w:gridCol w:w="${demiS}"/><w:gridCol w:w="240"/>`
+        + `<w:gridCol w:w="${demiS}"/></w:tblGrid><w:tr>`
+        + `<w:tc><w:tcPr><w:tcW w:w="${demiS}" w:type="dxa"/></w:tcPr>`
+        + moitie({titre:"La situation du bien", lignes:sit}) + `</w:tc>`
+        + `<w:tc><w:tcPr><w:tcW w:w="240" w:type="dxa"/></w:tcPr>`
+        + dxP("", {apres:0, taille:10}) + `</w:tc>`
+        + `<w:tc><w:tcPr><w:tcW w:w="${demiS}" w:type="dxa"/></w:tcPr>`
+        + moitie({titre:"L'immeuble — " + imm.nom, lignes:imm.lignes})
+        + `</w:tc></w:tr></w:tbl>`);
+      c.push(dxP("", {apres:120, taille:10}));
+    } else c.push(dxTable("La situation du bien", sit, [3400, LP - 3400], null));
+    if(pg.cartes && cartes && (cartes.large || cartes.pres)){
+      const cel = [];
+      if(cartes.large) cel.push([dxP("À 3 KM À LA RONDE",
+        {gras:true, coul:DX_MARQUE, taille:15, apres:40})
+        + dxImage("rIdC1", 7.6, cartes.large.h / cartes.large.l), "rIdC1"]);
+      if(cartes.pres) cel.push([dxP("À 500 MÈTRES",
+        {gras:true, coul:DX_MARQUE, taille:15, apres:40})
+        + dxImage("rIdC2", 7.6, cartes.pres.h / cartes.pres.l), "rIdC2"]);
+      c.push(`<w:tbl><w:tblPr><w:tblW w:w="${LP}" w:type="dxa"/>`
+        + `<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>`
+        + cel.map(()=> `<w:gridCol w:w="${Math.floor(LP / cel.length)}"/>`).join("")
+        + `</w:tblGrid><w:tr>` + cel.map(x=>
+          `<w:tc><w:tcPr><w:tcW w:w="${Math.floor(LP / cel.length)}"`
+          + ` w:type="dxa"/></w:tcPr>${x[0]}</w:tc>`).join("")
+        + `</w:tr></w:tbl>`);
+      c.push(dxP("Fonds de carte © les contributeurs OpenStreetMap.",
+        {taille:15, coul:DX_GRIS, apres:200}));
+    }
+  }
+
+  if(pg.carac || pg.texte || pg.tableaux || pg.facteurs){
+    h1("La description du bien");
+    const syn = pg.carac ? avisCaracPrincipales(o) : [];
+    if(syn.length){
+      const lc = Math.floor(LP / syn.length);
+      c.push(`<w:tbl><w:tblPr><w:tblW w:w="${LP}" w:type="dxa"/>`
+        + `<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>`
+        + syn.map(()=> `<w:gridCol w:w="${lc}"/>`).join("") + `</w:tblGrid><w:tr>`
+        + syn.map(x=> `<w:tc><w:tcPr><w:tcW w:w="${lc}" w:type="dxa"/>`
+          + `<w:shd w:val="clear" w:fill="${DX_FOND}"/>`
+          + `<w:tcMar><w:top w:w="110" w:type="dxa"/>`
+          + `<w:bottom w:w="110" w:type="dxa"/></w:tcMar></w:tcPr>`
+          + dxP(x[0], {gras:true, coul:DX_MARQUE, taille:18, centre:true, apres:30})
+          + dxP(x[1], {gras:true, coul:DX_MARQUE, taille:28, centre:true, apres:0})
+          + `</w:tc>`).join("") + `</w:tr></w:tbl>`);
+      c.push(dxP("", {apres:160, taille:10}));
+    }
+    if(pg.texte && String(a.texte || "").trim()) txt(a.texte);
+    /* DEUX TABLEAUX PAR LIGNE : pleine largeur, « Le bien » et « Le
+       bâtiment » prenaient deux écrans pour douze lignes. Un tableau
+       extérieur sans bordure les met côte à côte, et ils restent des
+       tableaux ordinaires qu'on retouche. */
+    if(pg.tableaux){
+      const bl = avisBlocsChiffres(o);
+      const demi = Math.floor((LP - 240) / 2);
+      for(let i = 0; i < bl.length; i += 2){
+        const paire = bl.slice(i, i + 2);
+        c.push(`<w:tbl><w:tblPr><w:tblW w:w="${LP}" w:type="dxa"/>`
+          + `<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>`
+          + `<w:gridCol w:w="${demi}"/><w:gridCol w:w="240"/>`
+          + `<w:gridCol w:w="${demi}"/></w:tblGrid><w:tr>`
+          + `<w:tc><w:tcPr><w:tcW w:w="${demi}" w:type="dxa"/></w:tcPr>`
+          + dxTable(paire[0].titre, paire[0].lignes,
+              [Math.floor(demi * 0.5), demi - Math.floor(demi * 0.5)], null)
+          + `</w:tc><w:tc><w:tcPr><w:tcW w:w="240" w:type="dxa"/></w:tcPr>`
+          + dxP("", {apres:0, taille:10}) + `</w:tc>`
+          + `<w:tc><w:tcPr><w:tcW w:w="${demi}" w:type="dxa"/></w:tcPr>`
+          + (paire[1] ? dxTable(paire[1].titre, paire[1].lignes,
+              [Math.floor(demi * 0.5), demi - Math.floor(demi * 0.5)], null)
+            : dxP("", {apres:0, taille:10}))
+          + `</w:tc></w:tr></w:tbl>`);
+        c.push(dxP("", {apres:80, taille:10}));
+      }
+    }
+    if(pg.facteurs && (forts.length || faibles.length))
+      c.push(dxTable("Les facteurs influents",
+        [[forts.map(x=> "• " + x).join("\n") || "—",
+          faibles.map(x=> "• " + x).join("\n") || "—"]],
+        [LP / 2, LP / 2], ["Influence positive", "Influence négative"], [], true));
+  }
+  if(pg.ventes && ventes.length){
+    h1("Les ventes passées dans le secteur");
+    txt("Les prix ci-dessous sont ceux d'actes réellement signés, publiés par "
+      + "l'administration fiscale au titre des demandes de valeurs foncières. Ils "
+      + "ne sont pas des prix affichés.");
+    c.push(dxTable("", ventes.map(v=>{
+      const m2 = prixM2(v);
+      return [v.d ? fdate(v.d) : "", v.type || "",
+        v.surf ? m2txt(num(v.surf)) : "", v.terr ? m2txt(num(v.terr)) : "—",
+        eur(num(v.prix)), m2 ? eur(m2) + "/m²" : ""];
+    }), [1400, 1700, 1300, 1300, 1900, LP - 7600],
+      ["Date", "Type", "Surface", "Terrain", "Prix de vente", "Prix / m²"],
+      [2, 3, 4, 5]));
+    const moy = moyenneRetenue(a.ventes);
+    if(moy) c.push(dxP("Moyenne des " + moy.n + " vente" + (moy.n > 1 ? "s" : "")
+      + " retenue" + (moy.n > 1 ? "s" : "") + " : " + eur(moy.prix)
+      + (moy.m2 ? "  —  " + eur(moy.m2) + "/m²" : ""),
+      {gras:true, coul:DX_MARQUE, taille:21, apres:240}));
+  }
+  if(pg.annonces && anns.length){
+    h1("Les biens actuellement en vente");
+    txt("Ce sont des prix demandés, non des prix obtenus : ils disent la concurrence "
+      + "que votre bien rencontrera, pas ce qu'il vaut.");
+    c.push(dxTable("", anns.map(x=>{
+      const pr = num(x.prix), su = num(x.surf);
+      return [[x.ville || "Bien comparable",
+        [su ? m2txt(su) : "", x.pieces ? x.pieces + " pièces" : "",
+         x.terr ? "terrain " + m2txt(num(x.terr)) : "", x.dpe ? "DPE " + x.dpe : "",
+         x.jours ? "en ligne " + x.jours : "", x.note || ""]
+         .filter(Boolean).join(" · ")].filter(Boolean).join(" — "),
+        eur(pr) + (pr && su ? "  (" + eur(Math.round(pr / su)) + "/m²)" : "")];
+    }), [LP - 2600, 2600], ["Bien comparable", "Prix demandé"]));
+    const moyA = moyenneRetenue(a.annonces);
+    if(moyA) c.push(dxP("Moyenne des prix demandés : " + eur(moyA.prix)
+      + (moyA.m2 ? "  —  " + eur(moyA.m2) + "/m²" : ""),
+      {gras:true, coul:DX_MARQUE, taille:21, apres:240}));
+  }
+  const rc = calculRendement(o);
+  if(pg.rend && rc.prix){
+    h1("L'estimation par le rendement locatif");
+    txt("Un bien loué ne se vend pas au mètre carré : il se vend au rendement. "
+      + "L'acquéreur n'achète pas des murs, il achète un revenu, et il paiera ce "
+      + "qu'il faut pour que ce revenu lui rapporte le taux qu'il s'est fixé.");
+    const lr = [["Loyer mensuel hors charges", eur(rc.loyer)],
+                ["Loyer annuel", eur(Math.round(rc.brut))]];
+    if(rc.vacance) lr.push(["Vacance locative retenue", m2Pourcent(rc.vacance)],
+      ["Encaissé après vacance", eur(Math.round(rc.encaisse))]);
+    rendDe(o).charges.filter(x=> x && num(x.montant)).forEach(x=>
+      lr.push([x.nature || "Charge", "− " + eur(num(x.montant))]));
+    if(rc.charges) lr.push(["Total des charges", "− " + eur(rc.charges)]);
+    lr.push(["Revenu net annuel", eur(Math.round(rc.net))]);
+    lr.push(["Rendement net attendu", m2Pourcent(rc.taux)]);
+    c.push(dxTable("Le calcul", lr, [4600, LP - 4600], null));
+    c.push(dxP("Pour un rendement net de " + m2Pourcent(rc.taux)
+      + ", le prix ressort à " + eur(rc.prix) + "."
+      + (rc.tauxBrut ? " Ce prix correspond à un rendement brut de "
+          + m2Pourcent(rc.tauxBrut) + "." : ""),
+      {gras:true, coul:DX_MARQUE, taille:24, fond:DX_FOND, cadre:true,
+       avant:160, apres:200}));
+    petit("Le rendement net se calcule après la vacance et les charges qui restent "
+      + "au propriétaire ; le rendement brut, celui qu'affichent les annonces, part "
+      + "du loyer seul. L'écart entre les deux explique à lui seul la différence "
+      + "entre un prix affiché et un prix obtenu.");
+  }
+  if(pg.synth){
+    h1("La valorisation pour la vente");
+    txt("Notre avis de valeur est fondé sur une étude croisée du marché, en nous "
+      + "appuyant notamment sur les biens similaires — caractéristiques proches et "
+      + "environnement comparable — qui sont en vente ou ont été vendus, ainsi que "
+      + "sur les tendances du marché immobilier actuel pour le secteur concerné.");
+    if(mn !== null || mx !== null)
+      c.push(dxP("Dans le contexte actuel du marché immobilier et dans l'état actuel "
+        + "du bien, le prix de ce bien LIBRE DE TOUTE OCCUPATION peut être estimé "
+        + (mn !== null && mx !== null ? "entre " + eur(mn) + " et " + eur(mx)
+            : "à " + eur(mn === null ? mx : mn)) + ".",
+        {gras:true, coul:DX_MARQUE, taille:24, fond:DX_FOND, cadre:true,
+         avant:160, apres:240}));
+    const ls = [];
+    if(mn !== null || mx !== null) ls.push(["Prix de vente conseillé",
+      mn !== null && mx !== null ? eur(mn) + "  à  " + eur(mx)
+        : eur(mn === null ? mx : mn)]);
+    if(h) ls.push(["Honoraires à la charge de l'" + String(h.charge).toLowerCase(),
+      h.pct ? m2Pourcent(h.n) : eur(h.n)]);
+    if(h && h.pct && (mn !== null || mx !== null)){
+      const f = v=> v === null ? null : Math.round(v * h.n / 100);
+      ls.push(["Soit, en euros", [f(mn), f(mx)].filter(x=> x !== null).map(eur)
+        .join("  à  ")]);
+    }
+    if(net.mn !== null || net.mx !== null) ls.push(["Net vendeur",
+      [net.mn, net.mx].filter(x=> x !== null).map(x=> eur(Math.round(x)))
+        .join("  à  ")]);
+    if(ls.length) c.push(dxTable("La synthèse", ls, [4200, LP - 4200], null));
+    petit("Les honoraires indiqués sont ceux appliqués en cas de mandat exclusif. "
+      + "Pour une autre formule de mandat, nous questionner.");
+  }
+  if(pg.reserves){
+    h1("Les réserves");
+    AV_RESERVES.forEach(petit);
+    c.push(dxP("Le présent avis de valeur forme un ensemble dont les pages ne peuvent "
+      + "être séparées.", {gras:true, taille:21, avant:160, apres:120}));
+    petit("Toute duplication ou reproduction tronquée, amputée ou modifiée, même "
+      + "partiellement, livrée à un tiers, le rend caduque et non opposable. Les "
+      + "valeurs déterminées ci-dessus sont des valeurs actuelles, tirées de l'étude "
+      + "du marché immobilier local : elles peuvent varier sensiblement en fonction "
+      + "de la conjoncture économique et monétaire. Le présent document ne constitue "
+      + "pas une expertise immobilière.");
+    c.push(dxP("C'EST SOUS CES RÉSERVES QUE NOUS AVONS ÉTABLI, en notre cabinet, LE "
+      + "PRÉSENT AVIS DE VALEUR, sincèrement et de bonne foi.",
+      {gras:true, taille:21, avant:200, apres:320}));
+    /* ni date ni mentions légales ici : la date est en tête, les mentions
+       sont au pied de chaque page. */
+    c.push(dxP(nego.nom || nomAg, {gras:true, taille:22, droite:true,
+      apres:nego.qualite ? 40 : 320}));
+    if(nego.qualite) c.push(dxP(nego.qualite, {taille:18, coul:DX_GRIS,
+      droite:true, apres:320}));
+  }
+
+  /* LE PIED DE PAGE WORD
+     Trois cellules sans bordure : le logo, les mentions légales centrées,
+     la pagination. Word numérote lui-même par deux champs PAGE et
+     NUMPAGES — c'est lui qui compte, pas nous, et le compte reste juste
+     après n'importe quelle retouche. */
+  const legales = [
+    [nomAg, ag.forme || "", ag.rcs || ""].filter(Boolean).join("  ·  "),
+    [ag.adresse || "", ag.site || ""].filter(Boolean).join("  ·  "),
+    [ag.carte || "", ag.garantie || ""].filter(Boolean).join("  ·  ")
+  ].filter(x=> x.trim());
+  const champ = (instr)=> `<w:r><w:fldChar w:fldCharType="begin"/></w:r>`
+    + `<w:r><w:instrText xml:space="preserve"> ${instr} </w:instrText></w:r>`
+    + `<w:r><w:fldChar w:fldCharType="separate"/></w:r>`
+    + `<w:r><w:rPr><w:b/><w:color w:val="${DX_GRIS}"/><w:sz w:val="17"/></w:rPr>`
+    + `<w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r>`;
+  const pagination = `<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:after="0"/>`
+    + `<w:rPr><w:b/><w:color w:val="${DX_GRIS}"/><w:sz w:val="17"/></w:rPr></w:pPr>`
+    + champ("PAGE") + `<w:r><w:rPr><w:b/><w:color w:val="${DX_GRIS}"/>`
+    + `<w:sz w:val="17"/></w:rPr><w:t xml:space="preserve"> / </w:t></w:r>`
+    + champ("NUMPAGES") + `</w:p>`;
+  const pied = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+ xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+ xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+ xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+<w:tbl><w:tblPr><w:tblW w:w="${LP}" w:type="dxa"/>
+<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>
+<w:gridCol w:w="1200"/><w:gridCol w:w="${LP - 2200}"/><w:gridCol w:w="1000"/>
+</w:tblGrid><w:tr>
+<w:tc><w:tcPr><w:tcW w:w="1200" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
+${img ? dxImage("rIdP", 1.8, num(ag.logoRatio) || 0.3) : dxP("", {apres:0})}</w:tc>
+<w:tc><w:tcPr><w:tcW w:w="${LP - 2200}" w:type="dxa"/>
+<w:vAlign w:val="center"/></w:tcPr>${legales.map(l=>
+  dxP(l, {taille:12, coul:DX_GRIS, centre:true, apres:0})).join("")
+  || dxP("", {apres:0})}</w:tc>
+<w:tc><w:tcPr><w:tcW w:w="1000" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
+${pagination}</w:tc></w:tr></w:tbl></w:ftr>`;
+
+  const doc = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+ xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+ xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+ xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+<w:body>${c.join("")}<w:sectPr>
+<w:footerReference w:type="default" r:id="rIdF"/>
+<w:pgSz w:w="11906" w:h="16838"/>
+<w:pgMar w:top="1134" w:right="1134" w:bottom="1588" w:left="1134"
+ w:header="567" w:footer="397" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const types = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>
+${img ? `<Default Extension="${img.ext}" ContentType="${img.type}"/>` : ""}
+${(cartes || (port && port.ext === "jpeg")) ? `<Default Extension="jpeg" ContentType="image/jpeg"/>` : ""}
+${(port && port.ext !== (img || {}).ext && port.ext !== "jpeg") ? `<Default Extension="${port.ext}" ContentType="${port.type}"/>` : ""}
+</Types>`;
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+  const drels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+<Relationship Id="rIdF" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>
+${img ? `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.${img.ext}"/>` : ""}
+${(cartes && cartes.large) ? `<Relationship Id="rIdC1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/carte1.jpeg"/>` : ""}
+${(cartes && cartes.pres) ? `<Relationship Id="rIdC2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/carte2.jpeg"/>` : ""}
+${port ? `<Relationship Id="rIdQ" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/portrait.${port.ext}"/>` : ""}
+</Relationships>`;
+  /* la seule chose que la feuille de styles fixe : la police et le corps
+     par défaut. Tout le reste est porté par les paragraphes eux-mêmes. */
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults><w:rPrDefault><w:rPr>
+<w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+<w:sz w:val="21"/><w:szCs w:val="21"/><w:lang w:val="fr-FR"/>
+</w:rPr></w:rPrDefault><w:pPrDefault><w:pPr>
+<w:spacing w:after="120" w:line="264" w:lineRule="auto"/>
+</w:pPr></w:pPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+<w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`;
+  /* le pied de page porte lui aussi le logo : il lui faut sa propre
+     relation, dans son propre fichier de relations */
+  const frels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+${img ? `<Relationship Id="rIdP" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.${img.ext}"/>` : ""}
+</Relationships>`;
+  const enc = new TextEncoder();
+  const parts = [
+    {nom:"[Content_Types].xml", octets: enc.encode(types)},
+    {nom:"_rels/.rels", octets: enc.encode(rels)},
+    {nom:"word/_rels/document.xml.rels", octets: enc.encode(drels)},
+    {nom:"word/_rels/footer1.xml.rels", octets: enc.encode(frels)},
+    {nom:"word/document.xml", octets: enc.encode(doc)},
+    {nom:"word/footer1.xml", octets: enc.encode(pied)},
+    {nom:"word/styles.xml", octets: enc.encode(styles)}
+  ];
+  if(img) parts.push({nom:"word/media/logo." + img.ext, octets: img.o});
+  if(port) parts.push({nom:"word/media/portrait." + port.ext, octets: port.o});
+  if(cartes && cartes.large)
+    parts.push({nom:"word/media/carte1.jpeg", octets: cartes.large.o});
+  if(cartes && cartes.pres)
+    parts.push({nom:"word/media/carte2.jpeg", octets: cartes.pres.o});
+  return zipRange(parts,
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+}
+
+/* ------------------------------------------- LE PDF, ET SON CLASSEMENT
+   Le document ne part pas seulement dans les téléchargements : il va
+   d'abord dans les PIÈCES du dossier, rubrique « Mandat & Admin » — d'où
+   il rejoint le Drive tout seul, comme le mandat. C'est là qu'on ira le
+   rechercher dans six mois, pas dans un dossier « Téléchargements ».    */
+async function sortirAvisValeur(){
+  toast("Composition de l'avis de valeur…");
+  let blob;
+  try{ blob = await avisValeurPdf(D); }
+  catch(e){
+    popup({titre:"L'avis n'a pas pu être composé", genre:"erreur",
+      corps:`<p style="margin-top:0">${esc(e.message || String(e))}</p>`,
+      boutons:[{lib:"Fermer", primaire:true}]});
+    return;
+  }
+  const nom = nomFichierAvisValeur(D, "pdf");
+  download(blob, nom);
+  let piece = null;
+  try{
+    const f = new File([blob], nom, {type:"application/pdf"});
+    piece = await ajouterPiece(sujetDossier(D), f, "Mandat & Admin");
+  }catch(e){ piece = null; }
+  toast(piece ? "Avis de valeur rangé dans « Mandat & Admin »"
+              : "Avis de valeur téléchargé — le classement n'a pas abouti");
 }
 
 /* =====================================================================
