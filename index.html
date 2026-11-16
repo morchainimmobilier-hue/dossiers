@@ -1526,6 +1526,18 @@ table.avt .avm2{font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .avanntete .grow{flex:1}
 .avanntete input.avprix{width:120px;font-weight:700}
 .avanng{padding:8px 0 0!important}
+.avpts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
+  margin-top:14px}
+.avpt{border:1px solid var(--line);border-radius:10px;background:#faf7f5;
+  padding:10px 12px}
+.avpt h5{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--marque)}
+.avptl{display:grid;gap:6px}
+.avptr{display:flex;align-items:center;gap:5px}
+.avptr input{flex:1;min-width:0}
+.avptn{width:17px;flex:none;text-align:right;font-size:11px;color:var(--ink-3)}
+.avpt .dact{margin-top:9px}
+@media (max-width:760px){.avpts{grid-template-columns:1fr}}
 .rendcalc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
   margin-top:12px}
 .rendcalc>div{border:1px solid var(--line);border-radius:9px;padding:7px 10px;
@@ -1990,10 +2002,14 @@ table.piecest tr.tot td,table.parct tr.tot td{font-weight:700;color:var(--navy);
 .apercufiche iframe{display:block;width:100%;height:100%;border:0}
 /* l'onglet « Fiche de présentation » des Imprimés : un PDF, et non une page
    composée en direct — Word et l'impression du navigateur n'y ont pas cours */
-.docbar #btnFicheRef,.docbar #btnFicheOnglet,.docbar #btnFicheDl{display:none}
+.docbar #btnFicheRef,.docbar #btnFicheOnglet,.docbar #btnFicheDl,
+.docbar #btnFicheWord,.docbar #btnFicheClasser{display:none}
 .docbar.pdf #btnWord,.docbar.pdf #btnPrint,.docbar.pdf #btnWordBoth{display:none}
 .docbar.pdf #btnFicheRef,.docbar.pdf #btnFicheOnglet,
 .docbar.pdf #btnFicheDl{display:inline-flex}
+/* le Word et le classement ne valent que pour l'avis de valeur */
+.docbar.avis #btnFicheWord,.docbar.avis #btnFicheClasser{display:inline-flex}
+.docbar button[hidden]{display:none!important}
 .fichewrap[hidden]{display:none}
 .fichewrap{display:flex;flex-direction:column;gap:8px;padding:14px 0 0}
 .fichemot{margin:0;font-size:12.5px;color:var(--ink-2)}
@@ -2961,7 +2977,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 17 novembre 2026, 15 h 45">Dossiers de vente</div>
+  <div class="brand" title="Version du 17 novembre 2026, 19 h 30">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3092,6 +3108,8 @@ table.tdb .puce.resilie{background:#897466}
         <button data-d="et">Dossier de vente</button>
         <button data-d="fa">Facture</button>
         <button data-d="fp">Fiche de présentation</button>
+        <button data-d="fv">Fiche de visite</button>
+        <button data-d="av">Avis de valeur</button>
       </div>
       <div style="flex:1"></div>
       <button class="addbtn" id="btnWord">Télécharger en Word</button>
@@ -3101,6 +3119,8 @@ table.tdb .puce.resilie{background:#897466}
            l'impression du navigateur n'ont de sens ici, d'où ses boutons -->
       <button class="tbtn light" id="btnFicheRef">Recomposer</button>
       <button class="tbtn light" id="btnFicheOnglet">Ouvrir dans un onglet</button>
+      <button class="tbtn light" id="btnFicheWord">Exporter en Word</button>
+      <button class="tbtn light" id="btnFicheClasser">Classer au dossier</button>
       <button class="addbtn" id="btnFicheDl">Enregistrer en PDF</button>
     </div>
     <div class="card factcard" id="factForm" hidden><h2>Facture d'honoraires</h2>
@@ -3185,7 +3205,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>17 novembre 2026, 15 h 45</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>17 novembre 2026, 19 h 30</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -8595,7 +8615,7 @@ function tableauDeps(o){
    retouches que l'écran ne permet pas.
    ===================================================================== */
 function avisVide(){
-  return {date:"", demande:"", intro:"", texte:"", forts:"", faibles:"",
+  return {date:"", demande:"", intro:"", texte:"", forts:[], faibles:[],
           photos:[], ventes:[], annonces:[], rayon:"800",
           mini:"", maxi:"", hono:"", honoCharge:"Vendeur",
           rend:{loyer:"", vacance:"", charges:[], taux:""},
@@ -8611,6 +8631,8 @@ function avisDe(d){
   Object.keys(v).forEach(k=>{ if(o.av[k] === undefined) o.av[k] = v[k]; });
   ["photos","ventes","annonces"].forEach(k=>{
     if(!Array.isArray(o.av[k])) o.av[k] = []; });
+  ["forts","faibles"].forEach(k=>{
+    if(!Array.isArray(o.av[k])) o.av[k] = avisLignesLibres(o.av[k]); });
   if(!o.av.rend || typeof o.av.rend !== "object") o.av.rend = rendVide();
   if(!Array.isArray(o.av.rend.charges)) o.av.rend.charges = [];
   o.av.pages = Object.assign({}, v.pages, avisPagesReprises(o.av.pages));
@@ -8622,9 +8644,11 @@ function avisDe(d){
    on le lui demande expressément. */
 function avisFourchette(d){
   const a = avisDe(d), e = estimDe(d || D);
+  /* une estimation ne se chiffre pas au centime */
+  const r = v=> v === null ? null : Math.round(v);
   const mn = num(a.mini) !== null ? num(a.mini) : num(e.mini);
   const mx = num(a.maxi) !== null ? num(a.maxi) : num(e.maxi);
-  return {mn, mx};
+  return {mn: r(mn), mx: r(mx)};
 }
 /* « à la demande de » : les vendeurs du dossier, sauf mention contraire */
 function avisDemandeur(d){
@@ -8649,15 +8673,33 @@ function avisHonoraires(d){
   if(n === null) return null;
   return {pct, n, charge: a.honoCharge || p.charge || "Vendeur"};
 }
-/* le net vendeur aux deux bouts de la fourchette */
+/* LE NET VENDEUR, DANS LES DEUX SENS
+   Charge VENDEUR : le prix affiché comprend les honoraires, et le vendeur
+   encaisse ce qui reste — 180 000 € à 5 % laissent 171 000 €.
+   Charge ACQUÉREUR : les honoraires s'AJOUTENT au net du vendeur pour
+   faire le prix affiché. Le pourcentage se compte donc sur le net, pas
+   sur l'affiché, et l'on remonte en divisant — 180 000 € à 5 % laissent
+   180 000 / 1,05 = 171 429 €.
+   La première version rendait le prix tel quel dans ce second cas : le
+   net vendeur égalait le prix de vente, ce qui ne veut rien dire.
+   Tout est arrondi à l'euro : une estimation ne se chiffre pas au centime. */
 function avisNetVendeur(d){
   const {mn, mx} = avisFourchette(d), h = avisHonoraires(d);
   const net = v=>{
     if(v === null) return null;
-    if(!h) return v;
-    return h.charge === "Vendeur" ? v - (h.pct ? v * h.n / 100 : h.n) : v;
+    if(!h) return Math.round(v);
+    if(h.charge === "Vendeur")
+      return Math.round(v - (h.pct ? v * h.n / 100 : h.n));
+    return Math.round(h.pct ? v / (1 + h.n / 100) : v - h.n);
   };
   return {mn: net(mn), mx: net(mx), h};
+}
+/* les honoraires en euros, aux deux bouts : ce qu'ils valent vraiment une
+   fois la charge connue — c'est l'écart entre le prix et le net */
+function avisHonorairesEuros(d){
+  const {mn, mx} = avisFourchette(d), net = avisNetVendeur(d);
+  const e = (v, n)=> (v === null || n === null) ? null : Math.round(v - n);
+  return {mn: e(mn, net.mn), mx: e(mx, net.mx)};
 }
 
 /* ------------------------------------------------- LES VENTES PASSÉES
@@ -8965,6 +9007,24 @@ function avisBlocPhotos(d){
       aucune sélection, l'application prend la photo <b>principale</b> et les suivantes.</p>
     </div>`;
 }
+/* une liste de points : une case par point, une croix pour retirer, un
+   bouton pour ajouter. On tape dans la case — il n'y a pas de fenêtre. */
+function blocPoints(d, quoi, lib, exemple){
+  const l = listePoints(d, quoi);
+  return `<div class="avpt">
+    <h5>${esc(lib)}</h5>
+    <div class="avptl">${l.map((x, i)=>
+      `<div class="avptr"><span class="avptn">${i + 1}</span>
+        <input type="text" data-avpt="${esc(quoi)}:${i}" value="${esc(x || "")}"
+          placeholder="${esc(exemple)}">
+        <button type="button" class="xbtn mini" data-avpthaut="${esc(quoi)}:${i}"
+          title="Monter cette ligne"${i ? "" : " disabled"}>↑</button>
+        <button type="button" class="xbtn mini sup" data-avptdel="${esc(quoi)}:${i}"
+          title="Retirer cette ligne">✕</button></div>`).join("")
+      || `<p class="muted" style="margin:0">Aucun point.</p>`}</div>
+    <div class="dact"><button type="button" class="addbtn mini"
+      data-avptadd="${esc(quoi)}">+ Un point</button></div></div>`;
+}
 function avisBlocRendement(d){
   const r = rendDe(d), c = calculRendement(d);
   const e = v=> v === null ? "—" : eur(Math.round(v));
@@ -9077,12 +9137,12 @@ function pageAvisValeur(){
       <div class="pf wide"><label>Description du bien</label>
         <textarea data-avc="avtexte" rows="5"
           placeholder="Ce que l'on ne lit pas dans un tableau : l'impression d'ensemble, la distribution, l'état, l'environnement immédiat.">${esc(a.texte || "")}</textarea></div>
-      <div class="pf"><label>Points forts — un par ligne</label>
-        <textarea data-avc="avforts" rows="5"
-          placeholder="Logement en rez-de-chaussée&#10;Garage individuel&#10;Place de stationnement privative">${esc(a.forts || "")}</textarea></div>
-      <div class="pf"><label>Points à défendre — un par ligne</label>
-        <textarea data-avc="avfaibles" rows="5"
-          placeholder="Travaux de rénovation à prévoir&#10;Présence d'humidité">${esc(a.faibles || "")}</textarea></div>
+    </div>
+    <div class="avpts">
+      ${blocPoints(d, "forts", "Points forts",
+        "Logement en rez-de-chaussée")}
+      ${blocPoints(d, "faibles", "Points à défendre",
+        "Travaux de rénovation à prévoir")}
     </div></div>
 
   ${avisBlocVentes(d)}
@@ -10849,10 +10909,15 @@ function majMenuDossier(){
     sub.textContent = s;
     sub.title = s;
   }
-  /* avant le mandat, quatre pages n'ont pas lieu d'être : il n'y a ni
-     mandat, ni acquéreur, ni notaire, ni document à sortir. Elles ne sont
-     pas grisées, elles ne sont pas là — un menu qui propose ce qui ne se
-     peut pas est un menu qui ment. */
+  /* avant le mandat, trois pages n'ont pas lieu d'être : il n'y a ni
+     mandat, ni acquéreur, ni notaire. Elles ne sont pas grisées, elles ne
+     sont pas là — un menu qui propose ce qui ne se peut pas est un menu
+     qui ment.
+
+     LES IMPRIMÉS, EUX, REVIENNENT : une estimation sort deux documents,
+     la fiche de visite et l'avis de valeur. C'est même là qu'on va les
+     chercher. Ce sont les onglets du dedans qui se taisent — ni facture
+     ni dossier de vente sans mandat. */
   const pre = sansMandat(D);
   PAGES_AVEC_MANDAT.forEach(k=>{
     const b2 = document.querySelector(`[data-mgo="${k}"]`);
@@ -10862,7 +10927,7 @@ function majMenuDossier(){
     b.classList.toggle("on", b.dataset.mgo === PAGE));
 }
 /* les pages qui n'existent qu'une fois le mandat pris */
-const PAGES_AVEC_MANDAT = ["mandat","acquereurs","notaires","documents"];
+const PAGES_AVEC_MANDAT = ["mandat","acquereurs","notaires"];
 function majBandeau(p){
   const page = p || pageActive();
   const cacher = ONGLETS_SANS_MANDAT.includes(page);
@@ -24930,21 +24995,22 @@ function docTitle(w){
   return w === "et" ? "Dossier de vente" : w === "fa" ? "Facture" : "Fiche notaire";
 }
 function renderPreview(){
-  const fp = currentDoc === "fp";
+  majOngletsImprimes();
+  const fp = estDocPdf(currentDoc);
   const bar = $(".docbar");
-  if(bar) bar.classList.toggle("pdf", fp);
+  if(bar){ bar.classList.toggle("pdf", fp);
+           bar.classList.toggle("avis", currentDoc === "av"); }
   const pw = $("#previewWrap"); if(pw) pw.hidden = fp;
   const fw = $("#ficheWrap");   if(fw) fw.hidden = !fp;
   const ff = $("#factForm");    if(ff) ff.hidden = fp || currentDoc !== "fa";
   if(fp){
     /* `renderPreview` est appelée à chaque frappe dans le dossier. Composer
-       la fiche à chaque frappe serait absurde — elle va chercher des tuiles
-       de carte et recomprime les photos. On ne recompose donc PAS ici : on
+       un PDF à chaque frappe serait absurde — il va chercher des tuiles de
+       carte et recomprime les photos. On ne recompose donc PAS ici : on
        dit seulement que ce qui est affiché n'est plus à jour. */
-    if(FICHE_APERCU.pour === D.id && FICHE_APERCU.url){
-      FICHE_APERCU.perimee = true;
-      majEtatFiche();
-    } else ficheAuxImprimes(false);
+    const a = apercuDe();
+    if(a.pour === D.id && a.url){ perimerApercus(); majEtatFiche(); }
+    else ficheAuxImprimes(false);
     return;
   }
   $("#preview").innerHTML = docHTML(currentDoc);
@@ -24956,39 +25022,93 @@ function renderPreview(){
    exporte en Word ou qu'on imprime. Celle-ci est un PDF déjà fait — le même
    fichier, exactement, que celui qui part en pièce jointe d'une proposition
    ou d'un rendez-vous. On le montre donc tel quel, et les boutons changent. */
-let FICHE_APERCU = {url:"", blob:null, pour:"", occupe:false, perimee:false};
+/* QUELS IMPRIMÉS SE PROPOSENT
+   Un bien en estimation n'a ni facture ni dossier de vente : il n'y a pas
+   de mandat derrière. Il a en revanche sa fiche de visite et son avis de
+   valeur, qui sont précisément les documents de ce moment-là. L'onglet
+   actif retombe sur le premier disponible plutôt que de rester sur un
+   onglet qui vient de disparaître. */
+const DOCS_AVEC_MANDAT = ["fn", "et", "fa"];
+function majOngletsImprimes(){
+  const pre = sansMandat(D);
+  let dispo = [];
+  $$("#docSeg button").forEach(b=>{
+    const off = pre && DOCS_AVEC_MANDAT.indexOf(b.dataset.d) >= 0;
+    b.hidden = off;
+    if(!off) dispo.push(b.dataset.d);
+  });
+  if(dispo.length && dispo.indexOf(currentDoc) < 0) currentDoc = dispo[0];
+  $$("#docSeg button").forEach(b=>
+    b.classList.toggle("on", b.dataset.d === currentDoc));
+}
+/* TROIS DOCUMENTS COMPOSÉS, UN SEUL MÉCANISME
+   La fiche de présentation, la fiche de visite et l'avis de valeur sont
+   des PDF faits par l'application, et non des pages HTML composées en
+   direct comme les trois premiers imprimés. Ils se regardent donc de la
+   même façon : on compose, on affiche dans le cadre, et l'on dit quand le
+   dossier a changé depuis.
+
+   Chacun garde son aperçu à lui : passer de l'un à l'autre ne recompose
+   pas celui qu'on quitte. */
+const DOC_PDF = {
+  fp: {lib:"la fiche", compose:(d)=> ficheBienPdf(d), nom:(d)=> nomFichierFiche(d)},
+  fv: {lib:"la fiche de visite", compose:(d)=> visitePdf(d),
+       nom:(d)=> nomFichierVisite(d)},
+  av: {lib:"l'avis de valeur", compose:(d)=> avisValeurPdf(d),
+       nom:(d)=> nomFichierAvisValeur(d, "pdf")}
+};
+function estDocPdf(k){ return !!DOC_PDF[k || currentDoc]; }
+const APERCUS = {};
+function apercuDe(k){
+  const code = k || currentDoc;
+  if(!APERCUS[code]) APERCUS[code] =
+    {url:"", blob:null, pour:"", occupe:false, perimee:false, erreur:""};
+  return APERCUS[code];
+}
+/* le dossier a changé : tous les aperçus composés sont périmés, pas
+   seulement celui qu'on regarde */
+function perimerApercus(){
+  Object.keys(APERCUS).forEach(k=>{
+    if(APERCUS[k].url) APERCUS[k].perimee = true; });
+}
 function majEtatFiche(){
   const z = $("#ficheEtat");
   if(!z) return;
-  if(FICHE_APERCU.occupe){ z.textContent = "Composition de la fiche…"; return; }
-  if(FICHE_APERCU.erreur){ z.textContent = FICHE_APERCU.erreur; return; }
-  z.textContent = FICHE_APERCU.perimee
-    ? "Le dossier a changé depuis : « Recomposer » refait la fiche."
+  const a = apercuDe(), d = DOC_PDF[currentDoc] || DOC_PDF.fp;
+  if(a.occupe){ z.textContent = "Composition de " + d.lib + "…"; return; }
+  if(a.erreur){ z.textContent = a.erreur; return; }
+  z.textContent = a.perimee
+    ? "Le dossier a changé depuis : « Recomposer » refait le document."
     : "";
-  z.classList.toggle("alerte", !!FICHE_APERCU.perimee);
+  z.classList.toggle("alerte", !!a.perimee);
 }
-async function ficheAuxImprimes(refaire){
+async function ficheAuxImprimes(refaire, code){
+  const k = code || currentDoc;
+  const def = DOC_PDF[k];
   const z = $("#fichePdf");
-  if(!z || FICHE_APERCU.occupe) return;
-  if(!refaire && FICHE_APERCU.pour === D.id && FICHE_APERCU.url && !FICHE_APERCU.perimee){
-    if(z.src !== FICHE_APERCU.url) z.src = FICHE_APERCU.url;
+  if(!z || !def) return;
+  const a = apercuDe(k);
+  if(a.occupe) return;
+  if(!refaire && a.pour === D.id && a.url && !a.perimee){
+    if(z.src !== a.url) z.src = a.url;
     majEtatFiche();
     return;
   }
-  FICHE_APERCU.occupe = true; FICHE_APERCU.erreur = "";
+  a.occupe = true; a.erreur = "";
   majEtatFiche();
   const pour = D.id;
   let blob = null;
-  try{ blob = await ficheBienPdf(D); }
-  catch(e){ FICHE_APERCU.erreur = "La fiche n'a pas pu être composée : "
+  try{ blob = await def.compose(D); }
+  catch(e){ a.erreur = "Le document n'a pas pu être composé : "
     + String((e && e.message) || e); }
-  FICHE_APERCU.occupe = false;
+  a.occupe = false;
   if(blob){
-    if(FICHE_APERCU.url) try{ URL.revokeObjectURL(FICHE_APERCU.url); }catch(e){}
-    FICHE_APERCU.url = URL.createObjectURL(blob);
-    FICHE_APERCU.blob = blob; FICHE_APERCU.pour = pour; FICHE_APERCU.perimee = false;
+    if(a.url) try{ URL.revokeObjectURL(a.url); }catch(e){}
+    a.url = URL.createObjectURL(blob);
+    a.blob = blob; a.pour = pour; a.perimee = false;
+    /* on n'affiche que si l'on est encore sur cet onglet-là */
     const zz = $("#fichePdf");
-    if(zz) zz.src = FICHE_APERCU.url;
+    if(zz && currentDoc === k) zz.src = a.url;
   }
   majEtatFiche();
 }
@@ -26262,13 +26382,19 @@ document.addEventListener("input", e=>{
   if(t.dataset.avc !== undefined){
     const a = avisDe(D);
     const k = {avdate:"date", avdemande:"demande", avintro:"intro", avtexte:"texte",
-      avforts:"forts", avfaibles:"faibles", avmini:"mini", avmaxi:"maxi",
+      avmini:"mini", avmaxi:"maxi",
       avhono:"hono", avcharge:"honoCharge"}[t.dataset.avc];
     if(k){ a[k] = t.value; autosave(); majAvisSynthese(); }
     return;
   }
   if(t.dataset.avrayon !== undefined){
     avisDe(D).rayon = t.value; autosave(); return;
+  }
+  if(t.dataset.avpt !== undefined){
+    const [q, i] = String(t.dataset.avpt).split(":");
+    const l = listePoints(D, q);
+    if(l[+i] !== undefined){ l[+i] = t.value; autosave(); }
+    return;
   }
   if(t.dataset.rendc !== undefined){
     const r = rendDe(D);
@@ -26854,7 +26980,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-calcop],[data-calcdel],[data-calcadd],[data-pcalc],[data-depcalc],[data-depdel],[data-depadd],[data-pdet],[data-travadd],[data-travdel],[data-fvpdf],[data-avdvf],[data-avvadd],[data-avvdel],[data-avaadd],[data-avadel],[data-avcoller],[data-avphot],[data-avdoc],[data-avpdf],[data-rendadd],[data-renddel],[data-rendrep],[data-rendport],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-calcop],[data-calcdel],[data-calcadd],[data-pcalc],[data-depcalc],[data-depdel],[data-depadd],[data-pdet],[data-travadd],[data-travdel],[data-fvpdf],[data-avdvf],[data-avvadd],[data-avvdel],[data-avaadd],[data-avadel],[data-avcoller],[data-avphot],[data-avdoc],[data-avpdf],[data-rendadd],[data-renddel],[data-rendrep],[data-rendport],[data-avptadd],[data-avptdel],[data-avpthaut],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-vsoc],[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -27077,6 +27203,24 @@ document.addEventListener("click", e=>{
             : "Elles y sont déjà");
     return;
   }
+  if(t.dataset.avptadd !== undefined){
+    listePoints(D, t.dataset.avptadd).push("");
+    autosave(); renderDetail(); majDetail();
+    const e = $$(`#detailCorps [data-avpt^="${t.dataset.avptadd}:"]`).pop();
+    if(e) e.focus();
+    return;
+  }
+  if(t.dataset.avptdel !== undefined){
+    const [q, i] = String(t.dataset.avptdel).split(":");
+    listePoints(D, q).splice(+i, 1);
+    autosave(); renderDetail(); majDetail(); return;
+  }
+  if(t.dataset.avpthaut !== undefined){
+    const [q, i] = String(t.dataset.avpthaut).split(":");
+    const l = listePoints(D, q), k = +i;
+    if(k > 0){ const x = l[k]; l[k] = l[k - 1]; l[k - 1] = x; }
+    autosave(); renderDetail(); majDetail(); return;
+  }
   if(t.dataset.rendport !== undefined){
     const c = calculRendement(D);
     if(!c.prix){ toast("Le calcul n'aboutit pas encore"); return; }
@@ -27234,7 +27378,7 @@ document.addEventListener("click", e=>{
     $$("#docSeg button").forEach(x=>x.classList.remove("on")); t.classList.add("on");
     currentDoc = t.dataset.d;
     if(currentDoc === "fa") renderFacture();
-    if(currentDoc === "fp"){
+    if(estDocPdf(currentDoc)){
       /* on arrive sur l'onglet : c'est le moment de composer, et le seul */
       renderPreview();
       ficheAuxImprimes(false);
@@ -29482,16 +29626,42 @@ $("#btnDup").onclick = ouvrirDuplication;
 $("#btnWord").onclick = ()=>exportWord(currentDoc);
 $("#btnWordBoth").onclick = ()=>{ exportWord("fn"); setTimeout(()=>exportWord("et"), 600); };
 $("#btnPrint").onclick = printDoc;
-/* les trois boutons de la fiche de présentation, qui remplacent les
-   précédents quand c'est elle qui est à l'écran */
+/* les boutons des documents composés, qui remplacent les précédents quand
+   c'est l'un d'eux qui est à l'écran. Ils agissent sur CELUI qu'on
+   regarde — il y en a trois. */
 $("#btnFicheRef").onclick = ()=> ficheAuxImprimes(true);
 $("#btnFicheOnglet").onclick = ()=>{
-  if(!FICHE_APERCU.url){ toast("La fiche n'est pas encore composée"); return; }
-  window.open(FICHE_APERCU.url, "_blank", "noopener");
+  const a = apercuDe();
+  if(!a.url){ toast("Le document n'est pas encore composé"); return; }
+  window.open(a.url, "_blank", "noopener");
 };
 $("#btnFicheDl").onclick = ()=>{
-  if(!FICHE_APERCU.blob){ toast("La fiche n'est pas encore composée"); return; }
-  download(FICHE_APERCU.blob, nomFichierFiche(D));
+  const a = apercuDe(), def = DOC_PDF[currentDoc];
+  if(!a.blob || !def){ toast("Le document n'est pas encore composé"); return; }
+  download(a.blob, def.nom(D));
+};
+$("#btnFicheWord").onclick = async ()=>{
+  toast("Composition du document Word…");
+  try{ download(await avisValeurDocx(D), nomFichierAvisValeur(D, "docx")); }
+  catch(e){ toast("Le document n'a pas pu être composé : " + e.message); }
+};
+/* CLASSER CE QU'ON REGARDE, ET NON LE RECOMPOSER
+   Le bouton range l'aperçu affiché : c'est exactement le fichier qu'on a
+   sous les yeux qui part au dossier. Recomposer ici en ferait un second,
+   potentiellement différent de celui qu'on vient de relire. */
+$("#btnFicheClasser").onclick = async ()=>{
+  const a = apercuDe();
+  if(!a.blob){ toast("L'avis n'est pas encore composé"); return; }
+  if(a.perimee && !confirm("Le dossier a changé depuis cette composition. "
+    + "Classer tout de même cette version ?")) return;
+  const nom = nomFichierAvisValeur(D, "pdf");
+  let piece = null;
+  try{
+    piece = await ajouterPiece(sujetDossier(D),
+      new File([a.blob], nom, {type:"application/pdf"}), "Mandat & Admin");
+  }catch(e){ piece = null; }
+  toast(piece ? "Avis de valeur rangé dans « Mandat & Admin »"
+              : "Le classement n'a pas abouti");
 };
 
 $("#btnExpAll").onclick = ()=>{
@@ -31928,6 +32098,7 @@ function migrate(d){
   out.av.pages = Object.assign(avisVide().pages, avisPagesReprises(out.av.pages));
   ["photos", "ventes", "annonces"].forEach(k=>{
     out.av[k] = (Array.isArray(out.av[k]) ? out.av[k] : []).filter(Boolean); });
+  ["forts", "faibles"].forEach(k=>{ out.av[k] = avisLignesLibres(out.av[k]); });
   out.av.rend = Object.assign(rendVide(),
     (out.av.rend && typeof out.av.rend === "object") ? out.av.rend : {});
   out.av.rend.charges = (Array.isArray(out.av.rend.charges)
@@ -33178,7 +33349,9 @@ const AIDE = [
   "cadastre, le propriétaire et la <b>fourchette d'estimation</b> du bandeau y "+
   "entrent seuls. "+
   "<b>Ne se saisit que ce qui s'écrit</b> — le mot d'introduction, la description, "+
-  "les <b>points forts</b> et les <b>points à défendre</b>, un par ligne — <b>et ce "+
+  "les <b>points forts</b> et les <b>points à défendre</b>, chacun sur sa propre "+
+  "ligne, qu'on ajoute par un <b>+</b>, qu'on remonte par une flèche et qu'on "+
+  "retire par une croix ; la saisie se fait dans la case, sans fenêtre — <b>et ce "+
   "qui se choisit</b> : les photos, les ventes passées, les annonces. Tout cela "+
   "<b>reste dans le dossier</b> : vous rouvrez, vous corrigez, vous rééditez, et un "+
   "second avis l'année suivante repart du premier. "+
@@ -33247,10 +33420,25 @@ const AIDE = [
   "prix donne — celui qu'affichent les annonces : l'écart entre les deux est "+
   "précisément ce qu'on explique au vendeur. Un bouton <b>reporte ce prix dans la "+
   "fourchette</b>, que vous ajustez ensuite si vous le voulez. "+
+  "<b>La charge des honoraires change le calcul.</b> À la charge du <b>vendeur</b>, "+
+  "ils sont compris dans le prix affiché et s'en retranchent : 180 000 € à 5 % "+
+  "laissent <b>171 000 €</b>. À la charge de l'<b>acquéreur</b>, ils s'ajoutent au "+
+  "net du vendeur pour faire le prix affiché, et l'on remonte en divisant : "+
+  "180 000 / 1,05 = <b>171 429 €</b>. Une somme en euros, elle, se retranche de la "+
+  "même façon dans les deux cas. Tous les prix de l'estimation sont arrondis à "+
+  "l'euro. "+
   "<b>La synthèse</b> reprend la fourchette du bandeau, et vous écrivez les "+
   "honoraires en <b>pourcentage</b> (« 5 % ») ou en <b>euros</b> : le <b>net "+
   "vendeur</b> suit tout seul, aux deux bouts de la fourchette. À la charge de "+
   "l'acquéreur, le net vendeur est le prix — l'application le sait. "+
+  "<b>On le voit avant de le sortir.</b> La page <b>Imprimés</b> — revenue au menu "+
+  "d'un bien en estimation, puisque c'est précisément là qu'on sort ses documents — "+
+  "porte deux onglets de plus : <b>Fiche de visite</b> et <b>Avis de valeur</b>. "+
+  "Chacun compose son PDF et le montre dans le cadre, exactement comme la fiche de "+
+  "présentation. On relit, et seulement ensuite on enregistre, on exporte en Word "+
+  "ou on <b>classe au dossier</b> — et c'est bien le fichier qu'on a sous les yeux "+
+  "qui part, non un second composé à la volée. Avant le mandat, la facture et le "+
+  "dossier de vente ne s'y proposent pas : il n'y a pas de mandat derrière. "+
   "<b>Deux sorties.</b> <b>Composer le PDF et le classer</b> fait le document ET le "+
   "range dans les pièces du dossier, rubrique <b>Mandat &amp; Admin</b> — d'où il "+
   "part au Drive tout seul, comme le mandat. C'est là qu'on ira le rechercher dans "+
@@ -38088,8 +38276,26 @@ const AV_RESERVES = [
   + "généralement considérés comme immeubles par destination, est inclus dans les "
   + "valeurs que nous affectons aux constructions."
 ];
-function avisLignesLibres(txt){
-  return String(txt || "").split(/\r?\n/).map(x=> x.trim()).filter(Boolean);
+/* LES POINTS, LIGNE À LIGNE
+   Ils tenaient dans deux zones de texte, une ligne par point : cela
+   s'écrit vite et se relit mal — on ne sait plus combien il y en a, on
+   ne déplace rien, et une ligne vide au milieu passe inaperçue. Ce sont
+   maintenant deux LISTES, chacune avec son champ, sa croix et son bouton
+   d'ajout. La saisie se fait dans la case, sans fenêtre.
+
+   `avisLignesLibres` accepte encore un texte : les avis composés avant
+   portent une chaîne, et on ne la perd pas. */
+function avisLignesLibres(v){
+  if(Array.isArray(v)) return v.map(x=> String(x == null ? "" : x).trim())
+    .filter(Boolean);
+  return String(v || "").split(/\r?\n/).map(x=> x.trim()).filter(Boolean);
+}
+/* la liste vivante, celle qu'on modifie : un texte d'avant devient une
+   liste à la première lecture, et n'y revient plus */
+function listePoints(d, quoi){
+  const a = avisDe(d);
+  if(!Array.isArray(a[quoi])) a[quoi] = avisLignesLibres(a[quoi]);
+  return a[quoi];
 }
 /* les blocs chiffrés de la page « description » : les mêmes clefs que la
    fiche du bien, puisque c'est le même bien */
@@ -38818,8 +39024,8 @@ async function avisValeurPdf(d){
     if(h) lignesS.push(["Honoraires à la charge de l'" + String(h.charge).toLowerCase(),
       h.pct ? m2Pourcent(h.n) : eur(h.n)]);
     if(h && h.pct && (mn !== null || mx !== null)){
-      const f = v=> v === null ? null : Math.round(v * h.n / 100);
-      lignesS.push(["Soit, en euros", [f(mn), f(mx)].filter(x=> x !== null)
+      const he = avisHonorairesEuros(o);
+      lignesS.push(["Soit, en euros", [he.mn, he.mx].filter(x=> x !== null)
         .map(eur).join("  à  ")]);
     }
     if(net.mn !== null || net.mx !== null) lignesS.push(["Net vendeur",
@@ -39497,8 +39703,8 @@ async function avisValeurDocx(d){
     if(h) ls.push(["Honoraires à la charge de l'" + String(h.charge).toLowerCase(),
       h.pct ? m2Pourcent(h.n) : eur(h.n)]);
     if(h && h.pct && (mn !== null || mx !== null)){
-      const f = v=> v === null ? null : Math.round(v * h.n / 100);
-      ls.push(["Soit, en euros", [f(mn), f(mx)].filter(x=> x !== null).map(eur)
+      const he = avisHonorairesEuros(o);
+      ls.push(["Soit, en euros", [he.mn, he.mx].filter(x=> x !== null).map(eur)
         .join("  à  ")]);
     }
     if(net.mn !== null || net.mx !== null) ls.push(["Net vendeur",
