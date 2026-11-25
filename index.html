@@ -2191,6 +2191,30 @@ table.tdb.statuts tr.adet td.cdoss b.ctype{color:var(--ink)}
 table.tdb.statuts tr.adet td.cdoss span{color:var(--ink-3);font-size:11px;display:block;
   line-height:1.3}
 table.tdb.statuts tr.adet .xbtn{padding:3px 9px;font-size:11.5px}
+/* ---------------------------------- où en est une estimation
+   La ligne se lit sans la lire : un liseré à gauche, et le mot qui dit
+   l'étape. Froid quand c'est au calendrier, chaud quand l'avis tarde. */
+table.tdb.statuts tr.adet td.cdoss .estmot{display:block;font-size:11px;
+  font-weight:600;margin-top:2px}
+table.tdb.statuts tr.adet.est-avenir > td:first-child{box-shadow:inset 3px 0 0 #7f9bb8}
+table.tdb.statuts tr.adet.est-avenir .estmot{color:#4a6b8a}
+table.tdb.statuts tr.adet.est-aujourdhui > td{background:#eef4fb}
+table.tdb.statuts tr.adet.est-aujourdhui > td:first-child{box-shadow:inset 3px 0 0 #2c6ca8}
+table.tdb.statuts tr.adet.est-aujourdhui .estmot{color:#1d5a92}
+table.tdb.statuts tr.adet.est-arendre > td{background:#fffbeb}
+table.tdb.statuts tr.adet.est-arendre > td:first-child{box-shadow:inset 3px 0 0 #d9a441}
+table.tdb.statuts tr.adet.est-arendre .estmot{color:#8a6412}
+table.tdb.statuts tr.adet.est-presse > td{background:#fff4e6}
+table.tdb.statuts tr.adet.est-presse > td:first-child{box-shadow:inset 3px 0 0 #e07a2c}
+table.tdb.statuts tr.adet.est-presse .estmot{color:#9a4a0c}
+table.tdb.statuts tr.adet.est-tarde > td{background:#fdecec}
+table.tdb.statuts tr.adet.est-tarde > td:first-child{box-shadow:inset 3px 0 0 #c0392b}
+table.tdb.statuts tr.adet.est-tarde .estmot{color:#95271b}
+table.tdb.statuts tr.adet.est-remis > td:first-child{box-shadow:inset 3px 0 0 #6e9e6a}
+table.tdb.statuts tr.adet.est-remis .estmot{color:#4a7a46}
+/* la fourchette d'une estimation, dans la colonne des prix */
+table.tdb.statuts td.fourch{color:var(--marque);font-weight:600;
+  white-space:nowrap;font-size:12.5px}
 table.tdb.statuts tr.adet.vide td{color:var(--ink-3);font-style:italic;text-align:left;
   padding-left:26px}
 /* le choix du périmètre, logé dans le bandeau de la carte */
@@ -2988,7 +3012,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 25 novembre 2026, 10 h 15">Dossiers de vente</div>
+  <div class="brand" title="Version du 25 novembre 2026, 19 h 10">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3218,7 +3242,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>25 novembre 2026, 10 h 15</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>25 novembre 2026, 19 h 10</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -16085,6 +16109,63 @@ function ht(ttc){ return (ttc||0) / (1 + TVA_TAUX); }
 function natureDe(cls){ const s = TDB_STATUTS.find(x=>x.cls===cls); return s ? s.nat : "avenir"; }
 
 /* date de référence : celle du statut le plus avancé, à défaut le mandat */
+/* ------------------------------- OÙ EN EST UNE ESTIMATION
+   Une estimation se lit en deux temps : la VISITE, qui est prise ou qui a
+   eu lieu, et la REMISE de l'avis de valeur, qui suit ou qui tarde. C'est
+   ce second temps qui se perd — on visite, puis on passe à autre chose, et
+   le propriétaire attend. La ligne le dit donc d'elle-même :
+
+     · visite à venir      — rien à faire, c'est au calendrier ;
+     · visite aujourd'hui  — c'est aujourd'hui ;
+     · avis à remettre     — la visite est passée, l'avis n'est pas parti,
+                             et la couleur chauffe avec les jours ;
+     · avis remis          — c'est fait, la ligne se calme.               */
+function etatEstimation(d){
+  const e = estimDe(d);
+  const rdv = isoValide(e.rdv) ? e.rdv : "";
+  const rem = isoValide(e.remise) ? e.remise : "";
+  if(rem) return {cls:"remis", lib:"avis remis le " + fdate(rem), iso:rem};
+  if(!rdv) return null;
+  const j = joursAvant(rdv);
+  if(j === null) return null;
+  if(j > 0) return {cls:"avenir",
+    lib:"visite le " + fdate(rdv) + (j <= 7 ? " — dans " + j + " j" : ""), iso:rdv};
+  if(j === 0) return {cls:"aujourdhui", lib:"visite aujourd'hui", iso:rdv};
+  const n = -j;
+  /* passé la quinzaine, un avis qui n'est pas parti ne partira plus tout
+     seul : la ligne le dit fort. */
+  const cls = n > 14 ? "tarde" : n > 5 ? "presse" : "arendre";
+  return {cls, lib:"avis à remettre — visite il y a " + n + " j", iso:rdv};
+}
+/* la fourchette d'un bien d'avant le mandat, telle qu'elle s'écrit dans la
+   colonne des prix : « 210 000 / 230 000 € ». Un seul des deux bouts
+   suffit — on n'invente pas l'autre. */
+function fourchetteCourte(d){
+  const e = estimDe(d);
+  const mn = num(e.mini), mx = num(e.maxi);
+  if(mn === null && mx === null) return "";
+  /* le premier chiffre sans son euro, le second avec : « 210 000 / 230 000 € »
+     se lit d'un coup, là où deux symboles alourdiraient la colonne */
+  if(mn !== null && mx !== null && mn !== mx)
+    return Math.round(mn).toLocaleString("fr-FR") + " / " + eur(mx);
+  return eur(mn === null ? mx : mn);
+}
+/* et la fourchette d'un groupe : du plus bas au plus haut */
+function fourchetteCumul(l){
+  const mn = [], mx = [];
+  (l || []).forEach(d=>{
+    const e = estimDe(d);
+    const a = num(e.mini), b = num(e.maxi);
+    if(a !== null) mn.push(a);
+    if(b !== null) mx.push(b);
+  });
+  if(!mn.length && !mx.length) return "";
+  const bas = mn.length ? Math.min.apply(null, mn) : null;
+  const haut = mx.length ? Math.max.apply(null, mx) : null;
+  if(bas !== null && haut !== null && bas !== haut)
+    return Math.round(bas).toLocaleString("fr-FR") + " / " + eur(haut);
+  return eur(bas === null ? haut : bas);
+}
 function dateStatut(d){
   const s = stade(d);
   /* un bien d'avant le mandat n'a que ses propres dates : la date d'un
@@ -16457,9 +16538,13 @@ function bucketsEvolution(list){
 const AUJ_STATUTS = [
   {cls:"prospection", lib:"Prospection", potentiel:true, avantMandat:true},
   {cls:"estimation",  lib:"Estimation",  potentiel:true, avantMandat:true},
-  /* un mandat sans numéro n'est pas une vente : il ne compte rien, et c'est
-     son propriétaire qui le nomme, comme avant le mandat */
-  {cls:"acompleter",  lib:"À compléter", potentiel:true, avantMandat:true},
+  /* « À COMPLÉTER » N'EST PAS UN STATUT DE TRAVAIL
+     Un mandat dont le numéro n'est pas encore saisi existe toujours — il a
+     son groupe dans la page Dossiers, et son bandeau d'alerte. Mais il n'a
+     rien à faire dans le tableau du jour : ce n'est pas une affaire à
+     suivre, c'est une saisie à finir, et deux minutes y suffisent. La
+     ligne y était toujours vide ou presque, et elle occupait une place
+     qui revient aux vraies. */
   {cls:"vente",       lib:"En vente",    potentiel:true},
   {cls:"offre",       lib:"Sous offre"},
   {cls:"compromis",   lib:"Sous compromis"}
@@ -16701,17 +16786,25 @@ function panneauStatuts(cote){
     return l.length
       ? l.map(d=>{
           const v = dateStatut(d);
-          return `<tr class="adet${d.id===D.id?" cur":""}${enc}" data-adet="${cote}:${s.cls}"${cache}>
+          /* une estimation dit où elle en est : visite à venir, visite
+             passée et avis non remis, ou avis remis. C'est la seule chose
+             qu'on veut savoir d'un coup d'œil sur cette ligne. */
+          const et = s.cls === "estimation" ? etatEstimation(d) : null;
+          const fo = s.avantMandat ? fourchetteCourte(d) : "";
+          return `<tr class="adet${d.id===D.id?" cur":""}${enc}${
+              et ? " est-" + et.cls : ""}" data-adet="${cote}:${s.cls}"${cache}>
             <td class="cdoss"><b>${(d.mandat && d.mandat.num)
                 ? esc(d.mandat.num)
                 /* sans numéro — avant le mandat, ou le numéro pas encore
                    saisi — ce qui nomme le bien, c'est SON PROPRIÉTAIRE */
                 : esc(nomProprietaire(d) || "sans propriétaire")}</b>
               <b class="ctype">${esc(critBien(d).type || "Bien")}</b>
-              <span>${esc(bienDe(d))}${v ? " · " + esc(fdate(v)) : ""}</span></td>
+              <span>${esc(bienDe(d))}${et ? "" : (v ? " · " + esc(fdate(v)) : "")}</span>
+              ${et ? `<span class="estmot ${et.cls}">${esc(et.lib)}</span>` : ""}</td>
             <td class="nb"></td>
             ${s.avantMandat
-              ? `<td class="rien">—</td><td class="rien pot">—</td>
+              ? `<td${fo ? ' class="fourch"' : ' class="rien"'}>${fo ? esc(fo) : "—"}</td>
+                 <td class="rien pot">—</td>
                  <td class="cpart rien pot">—</td>`
               : `<td>${eur0(num(d.prix && d.prix.fai))}</td>
                  <td class="${s.potentiel ? "pot" : ""}">${
@@ -16727,6 +16820,8 @@ function panneauStatuts(cote){
 
   const lignes = AUJ_STATUTS.map((s,i)=>{
     const l = par[s.cls], c = cumul(l);
+    /* la fourchette du groupe : du plus bas au plus haut de ses estimations */
+    const fg = s.avantMandat ? fourchetteCumul(l) : "";
     const plie = estPlie("a_" + cote + "_" + s.cls, true);   // fermé par défaut
     const cp = s.potentiel ? " pot" : "";
     /* le liseré s'ouvre sur la première ligne qui compte dans le total */
@@ -16737,7 +16832,8 @@ function panneauStatuts(cote){
           s.potentiel ? `<em class="tagpot">potentiel</em>` : ""}</td>
         <td class="nb">${l.length}</td>
         ${s.avantMandat
-          ? `<td class="rien">—</td><td class="rien ${cp}">—</td>
+          ? `<td${fg ? ' class="fourch"' : ' class="rien"'}>${fg ? esc(fg) : "—"}</td>
+             <td class="rien ${cp}">—</td>
              <td class="cpart rien${cp}">—</td>`
           : `<td>${eur0(c.fai)}</td><td class="${cp}">${eur0(c.ttc)}</td>
              <td class="cpart${cp}">${eur0(c.nego)}</td>`}
@@ -16770,8 +16866,9 @@ function panneauStatuts(cote){
         esc(eur(pot.ttc) || "0 €")} d'honoraires TTC, dont ${esc(eur(pot.nego) || "0 €")}
         pour ${esc(qui ? nomCourtNego(qui) : "les négociateurs")}` : ""}${
       avant.length ? `${dehors.length ? ". " : " — "}${avant.length} bien${
-        avant.length > 1 ? "s" : ""} d'avant le mandat ne compte${avant.length > 1 ? "nt" : ""}
-        aucun montant : le prix et les honoraires se fixent à la prise de mandat` : ""}.
+        avant.length > 1 ? "s" : ""} d'avant le mandat : leur fourchette d'estimation
+        s'affiche mais ne s'additionne à rien, le prix et les honoraires se fixant à la
+        prise de mandat` : ""}.
       Rien n'est engagé tant qu'aucune offre n'est signée : le liseré entoure ce qui
       s'additionne.</p>` : ""}
     ${alerteCommission(cote, qui, list)}
@@ -25087,12 +25184,28 @@ function piedFacture(){
     a.garantie || ""
   ].filter(Boolean).map(esc).join("<br>");
 }
-function docFacture(){
+/* Le vrai pied de page de la facture, celui que Word compose dans la marge
+   basse de chaque page — et non une ligne de plus à la fin du texte.
+   Word reconnaît `mso-element:footer` sur un div et le rattache à la section
+   dès que la règle `@page` l'appelle par son identifiant (`mso-footer:f1`). */
+function piedWord(){
+  return `<div style="mso-element:footer" id="f1">
+    <p style="${FOOT}margin:0">${piedFacture()}</p></div>`;
+}
+function docFacture(mode){
   const a = L.agence, f = D.facture || {};
   const m = factMontants();
+  const mw = mode === "word";    // Word : le pied part dans la marge basse
+  const mp = mode === "print";   // impression : le pied est fixé en bas de feuille
   const V  = n => Math.round(n * FACT_K) + "px";
   const pt = n => (Math.round(n * FACT_F * 10) / 10) + "pt";
   const P  = "margin:0;font-size:" + pt(10.5) + ";" + FF;
+  /* Une vraie ligne vide. Un paragraphe sans texte serait écrasé par Word :
+     il faut une espace insécable, une hauteur de ligne imposée en points, et
+     une police minuscule pour que seule cette hauteur compte. Elle suit le pas
+     vertical de la facture, qui doit toujours tenir sur une seule feuille. */
+  const ligneVide = ()=> `<p style="${P}font-size:1pt;line-height:${
+    (Math.round(10 * FACT_K * 10) / 10)}pt;mso-line-height-rule:exactly">&nbsp;</p>`;
   const dest = (factIntitule() || "").split("\n");
   /* l'objet tient sur une seule ligne : type de bien, adresse, code postal, ville */
   const lieu = [
@@ -25121,6 +25234,16 @@ function docFacture(){
     `<tr><td style="${RIB}background:${C_SOFT};font-weight:bold;width:30%">${esc(lib)}</td>
       <td style="${RIB}">${val}</td></tr>`).join("");
 
+  /* Le bloc légal du bas selon la destination : Word le prend dans son vrai
+     pied de page (rien à écrire ici), l'impression le fixe au bas de la
+     feuille, et l'aperçu — qui défile dans un panneau — le descend par une
+     cale mesurée, le seul moyen de le voir au bon endroit à l'écran. */
+  const pied = mw ? ""
+    : mp ? `<p style="${FOOT}font-size:${pt(8)};margin:0;position:fixed;
+              left:0;right:0;bottom:0">${piedFacture()}</p>`
+    : cale(FACT_CALE) + `<p style="${FOOT}font-size:${pt(8)};margin-top:${
+        V(18)}">${piedFacture()}</p>`;
+
   return `
 <table style="${TBL}" border="0" cellspacing="0" cellpadding="0"><tr>
   <td align="center" style="border:0;padding:0;text-align:center">${imgEntete()}</td>
@@ -25139,6 +25262,7 @@ function docFacture(){
 <p style="${P}margin-top:${V(46)}"><b><u>Dossier :</u></b> <i>${esc(factDossier() || "—")}</i></p>
 <p style="${P}margin-top:${V(8)}"><b><u>Objet de la vente :</u></b> <b>${
   esc(D.bien.type || "Bien")}</b> qui se situe : <b>${esc(lieu) || "&nbsp;"}</b></p>
+${ligneVide()}
 ${isoValide(D.dates.acte)
   ? `<p style="${P}margin-top:${V(8)}">Vente réalisée le <b>${esc(fdate(D.dates.acte))}</b></p>`
   : ""}
@@ -25151,6 +25275,7 @@ ${isoValide(D.dates.acte)
 </table>
 <p style="${P}font-weight:bold;margin-top:${V(20)}">N° de TVA Intracommunautaire : ${
   esc(a.tva || "")}</p>
+${ligneVide()}
 <p style="${P}font-size:${pt(8)};font-style:italic;font-weight:bold;line-height:1.3;
   margin-top:${V(10)}">
   <u>Loi n°92-442 du 31 décembre 1992 :</u> La présente facture est payable comptant. Toute
@@ -25161,14 +25286,13 @@ ${isoValide(D.dates.acte)
 <table align="center" width="78%" style="border-collapse:collapse;width:78%;margin:${
   V(8)} auto"
   border="0" cellspacing="0" cellpadding="2">${rib}</table>
-${cale(FACT_CALE)}
-<p style="${FOOT}font-size:${pt(8)};margin-top:${V(18)}">${piedFacture()}</p>`;
+${pied}`;
 }
 
 /* ------------------------------------------------------------ rendu doc */
 let currentDoc = "fn";
-function docHTML(w){
-  return w === "et" ? docEnTete() : w === "fa" ? docFacture() : docFicheNotaire();
+function docHTML(w, mode){
+  return w === "et" ? docEnTete() : w === "fa" ? docFacture(mode) : docFicheNotaire();
 }
 function docTitle(w){
   return w === "et" ? "Dossier de vente" : w === "fa" ? "Facture" : "Fiche notaire";
@@ -26027,10 +26151,17 @@ function docCSS(){
 }
 function wordBlob(which){
   const land = which==="et";
-  /* fiche notaire et facture : A4 portrait — en-tête de dossier : A3 paysage */
+  const fa   = which==="fa";
+  /* fiche notaire et facture : A4 portrait — en-tête de dossier : A3 paysage.
+     La facture, seule, a un vrai pied de page : la marge basse lui réserve
+     2,2 cm et `mso-footer` appelle le div qui le porte. */
   const page = land
     ? "@page Section1{size:42cm 29.7cm;mso-page-orientation:landscape;" +
       "margin:.9cm .9cm .9cm .9cm;mso-header-margin:.4cm;mso-footer-margin:.4cm;}" +
+      "div.Section1{page:Section1}"
+    : fa
+    ? "@page Section1{size:21cm 29.7cm;margin:1.2cm 1.2cm 2.2cm 1.2cm;" +
+      "mso-header-margin:.5cm;mso-footer-margin:.8cm;mso-footer:f1;}" +
       "div.Section1{page:Section1}"
     : "@page Section1{size:21cm 29.7cm;margin:1.2cm 1.2cm 1.2cm 1.2cm;" +
       "mso-header-margin:.5cm;mso-footer-margin:.5cm;}div.Section1{page:Section1}";
@@ -26046,7 +26177,7 @@ function wordBlob(which){
 ${page}
 ${docCSS()}
 </style></head>
-<body><div class="Section1">${docHTML(which)}</div></body></html>`;
+<body><div class="Section1">${docHTML(which, "word")}${fa ? piedWord() : ""}</div></body></html>`;
   return new Blob(["﻿", html], {type:"application/msword;charset=utf-8"});
 }
 function download(blob,name){
@@ -26225,9 +26356,14 @@ function printDoc(){
   const w = window.open("", "_blank");
   if(!w){ toast("Autorisez les fenêtres pop-up pour imprimer"); return; }
   const land = currentDoc==="et";
+  const fa   = currentDoc==="fa";
+  /* Le pied de la facture est fixé au bas de la zone imprimable — soit la
+     marge de 12 mm, comme tout pied de page — et le navigateur le réimprime
+     sur chaque feuille. Le corps, resserré à 261 mm cale comprise, ne peut pas
+     venir le heurter. */
   w.document.write(`<html><head><meta charset="utf-8"><title>${esc(docTitle(currentDoc))}</title>
     <style>@page{size:${land?"A3 landscape":"A4 portrait"};margin:${land?"9mm":"12mm"}}${docCSS()}</style></head>
-    <body>${docHTML(currentDoc)}</body></html>`);
+    <body>${docHTML(currentDoc, fa ? "print" : "")}</body></html>`);
   w.document.close();
   setTimeout(()=>{ w.focus(); w.print(); }, 350);
 }
@@ -33592,6 +33728,33 @@ const AIDE = [
   "l'avis de valeur, puisque c'est là que cela se verra. Ses coordonnées, sa "+
   "<b>qualité annoncée</b> et son <b>portrait</b> se saisissent une fois dans "+
   "<b>Listes → Négociateurs</b> et servent ensuite partout."],
+ ["Le tableau du jour dit où en sont les estimations",
+  "<b>La fourchette s'affiche.</b> Dans l'onglet <b>Aujourd'hui</b>, les lignes de "+
+  "prospection et d'estimation portaient un tiret dans la colonne <b>Prix de "+
+  "vente</b> : elles n'ont ni prix ni honoraires, c'est vrai, mais elles ont une "+
+  "<b>fourchette</b>. Elle s'y écrit désormais — « 210 000 / 230 000 € » —, et la "+
+  "ligne du groupe annonce l'étendue de toutes : du plus bas au plus haut. Rien de "+
+  "cela ne s'additionne au portefeuille : le prix se fixe à la prise de mandat, et "+
+  "la note sous le tableau le rappelle. "+
+  "<b>Une estimation dit où elle en est.</b> Elle se lit en deux temps : la "+
+  "<b>visite</b>, qui est prise ou qui a eu lieu, et la <b>remise</b> de l'avis de "+
+  "valeur, qui suit ou qui tarde. C'est ce second temps qui se perd — on visite, "+
+  "puis on passe à autre chose, et le propriétaire attend. La ligne le dit donc "+
+  "d'elle-même, par un liseré et un mot : "+
+  "<b>visite le 5 décembre</b> en bleu froid tant que c'est au calendrier ; "+
+  "<b>visite aujourd'hui</b> en bleu franc le jour venu ; "+
+  "<b>avis à remettre</b> dès le lendemain, en jaune, puis en orange passé cinq "+
+  "jours, puis en rouge passé quinze — au-delà, un avis qui n'est pas parti ne "+
+  "partira plus tout seul ; "+
+  "<b>avis remis le …</b> en vert discret, et la ligne se calme. "+
+  "Ces deux dates se saisissent sur le bandeau du dossier, au cartouche de "+
+  "l'estimation. "+
+  "<b>« À compléter » a quitté ce tableau.</b> Un mandat dont le numéro n'est pas "+
+  "encore saisi n'est pas une affaire à suivre : c'est une saisie à finir, et deux "+
+  "minutes y suffisent. La ligne y était toujours vide ou presque. <b>Le statut "+
+  "demeure</b> : la page <b>Dossiers</b> groupe ces dossiers sous « À compléter » "+
+  "et affiche son bandeau tant qu'il en reste un — vous ne pouvez pas en perdre un "+
+  "de vue."],
  ["Le relevé d'une pièce ne se perdait plus",
   "<b>Ce qui n'allait pas, et qui ne se voyait pas.</b> Tout ce que le relevé de "+
   "visite ajoutait sur une pièce — le <b>sol</b>, les <b>fenêtres</b>, les "+
@@ -33939,9 +34102,14 @@ const AIDE = [
  ["La facture d'honoraires",
   "Troisième pièce de l'onglet Imprimés, en-tête d'agence compris, et toujours tenue sur "+
   "<b>une seule feuille</b> : si le destinataire ou le RIB l'allongent, la mise en page se "+
-  "resserre d'elle-même. Le bloc de mentions du bas est un véritable pied de page : à "+
-  "l'écran il est calé en bas de la feuille, et dans le fichier Word il est remis à Word, "+
-  "qui le répète au bas de la page. Choisissez d'abord le destinataire — vendeur ou "+
+  "resserre d'elle-même. Les lignes <b>Objet de la vente</b> et <b>N° de TVA</b> se lisent "+
+  "seules : une ligne vide les sépare de ce qui suit. "+
+  "Le bloc de mentions du bas est un <b>véritable pied de page</b>, et non une dernière "+
+  "ligne de texte : dans le fichier Word il est remis au pied de page de Word, qui le "+
+  "compose dans la marge basse et le répète sur chaque feuille ; à l'impression directe il "+
+  "est fixé au bas de la zone imprimable ; à l'écran, où l'aperçu défile dans un panneau, "+
+  "il est descendu par une cale mesurée. Dans les trois cas il se pose au même endroit. "+
+  "Choisissez d'abord le destinataire — vendeur ou "+
   "acquéreur, celui qui supporte les honoraires étant proposé d'office. L'intitulé se compose "+
   "seul d'après les fiches des parties : deux époux domiciliés à la même adresse sont réunis "+
   "sur une seule ligne portant les deux civilités. Écrivez dans la case pour le fixer à la "+
