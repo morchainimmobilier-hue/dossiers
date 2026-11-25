@@ -1528,6 +1528,15 @@ table.avt .avm2{font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .avanng{padding:8px 0 0!important}
 .dnote.avmanque{color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;
   border-radius:9px;padding:8px 11px;margin:10px 0 0}
+/* les éléments d'une pièce, sur sa ligne de description : en lecture, ils
+   se cochent dans la fenêtre de détail */
+.pelvu{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.pelvu:empty{display:none}
+.pelp{display:inline-block;padding:1px 7px 2px;border-radius:999px;
+  background:var(--accent-soft);border:1px solid #e7d2c8;color:var(--bandeau);
+  font-size:11px;line-height:1.5}
+.qsel .withadd{display:flex;gap:4px;align-items:center}
+.qsel .withadd select{flex:1;min-width:0}
 .avpts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
   margin-top:14px}
 .avpt{border:1px solid var(--line);border-radius:10px;background:#faf7f5;
@@ -2979,7 +2988,7 @@ table.tdb .puce.resilie{background:#897466}
 <body>
 
 <div class="topbar">
-  <div class="brand" title="Version du 18 novembre 2026, 11 h 20">Dossiers de vente</div>
+  <div class="brand" title="Version du 25 novembre 2026, 10 h 15">Dossiers de vente</div>
   <div class="refbox">
     <label for="refInput" class="req">Mandat n°</label>
     <input id="refInput" type="text" data-b="mandat.num" placeholder="1041">
@@ -3209,7 +3218,7 @@ table.tdb .puce.resilie{background:#897466}
 
   <div class="panel" id="p-aide">
     <div class="card"><h2>Mode d'emploi</h2><div class="body" id="aideBody"></div></div>
-    <p class="versnote">Version du <b>18 novembre 2026, 11 h 20</b>. <span id="versMode"></span>
+    <p class="versnote">Version du <b>25 novembre 2026, 10 h 15</b>. <span id="versMode"></span>
       Si une nouveauté attendue ne s'y trouve pas, c'est que le fichier ouvert n'est pas
       le dernier : remplacez-le, puis rouvrez-le en forçant le rafraîchissement
       (<kbd>Ctrl</kbd> + <kbd>F5</kbd>).</p>
@@ -3742,8 +3751,19 @@ const LISTS_DEFAULT = {
                 "Pavés de verre", "Aucune"],
   voletsPiece:["Aucun", "Battants bois", "Battants PVC", "Battants métal",
                "Roulants manuels", "Roulants électriques", "Persiennes"],
+  /* « Divers » ne prenait qu'une valeur, alors qu'une pièce en cumule
+     volontiers trois ou quatre. La liste est devenue celle des ÉLÉMENTS,
+     dont on coche autant qu'il y en a — l'ancienne reste sous son nom,
+     parce que c'est elle qui porte ce qui a déjà été saisi. */
   diversPiece:["Placard", "Dressing", "Climatisation", "Cheminée", "Poêle",
                "Moustiquaire", "Poutres apparentes", "Mezzanine", "Baie vitrée"],
+  elementPiece:["Placard", "Moustiquaire", "Climatisation réversible",
+                "Simple vitrage", "Double vitrage", "Triple vitrage",
+                "Dressing", "Cheminée", "Poêle", "Insert", "Baie vitrée",
+                "Porte-fenêtre", "Poutres apparentes", "Mezzanine",
+                "Volets roulants électriques", "Point d'eau", "Hotte",
+                "Rangements intégrés", "Radiateur électrique", "Sèche-serviettes",
+                "VMC", "Spots encastrés", "Parquet d'origine", "Vue dégagée"],
   travauxPiece:["Aucun", "À rafraîchir", "À moderniser", "À rénover",
                 "Travaux à prévoir", "Non fonctionnel", "Rénovée récemment"],
   typeDep:    ["Garage", "Carport", "Cave", "Cellier", "Buanderie", "Atelier",
@@ -3898,6 +3918,7 @@ const LIST_LABELS = {
   periodeTrav:"Travaux — périodes", natureTrav:"Travaux — natures",
   solPiece:"Pièces — sols", fenetrePiece:"Pièces — fenêtres",
   voletsPiece:"Pièces — volets", diversPiece:"Pièces — divers",
+  elementPiece:"Pièces — éléments",
   travauxPiece:"Pièces — travaux", typeDep:"Dépendances — natures",
   reseauDep:"Dépendances — réseaux"
 };
@@ -9447,22 +9468,111 @@ function majTotalCalcul(){
    la visite, et cela ne tient pas dans le tableau — qui porte déjà sept
    colonnes. Une fenêtre par pièce, ouverte depuis sa ligne. */
 const PIECE_DETAIL = [
-  ["sol",     "Sol",      "list:solPiece"],
-  ["fenetre", "Fenêtres", "list:fenetrePiece"],
-  ["volets",  "Volets",   "list:voletsPiece"],
-  ["divers",  "Divers",   "list:diversPiece"],
-  ["etat",    "État",     "list:etatBien"],
-  ["travaux", "Travaux",  "list:travauxPiece"]
+  ["sol",      "Sol",       "list:solPiece"],
+  ["fenetre",  "Fenêtres",  "list:fenetrePiece"],
+  ["volets",   "Volets",    "list:voletsPiece"],
+  ["etat",     "État",      "list:etatBien"],
+  ["travaux",  "Travaux",   "list:travauxPiece"],
+  /* les éléments se cochent par plusieurs : ils viennent en dernier parce
+     qu'ils tiennent la largeur, et juste avant la remarque libre */
+  ["elements", "Éléments",  "multi:elementPiece"]
 ];
+/* la liste des éléments d'une pièce, quelle que soit la forme où on la
+   trouve : un tableau aujourd'hui, une chaîne pour ce qui vient d'avant */
+function listeElements(v){
+  if(Array.isArray(v)) return v.map(x=> String(x == null ? "" : x).trim())
+    .filter(Boolean).filter((x, i, t)=> t.indexOf(x) === i);
+  return listeMulti(v);
+}
+function elementsDe(p){ return listeElements((p || {}).elements); }
+/* ce que la pièce dit d'elle-même, en une ligne : les éléments d'abord —
+   ce sont eux qu'on cherche —, puis le reste du relevé */
+function detailPieceTexte(p){
+  const o = p || {};
+  const suite = PIECE_DETAIL.filter(([k])=> k !== "elements")
+    .map(([k])=> o[k]).filter(Boolean);
+  return elementsDe(o).concat(suite).join(", ");
+}
 function piecePleine(p){
-  return PIECE_DETAIL.some(([k])=> String((p || {})[k] || "").trim());
+  const o = p || {};
+  if(elementsDe(o).length) return true;
+  return PIECE_DETAIL.some(([k])=> k !== "elements"
+    && String(o[k] || "").trim());
+}
+/* ------------------------------------------- PLUSIEURS À LA FOIS
+   Une pièce a rarement UN élément : elle a un placard, une moustiquaire et
+   du double vitrage. La liste déroulante en ajoute un à chaque fois, les
+   retenus se lisent dessous en pastilles, chacune avec sa croix, et le
+   « + » allonge la liste partagée comme partout ailleurs.
+
+   C'est le même geste que les quartiers d'une recherche : la place tenue
+   dépend du nombre d'éléments CHOISIS, pas du nombre d'éléments connus. */
+/* LES DEUX ENDROITS OÙ LES ÉLÉMENTS SE LISENT
+   Dans la fenêtre de détail, où on les coche ; et sur la ligne du tableau
+   des pièces, qui est la description du bien. On redessine ces deux-là, et
+   rien d'autre : la fenêtre est ouverte, et un rendu complet la fermerait
+   sous les doigts. */
+function rafraichirElements(i){
+  const p = (cibleBien().o.pieces || [])[i];
+  if(!p) return;
+  const z = document.querySelector(`#pop:not([hidden]) [data-peladd="${i}"]`);
+  const box = z ? z.closest(".qsel") : null;
+  if(box) box.outerHTML = casesMulti("elementPiece", elementsDe(p),
+    `data-peladd="${i}"`, (n)=> `data-peldel="${i}:${n}"`,
+    "data-peladd", String(i));
+  const ligne = document.querySelector(`[data-pelvu="${i}"]`);
+  if(ligne) ligne.innerHTML = pastillesElements(p);
+  const loupe = document.querySelector(`[data-pdet="${i}"]`);
+  if(loupe) loupe.classList.toggle("on", piecePleine(p));
+}
+/* les éléments retenus, sur la ligne de la pièce : en lecture seule, ils
+   se modifient dans la fenêtre de détail */
+function pastillesElements(p){
+  const l = elementsDe(p);
+  if(!l.length) return "";
+  return l.map(x=> `<span class="pelp">${esc(x)}</span>`).join("");
+}
+/* `attrCible` et `libAjout` disent où poser la valeur tout juste
+   ajoutée à la liste : la fenêtre d'ajout la renvoie sur la liste
+   déroulante, dont la saisie l'inscrit sur la pièce. Un aller-retour, et
+   rien de particulier à écrire. */
+function casesMulti(cle, pris, attrAdd, attrDel, attrCible, libAjout){
+  const choix = (L[cle] || []).slice().sort(triFr);
+  pris.forEach(x=>{ if(choix.indexOf(x) < 0) choix.unshift(x); });
+  const reste = choix.filter(o=> pris.indexOf(o) < 0);
+  return `<div class="qsel">
+    <span class="withadd">
+      <select ${attrAdd}${reste.length ? "" : " disabled"}>
+        <option value="">${reste.length ? "— en ajouter un —"
+          : "— tous sont déjà choisis —"}</option>${
+        reste.map(o=> `<option>${esc(o)}</option>`).join("")}</select>
+      <button type="button" class="addinline" data-addlist="list:${esc(cle)}"
+        data-target="${esc(libAjout)}" data-attr="${esc(attrCible)}"
+        title="Ajouter une valeur à cette liste">+</button></span>
+    <div class="qpris">${pris.length ? pris.map((o, k)=>
+      `<span class="qpuce"><span>${esc(o)}</span>
+        <button type="button" class="qpx" ${attrDel(k)}
+          title="Retirer ${esc(o)}">✕</button></span>`).join("")
+      : `<span class="muted">aucun élément retenu</span>`}</div></div>`;
 }
 function ouvrirDetailPiece(i){
   const p = (cibleBien().o.pieces || [])[+i];
   if(!p) return;
-  const champs = PIECE_DETAIL.map(([k, lab, kind])=>
-    `<div class="pf"><label>${esc(lab)}</label>${
-      controlRaw(`${i}:${k}`, kind, p[k] || "", "", "data-piece")}</div>`).join("");
+  const champs = PIECE_DETAIL.map(([k, lab, kind])=>{
+    if(kind.startsWith("multi:"))
+      return `<div class="pf wide"><label>${esc(lab)}</label>${
+        casesMulti(kind.slice(6), elementsDe(p),
+          `data-peladd="${i}"`, (n)=> `data-peldel="${i}:${n}"`,
+          "data-peladd", String(i))}</div>`;
+    return `<div class="pf"><label>${esc(lab)}</label>${
+      controlRaw(`${i}:${k}`, kind, p[k] || "", "", "data-piece")}</div>`;
+  }).join("")
+    /* la remarque libre vient APRÈS les éléments : on coche ce qui est
+       prévu, on écrit ce qui ne l'est pas. Elle est la même que celle du
+       tableau — une seule case, vue de deux endroits. */
+    + `<div class="pf wide"><label>Observations sur la pièce</label>
+        <textarea data-piece="${i}:note" rows="2"
+          placeholder="ce qui ne tient dans aucune liste">${esc(p.note || "")}</textarea></div>`;
   /* le nom de la pièce EST le titre : à la huitième ouverture de suite, on
      ne lit plus un sous-titre pour savoir où l'on est. */
   popup({titre:(p.nom || "Pièce sans nom") + (p.niveau ? " — " + p.niveau : ""),
@@ -9487,7 +9597,8 @@ function tableauPieces(o){
           : (num(p.surface) === null ? "0" : String(num(p.surface)).replace(".", ",")))}"${
         p.horsHab ? " disabled" : ""}></td>
       <td><input type="text" data-piece="${i}:note" value="${esc(p.note||"")}"
-        placeholder="remarque"></td>
+        placeholder="remarque">
+        <div class="pelvu" data-pelvu="${i}">${pastillesElements(p)}</div></td>
       <td class="cact"><button type="button" class="xbtn mini${
           (p.calc || []).length ? " on" : ""}" data-pcalc="${i}"
         title="${(p.calc || []).length ? "Le calcul de cette surface, ligne à ligne"
@@ -9504,7 +9615,7 @@ function tableauPieces(o){
       <tr><th style="width:124px">Niveau</th><th style="width:184px">Pièce</th>
         <th style="width:88px">Au sol (m²)</th>
         <th class="cact" title="Exclure de la surface habitable">hors</th>
-        <th style="width:92px">Habitable (m²)</th><th>Remarque</th>
+        <th style="width:92px">Habitable (m²)</th><th>Description</th>
         <th class="cact"></th></tr>
       ${lignes || `<tr><td colspan="7" class="muted">Aucune pièce détaillée.</td></tr>`}
     </table></div>
@@ -26458,6 +26569,19 @@ document.addEventListener("input", e=>{
   if(t.dataset.avrayon !== undefined){
     avisDe(D).rayon = t.value; autosave(); return;
   }
+  if(t.dataset.peladd !== undefined){
+    const i = +t.dataset.peladd;
+    const p = (cibleBien().o.pieces || [])[i];
+    const v = String(t.value || "").trim();
+    if(p && v){
+      const l = elementsDe(p);
+      if(l.indexOf(v) < 0) l.push(v);
+      p.elements = l;
+      autosave(); rafraichirElements(i);
+    }
+    t.value = "";
+    return;
+  }
   if(t.dataset.avpt !== undefined){
     const [q, i] = String(t.dataset.avpt).split(":");
     const l = listePoints(D, q);
@@ -27047,7 +27171,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
-  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-calcop],[data-calcdel],[data-calcadd],[data-pcalc],[data-depcalc],[data-depdel],[data-depadd],[data-pdet],[data-travadd],[data-travdel],[data-fvpdf],[data-avdvf],[data-avvadd],[data-avvdel],[data-avaadd],[data-avadel],[data-avcoller],[data-avphot],[data-avdoc],[data-avpdf],[data-rendadd],[data-renddel],[data-rendrep],[data-rendport],[data-avptadd],[data-avptdel],[data-avpthaut],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
+  const t = e.target.closest("[data-add],[data-del],[data-bookadd],[data-bookdel],[data-bookportraitdel],[data-booksigndel],[data-versnego],[data-diagdel],[data-histodel],[data-open],[data-dossdel],[data-addlist],[data-search],[data-pick],[data-pj],[data-pjrub],[data-vcf],[data-pli],[data-astat],[data-duo],[data-stats],[data-sdet],[data-annul],[data-anndel],[data-dbien],[data-piecedel],[data-chgdel],[data-parcdel],[data-dvoir],[data-calcop],[data-calcdel],[data-calcadd],[data-pcalc],[data-depcalc],[data-depdel],[data-depadd],[data-pdet],[data-travadd],[data-travdel],[data-fvpdf],[data-avdvf],[data-avvadd],[data-avvdel],[data-avaadd],[data-avadel],[data-avcoller],[data-avphot],[data-avdoc],[data-avpdf],[data-rendadd],[data-renddel],[data-rendrep],[data-rendport],[data-avptadd],[data-avptdel],[data-peldel],[data-avpthaut],[data-aoff],[data-aon],[data-avis],[data-openavis],[data-sect],[data-etape],[data-bpage],[data-lgadd],[data-lgdel],[data-equipadd],[data-equipdel],[data-occ],[data-ofadd],[data-ofaddbien],[data-oftrans],[data-ofrep],[data-ofcomp],[data-ofechec],[data-ofdel],[data-ofdoc],[data-parcadd],[data-sugpick],[data-sugnon],[data-repradd],[data-reprdel],[data-adr2],[data-tir],[data-dossgo],[data-histsup],[data-btuile],[data-ynb],[data-neuf],[data-mgo],[data-vue],[data-wa],[data-mail],[data-plan],[data-planz],[data-plant],[data-addq],[data-qdel],[data-qsupp]," +
     "[data-vsoc],[data-phase],[data-pre],[data-estimprix],[data-prosadd],[data-prosdel],[data-prosp],[data-pgo],[data-prospadd],[data-impouvrir],[data-irisgo],[data-pvide],[data-prospdel],[data-prospretour],[data-retour],[data-persvers],[data-rechadd],[data-rechdup],[data-rechpers],[data-jadd],[data-sectmode],[data-sectfin],[data-sectcercle],[data-sectdel],[data-sectedit],[data-sectqedit],[data-sectqdel],[data-sectqdraw],[data-sectrep],[data-sectplein],[data-courradd],[data-courrdel],[data-waadd],[data-wadel],[data-rdvdel],[data-rdvpers],[data-rdvneuf],[data-rdvann],[data-annvieux],[data-cr],[data-fiche],[data-pers],[data-persretour],[data-rechpers],[data-pgopers],[data-perstri],[data-vcarnet],[data-vpers],[data-oliste],[data-persadd],[data-fraz],[data-actadd],[data-menuact],[data-acgo],[data-oproprio],[data-dfraz]," +
     "[data-ptri],[data-petat],[data-praz],[data-suivre],[data-suividel]," +
     "[data-suivicherche],[data-pdib],[data-ppadd],[data-ppdel]," +
@@ -27268,6 +27392,15 @@ document.addEventListener("click", e=>{
     autosave(); renderDetail(); majDetail();
     toast(n ? n + " charge" + (n > 1 ? "s" : "") + " reprise" + (n > 1 ? "s" : "")
             : "Elles y sont déjà");
+    return;
+  }
+  if(t.dataset.peldel !== undefined){
+    const [i, k] = String(t.dataset.peldel).split(":");
+    const p = (cibleBien().o.pieces || [])[+i];
+    if(p){
+      const l = elementsDe(p); l.splice(+k, 1); p.elements = l;
+      autosave(); rafraichirElements(+i);
+    }
     return;
   }
   if(t.dataset.avptadd !== undefined){
@@ -32074,6 +32207,34 @@ function findKind(path){
   if(m){ const p=PF.find(x=>x[0]===m[2]); return p?p[2]:null; }
   return null;
 }
+/* UNE PIÈCE REPRISE, SANS RIEN PERDRE
+   La reprise énumérait les champs d'une pièce un par un, et n'en
+   connaissait que sept. Tout ce que le relevé de visite a ajouté depuis —
+   le sol, les fenêtres, les volets, l'état, les travaux, les ÉLÉMENTS, et
+   le CALCUL de la surface ligne à ligne — tombait au premier
+   rechargement : saisi le matin, disparu le soir, sans un mot.
+
+   On part donc de la pièce telle qu'elle est, et l'on n'IMPOSE que ce qui
+   doit l'être. Un champ qu'on ajoutera demain survivra de lui-même. */
+function pieceReprise(x){
+  const q = Object.assign({}, x || {});
+  q.nom = q.nom || ""; q.niveau = q.niveau || "";
+  q.surface = q.surface || ""; q.hab = q.hab || ""; q.note = q.note || "";
+  /* une pièce d'avant n'avait pas de case : les annexes étaient écartées
+     de la surface habitable par leur nom. On garde la même réponse, mais
+     elle devient visible et corrigeable. */
+  q.horsHab = q.horsHab === undefined
+    ? PIECE_ANNEXE.test(String(q.nom || "")) : !!q.horsHab;
+  q.horsHabManuel = !!q.horsHabManuel;
+  q.calc = Array.isArray(q.calc) ? q.calc.filter(Boolean) : [];
+  q.elements = listeElements(q.elements);
+  /* « Divers » ne prenait qu'une valeur : elle devient le premier élément,
+     et la clef d'avant s'efface — on ne garde pas deux vérités */
+  const vieux = String(q.divers || "").trim();
+  if(vieux && q.elements.indexOf(vieux) < 0) q.elements.unshift(vieux);
+  delete q.divers;
+  return q;
+}
 function migrate(d){
   const base = blankDossier();
   const out = Object.assign(base, d);
@@ -32114,15 +32275,7 @@ function migrate(d){
   fondreEquipement(out.detail);
   delete out.detail.vue;                 // la liste « Vue » n'avait pas d'usage
   out.pieces = (Array.isArray(d.pieces) ? d.pieces : []).filter(Boolean)
-    .map(x=> ({nom: x.nom || "", niveau: x.niveau || "", surface: x.surface || "",
-               /* une pièce d'avant n'avait pas de case : les annexes étaient
-                  écartées de la surface habitable par leur nom. On garde la
-                  même réponse, mais elle devient visible et corrigeable. */
-               hab: x.hab || "",
-               horsHab: x.horsHab === undefined
-                 ? PIECE_ANNEXE.test(String(x.nom || "")) : !!x.horsHab,
-               horsHabManuel: !!x.horsHabManuel,
-               note: x.note || ""}));
+    .map(pieceReprise);
   out.parcelles = (Array.isArray(d.parcelles) ? d.parcelles : []).filter(Boolean)
     .map(x=> ({prefixe: x.prefixe || "", section: x.section || "", numero: x.numero || "",
                lieudit: x.lieudit || "", contenance: x.contenance || ""}));
@@ -32138,11 +32291,7 @@ function migrate(d){
       type: x.type || "",
       detail: Object.assign(JSON.parse(JSON.stringify(base.detail)), x.detail || {}),
       pieces: (Array.isArray(x.pieces) ? x.pieces : []).filter(Boolean)
-        .map(q=> ({nom:q.nom || "", niveau:q.niveau || "", surface:q.surface || "",
-                   hab:q.hab || "",
-                   horsHab: q.horsHab === undefined
-                     ? PIECE_ANNEXE.test(String(q.nom || "")) : !!q.horsHab,
-                   horsHabManuel: !!q.horsHabManuel, note:q.note || ""})),
+        .map(pieceReprise),
       occupation: occupationReprise(x.occupation)}));
   out.facture = Object.assign(base.facture, d.facture||{});
   out.avis = Object.assign(base.avis, d.avis||{});
@@ -33398,9 +33547,22 @@ const AIDE = [
   "des lignes est là, cases cochées comprises. C'est lui qui justifie la surface si "+
   "elle est discutée. "+
   "<b>La loupe, à côté, ouvre le détail de la pièce</b> — sol, fenêtres, volets, "+
-  "divers, état, travaux. Chaque liste s'allonge par son <b>+</b>. La loupe s'allume "+
-  "quand la pièce est renseignée : d'un coup d'œil sur le tableau, on voit ce qui "+
-  "reste à relever. "+
+  "état, travaux. Chaque liste s'allonge par son <b>+</b>. La loupe s'allume quand "+
+  "la pièce est renseignée : d'un coup d'œil sur le tableau, on voit ce qui reste à "+
+  "relever. "+
+  "<b>Les ÉLÉMENTS se cochent par plusieurs.</b> Une pièce a rarement un seul "+
+  "équipement : elle a un placard, une moustiquaire et du double vitrage. La liste "+
+  "déroulante en ajoute un à chaque fois, les retenus se lisent dessous en "+
+  "pastilles, chacune avec sa croix, et le <b>+</b> allonge la liste partagée. Elle "+
+  "part garnie — placard, moustiquaire, climatisation réversible, simple et double "+
+  "vitrage, cheminée, dressing, poutres apparentes, point d'eau… — et s'enrichit de "+
+  "ce que vous y ajoutez. Sous les éléments, une case d'<b>observations</b> pour ce "+
+  "qui ne tient dans aucune liste : c'est la même que la colonne du tableau. "+
+  "<b>Ces éléments s'écrivent sur la ligne de la pièce</b>, dans la colonne "+
+  "<b>Description</b> du tableau, sous la remarque — et ils ouvrent la description "+
+  "de la pièce dans les documents. "+
+  "<i>L'ancienne case « Divers », qui n'en prenait qu'un, devient le premier "+
+  "élément de la liste : rien de ce qui a été saisi n'est perdu.</i> "+
   "<b>Et la fiche s'exporte en PDF</b>, par le bouton en haut du volet. Elle porte le "+
   "propriétaire et ses coordonnées, le motif de la vente, le prix d'achat, les pièces "+
   "avec leur détail, les dépendances, les travaux et les observations. C'est un "+
@@ -33430,6 +33592,19 @@ const AIDE = [
   "l'avis de valeur, puisque c'est là que cela se verra. Ses coordonnées, sa "+
   "<b>qualité annoncée</b> et son <b>portrait</b> se saisissent une fois dans "+
   "<b>Listes → Négociateurs</b> et servent ensuite partout."],
+ ["Le relevé d'une pièce ne se perdait plus",
+  "<b>Ce qui n'allait pas, et qui ne se voyait pas.</b> Tout ce que le relevé de "+
+  "visite ajoutait sur une pièce — le <b>sol</b>, les <b>fenêtres</b>, les "+
+  "<b>volets</b>, l'<b>état</b>, les <b>travaux</b>, et le <b>calcul de la "+
+  "surface</b> ligne à ligne — était effacé au rechargement suivant. La reprise "+
+  "d'un dossier énumérait les champs d'une pièce un par un, et n'en connaissait que "+
+  "sept : les autres tombaient sans un mot. Saisi le matin, disparu le soir. "+
+  "<b>C'est corrigé.</b> Une pièce est reprise telle qu'elle est, et seuls les "+
+  "champs qui doivent l'être sont remis en forme. Ce que vous aviez saisi dans la "+
+  "<b>loupe</b> et dans la <b>calculatrice</b> avant cette version n'a pas pu être "+
+  "récupéré — il n'en restait rien — mais tout ce que vous saisirez désormais "+
+  "tient. Si vous aviez rempli des détails de pièces, il faudra les refaire une "+
+  "fois ; ce sera la dernière."],
  ["L'avis de valeur",
   "<b>Ce qui manquait.</b> Après l'estimation, il faut remettre un document au "+
   "propriétaire. Il se composait hors de l'application, dans un traitement de texte, "+
@@ -40100,7 +40275,7 @@ async function visitePdf(d){
     };
     tete();
     pieces.forEach((x, i)=>{
-      const det = PIECE_DETAIL.map(([k])=> x[k]).filter(Boolean).join(", ");
+      const det = detailPieceTexte(x);
       const dl = (det ? pdfCouper(det, cols[4] * LARG - 12, 8, false) : [])
         .slice(0, 3);
       const h = Math.max(16, dl.length * 11 + 5);
